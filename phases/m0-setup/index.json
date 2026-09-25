@@ -19,7 +19,16 @@
     {
       "step": 1,
       "name": "opensearch-compose",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-25T22:13:28+0900",
+      "summary": "OpenSearch 3.8.0+nori 단일 노드 Compose 구성, 로컬 운영 문서, Make 타깃, Docker 비의존 구성 테스트와 별도 통합 테스트를 추가했으며 모든 AC를 통과했습니다.",
+      "completed_at": "2026-09-25T22:17:22+0900",
+      "usage": {
+        "input_tokens": 621848,
+        "cached_input_tokens": 571904,
+        "output_tokens": 9294,
+        "attempts": 1
+      }
     },
     {
       "step": 2,
