@@ -1,9 +1,9 @@
 [project]
 name = "kodocs"
 version = "0.1.0"
-description = "Add your description here"
+description = "한국어 사내 문서 Agentic RAG와 평가 하네스"
 authors = [
-    { name = "SpanLee-Time", email = "iih907@mediazen.co.kr" }
+    { name = "SpanLee-Time", email = "iih907@gmail.com" }
 ]
 requires-python = ">=3.12"
 dependencies = [
