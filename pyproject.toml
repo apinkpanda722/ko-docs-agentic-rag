@@ -19,6 +19,10 @@ extend-exclude = ["phases", "scripts"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "scripts"]
+addopts = '-m "not integration"'
+markers = [
+    "integration: 실행 중인 OpenSearch가 필요한 테스트",
+]
 
 [dependency-groups]
 dev = [
