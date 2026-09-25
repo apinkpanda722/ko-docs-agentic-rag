@@ -22,3 +22,6 @@ __pycache__/
 .env
 .env.*
 !.env.example
+
+# downloaded originals (manifest only is committed)
+data/raw/
