@@ -27,12 +27,12 @@
 ## 마일스톤 (하네스 phase = PR 1개)
 | # | phase | 산출물 | 사용자 작업 |
 |---|---|---|---|
-| M0 | setup | uv 프로젝트, `make verify`, OpenSearch+nori compose, `.env.example` | API 키 4개 `.env` 입력 |
+| M0 | setup | uv 프로젝트, `make verify`, OpenSearch+nori compose, `.env.example`, 설정 로더(API 키 4개·월 비용 상한) | API 키 4개 `.env` 입력 |
 | M1 | data-collection | ALIO 사규 수집 스크립트, manifest, HWP→PDF 변환 | 대상 기관 확정(형식·공공누리 확인) |
 | M2 | parsing | pypdf·Docling·업스테이지 파서, 조문 분할기, 파싱 결과표 | 표 정답 약 10개 검수 |
 | M3 | synthetic-corpus | 시드 데이터 YAML, 생성 파이프라인, 카나리아, 간접 인젝션 문서, 티켓·결재 SQLite, 중복·다양성 지표 | `make generate` 실행, 합성 문서 표본 20건 검수 |
 | M4 | golden-set | 골드 50문항·실버 150문항, 구간 단위 qrels, dev/test 분리, 가설 사전 등록 | 골드 50문항 전부 검수, 실버 20% 표본 검수 |
-| M5 | retrieval | 인덱스(분석기 변형), BGE-M3, hybrid, 권한 filter, 식별자 `keyword` 필드, `lookup_id`, `run_sql`, 전체 조합 검색 실험표 | 검색 평가 실행 |
+| M5 | retrieval | 인덱스(분석기 변형), BGE-M3, hybrid, 권한 filter, 식별자 `keyword` 필드, `lookup_id`, `run_sql`, 전체 조합 검색 실험표, 계층 가드 테스트(`retrieval`은 `kodocs.agent`·`mcp_server`·`ui`를 상대 import 포함해 import하지 않는다) | 검색 평가 실행 |
 | M6 | agent-mcp | 단순 RAG·Agentic RAG 그래프, 도구, 가드레일, `answer()`·JSONL 트레이스, 답변 모델 2개 dev 비교, MCP 서버(계약 버전·정적 토큰) | 답변 모델 비교 실행 |
 | M7 | answer-eval | Gemini 채점, κ 검증, 보안 테스트셋(200건+), 실패 분석, 라우터(조건부), 위협 모델, 운영 지표, 최종 결과표 | 답변 50개 직접 채점 |
 | M8 | wrap-up | 리랭커 실험, Streamlit GUI, README 결과표, ADR 정리 | 공개 전환 결정 |

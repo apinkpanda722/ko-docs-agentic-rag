@@ -1,0 +1,32 @@
+[project]
+name = "kodocs"
+version = "0.1.0"
+description = "한국어 사내 문서 Agentic RAG와 평가 하네스"
+authors = [
+    { name = "SpanLee-Time", email = "iih907@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "python-dotenv>=1.2.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.24,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+extend-exclude = ["phases", "scripts"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "scripts"]
+addopts = '-m "not integration"'
+markers = [
+    "integration: 실행 중인 OpenSearch가 필요한 테스트",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pyyaml>=6.0.3",
+    "ruff>=0.16.9",
+]
