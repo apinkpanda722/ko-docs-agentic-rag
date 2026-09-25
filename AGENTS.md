@@ -11,7 +11,8 @@
 - 에이전트: LangGraph (+ langchain-openai 모델 래퍼, `@tool`, `ToolRuntime`)
 - 파싱: pypdf, Docling, 업스테이지 Document Parse, LibreOffice + H2Orestart(HWP → PDF)
 - LLM: Anthropic API(합성 데이터 생성), OpenAI API(시스템 답변), Gemini API(답변 채점)
-- MCP 서버: streamable HTTP
+- MCP 서버: streamable HTTP (데모용 정적 토큰)
+- 데모 GUI: Streamlit
 - 테스트·린트: pytest, ruff
 
 ## 아키텍처 규칙
@@ -24,6 +25,10 @@
 - CRITICAL: `data/raw/`(다운로드한 원문)는 커밋하지 않는다. 출처·해시·라이선스는 `data/manifest/`에 기록한다.
 - CRITICAL: 합성 문서는 가상 회사 이름으로만 만든다. 실존 기관·인물 이름으로 회의록·티켓 같은 기록을 생성하지 않는다.
 - 합성 문서에는 생성 모델, 프롬프트 템플릿 해시, 랜덤 시드, 출처가 된 시드 데이터 사실 ID를 메타데이터로 남긴다.
+- CRITICAL: MCP 도구의 입출력 스키마를 호환되지 않게 바꿀 때는 도구 버전을 올린다. 계약 테스트가 이를 강제한다.
+- CRITICAL: 실제 API를 호출하는 스크립트는 누적 비용을 기록하고, 설정한 월 상한을 넘기 전에 멈춘다.
+- 정답(qrels)은 청크 ID가 아니라 구간(`doc_id` + 조항 ID 또는 시드 데이터 사실 ID·문자 범위)으로 표시한다.
+- 식별자는 적재 시 정규식으로 추출해 분석하지 않는 `keyword` 필드에 넣는다.
 - 실험은 한 번에 한 변수만 바꾼다. 비교 결과표에는 고정한 조건을 함께 적는다.
 
 ## 개발 프로세스
