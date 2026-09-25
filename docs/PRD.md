@@ -27,7 +27,7 @@
 ## 마일스톤 (하네스 phase = PR 1개)
 | # | phase | 산출물 | 사용자 작업 |
 |---|---|---|---|
-| M0 | setup | uv 프로젝트, `make verify`, OpenSearch+nori compose, `.env.example` | API 키 4개 `.env` 입력 |
+| M0 | setup | uv 프로젝트, `make verify`, OpenSearch+nori compose, `.env.example`, 설정 로더(API 키 4개·월 비용 상한) | API 키 4개 `.env` 입력 |
 | M1 | data-collection | ALIO 사규 수집 스크립트, manifest, HWP→PDF 변환 | 대상 기관 확정(형식·공공누리 확인) |
 | M2 | parsing | pypdf·Docling·업스테이지 파서, 조문 분할기, 파싱 결과표 | 표 정답 약 10개 검수 |
 | M3 | synthetic-corpus | 시드 데이터 YAML, 생성 파이프라인, 카나리아, 간접 인젝션 문서, 티켓·결재 SQLite, 중복·다양성 지표 | `make generate` 실행, 합성 문서 표본 20건 검수 |

@@ -41,7 +41,10 @@
 
 ## 명령어
 make verify      # ruff + pytest (Stop hook, execute.py, CI가 모두 이 명령을 부른다)
-make up          # OpenSearch 기동 (docker compose)
+make up          # OpenSearch 기동 (docker compose, 이미지 빌드 포함)
+make down        # OpenSearch 중지
+make logs        # OpenSearch 로그 추적
+make test-integration  # 실행 중인 OpenSearch가 필요한 테스트 — make verify에서는 제외된다, 사용자 실행
 make generate    # 합성 코퍼스 생성 — 실제 API 호출, 사용자 실행
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)
