@@ -513,3 +513,48 @@ def test_run_fails_when_more_than_one_candidate_rule_id_is_current(
     assert record["law_rule_id"] is None
     assert "모호" in record["basis"]
     assert summary.rule_match_failures == (CONFLICT_TITLE,)
+
+
+@pytest.mark.parametrize(
+    ("name", "expected"),
+    [
+        ("한국정보화진흥원 일상감사 시행 지침", "일상감사시행지침"),
+        ("(한국정보화진흥원) 청렴행동수칙 운영지침", "청렴행동수칙운영지침"),
+    ],
+)
+def test_normalize_rule_name_removes_former_agency_name(
+    name: str, expected: str
+) -> None:
+    """NIA의 옛 이름(한국정보화진흥원)도 괄호 유무와 관계없이 접두어로 뗀다."""
+    assert normalize_rule_name(name) == expected
+
+
+def test_run_matches_the_single_alio_title_alias_and_records_it(
+    tmp_path: Path,
+) -> None:
+    law_records = [
+        law_version(
+            "h-2024",
+            rule_id="2126311",
+            name="(한국지능정보사회진흥원) 인권경영 이행지침",
+            issued_date="2024-03-15",
+            is_current=True,
+        )
+    ]
+    alio = alio_record(
+        rule_no="50001",
+        rule_title="한국지능정보사회진흥원 인권경영 운영지침",
+        file_no="7",
+        local_path="data/raw/alio/50001/7__인권경영 이행지침_2024.hwp",
+        filename_date={"date": "2024-03-15", "precision": "day"},
+    )
+    write_jsonl(tmp_path / "data/manifest/law_api.jsonl", law_records)
+    write_jsonl(tmp_path / "data/manifest/alio.jsonl", [alio])
+
+    summary = run(tmp_path)
+
+    record = read_jsonl(tmp_path / "data/manifest/version_matches.jsonl")[0]
+    assert record["law_rule_id"] == "2126311"
+    assert record["confidence"] == "exact"
+    assert "ALIO 제목 별칭: 인권경영 운영지침 → 인권경영 이행지침" in record["basis"]
+    assert summary.rule_match_failures == ()

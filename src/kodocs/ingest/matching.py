@@ -36,6 +36,14 @@ _MATCH_REQUIRED_FIELDS = frozenset(
     }
 )
 _MIDDLE_DOTS = str.maketrans("", "", "·ㆍ・")
+# NIA의 옛 이름. ALIO 제목 일부가 옛 이름으로 남아 있다.
+_FORMER_AGENCY_NAME = "한국정보화진흥원"
+# ALIO 목록 제목이 개정 후에도 갱신되지 않은 규정의 명시적 별칭(정규화 이름 기준).
+# 근거: ALIO 첨부 파일 4개 이름이 모두 "인권경영 이행지침_…"이고, 날짜가 법제처
+# 2126311 버전과 일치한다. 이 1건만 둔다. 일반 규칙으로 확장하지 않는다.
+_ALIO_TITLE_ALIASES: dict[str, tuple[str, str]] = {
+    "인권경영운영지침": ("인권경영 운영지침", "인권경영 이행지침"),
+}
 
 
 class Confidence(StrEnum):
@@ -80,13 +88,18 @@ class MatchingError(RuntimeError):
 
 
 def normalize_rule_name(name: str) -> str:
-    """Remove the NIA prefix, whitespace, and middle-dot variants."""
+    """Remove the NIA (or former NIA) prefix, whitespace, and middle-dot variants."""
     normalized = "".join(name.split())
-    parenthesized_prefix = f"({NIA_AGENCY_NAME})"
-    if normalized.startswith(parenthesized_prefix):
-        normalized = normalized[len(parenthesized_prefix) :]
-    elif normalized.startswith(NIA_AGENCY_NAME):
-        normalized = normalized[len(NIA_AGENCY_NAME) :]
+    prefixes = (
+        f"({NIA_AGENCY_NAME})",
+        NIA_AGENCY_NAME,
+        f"({_FORMER_AGENCY_NAME})",
+        _FORMER_AGENCY_NAME,
+    )
+    for prefix in prefixes:
+        if normalized.startswith(prefix):
+            normalized = normalized[len(prefix) :]
+            break
     return normalized.translate(_MIDDLE_DOTS)
 
 
@@ -118,8 +131,17 @@ def _match_rules_with_notes(
     }
     matches: dict[str, tuple[str | None, str | None]] = {}
     for rule_no, title in _alio_titles_by_rule(alio_records).items():
-        candidates = law_ids_by_name.get(normalize_rule_name(title), set())
-        matches[rule_no] = _resolve_rule_id(candidates, current_rule_ids)
+        normalized = normalize_rule_name(title)
+        alias_note: str | None = None
+        if normalized in _ALIO_TITLE_ALIASES:
+            alio_name, law_name = _ALIO_TITLE_ALIASES[normalized]
+            normalized = normalize_rule_name(law_name)
+            alias_note = f"ALIO 제목 별칭: {alio_name} → {law_name}"
+        candidates = law_ids_by_name.get(normalized, set())
+        rule_id, note = _resolve_rule_id(candidates, current_rule_ids)
+        if rule_id is not None and alias_note is not None:
+            note = f"{alias_note}; {note}" if note else alias_note
+        matches[rule_no] = (rule_id, note)
     return matches
 
 
