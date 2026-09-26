@@ -19,7 +19,16 @@
     {
       "step": 1,
       "name": "parse-schema",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-26T21:24:12+0900",
+      "summary": "공통 파싱 스키마·표 병합/마크다운 유틸리티·pypdf 기준선 어댑터와 테스트를 추가했으며, make verify 254개 테스트 및 지정 AC를 통과했습니다.",
+      "completed_at": "2026-09-26T21:30:06+0900",
+      "usage": {
+        "input_tokens": 893443,
+        "cached_input_tokens": 769792,
+        "output_tokens": 15248,
+        "attempts": 1
+      }
     },
     {
       "step": 2,
