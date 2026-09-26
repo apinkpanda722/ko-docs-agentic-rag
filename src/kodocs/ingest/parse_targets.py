@@ -12,6 +12,8 @@ from kodocs.ingest.manifest import latest_records, load_records, now_iso
 
 _ELIGIBLE_CONFIDENCES = frozenset({"exact", "approximate"})
 _SUPPORTED_SOURCE_KINDS = frozenset({"hwp5", "hwpx"})
+# 함초롬 대체 글꼴과 라틴 문자 부분의 LiberationSerif 등은 정상 대체라 예상 글꼴로 본다.
+EXPECTED_FONT_PREFIXES: tuple[str, ...] = ("HCR", "Liberation")
 
 
 @dataclass(frozen=True)
@@ -31,7 +33,7 @@ class ParseTarget:
     match_confidence: str
     law_annex_count: int
     embedded_fonts: tuple[str, ...]
-    non_hcr_fonts: tuple[str, ...]
+    unexpected_fonts: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -340,7 +342,9 @@ def _make_target(
             embedded_fonts = tuple(
                 sorted({font for font in recorded_fonts if isinstance(font, str)})
             )
-    non_hcr_fonts = tuple(font for font in embedded_fonts if not font.startswith("HCR"))
+    unexpected_fonts = tuple(
+        font for font in embedded_fonts if not font.startswith(EXPECTED_FONT_PREFIXES)
+    )
     annex_count = version.get("annex_count")
     return ParseTarget(
         rule_no=_text(source.get("rule_no")),
@@ -360,7 +364,7 @@ def _make_target(
             else 0
         ),
         embedded_fonts=embedded_fonts,
-        non_hcr_fonts=non_hcr_fonts,
+        unexpected_fonts=unexpected_fonts,
     )
 
 

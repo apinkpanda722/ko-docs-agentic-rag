@@ -24,7 +24,7 @@ M1은 NIA 내부규정 95개를 대상으로 M2 파싱 비교에 필요한 원�
 | `data/manifest/alio_failures.jsonl` | 규정 조회·다운로드·ZIP 해제 실패 이력 | `rule_no`, `rule_title`, `file_no`, `file_name`, `reason`, `collected_at` |
 | `data/manifest/version_matches.jsonl` | ALIO 파일과 법제처 버전의 결정론적 매칭 결과 | `alio_file_no`, `alio_local_path`, `alio_sha256`, `law_rule_id`, `law_serial`, `law_issued_date`, `confidence`, `basis`, `candidates`, `parse_eval_eligible` |
 | `data/manifest/conversions.jsonl` | HWP/HWPX별 PDF 변환 결과와 품질 점검 메타데이터 | `source_sha256`, `source_kind`, `output_path`, `page_count`, `status`, `error`, `embedded_fonts`, `hangul_distinct`, 도구 버전 |
-| `data/manifest/parse_targets.json` | M2 파싱 대상과 예산 산정을 위한 쪽수 목록 | 선택 파라미터, 현행 누락 목록, `role`, 법제처 식별자·발령일자·별표 수, ALIO 경로·해시·형식, PDF 경로·쪽수, `embedded_fonts`, `non_hcr_fonts` |
+| `data/manifest/parse_targets.json` | M2 파싱 대상과 예산 산정을 위한 쪽수 목록 | 선택 파라미터, 현행 누락 목록, `role`, 법제처 식별자·발령일자·별표 수, ALIO 경로·해시·형식, PDF 경로·쪽수, `embedded_fonts`, `unexpected_fonts` |
 
 `data/manifest/`의 메타데이터는 커밋 대상이다. 원문을 담는 `data/raw/`와 법제처 정제 조문을 담는 `data/interim/`은 커밋하지 않는다. manifest에는 원문 텍스트나 담당자명·전화번호를 넣지 않는다.
 
@@ -82,22 +82,23 @@ M1은 NIA 내부규정 95개를 대상으로 M2 파싱 비교에 필요한 원�
 | 매칭 파일 수: 실패(`failed`) | (실행 후 기록) |
 | 변환 성공 수 | (실행 후 기록) |
 | 변환 실패 수 | (실행 후 기록) |
-| HCR 외 글꼴이 섞인 파일 수 | (실행 후 기록) |
+| 예상 외 글꼴이 섞인 파일 수 | (실행 후 기록) |
 | `hangul_distinct=0`인 파일 수 | (실행 후 기록) |
 | 파싱 대상 수: 전체 / 현행 / 과거 | (실행 후 기록) |
 | 파싱 대상 예상 페이지 수 / 페이지 수 미상 대상 수 | (실행 후 기록) |
 
-HCR 외 글꼴 혼합 파일 수는 `conversions.jsonl`을 `source_sha256`별 마지막 줄로 축약한 뒤, 최신 `status=ok` 레코드의 `embedded_fonts` 중 `HCR`로 시작하지 않는 이름이 하나라도 있는 파일을 센다. 글꼴 이름별 파일 수도 아래에 중복 없이 집계한다.
+예상 외 글꼴이 섞인 파일 수는 `conversions.jsonl`을 `source_sha256`별 마지막 줄로 축약한 뒤, 최신 `status=ok` 레코드의 `embedded_fonts` 중 예상 글꼴(`HCR*` 함초롬, `Liberation*` 라틴 문자 부분 대체)이 아닌 이름이 하나라도 있는 파일을 센다. 글꼴 이름별 파일 수도 아래에 중복 없이 집계한다.
 
-| 섞인 HCR 외 글꼴 이름 | 파일 수 |
+| 섞인 예상 외 글꼴 이름 | 파일 수 |
 |---|---|
 | (실행 후 기록) | (실행 후 기록) |
 
 ## 8. 한계
 
-- 원본이 지정한 휴먼명조·HY견고딕 등 상용 또는 Windows 글꼴은 `infra/fontconfig/fonts.conf` 규칙에 따라 함초롬(`HCR Batang`, `HCR Dotum`)으로 대체된다. 함초롬을 설치하고 대체 규칙을 적용했을 때 샘플 2건의 쪽수는 GUI 변환과 같았다. 규칙에 없는 글꼴을 쓰는 파일은 `embedded_fonts`에 HCR 외 글꼴이 섞여 드러나며, `parse_targets.json`의 `non_hcr_fonts`로 M2에서 제외 또는 별도 분석할 수 있다.
+- 원본이 지정한 휴먼명조·HY견고딕 등 상용 또는 Windows 글꼴은 `infra/fontconfig/fonts.conf` 규칙에 따라 함초롬(`HCR Batang`, `HCR Dotum`)으로 대체된다. 함초롬을 설치하고 대체 규칙을 적용했을 때 샘플 2건의 쪽수는 GUI 변환과 같았다. 라틴 문자 부분은 LiberationSerif 등으로 대체되며 이는 정상이다. 대체 규칙에서 빠진 글꼴이 있으면 `embedded_fonts`에 예상 외 글꼴(`HCR*`·`Liberation*` 외)이 섞여 드러나며, `parse_targets.json`의 `unexpected_fonts`로 M2에서 제외 또는 별도 분석할 수 있다.
 - 쪽수는 대체 글꼴에 좌우되며 원본(한글 프로그램) 쪽수와 대조하지 않았다. 쪽수는 비용 추정용이며 파싱 정답은 법제처 조문이다.
 - 폐지 규정과 이름이 같은 현행 규정은 규정명 매칭이 "모호함"으로 실패할 수 있다. 현행 우선 규칙은 넣지 않았으며, 실제 실행에서 나온 "규정 매칭 실패" 목록을 원인별로 확인한 뒤 별도 규칙 필요성을 판단한다.
 - HWP 3.x와 구형 OLE 파일(.doc 등)은 H2Orestart 미지원·비대상이므로 변환과 파싱에서 빠진다. 누락 규모는 형식별 수로 보고한다.
+- "개정 이력 3개 이상"은 과거 버전 3개 이상으로 해석함(현행 포함 여부는 실측 후 재검토).
 - 파일명 날짜가 불규칙하면 정확 매칭이 어렵고, 매칭 실패 파일을 제외하므로 과거 버전 표본이 감소할 수 있다.
 - 같은 버전이라도 법제처 구조화 조문과 ALIO 원본 사이에 편집 차이가 있을 수 있으므로 M2에서 정답 텍스트와 별표를 대조해야 한다.

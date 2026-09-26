@@ -223,7 +223,7 @@ def test_select_targets_applies_current_history_and_conversion_rules() -> None:
         conversion_record(
             r1_hwpx_high,
             page_count=5,
-            fonts=["Arial", "HCR Batang", "HY견고딕"],
+            fonts=["Arial", "HCR Batang", "HY견고딕", "LiberationSerif"],
         ),
         conversion_record(r2_current, page_count=10, fonts=["HCR Dotum"]),
         conversion_record(r2_recent, page_count=7, fonts=["HCR Batang"]),
@@ -252,8 +252,14 @@ def test_select_targets_applies_current_history_and_conversion_rules() -> None:
     assert chosen.pdf_path == "data/raw/pdf/3.pdf"
     assert chosen.page_count == 5
     assert chosen.law_annex_count == 3
-    assert chosen.embedded_fonts == ("Arial", "HCR Batang", "HY견고딕")
-    assert chosen.non_hcr_fonts == ("Arial", "HY견고딕")
+    assert chosen.embedded_fonts == (
+        "Arial",
+        "HCR Batang",
+        "HY견고딕",
+        "LiberationSerif",
+    )
+    # HCR*·Liberation*은 예상된 대체 글꼴이라 제외한다.
+    assert chosen.unexpected_fonts == ("Arial", "HY견고딕")
     assert selection.targets[2].pdf_path is None
     assert selection.targets[2].page_count is None
     assert selection.current_count == 2
@@ -342,7 +348,9 @@ def test_run_uses_latest_manifest_records_writes_fresh_json_and_prints_summary(
     matched = match_record("serial-1", current_alio)
     old_conversion = conversion_record(current_alio, page_count=3)
     new_conversion = conversion_record(
-        current_alio, page_count=4, fonts=["HCR Batang", "TimesNewRoman"]
+        current_alio,
+        page_count=4,
+        fonts=["HCR Batang", "LiberationSans-Bold", "TimesNewRoman"],
     )
     manifest_root = tmp_path / "data/manifest"
     write_jsonl(manifest_root / "law_api.jsonl", [stale_law, current_law])
@@ -377,8 +385,8 @@ def test_run_uses_latest_manifest_records_writes_fresh_json_and_prints_summary(
         "page_count": 4,
         "match_confidence": "exact",
         "law_annex_count": 2,
-        "embedded_fonts": ["HCR Batang", "TimesNewRoman"],
-        "non_hcr_fonts": ["TimesNewRoman"],
+        "embedded_fonts": ["HCR Batang", "LiberationSans-Bold", "TimesNewRoman"],
+        "unexpected_fonts": ["TimesNewRoman"],
     }
     serialized = output_path.read_text(encoding="utf-8")
     assert "이전 이름" not in serialized

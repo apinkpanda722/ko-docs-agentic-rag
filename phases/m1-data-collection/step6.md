@@ -102,9 +102,9 @@ def main(argv: list[str] | None = None) -> int: ...   # python -m kodocs.ingest.
    - 판정: 법제처 별표 항목마다 `본문 포함` / `별도 파일` / `찾지 못함`으로 분류해 M2 표 정답 후보(PRD: 별표 표 약 10개)를 고른다.
    - 이 확인은 M2에서 파서 비교 전에 수행한다. M1은 방법만 남긴다.
 7. **결과 수치** — 표 틀만: 법제처 현행·연혁 버전 수, ALIO 규정·파일 수(형식별: hwp5·hwpx·hwp3·ole_other·zip·pdf, zip 멤버), 다운로드 실패 수, 매칭 신뢰도별 파일 수,
-   변환 성공·실패 수, **HCR 외 글꼴이 섞인 파일 수**(`conversions.jsonl` 최신 `ok` 레코드 중 `embedded_fonts`에 `HCR`로 시작하지 않는 글꼴이 하나라도 있는 파일, 섞인 글꼴 이름별 파일 수 포함), `hangul_distinct`가 0인 파일 수, 파싱 대상 수와 예상 페이지 수. 값은 `(실행 후 기록)`.
-   `parse_targets.json`의 각 대상에도 `embedded_fonts`와 `non_hcr_fonts`(HCR 외 글꼴 목록)를 넣어 M2에서 거를 수 있게 한다.
-8. **한계** — 원본이 지정한 글꼴(휴먼명조·HY견고딕 등 상용/Windows 글꼴)은 `infra/fontconfig/fonts.conf` 규칙에 따라 함초롬(HCR Batang/HCR Dotum)으로 대체된다. 함초롬을 설치하고 대체 규칙을 적용했을 때 샘플 2건의 쪽수가 GUI 변환과 같았다. 규칙에 없는 글꼴을 쓰는 파일은 `embedded_fonts`에 HCR 외 글꼴이 섞여 드러난다. 쪽수는 대체 글꼴에 좌우되며 원본(한글 프로그램) 쪽수와 대조하지 않았다. 쪽수는 비용 추정용이며 파싱 정답은 법제처 조문이다. 폐지 규정과 이름이 같은 현행 규정은 규정 매칭이 "모호함"으로 실패할 수 있다(현행 우선 규칙은 넣지 않았고, 실측한 "규정 매칭 실패" 목록을 원인별로 본 뒤 판단한다). HWP 3.x·구형 OLE(.doc 등) 파일은 H2Orestart 미지원·비대상이라 변환·파싱에서 빠진다(형식별 수로 보고), 파일명 날짜의 불규칙성, 매칭 실패 파일 제외에 따른 과거 버전 표본 감소, 법제처 조문과 ALIO 원본의 편집 차이 가능성.
+   변환 성공·실패 수, **예상 외 글꼴이 섞인 파일 수**(`conversions.jsonl` 최신 `ok` 레코드 중 `embedded_fonts`에 `HCR*`·`Liberation*` 외 글꼴이 하나라도 있는 파일, 섞인 글꼴 이름별 파일 수 포함), `hangul_distinct`가 0인 파일 수, 파싱 대상 수와 예상 페이지 수. 값은 `(실행 후 기록)`.
+   `parse_targets.json`의 각 대상에도 `embedded_fonts`와 `unexpected_fonts`(`HCR*`·`Liberation*` 외 글꼴 목록)를 넣어 M2에서 거를 수 있게 한다.
+8. **한계** — 원본이 지정한 글꼴(휴먼명조·HY견고딕 등 상용/Windows 글꼴)은 `infra/fontconfig/fonts.conf` 규칙에 따라 함초롬(HCR Batang/HCR Dotum)으로 대체된다. 함초롬을 설치하고 대체 규칙을 적용했을 때 샘플 2건의 쪽수가 GUI 변환과 같았다. 규칙에 없는 글꼴을 쓰는 파일은 `embedded_fonts`에 예상 외 글꼴(`HCR*`·`Liberation*` 외)이 섞여 드러난다. 쪽수는 대체 글꼴에 좌우되며 원본(한글 프로그램) 쪽수와 대조하지 않았다. 쪽수는 비용 추정용이며 파싱 정답은 법제처 조문이다. 폐지 규정과 이름이 같은 현행 규정은 규정 매칭이 "모호함"으로 실패할 수 있다(현행 우선 규칙은 넣지 않았고, 실측한 "규정 매칭 실패" 목록을 원인별로 본 뒤 판단한다). HWP 3.x·구형 OLE(.doc 등) 파일은 H2Orestart 미지원·비대상이라 변환·파싱에서 빠진다(형식별 수로 보고), 파일명 날짜의 불규칙성, 매칭 실패 파일 제외에 따른 과거 버전 표본 감소, 법제처 조문과 ALIO 원본의 편집 차이 가능성.
 
 ## Acceptance Criteria
 
