@@ -47,7 +47,16 @@
     {
       "step": 3,
       "name": "alio",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-26T14:20:22+0900",
+      "summary": "ALIO 전 버전 원본 수집·서명 판정·안전한 ZIP 해제·manifest/재개·CLI를 TDD로 구현했으며 make verify(162 passed)와 --help AC를 통과했습니다.",
+      "completed_at": "2026-09-26T14:30:19+0900",
+      "usage": {
+        "input_tokens": 1966367,
+        "cached_input_tokens": 1826560,
+        "output_tokens": 29238,
+        "attempts": 1
+      }
     },
     {
       "step": 4,
