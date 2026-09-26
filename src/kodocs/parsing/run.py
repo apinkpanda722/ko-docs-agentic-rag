@@ -12,7 +12,13 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import Protocol, TextIO
 
-from kodocs.costs import BudgetExceededError
+from kodocs.config import MissingAPIKeyError, load_settings
+from kodocs.costs import (
+    DEFAULT_LEDGER_PATH,
+    BudgetExceededError,
+    BudgetGuard,
+    CostLedger,
+)
 from kodocs.ingest.manifest import (
     append_record,
     latest_records,
@@ -32,6 +38,12 @@ from kodocs.parsing.schema import (
     settings_hash,
     to_json,
 )
+from kodocs.parsing.upstage_adapter import (
+    DryRunPlan,
+    UpstageAdapter,
+    UpstageClient,
+    plan,
+)
 
 PARSE_RUN_REQUIRED_FIELDS = frozenset(
     {
@@ -50,6 +62,8 @@ PARSE_RUN_REQUIRED_FIELDS = frozenset(
         "blocks",
         "tables",
         "invalid_tables",
+        "api_version",
+        "usage_enhanced",
         "init_s",
         "error_type",
         "error",
@@ -114,9 +128,16 @@ class _PypdfAdapter:
         return parse_pdf(item.input_path, root=root)
 
 
+def _upstage_cli_only() -> Adapter:
+    raise ParseRunError(
+        "upstage 어댑터는 비용 확인을 거친 CLI에서만 생성할 수 있습니다."
+    )
+
+
 ADAPTERS: dict[str, Callable[[], Adapter]] = {
     "docling": DoclingAdapter,
     "pypdf": _PypdfAdapter,
+    "upstage": _upstage_cli_only,
 }
 
 
@@ -200,6 +221,7 @@ def run(
     force: bool = False,
     progress_every: int = 10,
     out: TextIO = sys.stdout,
+    run_id: str | None = None,
 ) -> RunSummary:
     """Run one adapter across inputs, recording every non-budget outcome."""
     if progress_every < 1:
@@ -220,7 +242,7 @@ def run(
         )
     }
     conversion_hashes = _conversion_hashes(root)
-    run_id = str(uuid.uuid4())
+    run_id = run_id or str(uuid.uuid4())
     started = time.perf_counter()
     ok_count = 0
     skipped_count = 0
@@ -265,6 +287,7 @@ def run(
                 error_type=error_type,
                 error=error,
                 init_s=init_s,
+                document_settings=None,
             )
             _append_run(manifest_path, record)
             latest_by_key[key] = record
@@ -294,6 +317,7 @@ def run(
                 error_type=None,
                 error=None,
                 init_s=init_s,
+                document_settings=existing.settings,
             )
             _append_run(manifest_path, record)
             latest_by_key[key] = record
@@ -333,6 +357,7 @@ def run(
                 error_type=type(exc).__name__,
                 error=_first_line(str(exc)),
                 init_s=init_s,
+                document_settings=None,
             )
             _append_run(manifest_path, record)
             latest_by_key[key] = record
@@ -360,6 +385,7 @@ def run(
             error_type=None,
             error=None,
             init_s=init_s,
+            document_settings=document.settings,
         )
         _append_run(manifest_path, record)
         latest_by_key[key] = record
@@ -389,7 +415,11 @@ def run(
     return summary
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(
+    argv: list[str] | None = None,
+    *,
+    input_fn: Callable[[str], str] = input,
+) -> int:
     """CLI entry point for user-initiated local parser runs."""
     parser = argparse.ArgumentParser(
         description="공통 M2 대상 목록을 선택한 파서로 실행합니다."
@@ -398,20 +428,101 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--parser", choices=sorted(ADAPTERS), required=True)
     parser.add_argument("--limit", type=_positive_int)
     parser.add_argument("--force", action="store_true")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="업스테이지 캐시 미적중 대상의 예상 비용만 출력합니다.",
+    )
+    parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="업스테이지 유료 실행 확인을 생략합니다.",
+    )
     args = parser.parse_args(argv)
 
     try:
         inputs = load_inputs(args.root, limit=args.limit)
+        if args.parser == "upstage":
+            dry_run_plan = plan(args.root, inputs)
+            _print_upstage_plan(dry_run_plan)
+            if dry_run_plan.exceeds_budget:
+                print(
+                    "예산 초과: 예상 비용이 이번 달 남은 예산을 넘어 "
+                    "실행할 수 없습니다."
+                )
+                return 1
+            if args.dry_run:
+                return 0
+            if (
+                not args.yes
+                and input_fn("계속하려면 y 입력: ").strip().casefold() != "y"
+            ):
+                return 0
+
+            settings = load_settings()
+            try:
+                api_key = settings.require_key("UPSTAGE_API_KEY")
+            except MissingAPIKeyError as exc:
+                print(str(exc), file=sys.stderr)
+                return 2
+            run_id = str(uuid.uuid4())
+            adapter = _build_upstage_adapter(
+                args.root,
+                api_key=api_key,
+                monthly_budget_usd=settings.monthly_budget_usd,
+                run_id=run_id,
+            )
+            summary = run(
+                args.root,
+                adapter,
+                inputs,
+                force=args.force,
+                run_id=run_id,
+            )
+            return 1 if summary.failed_count else 0
+
+        if args.dry_run or args.yes:
+            parser.error(
+                "--dry-run과 --yes는 --parser upstage에서만 사용할 수 있습니다."
+            )
         summary = run(
             args.root,
             ADAPTERS[args.parser](),
             inputs,
             force=args.force,
         )
-    except (ParseRunError, OSError, ValueError) as exc:
+    except (BudgetExceededError, ParseRunError, OSError, ValueError) as exc:
         print(f"파싱 실행 실패: {exc}", file=sys.stderr)
         return 1
     return 1 if summary.failed_count else 0
+
+
+def _build_upstage_adapter(
+    root: Path,
+    *,
+    api_key: str,
+    monthly_budget_usd: float,
+    run_id: str,
+) -> UpstageAdapter:
+    ledger = CostLedger(root / DEFAULT_LEDGER_PATH)
+    return UpstageAdapter(
+        root,
+        client_factory=lambda: UpstageClient(api_key),
+        ledger=ledger,
+        guard=BudgetGuard(ledger, monthly_budget_usd),
+        run_id=run_id,
+    )
+
+
+def _print_upstage_plan(dry_run_plan: DryRunPlan) -> None:
+    print(
+        f"캐시 없음 {dry_run_plan.uncached_count}건 / "
+        f"{dry_run_plan.page_count}쪽 / "
+        f"예상 ${dry_run_plan.estimated_usd:.2f} (세금 10% 포함) / "
+        f"이번 달 누적 ${dry_run_plan.month_total_usd:.2f} / "
+        f"상한 ${dry_run_plan.monthly_budget_usd:.2f} / "
+        f"실행 후 남은 예산 ${dry_run_plan.remaining_after_usd:.2f}"
+    )
 
 
 def _prepare(adapter: Adapter) -> float | None:
@@ -518,6 +629,7 @@ def _record(
     error_type: str | None,
     error: str | None,
     init_s: float | None,
+    document_settings: Mapping[str, object] | None,
 ) -> dict[str, object]:
     return {
         "run_id": run_id,
@@ -535,6 +647,16 @@ def _record(
         "blocks": stats["blocks"] if stats is not None else 0,
         "tables": stats["tables"] if stats is not None else 0,
         "invalid_tables": stats["invalid_tables"] if stats is not None else 0,
+        "api_version": (
+            document_settings.get("apiVersion")
+            if document_settings is not None
+            else None
+        ),
+        "usage_enhanced": (
+            document_settings.get("usage_enhanced")
+            if document_settings is not None
+            else None
+        ),
         "init_s": init_s,
         "error_type": error_type,
         "error": _first_line(error) if error is not None else None,
