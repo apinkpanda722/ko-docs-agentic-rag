@@ -89,7 +89,16 @@
     {
       "step": 6,
       "name": "article-score",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-26T23:37:07+0900",
+      "summary": "결정론적 조문 정규화·파서별 원문/정규화 채점·전체/성공/역할별 집계·분할기 상한·안전한 diff/manifest 출력과 parse-score 타깃을 추가했으며 모든 AC와 make verify(354 passed)를 통과했습니다.",
+      "completed_at": "2026-09-26T23:49:01+0900",
+      "usage": {
+        "input_tokens": 2328166,
+        "cached_input_tokens": 2221952,
+        "output_tokens": 32220,
+        "attempts": 1
+      }
     },
     {
       "step": 7,
