@@ -25,3 +25,4 @@ __pycache__/
 
 # downloaded originals (manifest only is committed)
 data/raw/
+data/interim/
