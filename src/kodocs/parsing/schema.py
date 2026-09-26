@@ -27,6 +27,18 @@ class ParseError(RuntimeError):
     """A parser adapter could not produce a parsed document."""
 
 
+class BillingUncertainError(ParseError):
+    """A paid request may have been processed; retrying could bill it twice."""
+
+
+class FatalParseError(RuntimeError):
+    """A failure that would repeat for every input (auth, payment, quota).
+
+    The batch runner stops the whole run instead of recording one failure per
+    input, so remaining inputs are not sent as wasted requests.
+    """
+
+
 @dataclass(frozen=True)
 class Block:
     """One parser-labeled block, preserving the parser's text."""

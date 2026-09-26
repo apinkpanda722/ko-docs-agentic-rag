@@ -25,8 +25,10 @@ from kodocs.costs import (
 from kodocs.ingest.manifest import now_iso, repo_relative
 from kodocs.parsing.schema import (
     SCHEMA_VERSION,
+    BillingUncertainError,
     Block,
     BlockKind,
+    FatalParseError,
     ParsedDocument,
     ParsedTable,
     ParseError,
@@ -46,15 +48,29 @@ REQUEST_OPTIONS: Mapping[str, str] = {
     "mode": "standard",
     "ocr": "auto",
     "output_formats": '["text", "html", "markdown"]',
-    "coordinates": "true",
-    "chart_recognition": "true",
     "merge_multipage_tables": "false",
 }
+# coordinates·chart_recognition are deliberately not sent. The API reference
+# (https://console.upstage.ai/docs/for-agents/api-reference) documents both as
+# default true, but the pricing table
+# (https://console.upstage.ai/docs/models/compare/document-intelligence) lists
+# per-page prices by mode only and says nothing about these options' effect on
+# price. Leaving them at the server default avoids asserting an unverified value.
+# (checked 2026-09-26)
 MAX_PAGES_PER_REQUEST = 100
 MAX_FILE_BYTES = 50 * 1024 * 1024
 
 _ENDPOINT = "https://api.upstage.ai/v1/document-digitization"
 _RETRY_AFTER_HEADER = "X-Upstage-RateLimit-Retry-After-Requests"
+# Statuses that would repeat for every document: stop the run, don't retry.
+_FATAL_STATUSES = frozenset({401, 402, 403})
+# 4xx bodies that look like an account-level usage/credit/spending cap.
+_QUOTA_BODY_RE = re.compile(
+    r"quota|credit|billing|payment|insufficient|spending|usage\s*limit"
+    r"|limit\s*(?:has\s*been\s*)?(?:exceeded|reached)",
+    re.IGNORECASE,
+)
+_BILLING_UNCERTAIN_MESSAGE = "과금 여부 불확실: 업스테이지 콘솔 Usage 확인 후 재실행"
 _CATEGORY_KINDS: Mapping[str, BlockKind] = {
     "paragraph": "text",
     "list": "list_item",
@@ -123,7 +139,9 @@ class UpstageClient:
                         data=dict(REQUEST_OPTIONS),
                         files={"document": (path.name, document)},
                     )
-            except (httpx.TimeoutException, httpx.NetworkError) as exc:
+            # The connection never opened, so the request was not sent and
+            # cannot have been billed: safe to retry.
+            except (httpx.ConnectError, httpx.ConnectTimeout) as exc:
                 if attempt < self._max_retries:
                     self._sleep(self._backoff_s * 2**attempt)
                     continue
@@ -131,16 +149,39 @@ class UpstageClient:
                     "Upstage request failed after "
                     f"{attempt + 1} attempts: {type(exc).__name__}"
                 ) from exc
+            # The request was (at least partly) sent. The server may have parsed
+            # and billed it before the response was lost; resending could bill
+            # twice, and the ledger only records successes. Do not retry.
+            except httpx.TransportError as exc:
+                raise BillingUncertainError(
+                    f"{_BILLING_UNCERTAIN_MESSAGE} ({type(exc).__name__})"
+                ) from exc
 
-            if response.status_code == 429 and attempt < self._max_retries:
-                self._sleep(self._retry_delay(response, attempt))
-                continue
-            if 500 <= response.status_code < 600 and attempt < self._max_retries:
+            status = response.status_code
+            if status in _FATAL_STATUSES:
+                raise FatalParseError(
+                    f"Upstage HTTP {status}: 인증·결제·권한 문제로 실행을 멈춥니다: "
+                    f"{self._safe_body(response)}"
+                )
+            if status == 429:
+                if attempt < self._max_retries:
+                    self._sleep(self._retry_delay(response, attempt))
+                    continue
+                raise FatalParseError(
+                    f"Upstage HTTP 429: 재시도 {self._max_retries}회 후에도 속도 제한·한도가 "
+                    f"풀리지 않아 실행을 멈춥니다: {self._safe_body(response)}"
+                )
+            if 500 <= status < 600 and attempt < self._max_retries:
                 self._sleep(self._backoff_s * 2**attempt)
                 continue
-            if response.status_code >= 400:
+            if status >= 400:
                 body = self._safe_body(response)
-                raise ParseError(f"Upstage HTTP {response.status_code}: {body}")
+                if 400 <= status < 500 and _QUOTA_BODY_RE.search(response.text):
+                    raise FatalParseError(
+                        f"Upstage HTTP {status}: 사용 한도 초과로 보여 실행을 멈춥니다: "
+                        f"{body}"
+                    )
+                raise ParseError(f"Upstage HTTP {status}: {body}")
             break
         else:  # pragma: no cover - every loop path returns, breaks, or raises
             raise AssertionError("retry loop exited unexpectedly")

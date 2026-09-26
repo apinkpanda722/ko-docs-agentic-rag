@@ -15,7 +15,14 @@ from kodocs.config import Settings
 from kodocs.costs import BudgetExceededError, BudgetGuard, CostLedger
 from kodocs.parsing import run as run_module
 from kodocs.parsing.run import ParseInput, run
-from kodocs.parsing.schema import Block, ParseError, content_stats, settings_hash
+from kodocs.parsing.schema import (
+    BillingUncertainError,
+    Block,
+    FatalParseError,
+    ParseError,
+    content_stats,
+    settings_hash,
+)
 from kodocs.parsing.tables import cells_to_grid
 from kodocs.parsing.upstage_adapter import (
     MAX_FILE_BYTES,
@@ -132,8 +139,6 @@ def test_constants_cache_path_and_fixed_settings(tmp_path: Path) -> None:
         "mode": "standard",
         "ocr": "auto",
         "output_formats": '["text", "html", "markdown"]',
-        "coordinates": "true",
-        "chart_recognition": "true",
         "merge_multipage_tables": "false",
     }
     assert adapter.settings() == {
@@ -754,3 +759,209 @@ def test_cli_missing_key_after_confirmation_returns_two(
 
     assert exit_code == 2
     assert "UPSTAGE_API_KEY" in capsys.readouterr().err
+
+
+def test_request_leaves_undocumented_price_options_at_server_default(
+    tmp_path: Path,
+) -> None:
+    item = _input(tmp_path)
+    bodies: list[bytes] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        bodies.append(request.read())
+        return httpx.Response(200, json=_response(), request=request)
+
+    UpstageClient(
+        SECRET, transport=httpx.MockTransport(handler), min_interval_s=0
+    ).parse(item.input_path)
+
+    assert b'name="mode"' in bodies[0]
+    assert b'name="coordinates"' not in bodies[0]
+    assert b'name="chart_recognition"' not in bodies[0]
+
+
+@pytest.mark.parametrize(
+    "error_type",
+    [httpx.ReadTimeout, httpx.WriteTimeout, httpx.RemoteProtocolError, httpx.ReadError],
+)
+def test_post_send_transport_error_is_not_retried_and_marks_billing_uncertain(
+    tmp_path: Path,
+    error_type: type[httpx.TransportError],
+) -> None:
+    item = _input(tmp_path)
+    calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        raise error_type("lost response", request=request)
+
+    client = UpstageClient(
+        SECRET,
+        transport=httpx.MockTransport(handler),
+        min_interval_s=0,
+        max_retries=5,
+    )
+
+    with pytest.raises(BillingUncertainError, match="과금 여부 불확실") as caught:
+        client.parse(item.input_path)
+
+    assert calls == 1
+    assert SECRET not in str(caught.value)
+
+
+@pytest.mark.parametrize("error_type", [httpx.ConnectError, httpx.ConnectTimeout])
+def test_pre_send_connection_error_is_retried_then_succeeds(
+    tmp_path: Path,
+    error_type: type[httpx.TransportError],
+) -> None:
+    item = _input(tmp_path)
+    clock = FakeClock()
+    calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise error_type("not sent", request=request)
+        return httpx.Response(200, json=_response(), request=request)
+
+    client = UpstageClient(
+        SECRET,
+        transport=httpx.MockTransport(handler),
+        min_interval_s=0,
+        backoff_s=2,
+        clock=clock,
+        sleep=clock.sleep,
+    )
+
+    payload, _elapsed = client.parse(item.input_path)
+
+    assert calls == 2
+    assert clock.sleeps == [2]
+    assert payload["usage"]["pages"] == 2
+
+
+def test_read_timeout_records_failed_billing_uncertain_without_ledger(
+    tmp_path: Path,
+) -> None:
+    item = _input(tmp_path)
+    calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        raise httpx.ReadTimeout("server kept the request", request=request)
+
+    adapter = _adapter(
+        tmp_path,
+        lambda: UpstageClient(
+            SECRET, transport=httpx.MockTransport(handler), min_interval_s=0
+        ),
+    )
+
+    summary = run(tmp_path, adapter, [item], out=io.StringIO())
+
+    record = json.loads(
+        (tmp_path / "data/manifest/parse_runs.jsonl").read_text().splitlines()[-1]
+    )
+    assert calls == 1
+    assert summary.failed_count == 1
+    assert record["status"] == "failed"
+    assert record["billing_uncertain"] is True
+    assert "과금 여부 불확실" in record["error"]
+    assert not (tmp_path / "data/manifest/costs.jsonl").exists()
+    assert not cache_path(tmp_path, "pdf", item.input_sha256).exists()
+
+
+@pytest.mark.parametrize(
+    ("status", "body"),
+    [
+        (401, "invalid api key"),
+        (402, "payment required"),
+        (403, "forbidden"),
+        (400, "Monthly spending limit exceeded"),
+        (400, "insufficient credit"),
+    ],
+)
+def test_fatal_response_raises_fatal_error(
+    tmp_path: Path, status: int, body: str
+) -> None:
+    item = _input(tmp_path)
+    client = UpstageClient(
+        SECRET,
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(
+                status, text=f"{body} {SECRET}", request=request
+            )
+        ),
+        min_interval_s=0,
+    )
+
+    with pytest.raises(FatalParseError) as caught:
+        client.parse(item.input_path)
+
+    assert str(status) in str(caught.value)
+    assert SECRET not in str(caught.value)
+
+
+def test_persistent_rate_limit_after_retries_is_fatal(tmp_path: Path) -> None:
+    item = _input(tmp_path)
+    clock = FakeClock()
+    client = UpstageClient(
+        SECRET,
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(429, text="slow", request=request)
+        ),
+        min_interval_s=0,
+        max_retries=2,
+        clock=clock,
+        sleep=clock.sleep,
+    )
+
+    with pytest.raises(FatalParseError, match="429"):
+        client.parse(item.input_path)
+
+
+def test_first_document_401_stops_run_before_second_request(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    first = _input(tmp_path, "a.pdf")
+    second = _input(tmp_path, "b.pdf")
+    requested: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requested.append(request.url.path)
+        return httpx.Response(401, text=f"bad key {SECRET}", request=request)
+
+    monkeypatch.setattr(
+        run_module, "load_inputs", lambda root, limit=None: [first, second]
+    )
+    monkeypatch.setattr(
+        run_module,
+        "load_settings",
+        lambda: Settings(api_keys={"UPSTAGE_API_KEY": SECRET}, monthly_budget_usd=45.0),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        run_module,
+        "_upstage_client_factory",
+        lambda api_key: (
+            lambda: UpstageClient(
+                api_key, transport=httpx.MockTransport(handler), min_interval_s=0
+            )
+        ),
+        raising=False,
+    )
+
+    exit_code = run_module.main(
+        ["--root", str(tmp_path), "--parser", "upstage", "--yes"]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code != 0
+    assert len(requested) == 1
+    assert "401" in captured.err
+    assert SECRET not in captured.out + captured.err

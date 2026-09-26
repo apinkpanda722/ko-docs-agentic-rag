@@ -31,6 +31,8 @@ from kodocs.parsing.docling_adapter import DoclingAdapter
 from kodocs.parsing.pypdf_adapter import PARSER_NAME as PYPDF_PARSER_NAME
 from kodocs.parsing.pypdf_adapter import parse_pdf
 from kodocs.parsing.schema import (
+    BillingUncertainError,
+    FatalParseError,
     ParsedDocument,
     content_stats,
     from_json,
@@ -65,6 +67,7 @@ PARSE_RUN_REQUIRED_FIELDS = frozenset(
         "api_version",
         "usage_enhanced",
         "init_s",
+        "billing_uncertain",
         "error_type",
         "error",
         "ts",
@@ -338,7 +341,7 @@ def run(
                 )
             stats = content_stats(document)
             _write_atomic(destination, to_json(document))
-        except BudgetExceededError:
+        except (BudgetExceededError, FatalParseError):
             raise
         # Parser libraries raise heterogeneous exceptions; FP-030 requires one
         # bad input to be recorded without ending the batch.
@@ -358,6 +361,7 @@ def run(
                 error=_first_line(str(exc)),
                 init_s=init_s,
                 document_settings=None,
+                billing_uncertain=isinstance(exc, BillingUncertainError),
             )
             _append_run(manifest_path, record)
             latest_by_key[key] = record
@@ -491,10 +495,18 @@ def main(
             inputs,
             force=args.force,
         )
+    except FatalParseError as exc:
+        print(f"실행 중단(남은 입력은 요청하지 않음): {exc}", file=sys.stderr)
+        return 3
     except (BudgetExceededError, ParseRunError, OSError, ValueError) as exc:
         print(f"파싱 실행 실패: {exc}", file=sys.stderr)
         return 1
     return 1 if summary.failed_count else 0
+
+
+def _upstage_client_factory(api_key: str) -> Callable[[], UpstageClient]:
+    """Create the client factory; a seam so tests can inject a mock transport."""
+    return lambda: UpstageClient(api_key)
 
 
 def _build_upstage_adapter(
@@ -507,7 +519,7 @@ def _build_upstage_adapter(
     ledger = CostLedger(root / DEFAULT_LEDGER_PATH)
     return UpstageAdapter(
         root,
-        client_factory=lambda: UpstageClient(api_key),
+        client_factory=_upstage_client_factory(api_key),
         ledger=ledger,
         guard=BudgetGuard(ledger, monthly_budget_usd),
         run_id=run_id,
@@ -533,7 +545,7 @@ def _prepare(adapter: Adapter) -> float | None:
     started = time.perf_counter()
     try:
         prepare()
-    except BudgetExceededError:
+    except (BudgetExceededError, FatalParseError):
         raise
     # Without a prepared parser no input can succeed, so the run stops here.
     except Exception as exc:
@@ -630,6 +642,7 @@ def _record(
     error: str | None,
     init_s: float | None,
     document_settings: Mapping[str, object] | None,
+    billing_uncertain: bool = False,
 ) -> dict[str, object]:
     return {
         "run_id": run_id,
@@ -658,6 +671,7 @@ def _record(
             else None
         ),
         "init_s": init_s,
+        "billing_uncertain": billing_uncertain,
         "error_type": error_type,
         "error": _first_line(error) if error is not None else None,
         "ts": now_iso(),
