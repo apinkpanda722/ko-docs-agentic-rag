@@ -3,14 +3,76 @@
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from kodocs.ingest.filetype import FileKind, sniff
+import pytest
+from fakes import HWP3_HEADER, hwp5_bytes, ole_other_bytes
+
+from kodocs.ingest.filetype import FileKind, sniff, sniff_bytes
 
 
-def test_ole_signature_is_hwp5_even_with_hwpx_extension(tmp_path: Path) -> None:
+def test_ole_with_hwp_file_header_is_hwp5_even_with_hwpx_extension(
+    tmp_path: Path,
+) -> None:
     path = tmp_path / "mislabeled.hwpx"
-    path.write_bytes(bytes.fromhex("D0CF11E0A1B11AE1") + b"payload")
+    path.write_bytes(hwp5_bytes())
 
     assert sniff(path) is FileKind.HWP5
+
+
+def test_ole_without_hwp_file_header_is_ole_other(tmp_path: Path) -> None:
+    path = tmp_path / "legacy.hwp"
+    path.write_bytes(ole_other_bytes())
+
+    assert sniff(path) is FileKind.OLE_OTHER
+
+
+def test_ole_signature_with_corrupt_body_is_unknown(tmp_path: Path) -> None:
+    path = tmp_path / "broken.hwp"
+    path.write_bytes(bytes.fromhex("D0CF11E0A1B11AE1") + b"payload")
+
+    assert sniff(path) is FileKind.UNKNOWN
+
+
+def test_hwp3_header_is_detected(tmp_path: Path) -> None:
+    path = tmp_path / "old.hwp"
+    path.write_bytes(HWP3_HEADER + b"\x00" * 64)
+
+    assert sniff(path) is FileKind.HWP3
+
+
+def test_sniff_bytes_reads_full_ole_content() -> None:
+    assert sniff_bytes(hwp5_bytes()) is FileKind.HWP5
+    assert sniff_bytes(ole_other_bytes()) is FileKind.OLE_OTHER
+
+
+@pytest.mark.parametrize("head_size", [512, 1536])
+def test_sniff_bytes_does_not_assume_hwp5_from_truncated_ole_head(
+    head_size: int,
+) -> None:
+    """An OLE signature alone is not evidence of HWP 5.x without its streams."""
+    assert sniff_bytes(hwp5_bytes()[:head_size]) is not FileKind.HWP5
+
+
+@pytest.mark.parametrize(
+    ("content", "expected"),
+    [
+        (b"%PDF-1.7\ncontent", FileKind.PDF),
+        (b"  <html>error</html>", FileKind.HTML),
+        (HWP3_HEADER, FileKind.HWP3),
+        (b"", FileKind.UNKNOWN),
+    ],
+)
+def test_sniff_bytes_matches_sniff_for_non_container_formats(
+    content: bytes, expected: FileKind
+) -> None:
+    assert sniff_bytes(content) is expected
+
+
+def test_sniff_bytes_inspects_zip_content(tmp_path: Path) -> None:
+    path = tmp_path / "doc.hwpx"
+    with ZipFile(path, "w") as archive:
+        archive.writestr("mimetype", "application/hwp+zip")
+
+    assert sniff_bytes(path.read_bytes()) is FileKind.HWPX
 
 
 def test_hwpx_mimetype_is_detected_even_with_hwp_extension(tmp_path: Path) -> None:

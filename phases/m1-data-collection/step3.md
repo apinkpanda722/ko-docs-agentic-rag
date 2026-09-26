@@ -45,11 +45,12 @@ ALIO `robots.txt`는 `Allow: /`다. 공개 사이트이므로 **요청 간격(�
 ### ③ 다운로드
 `GET https://www.alio.go.kr/download/rulefiledown.json?fileNo={fileNo}`
 - 응답 `Content-Disposition`의 파일명은 따옴표가 이중으로 붙어 깨져 있다(`filename=""….hwp"";`). **파일명은 `bFiles` 값을 쓴다.**
-- 실패하면 HTML 오류 페이지가 200으로 올 수 있다. 저장 전 step 1 `sniff`로 `HTML`/`UNKNOWN`이면 실패로 기록하고 파일을 남기지 않는다.
+- 실패하면 HTML 오류 페이지가 200으로 올 수 있다. 저장 전, **받은 전체 바이트**를 step 1 `sniff_bytes(content)`로 판정한다. 앞부분만 잘라 넘기지 마라(OLE·zip은 내부 스트림을 읽어야 판정된다). `HTML`/`UNKNOWN`이면 실패로 기록하고 파일을 남기지 않는다.
+- **`HWP3`·`OLE_OTHER`(구형 .doc/.xls 등)·`PDF`·`ZIP`은 실패가 아니다.** 정상 저장하고 `file_kind`에 그대로 기록한다. 변환·매칭 대상 여부는 하류 step이 `file_kind`로 거른다.
 
 ## 작업
 
-TDD: `tests/ingest/test_alio.py`를 먼저 작성한다. 모든 HTTP는 `httpx.MockTransport`, 파일은 `tmp_path`에 만든 가짜 바이트(OLE 헤더, HWPX zip, zip 취합본)다.
+TDD: `tests/ingest/test_alio.py`를 먼저 작성한다. 모든 HTTP는 `httpx.MockTransport`, 파일은 가짜 바이트다. HWP 5.x·구형 OLE·HWP 3.x 가짜 파일은 `tests/ingest/fakes.py`의 `hwp5_bytes()`, `ole_other_bytes()`, `HWP3_HEADER`를 쓴다(OLE 시그니처 8바이트만 쓴 가짜는 `UNKNOWN`으로 판정되니 쓰지 마라). HWPX zip·zip 취합본은 `tmp_path`에 `zipfile`로 만든다.
 
 ### 1. `src/kodocs/ingest/alio.py`
 
@@ -136,6 +137,7 @@ def main(argv: list[str] | None = None) -> int: ...   # python -m kodocs.ingest.
 
 - 목록 페이지 순회, 상세 파싱, 쉼표가 든 파일명의 `bFiles` 파싱, `parse_filename_date` 표 전체.
 - 다운로드가 HTML이면 파일을 남기지 않고 실패 manifest에 기록.
+- 다운로드가 `HWP3`·`OLE_OTHER`이면 실패가 아니라 정상 저장되고 `file_kind`가 `hwp3`·`ole_other`로 기록된다.
 - 확장자가 `.hwp`인데 내용이 HWPX zip이면 `file_kind="hwpx"`로 기록하고 **풀지 않는다**. 일반 zip은 푼다.
 - cp949 멤버 이름 복원, zip slip 멤버(`../evil.hwp`, 절대 경로) 차단.
 - 멱등성: 두 번째 실행에서 다운로드 요청이 나가지 않는다.

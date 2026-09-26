@@ -63,7 +63,7 @@ def main(argv: list[str] | None = None) -> int: ...   # python -m kodocs.ingest.
 
 ### 3. 파일 단위 매칭 (ALIO 파일 ↔ 법제처 버전)
 
-대상: `file_kind`가 `hwp5` 또는 `hwpx`인 파일(zip 멤버 포함). zip 취합본 자체와 pdf·unknown은 매칭 대상이 아니다(출력에서 제외).
+대상: `file_kind`가 `hwp5` 또는 `hwpx`인 파일(zip 멤버 포함). zip 취합본 자체와 pdf·hwp3·ole_other·unknown은 매칭 대상이 아니다(출력에서 제외). 제외된 형식별 파일 수는 요약에 찍는다.
 날짜 비교에는 각 버전의 `issued_date`(발령일자)와 `effective_date`(시행일자)를 모두 쓴다. 규칙은 위에서부터 적용한다:
 
 | 조건 | 결과 |

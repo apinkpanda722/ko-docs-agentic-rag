@@ -94,15 +94,15 @@ def main(argv: list[str] | None = None) -> int: ...   # python -m kodocs.ingest.
    - 별도 파일 여부: 같은 규정의 ALIO `bFiles` 파일명(manifest `file_name`)에 `별표`·`별지`·`서식`이 있으면 별표가 본문과 따로 첨부된 경우다.
    - HWPX: zip 안 `Contents/section*.xml`의 텍스트(`hp:t` 요소)에서 `[별표 N]`, `별표 N`, `[별지 제N호`, 그리고 법제처 별표 제목 문자열을 찾는다.
      표 존재는 `hp:tbl` 요소 수로 본다.
-   - HWP 5.x: OLE 스트림 `BodyText/Section{N}`을 읽는다(`FileHeader` 속성의 압축 비트가 켜져 있으면 raw deflate, `zlib.decompress(data, -15)`).
+   - HWP 5.x: `olefile`(M1에서 형식 판정에 이미 쓰는 의존성)로 OLE 스트림 `BodyText/Section{N}`을 읽는다(`FileHeader` 속성의 압축 비트가 켜져 있으면 raw deflate, `zlib.decompress(data, -15)`).
      레코드 헤더(4바이트: 태그 ID 하위 10비트, 크기 상위 12비트, 크기 0xFFF면 다음 4바이트가 크기)를 따라가며
      `HWPTAG_PARA_TEXT`(태그 67)의 UTF-16LE 텍스트에서 위 패턴을 찾는다. 표는 `HWPTAG_TABLE`(태그 77)로 센다. (`PrvText` 스트림은 앞부분 미리보기만 있어 쓰지 않는다.)
      구현 부담이 크면 변환 PDF의 텍스트(pypdf)에서 같은 패턴을 찾는 방법으로 대신하고, 변환 손실 가능성을 함께 적는다.
    - 판정: 법제처 별표 항목마다 `본문 포함` / `별도 파일` / `찾지 못함`으로 분류해 M2 표 정답 후보(PRD: 별표 표 약 10개)를 고른다.
    - 이 확인은 M2에서 파서 비교 전에 수행한다. M1은 방법만 남긴다.
-7. **결과 수치** — 표 틀만: 법제처 현행·연혁 버전 수, ALIO 규정·파일 수(형식별, zip 멤버), 다운로드 실패 수, 매칭 신뢰도별 파일 수,
+7. **결과 수치** — 표 틀만: 법제처 현행·연혁 버전 수, ALIO 규정·파일 수(형식별: hwp5·hwpx·hwp3·ole_other·zip·pdf, zip 멤버), 다운로드 실패 수, 매칭 신뢰도별 파일 수,
    변환 성공·실패 수, 파싱 대상 수와 예상 페이지 수. 값은 `(실행 후 기록)`.
-8. **한계** — 파일명 날짜의 불규칙성, 매칭 실패 파일 제외에 따른 과거 버전 표본 감소, 법제처 조문과 ALIO 원본의 편집 차이 가능성.
+8. **한계** — HWP 3.x·구형 OLE(.doc 등) 파일은 H2Orestart 미지원·비대상이라 변환·파싱에서 빠진다(형식별 수로 보고), 파일명 날짜의 불규칙성, 매칭 실패 파일 제외에 따른 과거 버전 표본 감소, 법제처 조문과 ALIO 원본의 편집 차이 가능성.
 
 ## Acceptance Criteria
 

@@ -24,7 +24,8 @@ ALIO에서 받은 HWP 5.x·HWPX 파일을 PDF로 바꾼다. 도구는 사용자 
 - **이 Mac에서는 CLI `unopkg add`로 설치하면 Java 구성 요소 등록이 실패했고, 확장 관리자(GUI)로만 성공했다.**
   **Java는 LibreOffice 설정 > 고급에서 JDK 경로를 지정해야 했다.** (H2Orestart는 Java 확장이다)
 - **입력 이름이 확장자만 다르면(`a.hwp`, `a.hwpx`) soffice 출력 PDF(`a.pdf`)가 서로 덮어쓴다.**
-- 형식은 확장자가 아니라 파일 시그니처로 판정한다(HWPX는 zip, HWP 5.x는 OLE). step 1 `sniff`를 쓴다.
+- 형식은 확장자가 아니라 파일 시그니처로 판정한다. step 1 `sniff`를 쓴다: `HWP5`는 OLE이면서 `FileHeader` 스트림이 `HWP Document File`로 시작, `HWPX`는 `mimetype`이 `application/hwp+zip`인 zip.
+- **H2Orestart는 HWP 3.x를 지원하지 않는다.** `HWP3`·`OLE_OTHER`(구형 .doc/.xls 등)는 변환 대상이 아니다(`CONVERTIBLE_KINDS`에 넣지 마라). 요약에 형식별 제외 수로 드러낸다.
 
 ## 작업
 
@@ -109,7 +110,8 @@ def main(argv: list[str] | None = None) -> int: ...   # python -m kodocs.ingest.
 - soffice를 못 찾으면 / H2Orestart가 `unopkg list`에 없으면 `ToolchainError`, 메시지에 안내 6단계가 **순서대로** 들어 있고
   "확장 관리자"와 "고급"이 있으며, CLI 종료 코드가 2이고 runner에 변환 명령이 한 번도 전달되지 않는다.
 - macOS 경로 fallback, `--soffice` 우선.
-- **`a.hwp`(OLE)와 `a.hwpx`(HWPX zip) 두 입력이 서로 다른 PDF 두 개를 만든다**(덮어쓰기 없음). 파일명에 원본 확장자와 해시가 있다.
+- **`a.hwp`(HWP 5.x, `tests/ingest/fakes.py`의 `hwp5_bytes()`)와 `a.hwpx`(HWPX zip) 두 입력이 서로 다른 PDF 두 개를 만든다**(덮어쓰기 없음). 파일명에 원본 확장자와 해시가 있다.
+- `ole_other_bytes()`·`HWP3_HEADER` 파일은 runner를 부르지 않고 형식별 제외로 집계된다.
 - 확장자가 `.hwp`인데 내용이 zip이 아닌 HTML이면 변환하지 않는다(시그니처 판정).
 - runner가 0을 돌려줘도 PDF가 없으면 실패 기록.
 - 타임아웃 실패 기록 후 다음 파일 진행.
