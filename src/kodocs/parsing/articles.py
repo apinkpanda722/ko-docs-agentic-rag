@@ -18,9 +18,10 @@ ARTICLE_RE = re.compile(
     r"^\s*제\s*(?P<number>\d+)\s*조"
     r"(?:\s*의\s*(?P<branch>\d+))?"
     r"(?:"
-    r"\s*[(（]\s*(?P<paren_title>[^)）]{1,40}?)\s*[)）]"
-    r"|\s*【\s*(?P<bracket_title>[^】]{1,40}?)\s*】"
-    r"|\s*(?P<deleted>삭\s*제)"
+    r"\s*[(（]\s*(?P<paren_title>[^)）]{1,80}?)\s*[)）]"
+    r"|\s*【\s*(?P<bracket_title>[^】]{1,80}?)\s*】"
+    # "제5조 삭제", "제5조 <삭제 2017. 5. 25.>", "제5조<삭제…>", "제5조 [삭제…]"
+    r"|\s*(?P<deleted>[<\[]?\s*삭\s*제)"
     r")"
 )
 HEADING_RE = re.compile(r"^(?=.{1,40}$)\s*제\s*\d+\s*(?:장|절|관)(?!\s*의\s*\d)")

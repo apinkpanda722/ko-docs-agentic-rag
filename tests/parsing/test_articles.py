@@ -282,3 +282,47 @@ def test_law_to_lines_reaches_the_structured_law_upper_bound_exactly() -> None:
         ("별표", "1"),
         ("별지", "2의1"),
     ]
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "제5조 <삭제 2017. 5. 25.>",
+        "제5조<삭제 2017.5.25.>",
+        "제5조 [삭제 2017. 5. 25.]",
+        "제5조[삭제]",
+    ],
+)
+def test_bracketed_deleted_article_is_a_deleted_article_head(line: str) -> None:
+    result = split_text([(1, "제4조(목적) 본문"), (1, line), (1, "제6조(정의) 본문")])
+
+    assert [(a.number, a.deleted) for a in result.articles] == [
+        (4, False),
+        (5, True),
+        (6, False),
+    ]
+    assert result.articles[1].title is None
+
+
+def test_branch_article_with_bracketed_deletion_is_kept() -> None:
+    result = split_text([(1, "제33조의3 <삭제 2014. 9. 30.>")])
+
+    assert [(a.number, a.branch, a.deleted) for a in result.articles] == [(33, 3, True)]
+
+
+def test_title_up_to_eighty_characters_is_an_article_head() -> None:
+    long_title = (
+        "일반보안담당관, 인원보안담당관, 정보보안담당관, 시설보안담당관, "
+        "문서보안담당관의 임무"
+    )
+    assert 40 < len(long_title) <= 80
+
+    result = split_text([(1, f"제4조({long_title}) ① 본문")])
+
+    assert [(a.number, a.title) for a in result.articles] == [(4, long_title)]
+
+
+def test_title_over_eighty_characters_is_not_an_article_head() -> None:
+    result = split_text([(1, "제1조(목적) 본문"), (1, f"제2조({'가' * 81}) 본문")])
+
+    assert [a.number for a in result.articles] == [1]
