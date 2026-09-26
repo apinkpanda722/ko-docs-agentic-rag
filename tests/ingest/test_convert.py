@@ -623,16 +623,52 @@ def test_missing_fontconfig_file_stops_before_any_conversion(tmp_path: Path) -> 
     assert runner.calls == []
 
 
-def test_repo_fonts_conf_maps_every_alias_to_hcr_fonts() -> None:
+def test_repo_fonts_conf_maps_every_substitution_to_hcr_fonts() -> None:
+    """alias와 match 규칙이 모두 HCR Batang/HCR Dotum만 대체 글꼴로 쓴다."""
     import xml.etree.ElementTree as ET
 
-    tree = ET.parse(REPO_FONTS_CONF)
-    aliases = tree.getroot().findall("alias")
+    root = ET.parse(REPO_FONTS_CONF).getroot()
+    aliases = root.findall("alias")
+    matches = root.findall("match")
     assert aliases
+    assert matches
     for alias in aliases:
         preferred = [family.text for family in alias.findall("prefer/family")]
         assert preferred in (["HCR Batang"], ["HCR Dotum"])
-    assert "~/Library/Fonts" in [d.text for d in tree.getroot().findall("dir")]
+    for match in matches:
+        edited = [value.text for value in match.findall("edit/string")]
+        assert edited in (["HCR Batang"], ["HCR Dotum"])
+    assert "~/Library/Fonts" in [d.text for d in root.findall("dir")]
+
+
+def test_repo_fonts_conf_pins_last_resort_fallback_to_hcr_dotum() -> None:
+    """목록에 없는 글꼴이 히라기노 같은 시스템 임의 글꼴로 떨어지지 않게 한다."""
+    import xml.etree.ElementTree as ET
+
+    root = ET.parse(REPO_FONTS_CONF).getroot()
+    fallbacks = [
+        match
+        for match in root.findall("match")
+        if match.get("target") == "pattern"
+        and (edit := match.find("edit")) is not None
+        and edit.get("name") == "family"
+        and edit.get("mode") == "append_last"
+        and edit.get("binding") == "weak"
+        and edit.findtext("string") == "HCR Dotum"
+    ]
+    assert len(fallbacks) == 1
+    assert list(root)[-1] is fallbacks[0]
+
+
+def test_repo_fonts_conf_maps_yoon_myeongjo_140_to_hcr_batang() -> None:
+    import xml.etree.ElementTree as ET
+
+    root = ET.parse(REPO_FONTS_CONF).getroot()
+    mapped = {
+        alias.findtext("family"): alias.findtext("prefer/family")
+        for alias in root.findall("alias")
+    }
+    assert mapped["-윤명조140"] == "HCR Batang"
 
 
 def test_pdf_font_stats_strip_subset_prefix_and_count_distinct_hangul(
