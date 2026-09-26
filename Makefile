@@ -1,4 +1,4 @@
-.PHONY: verify up down logs test-integration collect-law collect-alio match-versions convert-hwp parse-targets parse-pypdf docling-models parse-docling parse-upstage-dry parse-upstage parse-score
+.PHONY: verify up down logs test-integration collect-law collect-alio match-versions convert-hwp parse-targets parse-pypdf docling-models parse-docling parse-upstage-dry parse-upstage parse-score table-drafts table-golden table-score
 
 # 하네스의 단일 검증 진입점. Stop hook, scripts/execute.py, step AC가 모두 이 타깃을 호출한다.
 verify:
@@ -50,3 +50,12 @@ parse-upstage:
 
 parse-score:
 	uv run python -m kodocs.eval.parsing_score
+
+table-drafts:
+	uv run python -m kodocs.eval.table_drafts
+
+table-golden:
+	uv run python -m kodocs.eval.table_golden
+
+table-score:
+	uv run python -m kodocs.eval.table_score
