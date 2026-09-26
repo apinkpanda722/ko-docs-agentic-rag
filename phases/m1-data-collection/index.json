@@ -19,7 +19,16 @@
     {
       "step": 1,
       "name": "ingest-core",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-26T13:25:33+0900",
+      "summary": "LAW_OPEN_API_KEY 설정, httpx 기반 속도 제한·재시도 클라이언트, 안전한 JSONL manifest, 시그니처 기반 파일 형식 판정을 TDD로 구현했으며 모든 AC와 make verify(118 passed)를 통과했습니다.",
+      "completed_at": "2026-09-26T13:31:02+0900",
+      "usage": {
+        "input_tokens": 714653,
+        "cached_input_tokens": 654592,
+        "output_tokens": 16019,
+        "attempts": 1
+      }
     },
     {
       "step": 2,
