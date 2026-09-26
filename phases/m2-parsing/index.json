@@ -61,7 +61,16 @@
     {
       "step": 4,
       "name": "upstage-adapter",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-26T21:59:12+0900",
+      "summary": "업스테이지 standard 어댑터에 비용 가드·재과금 방지 캐시·순차 재시도·표 실패 격리·dry-run/확인 CLI와 Make 타깃을 추가했으며, AC 및 make verify 303개 테스트를 통과했습니다.",
+      "completed_at": "2026-09-26T22:11:45+0900",
+      "usage": {
+        "input_tokens": 2878557,
+        "cached_input_tokens": 2774272,
+        "output_tokens": 35699,
+        "attempts": 1
+      }
     },
     {
       "step": 5,
