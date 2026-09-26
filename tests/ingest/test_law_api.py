@@ -256,6 +256,67 @@ def test_clean_body_removes_personal_data_and_normalizes_full_response() -> None
     assert TEST_OC not in serialized
 
 
+def test_clean_body_keeps_article_and_addendum_text_byte_identical() -> None:
+    """정제는 담당자 필드만 뺀다. URL처럼 보이는 조문·부칙 텍스트를 바꾸지 않는다."""
+    tricky_article = "제5조(정의) 다음 각 호?가&oc=나 & OC=다 Note: 기준?비율=1&oc"
+    tricky_addendum = "부칙 <제3호> 시행?일&oc=2024 Note: 경과조치#1"
+    raw = {
+        "AdmRulService": {
+            "행정규칙기본정보": {
+                "행정규칙종류": "공단규정",
+                "담당자명": "테스트담당자",
+                "전화번호": "000-0000-0000",
+            },
+            "조문내용": [tricky_article],
+            "부칙": {"부칙공포일자": ["20240101"], "부칙내용": [tricky_addendum]},
+            "별표": {
+                "별표단위": {
+                    "별표제목": "서식",
+                    "별표서식파일링크": f"/LSW/flDownload.do?OC={TEST_OC}&flSeq=789",
+                }
+            },
+        }
+    }
+    version = RuleVersion(
+        rule_id="1001",
+        serial="2001",
+        name=f"({NIA_AGENCY_NAME}) 테스트 규정",
+        issued_date="2024-01-01",
+        effective_date=None,
+        is_current=True,
+        revision_type="일부개정",
+    )
+
+    cleaned = clean_body(raw, version)
+    serialized = json.dumps(cleaned, ensure_ascii=False)
+
+    assert cleaned["articles"] == [tricky_article]
+    assert cleaned["addenda"] == [{"date": "2024-01-01", "text": tricky_addendum}]
+    assert cleaned["annexes"][0]["file_link"] == "/LSW/flDownload.do?flSeq=789"
+    assert TEST_OC not in serialized
+    assert "테스트담당자" not in serialized
+    assert "000-0000-0000" not in serialized
+
+
+def test_collect_fails_when_no_current_version_survives_agency_filter(
+    tmp_path: Path,
+) -> None:
+    other_agency = {**version_item("2001"), "소관부처명": "다른기관"}
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(200, json=search_response(other_agency), request=request)
+
+    with make_http(handler) as http:
+        client = LawApiClient(TEST_OC, http)
+        with pytest.raises(LawApiError, match="현행 규정 0개"):
+            collect(tmp_path, client, include_history=True)
+
+    assert [request.url.params["nw"] for request in requests] == ["1"]
+    assert not (tmp_path / "data/manifest/law_api.jsonl").exists()
+
+
 @pytest.mark.parametrize(
     ("fixture_name", "article_count", "annex_count"),
     [

@@ -214,7 +214,11 @@ class LawApiClient:
 
 
 def clean_body(raw: dict, version: RuleVersion) -> dict:
-    """Build a normalized body without personal fields or secret URLs."""
+    """Build a normalized body without personal fields or secret URLs.
+
+    Article and addendum text is copied verbatim. The only link in the output is
+    ``annexes[].file_link``, which is sanitized explicitly.
+    """
     sanitized_raw = _sanitize_body_value(raw)
     if not isinstance(sanitized_raw, Mapping):
         raise LawApiError("정제할 응답의 최상위 값이 객체가 아닙니다")
@@ -278,6 +282,8 @@ def collect(
 ) -> CollectSummary:
     """Collect missing body versions and append their provenance records."""
     current_versions = client.list_versions(history=False)
+    if not current_versions:
+        raise LawApiError("현행 규정 0개 — 소관부처명 필터·응답 필드 확인")
     history_versions = client.list_versions(history=True) if include_history else []
     all_versions = _unique_versions([*current_versions, *history_versions])
     rule_count = len({version.rule_id for version in all_versions})
@@ -458,8 +464,6 @@ def _sanitize_body_value(value: object) -> object:
         }
     if isinstance(value, list):
         return [_sanitize_body_value(nested) for nested in value]
-    if isinstance(value, str):
-        return sanitize_url(value)
     return value
 
 

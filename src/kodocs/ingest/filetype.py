@@ -39,7 +39,7 @@ def sniff_bytes(data: bytes) -> FileKind:
     """Identify complete file content held in memory (e.g. before saving).
 
     OLE and ZIP detection reads container internals, so ``data`` must be the whole
-    file. A truncated OLE head cannot be parsed and is reported as UNKNOWN.
+    file. If the OLE internals cannot be read, the result is UNKNOWN.
     """
     return _sniff_stream(io.BytesIO(data))
 
@@ -67,7 +67,7 @@ def _sniff_ole(source: BinaryIO) -> FileKind:
                 return FileKind.OLE_OTHER
             stream = ole.openstream("FileHeader")
             header = stream.read(len(_HWP5_FILE_HEADER_SIGNATURE))
-    except OSError:  # olefile's OleFileError/NotOleFileError for corrupt containers
+    except (OSError, ValueError):  # olefile 0.47: OleFileError(OSError) or ValueError
         return FileKind.UNKNOWN
 
     if header == _HWP5_FILE_HEADER_SIGNATURE:

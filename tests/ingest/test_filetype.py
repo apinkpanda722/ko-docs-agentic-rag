@@ -32,6 +32,13 @@ def test_ole_signature_with_corrupt_body_is_unknown(tmp_path: Path) -> None:
     assert sniff(path) is FileKind.UNKNOWN
 
 
+def test_ole_signature_with_zero_filled_body_is_unknown() -> None:
+    """olefile 0.47 raises ValueError (not OSError) for this corrupt header."""
+    data = bytes.fromhex("D0CF11E0A1B11AE1") + b"\0" * 600
+
+    assert sniff_bytes(data) is FileKind.UNKNOWN
+
+
 def test_hwp3_header_is_detected(tmp_path: Path) -> None:
     path = tmp_path / "old.hwp"
     path.write_bytes(HWP3_HEADER + b"\x00" * 64)
