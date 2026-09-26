@@ -715,3 +715,38 @@ def test_install_guide_mentions_optional_hcr_fonts_and_license() -> None:
     assert "함초롬 글꼴" in INSTALL_GUIDE
     assert "~/Library/Fonts" in INSTALL_GUIDE
     assert "상업적 재배포·수정 금지" in INSTALL_GUIDE
+
+
+def test_run_prints_progress_every_ten_files_and_at_the_end(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    source_dir = tmp_path / "data/raw/alio/10"
+    source_dir.mkdir(parents=True)
+    records = []
+    for index in range(1, 13):
+        name = f"r{index}.hwp"
+        # 12번째는 HWP 3.x라 형식별 제외, 11번째는 PDF가 만들어지지 않아 실패
+        (source_dir / name).write_bytes(HWP3_HEADER if index == 12 else hwp5_bytes())
+        records.append(
+            _source_record(
+                tmp_path,
+                f"data/raw/alio/10/{name}",
+                file_no=str(index),
+                file_name=name,
+            )
+        )
+    _write_jsonl(tmp_path / "data/manifest/alio.jsonl", records)
+
+    run(
+        tmp_path,
+        _toolchain(),
+        runner=ConversionRunner(missing_for=frozenset({"r11.hwp"})),
+    )
+
+    output = capsys.readouterr().out
+    progress = [line for line in output.splitlines() if line.startswith("변환 ")]
+    assert progress == [
+        "변환 10/12 (성공 10, 실패 0, 건너뜀 0, 제외 0)",
+        "변환 12/12 (성공 10, 실패 1, 건너뜀 0, 제외 1)",
+    ]

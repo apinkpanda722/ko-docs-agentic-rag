@@ -1,0 +1,2419 @@
+{
+  "generated_at": "2026-09-26T17:34:51+09:00",
+  "missing_current": [],
+  "params": {
+    "history_rules": 10,
+    "versions_per_rule": 2
+  },
+  "targets": [
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-10-24",
+      "law_annex_count": 3,
+      "law_rule_id": "2125945",
+      "law_serial": "2200000149159",
+      "match_confidence": "exact",
+      "page_count": 8,
+      "pdf_path": "data/raw/pdf/16215/이사회 운영규정(2025년도 10월 24일 개정).hwp.2988513e4246.pdf",
+      "role": "current",
+      "rule_no": "16215",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16215/223125__이사회 운영규정(2025년도 10월 24일 개정).hwp",
+      "source_sha256": "2988513e42469d018ecaa5634c5f4c7af2ead1c0d8f6a6aa6d03104782e64cd1",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2026-02-26",
+      "law_annex_count": 8,
+      "law_rule_id": "2125947",
+      "law_serial": "2200000148327",
+      "match_confidence": "exact",
+      "page_count": 17,
+      "pdf_path": "data/raw/pdf/16219/임원추천위원회 구성 및 운영 등에 관한 규정(2026년도 2월 26일 개정).hwp.afe9d44dd389.pdf",
+      "role": "current",
+      "rule_no": "16219",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16219/231726__임원추천위원회 구성 및 운영 등에 관한 규정(2026년도 2월 26일 개정).hwp",
+      "source_sha256": "afe9d44dd38987622e472ad0037a481aee4c77f0f377de4373dff3edfc801b37",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2026-08-27",
+      "law_annex_count": 3,
+      "law_rule_id": "2126165",
+      "law_serial": "2200000151383",
+      "match_confidence": "exact",
+      "page_count": 18,
+      "pdf_path": "data/raw/pdf/16232/직제규정(2026년도 8월 27일 개정).hwp.bbc9ee7a3d69.pdf",
+      "role": "current",
+      "rule_no": "16232",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16232/241062__직제규정(2026년도 8월 27일 개정).hwp",
+      "source_sha256": "bbc9ee7a3d6942199575727bfc7b714117e166b7c5ae4663d0b17c3e71f9d84d",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2020-12-22",
+      "law_annex_count": 7,
+      "law_rule_id": "2126177",
+      "law_serial": "2200000111091",
+      "match_confidence": "exact",
+      "page_count": 14,
+      "pdf_path": "data/raw/pdf/16247/규정관리규정_20201222.hwp.03c2049cee03.pdf",
+      "role": "current",
+      "rule_no": "16247",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16247/118719__규정관리규정_20201222.hwp",
+      "source_sha256": "03c2049cee030a6eeb09db2c36677a978394da4b7a1718d2cf605358dcf64c25",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2020-12-28",
+      "law_annex_count": 3,
+      "law_rule_id": "2126179",
+      "law_serial": "2200000111093",
+      "match_confidence": "exact",
+      "page_count": 7,
+      "pdf_path": "data/raw/pdf/16249/규정관리규칙_20201228.hwp.0e1b313d632b.pdf",
+      "role": "current",
+      "rule_no": "16249",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16249/119686__규정관리규칙_20201228.hwp",
+      "source_sha256": "0e1b313d632bbd51e7be1a1be2ecf4c272ae3c6359efdc3a9d9acf57111a37e1",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2026-09-01",
+      "law_annex_count": 2,
+      "law_rule_id": "2126167",
+      "law_serial": "2200000151801",
+      "match_confidence": "exact",
+      "page_count": 36,
+      "pdf_path": "data/raw/pdf/16277/직제규칙(2026년도 9월 1일 개정).hwp.70fe8d5b6ba3.pdf",
+      "role": "current",
+      "rule_no": "16277",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16277/241063__직제규칙(2026년도 9월 1일 개정).hwp",
+      "source_sha256": "70fe8d5b6ba3259b6aafb3a2fc18d49f27db1bb29f2fee4757987f733de366f1",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRDotum"
+      ],
+      "issued_date": "2020-12-22",
+      "law_annex_count": 0,
+      "law_rule_id": "2126183",
+      "law_serial": "2200000111097",
+      "match_confidence": "exact",
+      "page_count": 2,
+      "pdf_path": "data/raw/pdf/16283/부설기관운영규정_20201222.hwp.268a259216d0.pdf",
+      "role": "current",
+      "rule_no": "16283",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16283/118720__부설기관운영규정_20201222.hwp",
+      "source_sha256": "268a259216d0e42cfcc3a0e4da1988f6b4f319f0dbddffdba7e1d73672bcf900",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2026-06-30",
+      "law_annex_count": 5,
+      "law_rule_id": "2126193",
+      "law_serial": "2200000148345",
+      "match_confidence": "exact",
+      "page_count": 23,
+      "pdf_path": "data/raw/pdf/16291/인사규정(2026년도 6월 30일 개정).hwp.2d47804461e9.pdf",
+      "role": "current",
+      "rule_no": "16291",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16291/237783__인사규정(2026년도 6월 30일 개정).hwp",
+      "source_sha256": "2d47804461e95a62b40dbd88a676e9ec48f54f8235d81766966884d32ba748e2",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2026-06-26",
+      "law_annex_count": 21,
+      "law_rule_id": "2126195",
+      "law_serial": "2200000151391",
+      "match_confidence": "exact",
+      "page_count": 39,
+      "pdf_path": "data/raw/pdf/16299/인사관리규칙(2026년도 6월 26일 개정).hwp.eb0ae7b5897d.pdf",
+      "role": "current",
+      "rule_no": "16299",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16299/237792__인사관리규칙(2026년도 6월 26일 개정).hwp",
+      "source_sha256": "eb0ae7b5897db8fe1fcd377c587751adaedb04e115bcedf469c84141a9fe6d19",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2026-03-03",
+      "law_annex_count": 3,
+      "law_rule_id": "2125953",
+      "law_serial": "2200000148757",
+      "match_confidence": "exact",
+      "page_count": 9,
+      "pdf_path": "data/raw/pdf/16307/근무성적평정규칙(2026년도 3월 3일 개정).hwp.225a83c79023.pdf",
+      "role": "current",
+      "rule_no": "16307",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16307/231720__근무성적평정규칙(2026년도 3월 3일 개정).hwp",
+      "source_sha256": "225a83c79023e570cab7ac5db01a795a24a5cbb65c94e96fcfb8a5b32d2d8fcc",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2026-06-26",
+      "law_annex_count": 3,
+      "law_rule_id": "2125955",
+      "law_serial": "2200000151803",
+      "match_confidence": "exact",
+      "page_count": 23,
+      "pdf_path": "data/raw/pdf/16325/취업규칙(2026년도 6월 26일 개정).hwp.8b20f2541e12.pdf",
+      "role": "current",
+      "rule_no": "16325",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16325/237793__취업규칙(2026년도 6월 26일 개정).hwp",
+      "source_sha256": "8b20f2541e129d64ec8b1fdc0ca6b75aa36030eabb0355e2603ec958e36a8af1",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2026-03-03",
+      "law_annex_count": 12,
+      "law_rule_id": "2125959",
+      "law_serial": "2200000151397",
+      "match_confidence": "exact",
+      "page_count": 15,
+      "pdf_path": "data/raw/pdf/16334/급여지급규칙(2026년도 3월 3일 개정).hwp.2467cb0a689f.pdf",
+      "role": "current",
+      "rule_no": "16334",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16334/231722__급여지급규칙(2026년도 3월 3일 개정).hwp",
+      "source_sha256": "2467cb0a689fba1c292259a363ef2e2f925aabdf937e8b4dda204f5c8ecc11e4",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-09-04",
+      "law_annex_count": 0,
+      "law_rule_id": "2125961",
+      "law_serial": "2200000148771",
+      "match_confidence": "exact",
+      "page_count": 2,
+      "pdf_path": "data/raw/pdf/16336/인센티브지급규칙(2025년도 9월 4일 개정).hwp.a2e45eb5a53f.pdf",
+      "role": "current",
+      "rule_no": "16336",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16336/221226__인센티브지급규칙(2025년도 9월 4일 개정).hwp",
+      "source_sha256": "a2e45eb5a53fe9f9266504a4ced69e1c24fb47605a355995ef29f61bc474d57c",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-09-04",
+      "law_annex_count": 2,
+      "law_rule_id": "2126243",
+      "law_serial": "2200000148721",
+      "match_confidence": "exact",
+      "page_count": 5,
+      "pdf_path": "data/raw/pdf/16340/복리후생규칙(2025년도 9월 4일 개정).hwp.f9c8e2896811.pdf",
+      "role": "current",
+      "rule_no": "16340",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16340/221210__복리후생규칙(2025년도 9월 4일 개정).hwp",
+      "source_sha256": "f9c8e2896811bb6013db8f19700184dcff0cd8418de4ba9c36e61ca6a18940a3",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2026-03-03",
+      "law_annex_count": 13,
+      "law_rule_id": "2126245",
+      "law_serial": "2200000151395",
+      "match_confidence": "exact",
+      "page_count": 29,
+      "pdf_path": "data/raw/pdf/16361/출장규칙(2026년도 3월 3일 개정).hwp.af3ee55fa94f.pdf",
+      "role": "current",
+      "rule_no": "16361",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16361/231728__출장규칙(2026년도 3월 3일 개정).hwp",
+      "source_sha256": "af3ee55fa94fe46c162c7e73815af2a7c07dd8192d3c3ce3e773f8d9eaece463",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2026-04-30",
+      "law_annex_count": 11,
+      "law_rule_id": "2126209",
+      "law_serial": "2200000148719",
+      "match_confidence": "exact",
+      "page_count": 24,
+      "pdf_path": "data/raw/pdf/16369/교육훈련규칙(2026년도 4월 30일 개정).hwp.f25e25ad7c80.pdf",
+      "role": "current",
+      "rule_no": "16369",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16369/235182__교육훈련규칙(2026년도 4월 30일 개정).hwp",
+      "source_sha256": "f25e25ad7c80cef4ca803c8bc73b6f96eda5f056b327fe2d5f6e54a2454544d8",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "NanumGothic"
+      ],
+      "issued_date": "2025-09-04",
+      "law_annex_count": 10,
+      "law_rule_id": "2126215",
+      "law_serial": "2200000148729",
+      "match_confidence": "exact",
+      "page_count": 15,
+      "pdf_path": "data/raw/pdf/16377/문서관리규칙(2025년도 9월 4일 개정).hwp.b50044a1852f.pdf",
+      "role": "current",
+      "rule_no": "16377",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16377/221222__문서관리규칙(2025년도 9월 4일 개정).hwp",
+      "source_sha256": "b50044a1852f7de5cdea1fed81d2f90b763d4fc5426b886d44af348b3f9dc87a",
+      "unexpected_fonts": [
+        "NanumGothic"
+      ]
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-09-04",
+      "law_annex_count": 2,
+      "law_rule_id": "2126219",
+      "law_serial": "2200000148777",
+      "match_confidence": "exact",
+      "page_count": 9,
+      "pdf_path": "data/raw/pdf/16385/정보공개규칙(2025년도 9월 4일 개정).hwp.fdd620da2296.pdf",
+      "role": "current",
+      "rule_no": "16385",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16385/221229__정보공개규칙(2025년도 9월 4일 개정).hwp",
+      "source_sha256": "fdd620da22961b7057745d41fb3aa03b574e87a5fdaa6c72060ae21ebc02e67f",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-08-28",
+      "law_annex_count": 0,
+      "law_rule_id": "2126283",
+      "law_serial": "2200000148329",
+      "match_confidence": "exact",
+      "page_count": 11,
+      "pdf_path": "data/raw/pdf/16387/회계규정(2025년도 8월 28일 개정).hwp.b0997ac0f37e.pdf",
+      "role": "current",
+      "rule_no": "16387",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16387/220905__회계규정(2025년도 8월 28일 개정).hwp",
+      "source_sha256": "b0997ac0f37ea6ed3e1cfc4a978ac455021b9bee1eab51039c1ea845858a8809",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-09-04",
+      "law_annex_count": 5,
+      "law_rule_id": "2126323",
+      "law_serial": "2200000148765",
+      "match_confidence": "exact",
+      "page_count": 15,
+      "pdf_path": "data/raw/pdf/16389/회계규칙(2025년도 9월 4일 개정).hwp.cfbe89d22b85.pdf",
+      "role": "current",
+      "rule_no": "16389",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16389/221217__회계규칙(2025년도 9월 4일 개정).hwp",
+      "source_sha256": "cfbe89d22b853a3ed7031e81914383853aca20fd1903cd089b1de5caa3d48029",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2026-06-26",
+      "law_annex_count": 16,
+      "law_rule_id": "2126325",
+      "law_serial": "2200000151389",
+      "match_confidence": "exact",
+      "page_count": 49,
+      "pdf_path": "data/raw/pdf/16392/구매계약업무규칙(2026년도 6월 26일 개정).hwp.d9dcfd78e0cb.pdf",
+      "role": "current",
+      "rule_no": "16392",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16392/237791__구매계약업무규칙(2026년도 6월 26일 개정).hwp",
+      "source_sha256": "d9dcfd78e0cb003831c5c33cdd4f66b229dfdce8ef8c193141ca585c28c78802",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-09-04",
+      "law_annex_count": 11,
+      "law_rule_id": "2126327",
+      "law_serial": "2200000148727",
+      "match_confidence": "exact",
+      "page_count": 17,
+      "pdf_path": "data/raw/pdf/16397/자산관리규칙(2025년도 9월 4일 개정).hwp.26973be1a3b9.pdf",
+      "role": "current",
+      "rule_no": "16397",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16397/221213__자산관리규칙(2025년도 9월 4일 개정).hwp",
+      "source_sha256": "26973be1a3b9854e8185fecbe44a5114891b5388607d605ac9221ef0d3395318",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-09-04",
+      "law_annex_count": 8,
+      "law_rule_id": "2126329",
+      "law_serial": "2200000148779",
+      "match_confidence": "exact",
+      "page_count": 14,
+      "pdf_path": "data/raw/pdf/16405/차량관리규칙(2025년도 9월 4일 개정).hwp.41ba1dfb5330.pdf",
+      "role": "current",
+      "rule_no": "16405",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16405/221230__차량관리규칙(2025년도 9월 4일 개정).hwp",
+      "source_sha256": "41ba1dfb5330ec953338e683fe9b560a01a1a561049c44b54dd3631ab607293b",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-09-04",
+      "law_annex_count": 1,
+      "law_rule_id": "2126331",
+      "law_serial": "2200000148769",
+      "match_confidence": "exact",
+      "page_count": 6,
+      "pdf_path": "data/raw/pdf/16409/수수료지급규칙(2025년도 9월 4일 개정).hwp.b76d4b928c7f.pdf",
+      "role": "current",
+      "rule_no": "16409",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16409/221225__수수료지급규칙(2025년도 9월 4일 개정).hwp",
+      "source_sha256": "b76d4b928c7f59ad9d1ec91849236f845cbb567a11dac01fe9aa5488bd84d9fc",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-08-28",
+      "law_annex_count": 0,
+      "law_rule_id": "2126335",
+      "law_serial": "2200000148319",
+      "match_confidence": "exact",
+      "page_count": 3,
+      "pdf_path": "data/raw/pdf/16414/기본재산적립금 운영 및 관리규정(2025년도 8월 28일 개정).hwp.059248a5d25e.pdf",
+      "role": "current",
+      "rule_no": "16414",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16414/220896__기본재산적립금 운영 및 관리규정(2025년도 8월 28일 개정).hwp",
+      "source_sha256": "059248a5d25e5e136017f37ee358889dec3ecd3c371dbf507156c29d058b01b7",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2023-07-04",
+      "law_annex_count": 11,
+      "law_rule_id": "2126337",
+      "law_serial": "2200000118161",
+      "match_confidence": "exact",
+      "page_count": 19,
+      "pdf_path": "data/raw/pdf/16418/감사규정_20230704.hwp.3b804899be02.pdf",
+      "role": "current",
+      "rule_no": "16418",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16418/174635__감사규정_20230704.hwp",
+      "source_sha256": "3b804899be02dc4933d2d20b5da77080ea550b2118c95435f95cd38ed9508d22",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-08-28",
+      "law_annex_count": 0,
+      "law_rule_id": "2126339",
+      "law_serial": "2200000148325",
+      "match_confidence": "exact",
+      "page_count": 2,
+      "pdf_path": "data/raw/pdf/16421/임대건물관리비운영규정(2025년도 8월 28일 개정).hwp.b2dfffa58e1c.pdf",
+      "role": "current",
+      "rule_no": "16421",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16421/220901__임대건물관리비운영규정(2025년도 8월 28일 개정).hwp",
+      "source_sha256": "b2dfffa58e1c1c750832ad34b55dd2f7859bbe9076ff17c43047c5278ca6f413",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-09-04",
+      "law_annex_count": 0,
+      "law_rule_id": "2126333",
+      "law_serial": "2200000148733",
+      "match_confidence": "exact",
+      "page_count": 7,
+      "pdf_path": "data/raw/pdf/16430/사업관리기본운영규칙(2025년도 9월 4일 개정).hwp.97ed6c47b5f5.pdf",
+      "role": "current",
+      "rule_no": "16430",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16430/221224__사업관리기본운영규칙(2025년도 9월 4일 개정).hwp",
+      "source_sha256": "97ed6c47b5f5e49188699493ba18f7e8418312af13496971121c8b263ec380d6",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-09-04",
+      "law_annex_count": 6,
+      "law_rule_id": "2126341",
+      "law_serial": "2200000148775",
+      "match_confidence": "exact",
+      "page_count": 12,
+      "pdf_path": "data/raw/pdf/16434/자료관리규칙(2025년 9월 4일 개정).hwp.d84502041d4f.pdf",
+      "role": "current",
+      "rule_no": "16434",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16434/221228__자료관리규칙(2025년 9월 4일 개정).hwp",
+      "source_sha256": "d84502041d4fe15826ab82026298abfc818c3ead86159708c80ab9b0e928e4b4",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-09-04",
+      "law_annex_count": 5,
+      "law_rule_id": "2126343",
+      "law_serial": "2200000148759",
+      "match_confidence": "exact",
+      "page_count": 10,
+      "pdf_path": "data/raw/pdf/16439/지식재산권관리규칙(2025년도 9월 4일 개정).hwp.2d94e6991159.pdf",
+      "role": "current",
+      "rule_no": "16439",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16439/221214__지식재산권관리규칙(2025년도 9월 4일 개정).hwp",
+      "source_sha256": "2d94e69911590fb923ab9d1efd6a16242d57bf4b08de98bd46ad61d6081380be",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 2,
+      "law_rule_id": "2126351",
+      "law_serial": "2200000150473",
+      "match_confidence": "exact",
+      "page_count": 5,
+      "pdf_path": "data/raw/pdf/16448/사업실명제 운영지침(2025년 12월 4일 개정).hwp.26c05d2bc405.pdf",
+      "role": "current",
+      "rule_no": "16448",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16448/224771__사업실명제 운영지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "26c05d2bc405a8df426c2593af985ebfe1c10c36143c84bcaba6081f5ffed67b",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 0,
+      "law_rule_id": "2126371",
+      "law_serial": "2200000150475",
+      "match_confidence": "exact",
+      "page_count": 5,
+      "pdf_path": "data/raw/pdf/16451/비공개 대상 정보의 범위에 관한 지침(2025년 12월 4일 개정).hwp.338536909399.pdf",
+      "role": "current",
+      "rule_no": "16451",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16451/224781__비공개 대상 정보의 범위에 관한 지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "338536909399b282981506deecc5cdeae86f878753a9715f8bab26f0030452ce",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 2,
+      "law_rule_id": "2126293",
+      "law_serial": "2200000150485",
+      "match_confidence": "exact",
+      "page_count": 6,
+      "pdf_path": "data/raw/pdf/16452/NIA글로벌센터 연수시설 운영관리 지침(2025년 12월 4일 개정).hwp.609de9c742ac.pdf",
+      "role": "current",
+      "rule_no": "16452",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16452/224782__NIA글로벌센터 연수시설 운영관리 지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "609de9c742acb28fae7fe142678e2c87fce703ab491584c8f26c06e7b7131fdb",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 1,
+      "law_rule_id": "2126285",
+      "law_serial": "2200000150567",
+      "match_confidence": "exact",
+      "page_count": 7,
+      "pdf_path": "data/raw/pdf/16454/법인카드 관리 및 사용지침(2025년 12월 4일 개정).hwp.d652e98be9e4.pdf",
+      "role": "current",
+      "rule_no": "16454",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16454/225279__법인카드 관리 및 사용지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "d652e98be9e495cf8def1566d70a331231186d5d224b53639957cb69ca293780",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "LiberationSerif",
+        "LiberationSerif-Italic",
+        "OpenSymbol"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 0,
+      "law_rule_id": "2126291",
+      "law_serial": "2200000150565",
+      "match_confidence": "exact",
+      "page_count": 12,
+      "pdf_path": "data/raw/pdf/16460/입찰·계약 세부운영지침(2025년 12월 4일 개정).hwp.155dd8ae9b94.pdf",
+      "role": "current",
+      "rule_no": "16460",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16460/225294__입찰·계약 세부운영지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "155dd8ae9b945465771bf44139c2a6a7103a0dd6e547ec9a5f2b8a60035ca371",
+      "unexpected_fonts": [
+        "OpenSymbol"
+      ]
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-09-26",
+      "law_annex_count": 0,
+      "law_rule_id": "2126373",
+      "law_serial": "2200000111365",
+      "match_confidence": "exact",
+      "page_count": 6,
+      "pdf_path": "data/raw/pdf/16463/자금운용 관리지침(2025년도 9월 26일 개정).hwp.445c3c0c3764.pdf",
+      "role": "current",
+      "rule_no": "16463",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16463/221626__자금운용 관리지침(2025년도 9월 26일 개정).hwp",
+      "source_sha256": "445c3c0c376418dca1f90475508901d8a3781ab2f114fb9e32cbf126147ca011",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-09-26",
+      "law_annex_count": 1,
+      "law_rule_id": "2126377",
+      "law_serial": "2200000150495",
+      "match_confidence": "exact",
+      "page_count": 4,
+      "pdf_path": "data/raw/pdf/16466/회계감사인선임위원회 운영지침(2025년도 9월 26일 개정).hwp.897a98154fde.pdf",
+      "role": "current",
+      "rule_no": "16466",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16466/221625__회계감사인선임위원회 운영지침(2025년도 9월 26일 개정).hwp",
+      "source_sha256": "897a98154fdeb1e7c96c13f9e0ef0519f0a12794ab1e88ae1777eb4e41f1ae4e",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold",
+        "LiberationSerif"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 6,
+      "law_rule_id": "2126299",
+      "law_serial": "2200000150591",
+      "match_confidence": "exact",
+      "page_count": 10,
+      "pdf_path": "data/raw/pdf/16474/적극행정 면책제도 운영지침(2025년 12월 4일 개정).hwp.bc50efc97de1.pdf",
+      "role": "current",
+      "rule_no": "16474",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16474/225301__적극행정 면책제도 운영지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "bc50efc97de1a26f8130baa9ecf051bdbfe572cc5ab9ccbeb3a3c33b33e3bd12",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 1,
+      "law_rule_id": "2126303",
+      "law_serial": "2200000150597",
+      "match_confidence": "exact",
+      "page_count": 4,
+      "pdf_path": "data/raw/pdf/16484/청렴 옴부즈만 운영지침(2025년 12월 4일 개정).hwp.f24966408f28.pdf",
+      "role": "current",
+      "rule_no": "16484",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16484/225305__청렴 옴부즈만 운영지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "f24966408f28e537865667e0dfe7c81641e83e516332531ddef264de93af19b7",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold",
+        "LiberationSerif"
+      ],
+      "issued_date": "2021-02-09",
+      "law_annex_count": 4,
+      "law_rule_id": "2140547",
+      "law_serial": "2200000152495",
+      "match_confidence": "exact",
+      "page_count": 12,
+      "pdf_path": "data/raw/pdf/16489/일상감사 시행 지침_20210209.hwp.f4a9828c2254.pdf",
+      "role": "current",
+      "rule_no": "16489",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16489/121521__일상감사 시행 지침_20210209.hwp",
+      "source_sha256": "f4a9828c2254a3cd5303bb6b6e354ad5128fb71c56080df30ca5b4b10dea4be4",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "LiberationSerif"
+      ],
+      "issued_date": "2021-02-09",
+      "law_annex_count": 2,
+      "law_rule_id": "2126305",
+      "law_serial": "2200000111403",
+      "match_confidence": "exact",
+      "page_count": 4,
+      "pdf_path": "data/raw/pdf/16494/청렴행동수칙 운영지침_20210209.hwp.ad5976026dd3.pdf",
+      "role": "current",
+      "rule_no": "16494",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16494/121528__청렴행동수칙 운영지침_20210209.hwp",
+      "source_sha256": "ad5976026dd37461a55bd885ef68526f677a2b10b4bb7eb9e73a9b85e65966cc",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2026-09-09",
+      "law_annex_count": 7,
+      "law_rule_id": "2126295",
+      "law_serial": "2200000151831",
+      "match_confidence": "exact",
+      "page_count": 13,
+      "pdf_path": "data/raw/pdf/16538/사택 운영지침(2026년도 9월 9일 개정).hwpx.50b1e638a2e8.pdf",
+      "role": "current",
+      "rule_no": "16538",
+      "source_kind": "hwpx",
+      "source_path": "data/raw/alio/16538/241269__사택 운영지침(2026년도 9월 9일 개정).hwpx",
+      "source_sha256": "50b1e638a2e8dd49876b656304628eccfe697afcede409212df621fe637c2885",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2024-07-29",
+      "law_annex_count": 9,
+      "law_rule_id": "2126355",
+      "law_serial": "2200000132645",
+      "match_confidence": "approximate",
+      "page_count": 23,
+      "pdf_path": "data/raw/pdf/16543/성희롱·성폭력·스토킹 및 직장 내 괴롭힘 예방과 처리 지침(2024년도 7월 개정).hwp.208e684e6abe.pdf",
+      "role": "current",
+      "rule_no": "16543",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16543/201612__성희롱·성폭력·스토킹 및 직장 내 괴롭힘 예방과 처리 지침(2024년도 7월 개정).hwp",
+      "source_sha256": "208e684e6abe16924c15b7c3741449522e4ea78b1a98c5393ec4bcf0343bb887",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 13,
+      "law_rule_id": "2126287",
+      "law_serial": "2200000150587",
+      "match_confidence": "exact",
+      "page_count": 50,
+      "pdf_path": "data/raw/pdf/16547/위탁연구과제 운영지침(2025년 12월 4일 개정).hwp.15dfe9469c12.pdf",
+      "role": "current",
+      "rule_no": "16547",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16547/225285__위탁연구과제 운영지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "15dfe9469c1201b3a81bf62f0ecbfc0516781849851cd7f682b2c7cb629f658a",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 1,
+      "law_rule_id": "2126359",
+      "law_serial": "2200000150627",
+      "match_confidence": "exact",
+      "page_count": 4,
+      "pdf_path": "data/raw/pdf/16551/임금피크제 운영지침(2025년도 12월 4일 개정).hwp.7eabce850da8.pdf",
+      "role": "current",
+      "rule_no": "16551",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16551/225377__임금피크제 운영지침(2025년도 12월 4일 개정).hwp",
+      "source_sha256": "7eabce850da8515d955eb176a6725c78ca4e69563d30cefcbd2f2bff4de87549",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold",
+        "OpenSymbol"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 15,
+      "law_rule_id": "2126289",
+      "law_serial": "2200000150595",
+      "match_confidence": "exact",
+      "page_count": 38,
+      "pdf_path": "data/raw/pdf/16553/참여기관 선정·평가 세부운영지침(2025년 12월 4일 개정).hwp.ded31f3f8f7e.pdf",
+      "role": "current",
+      "rule_no": "16553",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16553/225291__참여기관 선정·평가 세부운영지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "ded31f3f8f7ebd68031dd72e5a996b5b3ceed7c11e3ea713f48c072b51fd3eaf",
+      "unexpected_fonts": [
+        "OpenSymbol"
+      ]
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold",
+        "LiberationSerif"
+      ],
+      "issued_date": "2026-05-29",
+      "law_annex_count": 20,
+      "law_rule_id": "2126345",
+      "law_serial": "2200000149621",
+      "match_confidence": "exact",
+      "page_count": 38,
+      "pdf_path": "data/raw/pdf/17229/한국지능정보사회진흥원 임직원 행동강령(2026년도 5월 29일 개정).hwpx.1dbd56d165d4.pdf",
+      "role": "current",
+      "rule_no": "17229",
+      "source_kind": "hwpx",
+      "source_path": "data/raw/alio/17229/236962__한국지능정보사회진흥원 임직원 행동강령(2026년도 5월 29일 개정).hwpx",
+      "source_sha256": "1dbd56d165d4f1a8ae91409ba921344dd591f0def62c72e557cced48cf9feb09",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 4,
+      "law_rule_id": "2126309",
+      "law_serial": "2200000150573",
+      "match_confidence": "exact",
+      "page_count": 6,
+      "pdf_path": "data/raw/pdf/17242/부패영향평가지침(2025년 12월 4일 개정).hwp.7359f28718d3.pdf",
+      "role": "current",
+      "rule_no": "17242",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/17242/225308__부패영향평가지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "7359f28718d3fbc7e35d4ed042024688560ae7cf923386765bcadd3397c32866",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-10-29",
+      "law_annex_count": 1,
+      "law_rule_id": "2126181",
+      "law_serial": "2200000149437",
+      "match_confidence": "exact",
+      "page_count": 20,
+      "pdf_path": "data/raw/pdf/19868/위임전결규칙(2025년도 10월 29일 개정).hwp.1e6609e67b0f.pdf",
+      "role": "current",
+      "rule_no": "19868",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/19868/223121__위임전결규칙(2025년도 10월 29일 개정).hwp",
+      "source_sha256": "1e6609e67b0f3aa40d3b01691cc1789970869b9ca481d2a14b4c93b77ea90db5",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "LiberationSerif"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 0,
+      "law_rule_id": "2137541",
+      "law_serial": "2200000150593",
+      "match_confidence": "exact",
+      "page_count": 3,
+      "pdf_path": "data/raw/pdf/19968/직무관련 범죄 고발세부기준(2025년 12월 4일 개정).hwp.1866cb735fd9.pdf",
+      "role": "current",
+      "rule_no": "19968",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/19968/225304__직무관련 범죄 고발세부기준(2025년 12월 4일 개정).hwp",
+      "source_sha256": "1866cb735fd95e5110ab73609d1ae508dc9ae39766b06ee2cbd44313e489e736",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-08-28",
+      "law_annex_count": 1,
+      "law_rule_id": "2125949",
+      "law_serial": "2200000148347",
+      "match_confidence": "exact",
+      "page_count": 4,
+      "pdf_path": "data/raw/pdf/20039/직무청렴계약 운영규정(2025년도 8월 28일 개정).hwp.c338666fdd38.pdf",
+      "role": "current",
+      "rule_no": "20039",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/20039/220903__직무청렴계약 운영규정(2025년도 8월 28일 개정).hwp",
+      "source_sha256": "c338666fdd387e82708aaff105b14eaf6a759dac47f4d16543fd228f8b77d60a",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-09-04",
+      "law_annex_count": 2,
+      "law_rule_id": "2126171",
+      "law_serial": "2200000148723",
+      "match_confidence": "exact",
+      "page_count": 8,
+      "pdf_path": "data/raw/pdf/20070/원내위원회운영규칙(2025년도 9월 4일 개정).hwp.fbc5a5d158db.pdf",
+      "role": "current",
+      "rule_no": "20070",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/20070/221211__원내위원회운영규칙(2025년도 9월 4일 개정).hwp",
+      "source_sha256": "fbc5a5d158dbcede6ebe0f3c09ef01af62644734f85bf8e179407fab5981de07",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold",
+        "LiberationSerif"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 7,
+      "law_rule_id": "2126301",
+      "law_serial": "2200000150569",
+      "match_confidence": "exact",
+      "page_count": 14,
+      "pdf_path": "data/raw/pdf/22354/부패신고 처리 및 신고자 보호 등에 관한 운영지침(2025년 12월 4일 개정).hwp.ed6b8f5dff7f.pdf",
+      "role": "current",
+      "rule_no": "22354",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/22354/225302__부패신고 처리 및 신고자 보호 등에 관한 운영지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "ed6b8f5dff7fdb82528493d0668ce8b01ba795ed8603dd894eaab9ce944e9087",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2026-02-26",
+      "law_annex_count": 7,
+      "law_rule_id": "2125957",
+      "law_serial": "2200000111637",
+      "match_confidence": "exact",
+      "page_count": 16,
+      "pdf_path": "data/raw/pdf/30695/징계규정(2026년도 2월 26일 개정).hwp.0844e9e10656.pdf",
+      "role": "current",
+      "rule_no": "30695",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/30695/231727__징계규정(2026년도 2월 26일 개정).hwp",
+      "source_sha256": "0844e9e10656bb62026a0c087a3ce78db941936b363029b99f628d8b72faedff",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRDotum"
+      ],
+      "issued_date": "2026-01-29",
+      "law_annex_count": 0,
+      "law_rule_id": "2115685",
+      "law_serial": "2200000134947",
+      "match_confidence": "exact",
+      "page_count": 9,
+      "pdf_path": "data/raw/pdf/31481/정관(2026년도 1월 29일 개정).hwp.7ce8ef3fb535.pdf",
+      "role": "current",
+      "rule_no": "31481",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/31481/230559__정관(2026년도 1월 29일 개정).hwp",
+      "source_sha256": "7ce8ef3fb535f486ab9e19a9b392184020233c398dcc31246fe85c421855d5b8",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 3,
+      "law_rule_id": "2126367",
+      "law_serial": "2200000150619",
+      "match_confidence": "exact",
+      "page_count": 7,
+      "pdf_path": "data/raw/pdf/32136/동호회 운영 기준(2025년도 12월 4일 개정).hwp.9cb82510c044.pdf",
+      "role": "current",
+      "rule_no": "32136",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/32136/225386__동호회 운영 기준(2025년도 12월 4일 개정).hwp",
+      "source_sha256": "9cb82510c044f3e1d80db755321864e94561c2c3f12ca8e5ac22356de27e287d",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-08-28",
+      "law_annex_count": 3,
+      "law_rule_id": "2126249",
+      "law_serial": "2200000148259",
+      "match_confidence": "exact",
+      "page_count": 13,
+      "pdf_path": "data/raw/pdf/33924/기록물관리규정(2025년도 8월 28일 개정).hwp.832ba4fd36cb.pdf",
+      "role": "current",
+      "rule_no": "33924",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/33924/220895__기록물관리규정(2025년도 8월 28일 개정).hwp",
+      "source_sha256": "832ba4fd36cb589b1788587f5612f56f6714f4320925159ee358e80bf569de2e",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2026-06-26",
+      "law_annex_count": 25,
+      "law_rule_id": "2126217",
+      "law_serial": "2200000148731",
+      "match_confidence": "exact",
+      "page_count": 48,
+      "pdf_path": "data/raw/pdf/34778/보안업무규칙(2026년도 6월 26일 개정).hwp.e121cea834dc.pdf",
+      "role": "current",
+      "rule_no": "34778",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/34778/237794__보안업무규칙(2026년도 6월 26일 개정).hwp",
+      "source_sha256": "e121cea834dc3c09731bb41a56bb51c03f821de88eb0b3646a2b5cbe47c9cee1",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2026-06-11",
+      "law_annex_count": 3,
+      "law_rule_id": "2126311",
+      "law_serial": "2200000150589",
+      "match_confidence": "exact",
+      "page_count": 10,
+      "pdf_path": "data/raw/pdf/36308/인권경영 이행지침(2026년도 6월 11일 개정).hwp.4d3f855e6a73.pdf",
+      "role": "current",
+      "rule_no": "36308",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/36308/236915__인권경영 이행지침(2026년도 6월 11일 개정).hwp",
+      "source_sha256": "4d3f855e6a733a63c712a4fdd19a59519180b8aad44e4678f5c9af0f4e990fc6",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 2,
+      "law_rule_id": "2126353",
+      "law_serial": "2200000150653",
+      "match_confidence": "exact",
+      "page_count": 5,
+      "pdf_path": "data/raw/pdf/36974/상담직 운영직 및 중계직 운영지침(2025년도 12월 4일 개정).hwp.685c09d0fdb8.pdf",
+      "role": "current",
+      "rule_no": "36974",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/36974/225378__상담직 운영직 및 중계직 운영지침(2025년도 12월 4일 개정).hwp",
+      "source_sha256": "685c09d0fdb81c67a5e82a92ba7b43f4501c294b0064007cc3bd50bc26d2a904",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2026-07-29",
+      "law_annex_count": 11,
+      "law_rule_id": "2126361",
+      "law_serial": "2200000150629",
+      "match_confidence": "exact",
+      "page_count": 20,
+      "pdf_path": "data/raw/pdf/38783/직원 채용 지침(2026년 7월 29일 개정).hwp.ce7b3f336048.pdf",
+      "role": "current",
+      "rule_no": "38783",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/38783/239354__직원 채용 지침(2026년 7월 29일 개정).hwp",
+      "source_sha256": "ce7b3f3360488854214a5ac8f66a6701d301fe83c90a42b43994b30659d55177",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 0,
+      "law_rule_id": "2126363",
+      "law_serial": "2200000150631",
+      "match_confidence": "exact",
+      "page_count": 3,
+      "pdf_path": "data/raw/pdf/40544/취약근로자 보호 지침(2025년 12월 4일 개정).hwp.4d97f6d1809f.pdf",
+      "role": "current",
+      "rule_no": "40544",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/40544/225383__취약근로자 보호 지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "4d97f6d1809f550bda872ff09d7d6e55011385ebf8637870a0fdcef66f77d336",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2026-03-03",
+      "law_annex_count": 1,
+      "law_rule_id": "2126185",
+      "law_serial": "2200000148773",
+      "match_confidence": "exact",
+      "page_count": 8,
+      "pdf_path": "data/raw/pdf/41131/인터넷중독상담센터 운영규칙(2026년도 3월 3일 개정).hwp.4e385e794113.pdf",
+      "role": "current",
+      "rule_no": "41131",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/41131/231725__인터넷중독상담센터 운영규칙(2026년도 3월 3일 개정).hwp",
+      "source_sha256": "4e385e79411322d0b8a71050fa248449ccffab7c4421ed130b5e3980369fc701",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 3,
+      "law_rule_id": "2126365",
+      "law_serial": "2200000150635",
+      "match_confidence": "exact",
+      "page_count": 7,
+      "pdf_path": "data/raw/pdf/42135/휴직자 복무관리 지침(2025년도 12월 4일 개정).hwp.6f330fd997f7.pdf",
+      "role": "current",
+      "rule_no": "42135",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/42135/225384__휴직자 복무관리 지침(2025년도 12월 4일 개정).hwp",
+      "source_sha256": "6f330fd997f7d99dc9134d879efebc13800084417f82d118093db2d04173a7af",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 2,
+      "law_rule_id": "2126313",
+      "law_serial": "2200000150481",
+      "match_confidence": "exact",
+      "page_count": 5,
+      "pdf_path": "data/raw/pdf/43310/기업민원 보호·서비스헌장 운영지침(2025년 12월 4일 개정).hwp.479a737cccf0.pdf",
+      "role": "current",
+      "rule_no": "43310",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/43310/224774__기업민원 보호·서비스헌장 운영지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "479a737cccf0e8fd78d845f91d9cc4c9e723bf61d1893b06a477ad24f4709221",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 0,
+      "law_rule_id": "2126315",
+      "law_serial": "2200000150483",
+      "match_confidence": "exact",
+      "page_count": 3,
+      "pdf_path": "data/raw/pdf/43386/규제입증책임제 운영 지침(2025년 12월 4일 개정).hwp.147fb9cb81b5.pdf",
+      "role": "current",
+      "rule_no": "43386",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/43386/224776__규제입증책임제 운영 지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "147fb9cb81b5b33ef840a4f838b40fa48637520bdfd86824e91bb86f57a846ea",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 0,
+      "law_rule_id": "2126357",
+      "law_serial": "2200000150623",
+      "match_confidence": "exact",
+      "page_count": 3,
+      "pdf_path": "data/raw/pdf/43732/인사교류 운영지침(2025년도 12월 4일 개정).hwp.efe3ba82b125.pdf",
+      "role": "current",
+      "rule_no": "43732",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/43732/225381__인사교류 운영지침(2025년도 12월 4일 개정).hwp",
+      "source_sha256": "efe3ba82b125e9079b13acb467f11415bce8667945df1d6984b545e9383abd43",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 2,
+      "law_rule_id": "2126347",
+      "law_serial": "2200000150649",
+      "match_confidence": "exact",
+      "page_count": 8,
+      "pdf_path": "data/raw/pdf/43733/개방형 계약직제 운영지침(2025년도 12월 4일 개정).hwp.20f06d0fb8b3.pdf",
+      "role": "current",
+      "rule_no": "43733",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/43733/225380__개방형 계약직제 운영지침(2025년도 12월 4일 개정).hwp",
+      "source_sha256": "20f06d0fb8b364b9fffb0e011c2ba7d7fcfe85df2560d49f6bea82ee5d0d9fd8",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 1,
+      "law_rule_id": "2140239",
+      "law_serial": "2200000150471",
+      "match_confidence": "exact",
+      "page_count": 3,
+      "pdf_path": "data/raw/pdf/44027/안전사고에 관한 임원 문책지침(2025년 12월 4일 개정).hwp.89e5d3f2650b.pdf",
+      "role": "current",
+      "rule_no": "44027",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/44027/224780__안전사고에 관한 임원 문책지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "89e5d3f2650b2c52fd04db0c39d36d8525b403db52317799765ecff2fb173d36",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 0,
+      "law_rule_id": "2126317",
+      "law_serial": "2200000150469",
+      "match_confidence": "exact",
+      "page_count": 2,
+      "pdf_path": "data/raw/pdf/45049/전자게시판 운영지침(2025년 12월 4일 개정).hwp.e0ee0807cc68.pdf",
+      "role": "current",
+      "rule_no": "45049",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/45049/224777__전자게시판 운영지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "e0ee0807cc68a5ed0ce58977ca40bbdc2cfdb2d8ffa024ac9204ec748e7bd72b",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2024-10-24",
+      "law_annex_count": 4,
+      "law_rule_id": "2126297",
+      "law_serial": "2200000135767",
+      "match_confidence": "approximate",
+      "page_count": 36,
+      "pdf_path": "data/raw/pdf/46487/ICT 기금사업 및 연구개발사업 관리지침(2024년도 10월 개정).hwp.47af0c827c42.pdf",
+      "role": "current",
+      "rule_no": "46487",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/46487/204687__ICT 기금사업 및 연구개발사업 관리지침(2024년도 10월 개정).hwp",
+      "source_sha256": "47af0c827c42977a0982d6947eeab2b2ea67755069aae172187c9e222e081ce0",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "Arial-BoldMT",
+        "ArialMT",
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold",
+        "LiberationSerif",
+        "NanumMyeongjo"
+      ],
+      "issued_date": "2026-06-30",
+      "law_annex_count": 1,
+      "law_rule_id": "2127135",
+      "law_serial": "2200000151385",
+      "match_confidence": "exact",
+      "page_count": 22,
+      "pdf_path": "data/raw/pdf/46935/안전보건 관리규정(2026년도 6월 30일 개정).hwp.bd59075d9790.pdf",
+      "role": "current",
+      "rule_no": "46935",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/46935/237784__안전보건 관리규정(2026년도 6월 30일 개정).hwp",
+      "source_sha256": "bd59075d9790c8148b9b6710a2be6e9c7d07b18388f24f8d16419b21708bbdee",
+      "unexpected_fonts": [
+        "Arial-BoldMT",
+        "ArialMT",
+        "NanumMyeongjo"
+      ]
+    },
+    {
+      "embedded_fonts": [
+        "ArialUnicodeMS",
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-11-21",
+      "law_annex_count": 7,
+      "law_rule_id": "2126369",
+      "law_serial": "2200000150479",
+      "match_confidence": "exact",
+      "page_count": 14,
+      "pdf_path": "data/raw/pdf/47161/단말기 보안관리 지침(2025년도 11월 21일 개정).hwpx.2b8c2e48a61b.pdf",
+      "role": "current",
+      "rule_no": "47161",
+      "source_kind": "hwpx",
+      "source_path": "data/raw/alio/47161/224779__단말기 보안관리 지침(2025년도 11월 21일 개정).hwpx",
+      "source_sha256": "2b8c2e48a61b57eed991f0995429a54ada0cce6076a3c661eeedbd4714b38a07",
+      "unexpected_fonts": [
+        "ArialUnicodeMS"
+      ]
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2026-06-08",
+      "law_annex_count": 22,
+      "law_rule_id": "2126307",
+      "law_serial": "2200000149619",
+      "match_confidence": "exact",
+      "page_count": 58,
+      "pdf_path": "data/raw/pdf/48177/한국지능정보사회진흥원 공직자의 이해충돌 방지제도 운영지침(2026년도 6월 8일 개정).hwpx.7e61a1d7c3cc.pdf",
+      "role": "current",
+      "rule_no": "48177",
+      "source_kind": "hwpx",
+      "source_path": "data/raw/alio/48177/236686__한국지능정보사회진흥원 공직자의 이해충돌 방지제도 운영지침(2026년도 6월 8일 개정).hwpx",
+      "source_sha256": "7e61a1d7c3ccdc808dd5ce322ac8d94f69f6dec3d7bda912b7c74924407b20f2",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "ArialMT",
+        "HCRBatang",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-08-28",
+      "law_annex_count": 0,
+      "law_rule_id": "2125951",
+      "law_serial": "2200000148341",
+      "match_confidence": "exact",
+      "page_count": 6,
+      "pdf_path": "data/raw/pdf/48800/노동이사제 운영규정(2025년도 8월 28일 개정).hwp.090ea18e66d5.pdf",
+      "role": "current",
+      "rule_no": "48800",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/48800/220897__노동이사제 운영규정(2025년도 8월 28일 개정).hwp",
+      "source_sha256": "090ea18e66d5167654632dabda307a05ff9a9eb414f11767de1dc0b07b830e46",
+      "unexpected_fonts": [
+        "ArialMT"
+      ]
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-09-04",
+      "law_annex_count": 4,
+      "law_rule_id": "2126161",
+      "law_serial": "2200000148767",
+      "match_confidence": "exact",
+      "page_count": 8,
+      "pdf_path": "data/raw/pdf/48832/노동이사후보 선거관리규칙(2025년도 9월 4일 개정).hwp.31d5c07b2d22.pdf",
+      "role": "current",
+      "rule_no": "48832",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/48832/221221__노동이사후보 선거관리규칙(2025년도 9월 4일 개정).hwp",
+      "source_sha256": "31d5c07b2d228b2293f3927e572a2deedeab6a680504d38dadd1c4ff49ac22ba",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 1,
+      "law_rule_id": "2127743",
+      "law_serial": "2200000150633",
+      "match_confidence": "exact",
+      "page_count": 3,
+      "pdf_path": "data/raw/pdf/49881/콘도 이용관리 지침(2025년도 12월 4일 개정).hwp.9456e59f763c.pdf",
+      "role": "current",
+      "rule_no": "49881",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/49881/225385__콘도 이용관리 지침(2025년도 12월 4일 개정).hwp",
+      "source_sha256": "9456e59f763c63a91e3b0a876a8355f2edeeac0c1a1d9841c1c71dfc26a5f610",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 0,
+      "law_rule_id": "2130207",
+      "law_serial": "2200000150563",
+      "match_confidence": "exact",
+      "page_count": 3,
+      "pdf_path": "data/raw/pdf/50479/내부회계관리제도 운영 지침(2025년 12월 4일 개정).hwp.e9c662e8762e.pdf",
+      "role": "current",
+      "rule_no": "50479",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/50479/225281__내부회계관리제도 운영 지침(2025년 12월 4일 개정).hwp",
+      "source_sha256": "e9c662e8762e1471e25f9abd3a80a338424c56e7b2d41b7750e5f34a7a7c7e27",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold",
+        "LiberationSerif"
+      ],
+      "issued_date": "2025-12-04",
+      "law_annex_count": 4,
+      "law_rule_id": "2130287",
+      "law_serial": "2200000150625",
+      "match_confidence": "exact",
+      "page_count": 6,
+      "pdf_path": "data/raw/pdf/50813/인장관리지침(2025년도 12월 4일 개정).hwp.3a6223be940b.pdf",
+      "role": "current",
+      "rule_no": "50813",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/50813/225382__인장관리지침(2025년도 12월 4일 개정).hwp",
+      "source_sha256": "3a6223be940bb145a282852981923ec5681f315fecceed70cafa70bb12735e90",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2024-06-21",
+      "law_annex_count": 0,
+      "law_rule_id": "2133457",
+      "law_serial": "2200000131087",
+      "match_confidence": "approximate",
+      "page_count": 3,
+      "pdf_path": "data/raw/pdf/52293/경영전략자문위원회운영지침(2024년도 6월 제정).hwp.c5d76d12e34d.pdf",
+      "role": "current",
+      "rule_no": "52293",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/52293/200136__경영전략자문위원회운영지침(2024년도 6월 제정).hwp",
+      "source_sha256": "c5d76d12e34dbba688e8147e77e04b8f178c7e3dbc7ed5e14cf029580d2f7e2c",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2024-08-29",
+      "law_annex_count": 0,
+      "law_rule_id": "2135563",
+      "law_serial": "2200000134309",
+      "match_confidence": "approximate",
+      "page_count": 2,
+      "pdf_path": "data/raw/pdf/52458/예산성과금 운영 규정(2024년도 8월 제정).hwp.0ecf6638916b.pdf",
+      "role": "current",
+      "rule_no": "52458",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/52458/202749__예산성과금 운영 규정(2024년도 8월 제정).hwp",
+      "source_sha256": "0ecf6638916b4ec61c752f40f90364508a41742ad6cbc8057256153cad5d2c55",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2026-08-27",
+      "law_annex_count": 1,
+      "law_rule_id": "2136077",
+      "law_serial": "2200000135887",
+      "match_confidence": "exact",
+      "page_count": 6,
+      "pdf_path": "data/raw/pdf/52602/내부통제규정(2026년도 8월 27일 개정).hwp.e172b2f8b7ed.pdf",
+      "role": "current",
+      "rule_no": "52602",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/52602/240889__내부통제규정(2026년도 8월 27일 개정).hwp",
+      "source_sha256": "e172b2f8b7ed83da98931b4b217b16d63c99f52ae0b14d4658ebe65a9b49662b",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2024-10-25",
+      "law_annex_count": 5,
+      "law_rule_id": "2136079",
+      "law_serial": "2200000135895",
+      "match_confidence": "approximate",
+      "page_count": 9,
+      "pdf_path": "data/raw/pdf/52603/한국지능정보사회진흥원 후원명칭 사용승인 지침(2024년도 10월 제정).hwp.29faaacc1c52.pdf",
+      "role": "current",
+      "rule_no": "52603",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/52603/204694__한국지능정보사회진흥원 후원명칭 사용승인 지침(2024년도 10월 제정).hwp",
+      "source_sha256": "29faaacc1c52d1138f8545d0ca86ed1efa4a3c9fcb69496b7eeb9dad50d3e1c2",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-02-21",
+      "law_annex_count": 6,
+      "law_rule_id": "2137059",
+      "law_serial": "2200000139835",
+      "match_confidence": "approximate",
+      "page_count": 10,
+      "pdf_path": "data/raw/pdf/52871/법무업무규정(2025년도 2월 개정).hwpx.26201a2a336a.pdf",
+      "role": "current",
+      "rule_no": "52871",
+      "source_kind": "hwpx",
+      "source_path": "data/raw/alio/52871/212020__법무업무규정(2025년도 2월 개정).hwpx",
+      "source_sha256": "26201a2a336a1197edf0771723812e06fc5699bdfc40ca97fe4fa1df2d5cfe02",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-03-04",
+      "law_annex_count": 4,
+      "law_rule_id": "2137027",
+      "law_serial": "2200000140323",
+      "match_confidence": "approximate",
+      "page_count": 7,
+      "pdf_path": "data/raw/pdf/52921/임직원 소송지원 지침(2025년 3월 개정).hwpx.16633dcadb20.pdf",
+      "role": "current",
+      "rule_no": "52921",
+      "source_kind": "hwpx",
+      "source_path": "data/raw/alio/52921/212695__임직원 소송지원 지침(2025년 3월 개정).hwpx",
+      "source_sha256": "16633dcadb201ebd258a4f186e4539605cc906425dbf7a176763a251fecc70f9",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold",
+        "LiberationSerif"
+      ],
+      "issued_date": "2025-09-11",
+      "law_annex_count": 32,
+      "law_rule_id": "2139749",
+      "law_serial": "2200000148535",
+      "match_confidence": "exact",
+      "page_count": 43,
+      "pdf_path": "data/raw/pdf/53754/가명정보 생성 및 관리 지침(2025년도 9월 11일 제정).hwp.460ee9d2a6c6.pdf",
+      "role": "current",
+      "rule_no": "53754",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/53754/221203__가명정보 생성 및 관리 지침(2025년도 9월 11일 제정).hwp",
+      "source_sha256": "460ee9d2a6c6c0413c824eecb768e5be01179dd0616443282b6bcfaeec5db242",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold",
+        "LiberationSerif",
+        "NanumGothic"
+      ],
+      "issued_date": "2025-09-11",
+      "law_annex_count": 26,
+      "law_rule_id": "2139747",
+      "law_serial": "2200000148533",
+      "match_confidence": "exact",
+      "page_count": 32,
+      "pdf_path": "data/raw/pdf/53755/합성정보 생성 및 관리 지침(2025년도 9월 11일 제정).hwp.159d600e12dc.pdf",
+      "role": "current",
+      "rule_no": "53755",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/53755/221204__합성정보 생성 및 관리 지침(2025년도 9월 11일 제정).hwp",
+      "source_sha256": "159d600e12dc7490335041cefc5d763e2a0749715d46222990e66c8c47deca67",
+      "unexpected_fonts": [
+        "NanumGothic"
+      ]
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-11-13",
+      "law_annex_count": 4,
+      "law_rule_id": "2140027",
+      "law_serial": "2200000149879",
+      "match_confidence": "exact",
+      "page_count": 7,
+      "pdf_path": "data/raw/pdf/53903/방첩 운영지침(2025년 11월 13일 제정).hwpx.46fe5850b570.pdf",
+      "role": "current",
+      "rule_no": "53903",
+      "source_kind": "hwpx",
+      "source_path": "data/raw/alio/53903/223737__방첩 운영지침(2025년 11월 13일 제정).hwpx",
+      "source_sha256": "46fe5850b5706aa3a3df8ad78e64ac65bf3e5cb338584b0c606d0be67be948e6",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "ArialUnicodeMS",
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold",
+        "LiberationSerif"
+      ],
+      "issued_date": "2026-05-06",
+      "law_annex_count": 24,
+      "law_rule_id": "2140237",
+      "law_serial": "2200000150467",
+      "match_confidence": "exact",
+      "page_count": 85,
+      "pdf_path": "data/raw/pdf/53959/정보보안 기본지침(2026년도 5월 6일 개정).hwpx.bf03ff10d7a4.pdf",
+      "role": "current",
+      "rule_no": "53959",
+      "source_kind": "hwpx",
+      "source_path": "data/raw/alio/53959/235382__정보보안 기본지침(2026년도 5월 6일 개정).hwpx",
+      "source_sha256": "bf03ff10d7a4bfb35457d86a88561cde7bc256a645e470649b43a1b10a0f3ae3",
+      "unexpected_fonts": [
+        "ArialUnicodeMS"
+      ]
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-12-10",
+      "law_annex_count": 2,
+      "law_rule_id": "2140245",
+      "law_serial": "2200000150561",
+      "match_confidence": "exact",
+      "page_count": 4,
+      "pdf_path": "data/raw/pdf/53984/기업성장응답센터 운영지침(2025년 12월 10일 제정).hwp.40d514521538.pdf",
+      "role": "current",
+      "rule_no": "53984",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/53984/225296__기업성장응답센터 운영지침(2025년 12월 10일 제정).hwp",
+      "source_sha256": "40d5145215387dab287e2ca8ae7a853e0ac0e153e4c5b500ffd52623374a2db6",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-12-19",
+      "law_annex_count": 9,
+      "law_rule_id": "2140359",
+      "law_serial": "2200000150989",
+      "match_confidence": "exact",
+      "page_count": 23,
+      "pdf_path": "data/raw/pdf/54021/성과공유제 운영지침(2025년 12월 19일 제정).hwp.5b8f3b20aeb5.pdf",
+      "role": "current",
+      "rule_no": "54021",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/54021/225833__성과공유제 운영지침(2025년 12월 19일 제정).hwp",
+      "source_sha256": "5b8f3b20aeb5ef9825cc9e602eab694ea9fdc6814d33ec8ee457fc42a1adeb09",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold",
+        "LiberationSerif"
+      ],
+      "issued_date": "2025-12-24",
+      "law_annex_count": 12,
+      "law_rule_id": "2140401",
+      "law_serial": "2200000151399",
+      "match_confidence": "exact",
+      "page_count": 33,
+      "pdf_path": "data/raw/pdf/54080/공익신고 처리 및 신고자 보호 등에 관한 운영지침(2025년도 12월 24일 제정).hwpx.e90fbf2ea7af.pdf",
+      "role": "current",
+      "rule_no": "54080",
+      "source_kind": "hwpx",
+      "source_path": "data/raw/alio/54080/227542__공익신고 처리 및 신고자 보호 등에 관한 운영지침(2025년도 12월 24일 제정).hwpx",
+      "source_sha256": "e90fbf2ea7af9cd839d767a5a34f88019de17e0b329b9af5202d4689d1ffb5cd",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-12-24",
+      "law_annex_count": 20,
+      "law_rule_id": "2140403",
+      "law_serial": "2200000151401",
+      "match_confidence": "exact",
+      "page_count": 24,
+      "pdf_path": "data/raw/pdf/54081/부정청탁 및 금품등 수수의 신고사무 처리 지침(2025년도 12월 24일 제정).hwp.e128ec04143d.pdf",
+      "role": "current",
+      "rule_no": "54081",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/54081/227543__부정청탁 및 금품등 수수의 신고사무 처리 지침(2025년도 12월 24일 제정).hwp",
+      "source_sha256": "e128ec04143d9898adfb74c66032a10fa7af36cfbd4587b4fba39acf0481c870",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-12-30",
+      "law_annex_count": 2,
+      "law_rule_id": "2140405",
+      "law_serial": "2200000151403",
+      "match_confidence": "exact",
+      "page_count": 6,
+      "pdf_path": "data/raw/pdf/54082/윤리경영 운영지침(2025년도 12월 30일 제정).hwpx.f0be56bc39e2.pdf",
+      "role": "current",
+      "rule_no": "54082",
+      "source_kind": "hwpx",
+      "source_path": "data/raw/alio/54082/227568__윤리경영 운영지침(2025년도 12월 30일 제정).hwpx",
+      "source_sha256": "f0be56bc39e2af91f64f7fe0f56b3b779757efe097833c4ed594aa01aeca8c29",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold",
+        "OpenSymbol"
+      ],
+      "issued_date": "2026-06-11",
+      "law_annex_count": 2,
+      "law_rule_id": "2141145",
+      "law_serial": "2200000156139",
+      "match_confidence": "exact",
+      "page_count": 13,
+      "pdf_path": "data/raw/pdf/54963/부패방지경영시스템 운영 지침(2026년도 6월 11일 제정).hwp.26168b590d00.pdf",
+      "role": "current",
+      "rule_no": "54963",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/54963/236916__부패방지경영시스템 운영 지침(2026년도 6월 11일 제정).hwp",
+      "source_sha256": "26168b590d0078d5c9c5187deac4aaf2623ad16a45d4c29eb1a653836119465d",
+      "unexpected_fonts": [
+        "OpenSymbol"
+      ]
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2022-10-28",
+      "law_annex_count": 3,
+      "law_rule_id": "2126165",
+      "law_serial": "2200000111015",
+      "match_confidence": "exact",
+      "page_count": 17,
+      "pdf_path": "data/raw/pdf/16232/직제규정_20221028.hwp.ae223dbcb9df.pdf",
+      "role": "history",
+      "rule_no": "16232",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16232/186257__zip/직제규정_20221028.hwp",
+      "source_sha256": "ae223dbcb9df39ce61826b1de9fef53c21d191567240b9f2b0b33d4db7705c90",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-10-24",
+      "law_annex_count": 3,
+      "law_rule_id": "2126165",
+      "law_serial": "2200000149201",
+      "match_confidence": "exact",
+      "page_count": 17,
+      "pdf_path": "data/raw/pdf/16232/직제규정(2025년도 10월 24일 개정).hwp.9473fb8090d6.pdf",
+      "role": "history",
+      "rule_no": "16232",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16232/223124__직제규정(2025년도 10월 24일 개정).hwp",
+      "source_sha256": "9473fb8090d692ce8d71639a0f47db7dd9f26d42c6b14ba74476d6aa81a04682",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "NanumGothic"
+      ],
+      "issued_date": "2022-12-30",
+      "law_annex_count": 2,
+      "law_rule_id": "2126167",
+      "law_serial": "2200000111017",
+      "match_confidence": "exact",
+      "page_count": 30,
+      "pdf_path": "data/raw/pdf/16277/직제규칙_20221230.hwp.4b5ed0b3a6b9.pdf",
+      "role": "history",
+      "rule_no": "16277",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16277/227564__zip/직제규칙_20221230.hwp",
+      "source_sha256": "4b5ed0b3a6b9d17de9604c87d50806844cfec56e4594841bc8e6e6557af1737f",
+      "unexpected_fonts": [
+        "NanumGothic"
+      ]
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-12-26",
+      "law_annex_count": 2,
+      "law_rule_id": "2126167",
+      "law_serial": "2200000151387",
+      "match_confidence": "exact",
+      "page_count": 36,
+      "pdf_path": "data/raw/pdf/16277/직제규칙(2025년도 12월 26일 개정).hwp.3b8ffc67dc66.pdf",
+      "role": "history",
+      "rule_no": "16277",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16277/227565__직제규칙(2025년도 12월 26일 개정).hwp",
+      "source_sha256": "3b8ffc67dc661faf6cfd7a601478c776731d5a9057756cc3d399f8e49c55181d",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2022-10-28",
+      "law_annex_count": 5,
+      "law_rule_id": "2126193",
+      "law_serial": "2200000111121",
+      "match_confidence": "exact",
+      "page_count": 19,
+      "pdf_path": "data/raw/pdf/16291/인사규정_20221028.hwp.f695f8bd6289.pdf",
+      "role": "history",
+      "rule_no": "16291",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16291/186240__zip/인사규정_20221028.hwp",
+      "source_sha256": "f695f8bd6289070abd3b416826b6d2b5e3c3d3799006f8c3fb4f7a9613b07c1e",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-04-24",
+      "law_annex_count": 5,
+      "law_rule_id": "2126193",
+      "law_serial": "2200000142889",
+      "match_confidence": "exact",
+      "page_count": 23,
+      "pdf_path": "data/raw/pdf/16291/인사규정(2025년도 4월 24일 개정).hwp.f928f4e53bae.pdf",
+      "role": "history",
+      "rule_no": "16291",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16291/215735__인사규정(2025년도 4월 24일 개정).hwp",
+      "source_sha256": "f928f4e53bae9139d08f4e4c17152612538dc0d96e1dffbfb85ad5641050334f",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2022-12-30",
+      "law_annex_count": 20,
+      "law_rule_id": "2126195",
+      "law_serial": "2200000111123",
+      "match_confidence": "exact",
+      "page_count": 40,
+      "pdf_path": "data/raw/pdf/16299/인사관리규칙_20221230.hwp.30a38cce989d.pdf",
+      "role": "history",
+      "rule_no": "16299",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16299/185360__zip/인사관리규칙_20221230.hwp",
+      "source_sha256": "30a38cce989d0e3b3564db9834add49411e305aa6e15d1c3c814900069f48f9f",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-09-04",
+      "law_annex_count": 21,
+      "law_rule_id": "2126195",
+      "law_serial": "2200000148725",
+      "match_confidence": "exact",
+      "page_count": 40,
+      "pdf_path": "data/raw/pdf/16299/인사관리규칙(2025년도 9월 4일 개정).hwp.d526dbb8eec1.pdf",
+      "role": "history",
+      "rule_no": "16299",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16299/221212__인사관리규칙(2025년도 9월 4일 개정).hwp",
+      "source_sha256": "d526dbb8eec15cf91e5fe1e2b4663260b3f93e9f33daa3ee5daded2f37d0b4f9",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2022-12-30",
+      "law_annex_count": 2,
+      "law_rule_id": "2125955",
+      "law_serial": "2200000111045",
+      "match_confidence": "exact",
+      "page_count": 18,
+      "pdf_path": "data/raw/pdf/16325/취업규칙_20221230.hwp.ef30c9ad20ec.pdf",
+      "role": "history",
+      "rule_no": "16325",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16325/185375__zip/취업규칙_20221230.hwp",
+      "source_sha256": "ef30c9ad20ec40b837b3406f4ce61f7dc09401286c26b058145791c160f0721b",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-12-26",
+      "law_annex_count": 3,
+      "law_rule_id": "2125955",
+      "law_serial": "2200000151393",
+      "match_confidence": "exact",
+      "page_count": 23,
+      "pdf_path": "data/raw/pdf/16325/취업규칙(2025년도 12월 26일 개정).hwp.2c7f9e85c3c3.pdf",
+      "role": "history",
+      "rule_no": "16325",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16325/227556__취업규칙(2025년도 12월 26일 개정).hwp",
+      "source_sha256": "2c7f9e85c3c3fb0dd4365f973c9c70dbc7f7c7f5f87434bdb24422131065e90e",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2022-12-30",
+      "law_annex_count": 10,
+      "law_rule_id": "2125959",
+      "law_serial": "2200000111049",
+      "match_confidence": "exact",
+      "page_count": 14,
+      "pdf_path": "data/raw/pdf/16334/급여지급규칙_20221230.hwp.798f90f4d57b.pdf",
+      "role": "history",
+      "rule_no": "16334",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16334/185707__zip/급여지급규칙_20221230.hwp",
+      "source_sha256": "798f90f4d57b1e6f6e4d4d61e79ec015dadcd438cb8e7306f13c4e9645613339",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-02-19",
+      "law_annex_count": 12,
+      "law_rule_id": "2125959",
+      "law_serial": "2200000139795",
+      "match_confidence": "approximate",
+      "page_count": 15,
+      "pdf_path": "data/raw/pdf/16334/급여지급규칙(2025년도 2월 개정).hwp.96e752a79ffd.pdf",
+      "role": "history",
+      "rule_no": "16334",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16334/211851__급여지급규칙(2025년도 2월 개정).hwp",
+      "source_sha256": "96e752a79ffd2a04ff64ad6bb67c943f65cb1e4f7b31b12bd22af13f2d43336a",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2020-12-28",
+      "law_annex_count": 13,
+      "law_rule_id": "2126245",
+      "law_serial": "2200000111055",
+      "match_confidence": "exact",
+      "page_count": 28,
+      "pdf_path": "data/raw/pdf/16361/출장규칙_20201228.hwp.0b843b675155.pdf",
+      "role": "history",
+      "rule_no": "16361",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16361/221219__zip/출장규칙_20201228.hwp",
+      "source_sha256": "0b843b675155d818b46f603bfbdc1478812ddb9c55851dd67e865f79702a051a",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2025-09-04",
+      "law_annex_count": 13,
+      "law_rule_id": "2126245",
+      "law_serial": "2200000148763",
+      "match_confidence": "exact",
+      "page_count": 29,
+      "pdf_path": "data/raw/pdf/16361/출장규칙(2025년도 9월 4일 개정).hwp.2e7138a3f918.pdf",
+      "role": "history",
+      "rule_no": "16361",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/16361/221220__출장규칙(2025년도 9월 4일 개정).hwp",
+      "source_sha256": "2e7138a3f918e904ebc6f6681214bfec9672b9372fee2bbf59722c310a7e9128",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2022-02-18",
+      "law_annex_count": 1,
+      "law_rule_id": "2126181",
+      "law_serial": "2200000111095",
+      "match_confidence": "exact",
+      "page_count": 23,
+      "pdf_path": "data/raw/pdf/19868/위임전결규칙_20220218.hwp.f9f09e35e8ed.pdf",
+      "role": "history",
+      "rule_no": "19868",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/19868/221232__zip/위임전결규칙_20220218.hwp",
+      "source_sha256": "f9f09e35e8edf116622785f32aec0299b19f9dc2a0df765d8552db60decd4842",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum"
+      ],
+      "issued_date": "2025-09-04",
+      "law_annex_count": 1,
+      "law_rule_id": "2126181",
+      "law_serial": "2200000148147",
+      "match_confidence": "exact",
+      "page_count": 20,
+      "pdf_path": "data/raw/pdf/19868/위임전결규칙(2025년도 9월 4일 개정).hwp.d35c9eb3980d.pdf",
+      "role": "history",
+      "rule_no": "19868",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/19868/221233__위임전결규칙(2025년도 9월 4일 개정).hwp",
+      "source_sha256": "d35c9eb3980d4ee36e317743625b99c2b40ee87f954117743442752b97cdbd66",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2022-10-17",
+      "law_annex_count": 4,
+      "law_rule_id": "2126297",
+      "law_serial": "2200000111395",
+      "match_confidence": "exact",
+      "page_count": 31,
+      "pdf_path": "data/raw/pdf/46487/ICT 기금사업 및 연구개발사업 관리지침_20221017.hwp.feec36f14c6a.pdf",
+      "role": "history",
+      "rule_no": "46487",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/46487/158611__ICT 기금사업 및 연구개발사업 관리지침_20221017.hwp",
+      "source_sha256": "feec36f14c6aa5726c58c58155aa015a27c81af00c623c07b7763943a8ea58d7",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2024-04-24",
+      "law_annex_count": 4,
+      "law_rule_id": "2126297",
+      "law_serial": "2200000128009",
+      "match_confidence": "approximate",
+      "page_count": 35,
+      "pdf_path": "data/raw/pdf/46487/ICT 기금사업 및 연구개발사업 관리지침(2024년도 4월 개정).hwp.33597f7924a6.pdf",
+      "role": "history",
+      "rule_no": "46487",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/46487/197874__ICT 기금사업 및 연구개발사업 관리지침(2024년도 4월 개정).hwp",
+      "source_sha256": "33597f7924a674ee8527444054394fdcd79e8685152715f1573fa0920f632d83",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold"
+      ],
+      "issued_date": "2023-10-30",
+      "law_annex_count": 1,
+      "law_rule_id": "2127135",
+      "law_serial": "2200000122061",
+      "match_confidence": "exact",
+      "page_count": 19,
+      "pdf_path": "data/raw/pdf/46935/안전보건 관리규정_20231030.hwp.d3fc647b6074.pdf",
+      "role": "history",
+      "rule_no": "46935",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/46935/179861__안전보건 관리규정_20231030.hwp",
+      "source_sha256": "d3fc647b6074fd3f88076d7d4a7e7eee98a1a8427b6ca25c3f3f35499a2e98a4",
+      "unexpected_fonts": []
+    },
+    {
+      "embedded_fonts": [
+        "HCRBatang",
+        "HCRBatang-Bold",
+        "HCRDotum",
+        "HCRDotum-Bold",
+        "LiberationSerif"
+      ],
+      "issued_date": "2025-08-28",
+      "law_annex_count": 1,
+      "law_rule_id": "2127135",
+      "law_serial": "2200000148323",
+      "match_confidence": "exact",
+      "page_count": 21,
+      "pdf_path": "data/raw/pdf/46935/안전보건 관리규정(2025년도 8월 28일 개정).hwp.114b9554c6f9.pdf",
+      "role": "history",
+      "rule_no": "46935",
+      "source_kind": "hwp5",
+      "source_path": "data/raw/alio/46935/220898__안전보건 관리규정(2025년도 8월 28일 개정).hwp",
+      "source_sha256": "114b9554c6f962993df09b44e62e89d144786a84e9fa00acd7646fe85321ed9c",
+      "unexpected_fonts": []
+    }
+  ],
+  "totals": {
+    "current": 95,
+    "history": 20,
+    "pages_known": 1887,
+    "targets": 115,
+    "targets_without_page_count": 0
+  }
+}
