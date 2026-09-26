@@ -2,7 +2,8 @@
 
 import json
 import subprocess
-from collections.abc import Sequence
+import unicodedata
+from collections.abc import Callable, Sequence
 from io import BytesIO
 from pathlib import Path
 from zipfile import ZipFile
@@ -94,11 +95,13 @@ class ConversionRunner:
         missing_for: frozenset[str] = frozenset(),
         timeout_for: frozenset[str] = frozenset(),
         pages: int = 1,
+        output_names: Callable[[Path], list[str]] | None = None,
     ) -> None:
         self.calls: list[tuple[list[str], float]] = []
         self.missing_for = missing_for
         self.timeout_for = timeout_for
         self.pages = pages
+        self.output_names = output_names or (lambda source: [f"{source.stem}.pdf"])
 
     def __call__(
         self, args: Sequence[str], timeout_s: float
@@ -110,7 +113,8 @@ class ConversionRunner:
             raise subprocess.TimeoutExpired(call, timeout_s)
         if source.name not in self.missing_for:
             outdir = Path(call[call.index("--outdir") + 1])
-            (outdir / f"{source.stem}.pdf").write_bytes(_pdf_bytes(self.pages))
+            for name in self.output_names(source):
+                (outdir / name).write_bytes(_pdf_bytes(self.pages))
         return subprocess.CompletedProcess(call, 0, stdout="", stderr="")
 
 
@@ -493,3 +497,84 @@ def test_only_eligible_uses_version_match_sha_and_latest_alio_record(
 
 def _read_jsonl(path: Path) -> list[dict[str, object]]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+
+
+def _single_hwp_source(tmp_path: Path, name: str) -> dict[str, object]:
+    source_dir = tmp_path / "data/raw/alio/10"
+    source_dir.mkdir(parents=True, exist_ok=True)
+    (source_dir / name).write_bytes(hwp5_bytes())
+    record = _source_record(
+        tmp_path, f"data/raw/alio/10/{name}", file_no="1", file_name=name
+    )
+    _write_jsonl(tmp_path / "data/manifest/alio.jsonl", [record])
+    return record
+
+
+@pytest.mark.parametrize(
+    "output_name",
+    [
+        # APFS는 NFC/NFD를 같은 이름으로 찾으므로 이 경우는 Linux에서만 차이가 난다.
+        lambda source: unicodedata.normalize("NFD", source.stem) + ".pdf",
+        lambda source: "converted.pdf",
+    ],
+    ids=["nfd-stem", "different-name"],
+)
+def test_single_pdf_with_unexpected_name_is_accepted(
+    tmp_path: Path, output_name: Callable[[Path], str]
+) -> None:
+    """soffice가 원본 stem과 다른 이름으로 써도 outdir의 유일한 PDF를 쓴다."""
+    record = _single_hwp_source(tmp_path, "사택 운영지침(15.5.12).hwp")
+    runner = ConversionRunner(output_names=lambda source: [output_name(source)])
+
+    summary = run(tmp_path, _toolchain(), runner=runner)
+
+    assert summary.success_count == 1
+    assert output_pdf_path(tmp_path, record).is_file()
+
+
+def test_multiple_pdfs_in_outdir_fail(tmp_path: Path) -> None:
+    _single_hwp_source(tmp_path, "a.hwp")
+    runner = ConversionRunner(output_names=lambda source: ["a.pdf", "b.pdf"])
+
+    summary = run(tmp_path, _toolchain(), runner=runner)
+
+    assert summary.failure_count == 1
+    manifest = _read_jsonl(tmp_path / "data/manifest/conversions.jsonl")
+    assert "PDF 여러 개" in str(manifest[0]["error"])
+
+
+def test_same_sha_direct_file_and_zip_member_are_idempotent(tmp_path: Path) -> None:
+    """같은 내용이 직접 첨부와 zip 멤버로 있어도 두 번째 실행은 둘 다 건너뛴다."""
+    content = hwp5_bytes()
+    direct = tmp_path / "data/raw/alio/10/1__규정.hwp"
+    member = tmp_path / "data/raw/alio/10/2__zip/규정(2020년).hwp"
+    for path in (direct, member):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+    records = [
+        _source_record(
+            tmp_path, "data/raw/alio/10/1__규정.hwp", file_no="1", file_name="규정.hwp"
+        ),
+        _source_record(
+            tmp_path,
+            "data/raw/alio/10/2__zip/규정(2020년).hwp",
+            file_no="2",
+            file_name="규정(2020년).hwp",
+            source="alio_zip_member",
+            zip_member_path="규정(2020년).hwp",
+        ),
+    ]
+    assert records[0]["sha256"] == records[1]["sha256"]
+    _write_jsonl(tmp_path / "data/manifest/alio.jsonl", records)
+    runner = ConversionRunner()
+    manifest_path = tmp_path / "data/manifest/conversions.jsonl"
+
+    first = run(tmp_path, _toolchain(), runner=runner)
+    lines_after_first = len(_read_jsonl(manifest_path))
+    second = run(tmp_path, _toolchain(), runner=runner)
+
+    assert first.success_count == 2
+    assert second.success_count == 0
+    assert second.skipped_count == 2
+    assert len(runner.calls) == 2
+    assert len(_read_jsonl(manifest_path)) == lines_after_first == 2

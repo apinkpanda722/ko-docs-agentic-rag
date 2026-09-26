@@ -107,6 +107,8 @@ def _run_subprocess(
     )
 
 
+# -env:UserInstallation으로 프로필을 격리하지 않는다: H2Orestart는 사용자 프로필에
+# 설치돼 있어 격리하면 변환이 전부 실패한다.
 def find_toolchain(
     *,
     soffice: Path | None = None,
@@ -211,11 +213,18 @@ def convert_file(
                 f"{_CLOSE_LIBREOFFICE_GUIDANCE}"
             )
 
-        generated = outdir / f"{src.stem}.pdf"
-        if not generated.is_file():
+        # outdir은 파일마다 따로 만들므로 이름을 추측하지 않고 유일한 PDF를 쓴다.
+        generated_pdfs = sorted(outdir.glob("*.pdf"))
+        if not generated_pdfs:
             raise ConversionError(
-                f"soffice가 출력 PDF를 만들지 않았습니다. {_CLOSE_LIBREOFFICE_GUIDANCE}"
+                "soffice가 출력 PDF를 만들지 않았습니다(PDF 없음). "
+                f"{_CLOSE_LIBREOFFICE_GUIDANCE}"
             )
+        if len(generated_pdfs) > 1:
+            raise ConversionError(
+                f"soffice 출력 폴더에 PDF 여러 개({len(generated_pdfs)}개)가 있습니다."
+            )
+        generated = generated_pdfs[0]
         if sniff(generated) is not FileKind.PDF:
             raise ConversionError(
                 "soffice 출력이 유효한 PDF 시그니처가 아닙니다. "
@@ -255,12 +264,14 @@ def run(
         ]
 
     conversion_manifest = root / "data/manifest/conversions.jsonl"
+    # 출력 경로(원본 파일명 + sha256 앞 12자)가 키다. sha256만 쓰면 내용이 같은
+    # 직접 첨부와 zip 멤버가 서로의 기록을 덮어써 매번 다시 변환된다.
     current_conversions = latest_records(
         load_records(conversion_manifest),
-        lambda record: record.get("source_sha256"),
+        lambda record: record.get("output_path"),
     )
-    conversion_by_sha = {
-        str(record.get("source_sha256")): record for record in current_conversions
+    conversion_by_output = {
+        str(record.get("output_path")): record for record in current_conversions
     }
 
     success_count = 0
@@ -271,7 +282,6 @@ def run(
 
     for source_record in alio_records:
         source_path_text = _required_text(source_record, "local_path")
-        source_sha256 = _required_text(source_record, "sha256")
         source_path = _source_path(root, source_path_text)
         try:
             source_kind = sniff(source_path)
@@ -297,7 +307,8 @@ def run(
             continue
 
         out_pdf = output_pdf_path(root, source_record)
-        existing = conversion_by_sha.get(source_sha256)
+        output_key = repo_relative(out_pdf, root)
+        existing = conversion_by_output.get(output_key)
         if _is_current_success(root, out_pdf, existing):
             skipped_count += 1
             continue
@@ -332,7 +343,7 @@ def run(
                 error=None,
             )
             _append_conversion(conversion_manifest, converted)
-            conversion_by_sha[source_sha256] = converted
+            conversion_by_output[output_key] = converted
             continue
 
         failure_count += 1
@@ -347,7 +358,7 @@ def run(
             error=error,
         )
         _append_conversion(conversion_manifest, failed)
-        conversion_by_sha[source_sha256] = failed
+        conversion_by_output[output_key] = failed
 
     summary = ConvertSummary(
         success_count=success_count,
