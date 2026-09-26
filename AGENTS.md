@@ -49,6 +49,7 @@ make test-integration  # 실행 중인 OpenSearch가 필요한 테스트 — mak
 make collect-law    # 법제처 Open API 규정 수집(현행·연혁) — 네트워크 호출, 사용자 실행
 make collect-alio   # ALIO 내부규정 원본 파일 수집(전 버전, zip 해제) — 네트워크 호출, 사용자 실행
 make match-versions # ALIO 파일 ↔ 법제처 버전 발령일자 매칭 (네트워크 없음)
+make convert-hwp    # HWP/HWPX → PDF (LibreOffice + H2Orestart 로컬 도구 필요, 실행 시 점검), 사용자 실행
 make generate    # 합성 코퍼스 생성 — 실제 API 호출, 사용자 실행
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)

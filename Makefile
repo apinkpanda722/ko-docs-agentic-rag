@@ -1,4 +1,4 @@
-.PHONY: verify up down logs test-integration collect-law collect-alio match-versions
+.PHONY: verify up down logs test-integration collect-law collect-alio match-versions convert-hwp
 
 # 하네스의 단일 검증 진입점. Stop hook, scripts/execute.py, step AC가 모두 이 타깃을 호출한다.
 verify:
@@ -26,3 +26,6 @@ collect-alio:
 
 match-versions:
 	uv run python -m kodocs.ingest.matching
+
+convert-hwp:
+	uv run python -m kodocs.ingest.convert
