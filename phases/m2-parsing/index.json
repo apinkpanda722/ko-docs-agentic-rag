@@ -33,7 +33,16 @@
     {
       "step": 2,
       "name": "parse-runner",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-26T21:35:29+0900",
+      "summary": "pypdf 공통 배치 실행기와 멱등성·실패/빈 문서 기록, invalid 표 보존 스키마, Make 타깃 및 테스트를 추가했으며 make verify 265개 테스트와 모든 AC를 통과했습니다.",
+      "completed_at": "2026-09-26T21:44:28+0900",
+      "usage": {
+        "input_tokens": 1675091,
+        "cached_input_tokens": 1576832,
+        "output_tokens": 25881,
+        "attempts": 1
+      }
     },
     {
       "step": 3,
