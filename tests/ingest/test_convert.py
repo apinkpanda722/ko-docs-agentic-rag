@@ -3,7 +3,7 @@
 import json
 import subprocess
 import unicodedata
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from io import BytesIO
 from pathlib import Path
 from zipfile import ZipFile
@@ -25,6 +25,17 @@ from kodocs.ingest.convert import (
     run,
 )
 from kodocs.ingest.manifest import sha256_file
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+REPO_FONTS_CONF = PROJECT_ROOT / "infra/fontconfig/fonts.conf"
+
+
+@pytest.fixture(autouse=True)
+def _fontconfig_in_tmp_root(tmp_path: Path) -> None:
+    """run()은 저장소 루트의 infra/fontconfig/fonts.conf를 요구한다."""
+    target = tmp_path / "infra/fontconfig/fonts.conf"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(REPO_FONTS_CONF.read_bytes())
 
 
 def _pdf_bytes(page_count: int = 1) -> bytes:
@@ -98,16 +109,21 @@ class ConversionRunner:
         output_names: Callable[[Path], list[str]] | None = None,
     ) -> None:
         self.calls: list[tuple[list[str], float]] = []
+        self.envs: list[Mapping[str, str] | None] = []
         self.missing_for = missing_for
         self.timeout_for = timeout_for
         self.pages = pages
         self.output_names = output_names or (lambda source: [f"{source.stem}.pdf"])
 
     def __call__(
-        self, args: Sequence[str], timeout_s: float
+        self,
+        args: Sequence[str],
+        timeout_s: float,
+        env: Mapping[str, str] | None = None,
     ) -> subprocess.CompletedProcess[str]:
         call = [str(arg) for arg in args]
         self.calls.append((call, timeout_s))
+        self.envs.append(env)
         source = Path(call[-1])
         if source.name in self.timeout_for:
             raise subprocess.TimeoutExpired(call, timeout_s)
@@ -578,3 +594,88 @@ def test_same_sha_direct_file_and_zip_member_are_idempotent(tmp_path: Path) -> N
     assert second.skipped_count == 2
     assert len(runner.calls) == 2
     assert len(_read_jsonl(manifest_path)) == lines_after_first == 2
+
+
+def test_conversion_passes_repo_fontconfig_file_to_soffice(tmp_path: Path) -> None:
+    """FONTCONFIG_FILE 없이 실행하면 한글 글꼴이 대체되지 않아 한글이 빈칸이 된다."""
+    _single_hwp_source(tmp_path, "a.hwp")
+    runner = ConversionRunner()
+
+    run(tmp_path, _toolchain(), runner=runner)
+
+    assert len(runner.envs) == 1
+    env = runner.envs[0]
+    assert env is not None
+    assert env["FONTCONFIG_FILE"] == str(
+        (tmp_path / "infra/fontconfig/fonts.conf").resolve()
+    )
+    assert "PATH" in env
+
+
+def test_missing_fontconfig_file_stops_before_any_conversion(tmp_path: Path) -> None:
+    _single_hwp_source(tmp_path, "a.hwp")
+    (tmp_path / "infra/fontconfig/fonts.conf").unlink()
+    runner = ConversionRunner()
+
+    with pytest.raises(convert.ConversionError, match="fonts.conf"):
+        run(tmp_path, _toolchain(), runner=runner)
+
+    assert runner.calls == []
+
+
+def test_repo_fonts_conf_maps_every_alias_to_hcr_fonts() -> None:
+    import xml.etree.ElementTree as ET
+
+    tree = ET.parse(REPO_FONTS_CONF)
+    aliases = tree.getroot().findall("alias")
+    assert aliases
+    for alias in aliases:
+        preferred = [family.text for family in alias.findall("prefer/family")]
+        assert preferred in (["HCR Batang"], ["HCR Dotum"])
+    assert "~/Library/Fonts" in [d.text for d in tree.getroot().findall("dir")]
+
+
+def test_pdf_font_stats_strip_subset_prefix_and_count_distinct_hangul(
+    tmp_path: Path,
+) -> None:
+    from pypdf.generic import DictionaryObject, NameObject
+
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=100, height=100)
+    fonts = DictionaryObject()
+    for key, base_font in (
+        ("/F1", "/ABCDEF+HCRBatang"),
+        ("/F2", "/GHIJKL+HCRBatang"),
+        ("/F3", "/LiberationSerif"),
+    ):
+        fonts[NameObject(key)] = DictionaryObject(
+            {
+                NameObject("/Type"): NameObject("/Font"),
+                NameObject("/Subtype"): NameObject("/TrueType"),
+                NameObject("/BaseFont"): NameObject(base_font),
+            }
+        )
+    page[NameObject("/Resources")] = DictionaryObject({NameObject("/Font"): fonts})
+    path = tmp_path / "fonts.pdf"
+    with path.open("wb") as output:
+        writer.write(output)
+
+    assert convert.embedded_font_names(path) == ["HCRBatang", "LiberationSerif"]
+    assert convert.hangul_distinct_count("가가나 abc 다라 ㄱ 한") == 5
+
+
+def test_ok_record_includes_embedded_fonts_and_hangul_distinct(tmp_path: Path) -> None:
+    _single_hwp_source(tmp_path, "a.hwp")
+
+    run(tmp_path, _toolchain(), runner=ConversionRunner())
+
+    record = _read_jsonl(tmp_path / "data/manifest/conversions.jsonl")[0]
+    assert record["status"] == "ok"
+    assert record["embedded_fonts"] == []
+    assert record["hangul_distinct"] == 0
+
+
+def test_install_guide_mentions_optional_hcr_fonts_and_license() -> None:
+    assert "함초롬 글꼴" in INSTALL_GUIDE
+    assert "~/Library/Fonts" in INSTALL_GUIDE
+    assert "상업적 재배포·수정 금지" in INSTALL_GUIDE

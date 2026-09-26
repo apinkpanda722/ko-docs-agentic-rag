@@ -1,6 +1,7 @@
 """Convert signature-verified HWP/HWPX sources to local PDF files."""
 
 import argparse
+import os
 import re
 import shutil
 import subprocess
@@ -29,7 +30,8 @@ H2ORESTART_ID = "ebandal.libreoffice.H2Orestart"
 MACOS_SOFFICE = Path("/Applications/LibreOffice.app/Contents/MacOS/soffice")
 CONVERTIBLE_KINDS = frozenset({FileKind.HWP5, FileKind.HWPX})
 
-Runner = Callable[[Sequence[str], float], subprocess.CompletedProcess]
+Runner = Callable[..., subprocess.CompletedProcess]  # (args, timeout_s, env=None)
+FONTCONFIG_RELATIVE_PATH = PurePosixPath("infra/fontconfig/fonts.conf")
 
 INSTALL_GUIDE = """설치 안내:
 1. LibreOffice 설치 (https://www.libreoffice.org/download/)
@@ -37,7 +39,8 @@ INSTALL_GUIDE = """설치 안내:
 3. H2Orestart `.oxt` 다운로드: https://github.com/ebandal/H2Orestart/releases (또는 https://extensions.libreoffice.org/en/extensions/show/27504)
 4. LibreOffice를 열고 도구 > 확장 관리자 > 추가로 `.oxt`를 설치한다. CLI `unopkg add`는 macOS에서 Java 구성 요소 등록이 실패할 수 있으니 쓰지 않는다.
 5. LibreOffice 설정(macOS: LibreOffice > 설정) > 고급 > Java 옵션에서 설치한 JDK를 선택하거나 경로를 추가한다.
-6. LibreOffice를 재시작한 뒤, 창을 모두 닫고 `make convert-hwp`를 다시 실행한다."""
+6. LibreOffice를 재시작한 뒤, 창을 모두 닫고 `make convert-hwp`를 다시 실행한다.
+7. (선택) 함초롬 글꼴(한컴 다운로드 센터 > 글꼴 > 함초롬체, 개인·기업 무료, 상업적 재배포·수정 금지)을 ~/Library/Fonts에 설치하면 원본 쪽수에 가깝게 변환된다."""
 
 CONVERSION_REQUIRED_FIELDS = frozenset(
     {
@@ -54,6 +57,8 @@ CONVERSION_REQUIRED_FIELDS = frozenset(
         "soffice_version",
         "h2orestart_version",
         "converted_at",
+        "embedded_fonts",
+        "hangul_distinct",
     }
 )
 
@@ -95,7 +100,9 @@ class ConversionError(RuntimeError):
 
 
 def _run_subprocess(
-    args: Sequence[str], timeout_s: float
+    args: Sequence[str],
+    timeout_s: float,
+    env: Mapping[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         list(args),
@@ -104,6 +111,7 @@ def _run_subprocess(
         shell=False,
         text=True,
         timeout=timeout_s,
+        env=dict(env) if env is not None else None,
     )
 
 
@@ -170,6 +178,33 @@ def find_toolchain(
     )
 
 
+def embedded_font_names(pdf_path: Path) -> list[str]:
+    """Sorted base font names used by page resources, without subset prefixes."""
+    names: set[str] = set()
+    for page in PdfReader(pdf_path).pages:
+        resources = page.get("/Resources")
+        fonts = resources.get_object().get("/Font") if resources is not None else None
+        if fonts is None:
+            continue
+        for font in fonts.get_object().values():
+            base_font = font.get_object().get("/BaseFont")
+            if base_font is not None:
+                names.add(_strip_subset_prefix(str(base_font).lstrip("/")))
+    return sorted(names)
+
+
+def hangul_distinct_count(text: str) -> int:
+    """Number of distinct precomposed Hangul syllables (U+AC00–U+D7A3)."""
+    return len({character for character in text if "가" <= character <= "힣"})
+
+
+def _strip_subset_prefix(name: str) -> str:
+    prefix, separator, rest = name.partition("+")
+    if separator and len(prefix) == 6 and prefix.isalpha() and prefix.isupper():
+        return rest
+    return name
+
+
 def output_pdf_path(root: Path, record: Mapping[object, object]) -> Path:
     """Return the collision-safe PDF path for one ALIO manifest record."""
     rule_no = _required_text(record, "rule_no")
@@ -190,6 +225,7 @@ def convert_file(
     *,
     runner: Runner,
     timeout_s: float = 180,
+    env: Mapping[str, str] | None = None,
 ) -> None:
     """Run one isolated soffice conversion and validate its PDF signature."""
     out_pdf.parent.mkdir(parents=True, exist_ok=True)
@@ -205,7 +241,7 @@ def convert_file(
             str(outdir),
             str(src),
         ]
-        result = runner(args, timeout_s)
+        result = runner(args, timeout_s, env)
         if result.returncode != 0:
             raise ConversionError(
                 "soffice 변환이 실패했습니다: "
@@ -241,6 +277,16 @@ def run(
     only_eligible: bool = False,
 ) -> ConvertSummary:
     """Convert current ALIO sources and append auditable conversion records."""
+    # headless soffice는 FONTCONFIG_FILE 없이 한글 글꼴을 대체하지 못해 한글이 빈칸인
+    # PDF를 만든다. 저장소의 대체 규칙(HWP 지정 글꼴 → 함초롬)을 반드시 넘긴다.
+    fontconfig_file = root.joinpath(*FONTCONFIG_RELATIVE_PATH.parts)
+    if not fontconfig_file.is_file():
+        raise ConversionError(
+            f"{FONTCONFIG_RELATIVE_PATH}(fonts.conf)이 없습니다. 이 파일 없이 변환하면 "
+            "한글이 빠진 PDF가 만들어집니다."
+        )
+    soffice_env = {**os.environ, "FONTCONFIG_FILE": str(fontconfig_file.resolve())}
+
     alio_manifest = root / "data/manifest/alio.jsonl"
     if not alio_manifest.is_file():
         raise ConversionError(
@@ -319,8 +365,14 @@ def run(
                 out_pdf,
                 toolchain,
                 runner=runner,
+                env=soffice_env,
             )
-            page_count = len(PdfReader(out_pdf).pages)
+            reader = PdfReader(out_pdf)
+            page_count = len(reader.pages)
+            embedded_fonts = embedded_font_names(out_pdf)
+            hangul_distinct = hangul_distinct_count(
+                "".join(page.extract_text() or "" for page in reader.pages)
+            )
             output_sha256 = sha256_file(out_pdf)
         except subprocess.TimeoutExpired as exc:
             error = (
@@ -341,6 +393,8 @@ def run(
                 page_count=page_count,
                 status="ok",
                 error=None,
+                embedded_fonts=embedded_fonts,
+                hangul_distinct=hangul_distinct,
             )
             _append_conversion(conversion_manifest, converted)
             conversion_by_output[output_key] = converted
@@ -519,6 +573,8 @@ def _conversion_record(
     page_count: int,
     status: str,
     error: str | None,
+    embedded_fonts: list[str] | None = None,
+    hangul_distinct: int | None = None,
 ) -> dict[str, object]:
     return {
         "source_path": _required_text(source_record, "local_path"),
@@ -534,6 +590,8 @@ def _conversion_record(
         "soffice_version": toolchain.soffice_version,
         "h2orestart_version": toolchain.h2orestart_version,
         "converted_at": now_iso(),
+        "embedded_fonts": embedded_fonts if embedded_fonts is not None else [],
+        "hangul_distinct": hangul_distinct,
     }
 
 
