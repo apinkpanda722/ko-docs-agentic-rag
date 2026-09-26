@@ -3,7 +3,7 @@
 ## 디렉토리 구조
 ```
 src/kodocs/
-├── ingest/       # ALIO 사규 수집, HWP → PDF 변환, manifest 기록
+├── ingest/       # 법제처 Open API·ALIO 수집, ALIO↔법제처 버전 매칭, HWP/HWPX → PDF 변환, 파싱 대상 목록, manifest 기록
 ├── parsing/      # 파서 어댑터(pypdf·Docling·업스테이지), 조문 분할(`제N조` 정규식)
 ├── chunking/     # 구조 기준 청킹(조·별표 표·안건·섹션), 고정 길이 청킹
 ├── synth/        # 시드 데이터 → 합성 문서·티켓·결재 생성 (Anthropic API)
@@ -14,8 +14,9 @@ src/kodocs/
 └── ui/           # Streamlit 데모 (answer()만 호출)
 eval/             # 평가 러너, 지표, 부트스트랩, 결과표 생성
 data/
-├── manifest/     # 원문 출처·해시·라이선스 (커밋)
+├── manifest/     # 원문 출처·해시·수집일·버전 매칭·변환 기록·파싱 대상 목록 (커밋)
 ├── raw/          # 다운로드 원문·변환 PDF (커밋 안 함)
+├── interim/      # 정제 산출물(법제처 응답에서 담당자 정보 제거 등) (커밋 안 함)
 ├── seed/         # 시드 데이터 YAML (커밋)
 ├── synthetic/    # 생성 문서·메타데이터 (커밋)
 └── golden/       # 질의셋·qrels·사람 채점 (커밋, 사람만 수정)
@@ -34,8 +35,9 @@ tests/
 ## 데이터 흐름
 ```
 [적재]
-ALIO 사규(HWP/PDF) → HWP→PDF → 파서 → 조문 분할 → 구조 청킹 ─┐
-시드 데이터 YAML → 합성 문서(DOCX/XLSX/MD/HTML/PDF) → Docling → 청킹 ┼→ BGE-M3 → OpenSearch (권한·식별자·날짜 메타데이터)
+법제처 Open API(현행·연혁 조문·별표 목록) → 정제 JSON (파싱 정답·개정 날짜 기준)
+ALIO 사규(HWP/HWPX, 개정 버전) → 버전 매칭 → HWP/HWPX→PDF → 파서 → 조문 분할 → 구조 청킹 ─┐
+시드 데이터 YAML → 합성 문서(DOCX/XLSX/MD/HTML/PDF) → Docling → 청킹 ──────────────────┼→ BGE-M3 → OpenSearch (권한·식별자·날짜 메타데이터)
 시드 데이터 YAML → 티켓·결재 ────────────────────────────→ SQLite
 
 [질의]
