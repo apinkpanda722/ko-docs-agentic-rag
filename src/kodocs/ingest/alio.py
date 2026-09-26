@@ -336,8 +336,18 @@ def collect(
     zip_member_count = 0
     failure_count = 0
     skipped_count = 0
+    total = len(selected_rules)
 
-    for rule_no, listed_title in selected_rules:
+    def report_progress(index: int) -> None:
+        # URL은 넣지 않는다. flush는 make·uv를 거쳐도 즉시 보이게 한다.
+        if index % 10 == 0 or index == total:
+            print(
+                f"규정 {index}/{total}: 파일 {file_count}, zip 멤버 {zip_member_count}, "
+                f"실패 {failure_count}, 건너뜀 {skipped_count}",
+                flush=True,
+            )
+
+    for index, (rule_no, listed_title) in enumerate(selected_rules, start=1):
         try:
             rule = client.fetch_rule(rule_no)
         except (httpx.HTTPError, AlioError) as exc:
@@ -350,6 +360,7 @@ def collect(
                 reason=f"detail failed: {type(exc).__name__}: {exc}",
             )
             failure_count += 1
+            report_progress(index)
             continue
         for file_ref in rule.files:
             download_url = _download_url(file_ref.file_no)
@@ -446,6 +457,7 @@ def collect(
                         ),
                     )
                     zip_member_count += 1
+        report_progress(index)
 
     summary = CollectSummary(
         rule_count=len(selected_rules),

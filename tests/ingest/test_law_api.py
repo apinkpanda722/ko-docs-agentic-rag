@@ -449,3 +449,32 @@ def test_cli_without_key_fails_before_constructing_http_client(
     assert exit_code != 0
     assert network_constructed is False
     assert "LAW_OPEN_API_KEY" in capsys.readouterr().err
+
+
+def test_collect_prints_progress_every_ten_bodies_and_at_the_end(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    serials = [str(3000 + index) for index in range(12)]
+    raw_body = fixture_bytes("law_body_full.json")
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("lawSearch.do"):
+            return httpx.Response(
+                200,
+                json=search_response(*(version_item(serial) for serial in serials)),
+                request=request,
+            )
+        return httpx.Response(200, content=raw_body, request=request)
+
+    with make_http(handler) as http:
+        collect(tmp_path, LawApiClient(TEST_OC, http), include_history=False)
+
+    output = capsys.readouterr().out
+    progress = [line for line in output.splitlines() if line.startswith("본문 ")]
+    assert progress == [
+        "본문 10/12 (수집 10, 건너뜀 0)",
+        "본문 12/12 (수집 12, 건너뜀 0)",
+    ]
+    assert TEST_OC not in output
+    assert "http" not in output

@@ -583,3 +583,34 @@ def test_collect_list_failure_still_aborts_everything(tmp_path: Path) -> None:
         collect(tmp_path, AlioClient(http))
 
     assert not (tmp_path / "data/manifest/alio_failures.jsonl").exists()
+
+
+def test_collect_prints_progress_every_ten_rules_and_at_the_end(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rules = [(str(index), f"규정 {index}") for index in range(1, 12)]
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("itemReportListSusi.json"):
+            return httpx.Response(200, json=list_payload(*rules), request=request)
+        if request.url.path.endswith("findRuleDtl.json"):
+            rule_no = request.url.params["seq"]
+            if rule_no == "3":
+                return httpx.Response(500, request=request)
+            bfiles = f"{rule_no}00|규정{rule_no}.hwp" if rule_no == "1" else ""
+            return httpx.Response(
+                200, json=detail_payload(rule_no, bfiles=bfiles), request=request
+            )
+        return httpx.Response(200, content=hwp5_bytes(), request=request)
+
+    with make_http(handler) as http:
+        collect(tmp_path, AlioClient(http))
+
+    output = capsys.readouterr().out
+    progress = [line for line in output.splitlines() if line.startswith("규정 ")]
+    assert progress == [
+        "규정 10/11: 파일 1, zip 멤버 0, 실패 1, 건너뜀 0",
+        "규정 11/11: 파일 1, zip 멤버 0, 실패 1, 건너뜀 0",
+    ]
+    assert "http" not in output

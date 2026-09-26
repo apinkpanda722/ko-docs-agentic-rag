@@ -301,12 +301,22 @@ def collect(
     }
     downloaded_count = 0
     skipped_count = 0
+    total = len(all_versions)
 
-    for version in all_versions:
+    def report_progress(index: int) -> None:
+        # URL·인증값은 넣지 않는다. flush는 make·uv를 거쳐도 즉시 보이게 한다.
+        if index % 10 == 0 or index == total:
+            print(
+                f"본문 {index}/{total} (수집 {downloaded_count}, 건너뜀 {skipped_count})",
+                flush=True,
+            )
+
+    for index, version in enumerate(all_versions, start=1):
         raw_path = root / f"data/raw/law/{version.rule_id}/{version.serial}.json"
         record = existing.get(version.serial)
         if _matches_existing_raw(raw_path, record):
             skipped_count += 1
+            report_progress(index)
             continue
 
         raw = client.fetch_body(version.serial)
@@ -350,6 +360,7 @@ def collect(
             },
         )
         downloaded_count += 1
+        report_progress(index)
 
     print(f"본문: 수집 {downloaded_count}개, 건너뜀 {skipped_count}개")
     return CollectSummary(
