@@ -33,7 +33,16 @@
     {
       "step": 2,
       "name": "law-api",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-26T13:39:30+0900",
+      "summary": "법제처 현행·연혁 규정 수집·정제·manifest·재개 기능과 안전한 CLI를 TDD로 구현했으며 모든 AC와 make verify(140 passed)를 통과했습니다.",
+      "completed_at": "2026-09-26T13:49:58+0900",
+      "usage": {
+        "input_tokens": 1226899,
+        "cached_input_tokens": 1147392,
+        "output_tokens": 28693,
+        "attempts": 1
+      }
     },
     {
       "step": 3,
