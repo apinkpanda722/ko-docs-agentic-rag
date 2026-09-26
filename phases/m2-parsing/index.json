@@ -1,0 +1,66 @@
+{
+  "project": "ko-docs-agentic-rag",
+  "phase": "m2-parsing",
+  "steps": [
+    {
+      "step": 0,
+      "name": "cost-ledger",
+      "status": "completed",
+      "started_at": "2026-09-26T21:16:28+0900",
+      "summary": "UTC 월 경계·VAT 포함 append-only 비용 원장과 예산 가드를 추가하고 월 기본 예산을 45달러로 동기화했으며 전체 검증 237개 및 AC를 통과했습니다.",
+      "completed_at": "2026-09-26T21:24:12+0900",
+      "usage": {
+        "input_tokens": 1286743,
+        "cached_input_tokens": 1214208,
+        "output_tokens": 17120,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 1,
+      "name": "parse-schema",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "name": "parse-runner",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "name": "docling-adapter",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "name": "upstage-adapter",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "name": "article-splitter",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "name": "article-score",
+      "status": "pending"
+    },
+    {
+      "step": 7,
+      "name": "table-golden",
+      "status": "pending"
+    },
+    {
+      "step": 8,
+      "name": "report-docs",
+      "status": "pending"
+    },
+    {
+      "step": 9,
+      "name": "upstage-hwp-direct",
+      "status": "pending"
+    }
+  ],
+  "created_at": "2026-09-26T21:16:28+0900"
+}
