@@ -965,3 +965,11 @@ def test_first_document_401_stops_run_before_second_request(
     assert len(requested) == 1
     assert "401" in captured.err
     assert SECRET not in captured.out + captured.err
+
+
+def test_default_timeout_is_600_seconds_for_long_documents() -> None:
+    client = UpstageClient(SECRET)
+    try:
+        assert client._client.timeout.read == 600.0
+    finally:
+        client._client.close()

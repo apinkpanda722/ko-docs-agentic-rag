@@ -97,7 +97,9 @@ class UpstageClient:
         min_interval_s: float = 1.0,
         max_retries: int = 5,
         backoff_s: float = 2.0,
-        timeout_s: float = 300.0,
+        # Post-send timeouts are not retried (billing uncertain), so allow slow
+        # sync parses of long documents (target max 85 pages). No cost impact.
+        timeout_s: float = 600.0,
         clock: Callable[[], float] = time.time,
         sleep: Callable[[float], None] = time.sleep,
     ) -> None:
