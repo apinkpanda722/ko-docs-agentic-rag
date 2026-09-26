@@ -75,7 +75,16 @@
     {
       "step": 5,
       "name": "article-splitter",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-26T22:11:45+0900",
+      "summary": "파서 독립 조문·부칙·별표 분할기와 잡음 제거·법제처 변환 및 12개 테스트를 추가했으며, 인라인 AC와 make verify(315 passed)를 통과했습니다.",
+      "completed_at": "2026-09-26T22:22:55+0900",
+      "usage": {
+        "input_tokens": 1843429,
+        "cached_input_tokens": 1756032,
+        "output_tokens": 30580,
+        "attempts": 1
+      }
     },
     {
       "step": 6,
