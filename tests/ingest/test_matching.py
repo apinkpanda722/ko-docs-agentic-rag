@@ -423,3 +423,93 @@ def test_run_ignores_duplicate_manifest_lines_and_uses_last_law_values(
     assert records[0]["alio_sha256"] == "b" * 64
     assert "중복" not in records[0]["basis"]
     assert summary.confidence_counts == {"exact": 1, "approximate": 0, "failed": 1}
+
+
+CONFLICT_TITLE = "한국지능정보사회진흥원 공직자의 이해충돌 방지제도 운영지침"
+
+
+def _conflict_law_records(*, second_has_current: bool) -> list[dict[str, object]]:
+    """법제처에 같은 규정이 두 rule_id로 등록된 실측 형태."""
+    return [
+        law_version(
+            "a-2022",
+            rule_id="2126307",
+            name="(한국지능정보사회진흥원) 공직자의 이해충돌 방지제도 운영지침",
+            issued_date="2022-06-27",
+        ),
+        law_version(
+            "a-2024",
+            rule_id="2126307",
+            name="(한국지능정보사회진흥원) 공직자의 이해충돌 방지제도 운영지침",
+            issued_date="2024-09-23",
+        ),
+        law_version(
+            "a-2026",
+            rule_id="2126307",
+            name="(한국지능정보사회진흥원) 공직자의 이해충돌 방지제도 운영지침",
+            issued_date="2026-06-08",
+            is_current=True,
+        ),
+        law_version(
+            "b-2022",
+            rule_id="2135703",
+            name=CONFLICT_TITLE,
+            issued_date="2022-06-27",
+        ),
+        law_version(
+            "b-2024",
+            rule_id="2135703",
+            name=CONFLICT_TITLE,
+            issued_date="2024-09-23",
+            is_current=second_has_current,
+        ),
+    ]
+
+
+def test_run_prefers_the_only_rule_id_with_a_current_version(tmp_path: Path) -> None:
+    alio = alio_record(
+        rule_no="48177",
+        rule_title=CONFLICT_TITLE,
+        file_no="5",
+        local_path="data/raw/alio/48177/5__지침.hwp",
+        filename_date={"date": "2024-09-23", "precision": "day"},
+    )
+    write_jsonl(
+        tmp_path / "data/manifest/law_api.jsonl",
+        _conflict_law_records(second_has_current=False),
+    )
+    write_jsonl(tmp_path / "data/manifest/alio.jsonl", [alio])
+
+    summary = run(tmp_path)
+
+    record = read_jsonl(tmp_path / "data/manifest/version_matches.jsonl")[0]
+    assert record["law_rule_id"] == "2126307"
+    assert record["law_serial"] == "a-2024"
+    assert record["confidence"] == "exact"
+    assert "현행 우선: 후보 rule_id 2126307, 2135703 중 현행 2126307" in record["basis"]
+    assert summary.rule_match_failures == ()
+
+
+def test_run_fails_when_more_than_one_candidate_rule_id_is_current(
+    tmp_path: Path,
+) -> None:
+    alio = alio_record(
+        rule_no="48177",
+        rule_title=CONFLICT_TITLE,
+        file_no="5",
+        local_path="data/raw/alio/48177/5__지침.hwp",
+        filename_date={"date": "2024-09-23", "precision": "day"},
+    )
+    write_jsonl(
+        tmp_path / "data/manifest/law_api.jsonl",
+        _conflict_law_records(second_has_current=True),
+    )
+    write_jsonl(tmp_path / "data/manifest/alio.jsonl", [alio])
+
+    summary = run(tmp_path)
+
+    record = read_jsonl(tmp_path / "data/manifest/version_matches.jsonl")[0]
+    assert record["confidence"] == "failed"
+    assert record["law_rule_id"] is None
+    assert "모호" in record["basis"]
+    assert summary.rule_match_failures == (CONFLICT_TITLE,)

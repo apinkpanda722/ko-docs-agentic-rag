@@ -95,13 +95,46 @@ def match_rules(
     law_records: Iterable[Mapping[str, object]],
 ) -> dict[str, str | None]:
     """Match each ALIO rule number only when its normalized name is unambiguous."""
-    law_ids_by_name = _law_ids_by_name(law_records)
-    titles_by_rule = _alio_titles_by_rule(alio_records)
-    matches: dict[str, str | None] = {}
-    for rule_no, title in titles_by_rule.items():
+    return {
+        rule_no: rule_id
+        for rule_no, (rule_id, _note) in _match_rules_with_notes(
+            alio_records, law_records
+        ).items()
+    }
+
+
+def _match_rules_with_notes(
+    alio_records: Iterable[Mapping[str, object]],
+    law_records: Iterable[Mapping[str, object]],
+) -> dict[str, tuple[str | None, str | None]]:
+    """rule_no → (law rule_id, 현행 우선으로 고른 경우의 근거)."""
+    law_list = list(law_records)
+    law_ids_by_name = _law_ids_by_name(law_list)
+    current_rule_ids = {
+        rule_id
+        for record in law_list
+        if record.get("is_current") is True
+        and (rule_id := _optional_string(record.get("rule_id"))) is not None
+    }
+    matches: dict[str, tuple[str | None, str | None]] = {}
+    for rule_no, title in _alio_titles_by_rule(alio_records).items():
         candidates = law_ids_by_name.get(normalize_rule_name(title), set())
-        matches[rule_no] = next(iter(candidates)) if len(candidates) == 1 else None
+        matches[rule_no] = _resolve_rule_id(candidates, current_rule_ids)
     return matches
+
+
+def _resolve_rule_id(
+    candidates: set[str],
+    current_rule_ids: set[str],
+) -> tuple[str | None, str | None]:
+    if len(candidates) == 1:
+        return next(iter(candidates)), None
+    # 같은 규정이 두 rule_id로 등록된 경우(한쪽은 연혁만) 현행을 가진 쪽이 하나면 그것을 쓴다.
+    current = sorted(candidates & current_rule_ids)
+    if len(candidates) > 1 and len(current) == 1:
+        listed = ", ".join(sorted(candidates, key=_identifier_sort_key))
+        return current[0], f"현행 우선: 후보 rule_id {listed} 중 현행 {current[0]}"
+    return None, None
 
 
 def match_file(
@@ -252,7 +285,10 @@ def run(root: Path, *, approx_days: int = 7) -> MatchSummary:
             record.get("zip_member_path"),
         ),
     )
-    rule_matches = match_rules(alio_records, law_records)
+    rule_matches_with_notes = _match_rules_with_notes(alio_records, law_records)
+    rule_matches = {
+        rule_no: rule_id for rule_no, (rule_id, _) in rule_matches_with_notes.items()
+    }
     titles_by_rule = _alio_titles_by_rule(alio_records)
     law_by_rule_id: dict[str, list[Mapping[str, object]]] = defaultdict(list)
     law_by_name: dict[str, list[Mapping[str, object]]] = defaultdict(list)
@@ -306,14 +342,16 @@ def run(root: Path, *, approx_days: int = 7) -> MatchSummary:
         is_latest_file = _is_direct_file(alio) and _string(
             alio.get("file_no")
         ) == latest_direct_file_nos.get(rule_no)
-        matches.append(
-            match_file(
-                alio,
-                law_by_rule_id[law_rule_id],
-                is_latest_file=is_latest_file,
-                approx_days=approx_days,
-            )
+        match = match_file(
+            alio,
+            law_by_rule_id[law_rule_id],
+            is_latest_file=is_latest_file,
+            approx_days=approx_days,
         )
+        rule_note = rule_matches_with_notes[rule_no][1]
+        if rule_note is not None:
+            match = replace(match, basis=f"{rule_note}; {match.basis}")
+        matches.append(match)
 
     matches = _mark_duplicate_version_matches(matches)
     matched_at = now_iso()
