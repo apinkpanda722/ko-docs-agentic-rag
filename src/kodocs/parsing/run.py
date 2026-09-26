@@ -50,6 +50,7 @@ PARSE_RUN_REQUIRED_FIELDS = frozenset(
         "blocks",
         "tables",
         "invalid_tables",
+        "init_s",
         "error_type",
         "error",
         "ts",
@@ -77,6 +78,10 @@ class Adapter(Protocol):
 
     def parse(self, item: ParseInput, *, root: Path) -> ParsedDocument: ...
 
+    # Optional: adapters with a one-time model load may define
+    # ``prepare() -> None``. The runner calls it once, before the first parse,
+    # and records its duration as ``init_s`` instead of in any ``elapsed_s``.
+
 
 @dataclass(frozen=True)
 class RunSummary:
@@ -88,7 +93,8 @@ class RunSummary:
     empty_count: int
     total_page_count: int
     elapsed_s: float
-    seconds_per_page: float
+    seconds_per_page: float  # excludes init_s
+    init_s: float | None = None  # one-time adapter preparation (model loading)
 
 
 class ParseRunError(RuntimeError):
@@ -222,6 +228,8 @@ def run(
     empty_count = 0
     total_page_count = 0
     total = len(inputs)
+    prepared = False
+    init_s: float | None = None
 
     def report_progress(index: int) -> None:
         if index % progress_every == 0 or index == total:
@@ -256,6 +264,7 @@ def run(
                 stats=None,
                 error_type=error_type,
                 error=error,
+                init_s=init_s,
             )
             _append_run(manifest_path, record)
             latest_by_key[key] = record
@@ -284,11 +293,18 @@ def run(
                 stats=stats,
                 error_type=None,
                 error=None,
+                init_s=init_s,
             )
             _append_run(manifest_path, record)
             latest_by_key[key] = record
             report_progress(index)
             continue
+
+        if not prepared:
+            prepared = True
+            init_s = _prepare(adapter)
+            # Model loading must not count toward this document's elapsed_s.
+            item_started = time.perf_counter()
 
         try:
             document = adapter.parse(item, root=root)
@@ -316,6 +332,7 @@ def run(
                 stats=None,
                 error_type=type(exc).__name__,
                 error=_first_line(str(exc)),
+                init_s=init_s,
             )
             _append_run(manifest_path, record)
             latest_by_key[key] = record
@@ -342,13 +359,15 @@ def run(
             stats=stats,
             error_type=None,
             error=None,
+            init_s=init_s,
         )
         _append_run(manifest_path, record)
         latest_by_key[key] = record
         report_progress(index)
 
     elapsed_s = time.perf_counter() - started
-    seconds_per_page = elapsed_s / total_page_count if total_page_count else 0.0
+    parse_elapsed_s = elapsed_s - (init_s or 0.0)
+    seconds_per_page = parse_elapsed_s / total_page_count if total_page_count else 0.0
     summary = RunSummary(
         ok_count=ok_count,
         skipped_count=skipped_count,
@@ -357,11 +376,14 @@ def run(
         total_page_count=total_page_count,
         elapsed_s=elapsed_s,
         seconds_per_page=seconds_per_page,
+        init_s=init_s,
     )
+    init_text = "none" if init_s is None else f"{init_s:.1f}s"
     print(
         f"[{adapter.name}] summary ok={ok_count} skipped={skipped_count} "
         f"failed={failed_count} empty={empty_count} pages={total_page_count} "
-        f"elapsed={elapsed_s:.1f}s sec/page={seconds_per_page:.3f}",
+        f"elapsed={elapsed_s:.1f}s init={init_text} "
+        f"sec/page={seconds_per_page:.3f} (init 제외)",
         file=out,
     )
     return summary
@@ -390,6 +412,24 @@ def main(argv: list[str] | None = None) -> int:
         print(f"파싱 실행 실패: {exc}", file=sys.stderr)
         return 1
     return 1 if summary.failed_count else 0
+
+
+def _prepare(adapter: Adapter) -> float | None:
+    """Run the adapter's optional one-time preparation and return its duration."""
+    prepare = getattr(adapter, "prepare", None)
+    if not callable(prepare):
+        return None
+    started = time.perf_counter()
+    try:
+        prepare()
+    except BudgetExceededError:
+        raise
+    # Without a prepared parser no input can succeed, so the run stops here.
+    except Exception as exc:
+        raise ParseRunError(
+            f"파서 초기화 실패: {type(exc).__name__}: {_first_line(str(exc))}"
+        ) from exc
+    return time.perf_counter() - started
 
 
 def _validate_input(
@@ -477,6 +517,7 @@ def _record(
     stats: Mapping[str, int] | None,
     error_type: str | None,
     error: str | None,
+    init_s: float | None,
 ) -> dict[str, object]:
     return {
         "run_id": run_id,
@@ -494,6 +535,7 @@ def _record(
         "blocks": stats["blocks"] if stats is not None else 0,
         "tables": stats["tables"] if stats is not None else 0,
         "invalid_tables": stats["invalid_tables"] if stats is not None else 0,
+        "init_s": init_s,
         "error_type": error_type,
         "error": _first_line(error) if error is not None else None,
         "ts": now_iso(),

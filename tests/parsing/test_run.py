@@ -331,3 +331,68 @@ def test_budget_exceeded_stops_batch_without_failed_record(tmp_path: Path) -> No
 
     assert adapter.calls == ["budget"]
     assert not (tmp_path / "data/manifest/parse_runs.jsonl").exists()
+
+
+class PreparingAdapter(FakeAdapter):
+    """Adapter whose one-time initialization is slow."""
+
+    def __init__(self, clock: list[float], **kwargs: object) -> None:
+        super().__init__(**kwargs)  # type: ignore[arg-type]
+        self.clock = clock
+        self.prepare_calls = 0
+
+    def prepare(self) -> None:
+        self.prepare_calls += 1
+        self.clock[0] += 100.0
+
+    def parse(self, item: ParseInput, *, root: Path) -> ParsedDocument:
+        self.clock[0] += 1.0
+        return super().parse(item, root=root)
+
+
+def test_run_prepares_once_and_records_init_time_separately(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import kodocs.parsing.run as run_module
+
+    clock = [0.0]
+    monkeypatch.setattr(run_module.time, "perf_counter", lambda: clock[0])
+    adapter = PreparingAdapter(clock)
+    inputs = [
+        _input(tmp_path, "a.pdf", page_count=2),
+        _input(tmp_path, "b.pdf", page_count=2),
+    ]
+
+    summary = run(tmp_path, adapter, inputs, out=io.StringIO())
+
+    records = _records(tmp_path)
+    assert adapter.prepare_calls == 1
+    assert summary.init_s == 100.0
+    assert [record["elapsed_s"] for record in records] == [1.0, 1.0]
+    assert all(record["init_s"] == 100.0 for record in records)
+    assert summary.seconds_per_page == pytest.approx(0.5)
+
+
+def test_run_skips_prepare_when_every_input_is_already_parsed(tmp_path: Path) -> None:
+    inputs = [_input(tmp_path, "a.pdf")]
+    run(tmp_path, FakeAdapter(), inputs, out=io.StringIO())
+    adapter = PreparingAdapter([0.0])
+
+    summary = run(tmp_path, adapter, inputs, out=io.StringIO())
+
+    assert adapter.prepare_calls == 0
+    assert summary.init_s is None
+    assert _records(tmp_path)[-1]["init_s"] is None
+
+
+def test_run_stops_when_adapter_initialization_fails(tmp_path: Path) -> None:
+    class BrokenPrepare(FakeAdapter):
+        def prepare(self) -> None:
+            raise RuntimeError("model download missing")
+
+    adapter = BrokenPrepare()
+
+    with pytest.raises(ParseRunError, match="RuntimeError"):
+        run(tmp_path, adapter, [_input(tmp_path, "a.pdf")], out=io.StringIO())
+    assert adapter.calls == []

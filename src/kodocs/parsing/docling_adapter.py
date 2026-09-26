@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
@@ -51,6 +52,8 @@ class DoclingSettings:
     do_ocr: bool = False
     do_table_structure: bool = True
     do_cell_matching: bool = True
+    # Docling AcceleratorDevice value: "auto" | "cpu" | "mps" | "cuda".
+    device: str = "auto"
 
 
 class DoclingAdapter:
@@ -67,6 +70,7 @@ class DoclingAdapter:
         self._settings = settings
         self._converter_factory = converter_factory
         self._converter: object | None = None
+        self._torch_devices: Mapping[str, bool | None] | None = None
         self.parser_version = _package_version("docling")
 
     def settings(self) -> Mapping[str, object]:
@@ -75,16 +79,23 @@ class DoclingAdapter:
             "do_ocr": self._settings.do_ocr,
             "do_table_structure": self._settings.do_table_structure,
             "do_cell_matching": self._settings.do_cell_matching,
+            "device": self._settings.device,
+            **self._torch_device_flags(),
             "docling_version": self.parser_version,
             "docling_core_version": _package_version("docling-core"),
             "torch_version": _package_version("torch"),
         }
 
+    def prepare(self) -> None:
+        """Build the converter and load its models before any document is timed."""
+        self._get_converter()
+
     def parse(self, item: ParseInput, *, root: Path) -> ParsedDocument:
         """Convert one PDF and normalize the Docling document to common schema."""
         current_settings = dict(self.settings())
-        started = time.perf_counter()
         converter = self._get_converter()
+        # Only the conversion is timed; model loading happens in prepare().
+        started = time.perf_counter()
         try:
             result = converter.convert(item.input_path)  # type: ignore[attr-defined]
             doc = result.document
@@ -100,6 +111,11 @@ class DoclingAdapter:
             settings=current_settings,
             elapsed_s=elapsed_s,
         )
+
+    def _torch_device_flags(self) -> Mapping[str, bool | None]:
+        if self._torch_devices is None:
+            self._torch_devices = _torch_device_availability()
+        return self._torch_devices
 
     def _get_converter(self) -> object:
         if self._converter is None:
@@ -166,6 +182,10 @@ def document_to_parsed(
 def _default_converter_factory(settings: DoclingSettings) -> object:
     """Build Docling using lazy imports so the default environment stays small."""
     try:
+        from docling.datamodel.accelerator_options import (
+            AcceleratorDevice,
+            AcceleratorOptions,
+        )
         from docling.datamodel.base_models import InputFormat
         from docling.datamodel.pipeline_options import PdfPipelineOptions
         from docling.document_converter import DocumentConverter, PdfFormatOption
@@ -176,11 +196,32 @@ def _default_converter_factory(settings: DoclingSettings) -> object:
     options.do_ocr = settings.do_ocr
     options.do_table_structure = settings.do_table_structure
     options.table_structure_options.do_cell_matching = settings.do_cell_matching
-    return DocumentConverter(
+    options.accelerator_options = AcceleratorOptions(
+        device=AcceleratorDevice(settings.device)
+    )
+    converter = DocumentConverter(
         format_options={
             InputFormat.PDF: PdfFormatOption(pipeline_options=options),
         }
     )
+    # Official warm-up API: builds the PDF pipeline (layout/table models) and
+    # caches it so later convert() calls reuse it.
+    converter.initialize_pipeline(InputFormat.PDF)
+    return converter
+
+
+def _torch_device_availability() -> dict[str, bool | None]:
+    """Report which torch accelerators exist; None when torch is not installed."""
+    if importlib.util.find_spec("torch") is None:
+        return {"torch_mps_available": None, "torch_cuda_available": None}
+    try:
+        import torch
+    except Exception:  # noqa: BLE001 - availability probe must not fail settings
+        return {"torch_mps_available": None, "torch_cuda_available": None}
+    return {
+        "torch_mps_available": bool(torch.backends.mps.is_available()),
+        "torch_cuda_available": bool(torch.cuda.is_available()),
+    }
 
 
 def _build_docling_table(

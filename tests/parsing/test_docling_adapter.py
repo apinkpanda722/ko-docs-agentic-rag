@@ -90,10 +90,22 @@ def _settings() -> dict[str, object]:
         "do_ocr": False,
         "do_table_structure": True,
         "do_cell_matching": True,
+        "device": "auto",
+        "torch_mps_available": None,
+        "torch_cuda_available": None,
         "docling_version": "2.68.0",
         "docling_core_version": "2.50.0",
         "torch_version": "2.8.0",
     }
+
+
+@pytest.fixture(autouse=True)
+def _no_torch_probe(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        docling_adapter,
+        "_torch_device_availability",
+        lambda: {"torch_mps_available": None, "torch_cuda_available": None},
+    )
 
 
 def test_settings_record_options_and_optional_package_versions(
@@ -300,3 +312,68 @@ def test_missing_docling_group_has_install_guidance(
         ParseError, match=r"uv sync --group docling.*make docling-models"
     ):
         adapter.parse(_input(tmp_path), root=tmp_path)
+
+
+def test_settings_record_device_setting_and_torch_availability(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        docling_adapter,
+        "_torch_device_availability",
+        lambda: {"torch_mps_available": True, "torch_cuda_available": False},
+    )
+
+    actual = DoclingAdapter(DoclingSettings(device="cpu")).settings()
+
+    assert actual["device"] == "cpu"
+    assert actual["torch_mps_available"] is True
+    assert actual["torch_cuda_available"] is False
+    assert settings_hash(actual) != settings_hash(DoclingAdapter().settings())
+
+
+def test_prepare_loads_converter_once_and_parse_times_only_conversion(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    clock = [0.0]
+    monkeypatch.setattr(docling_adapter.time, "perf_counter", lambda: clock[0])
+
+    class SlowConverter(FakeConverter):
+        def convert(self, path: Path) -> object:
+            clock[0] += 2.0
+            return super().convert(path)
+
+    created: list[DoclingSettings] = []
+
+    def slow_factory(settings: DoclingSettings) -> object:
+        created.append(settings)
+        clock[0] += 100.0  # model loading / pipeline initialization
+        return SlowConverter([FakeDocument([]), FakeDocument([])])
+
+    adapter = DoclingAdapter(converter_factory=slow_factory)
+    adapter.prepare()
+    first = adapter.parse(_input(tmp_path, "a.pdf"), root=tmp_path)
+    second = adapter.parse(_input(tmp_path, "b.pdf"), root=tmp_path)
+
+    assert len(created) == 1
+    assert first.elapsed_s == 2.0
+    assert second.elapsed_s == 2.0
+
+
+def test_parse_without_prepare_still_excludes_converter_creation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    clock = [0.0]
+    monkeypatch.setattr(docling_adapter.time, "perf_counter", lambda: clock[0])
+
+    def slow_factory(settings: DoclingSettings) -> object:
+        del settings
+        clock[0] += 100.0
+        return FakeConverter([FakeDocument([])])
+
+    parsed = DoclingAdapter(converter_factory=slow_factory).parse(
+        _input(tmp_path), root=tmp_path
+    )
+
+    assert parsed.elapsed_s == 0.0
