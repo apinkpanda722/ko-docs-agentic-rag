@@ -325,8 +325,18 @@ def run(
     skipped_count = 0
     total_page_count = 0
     excluded_file_kinds: Counter[str] = Counter()
+    total = len(alio_records)
 
-    for source_record in alio_records:
+    def report_progress(index: int) -> None:
+        # flush는 make·uv를 거쳐도 즉시 보이게 한다.
+        if index % 10 == 0 or index == total:
+            print(
+                f"변환 {index}/{total} (성공 {success_count}, 실패 {failure_count}, "
+                f"건너뜀 {skipped_count}, 제외 {sum(excluded_file_kinds.values())})",
+                flush=True,
+            )
+
+    for index, source_record in enumerate(alio_records, start=1):
         source_path_text = _required_text(source_record, "local_path")
         source_path = _source_path(root, source_path_text)
         try:
@@ -346,10 +356,12 @@ def run(
                     error=f"원본 파일을 읽을 수 없습니다: {type(exc).__name__}: {exc}",
                 ),
             )
+            report_progress(index)
             continue
 
         if source_kind not in CONVERTIBLE_KINDS:
             excluded_file_kinds[source_kind.value] += 1
+            report_progress(index)
             continue
 
         out_pdf = output_pdf_path(root, source_record)
@@ -357,6 +369,7 @@ def run(
         existing = conversion_by_output.get(output_key)
         if _is_current_success(root, out_pdf, existing):
             skipped_count += 1
+            report_progress(index)
             continue
 
         try:
@@ -398,6 +411,7 @@ def run(
             )
             _append_conversion(conversion_manifest, converted)
             conversion_by_output[output_key] = converted
+            report_progress(index)
             continue
 
         failure_count += 1
@@ -413,6 +427,7 @@ def run(
         )
         _append_conversion(conversion_manifest, failed)
         conversion_by_output[output_key] = failed
+        report_progress(index)
 
     summary = ConvertSummary(
         success_count=success_count,
