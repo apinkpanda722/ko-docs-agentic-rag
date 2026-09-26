@@ -1,4 +1,4 @@
-.PHONY: verify up down logs test-integration collect-law
+.PHONY: verify up down logs test-integration collect-law collect-alio
 
 # 하네스의 단일 검증 진입점. Stop hook, scripts/execute.py, step AC가 모두 이 타깃을 호출한다.
 verify:
@@ -20,3 +20,6 @@ test-integration:
 
 collect-law:
 	uv run python -m kodocs.ingest.law_api
+
+collect-alio:
+	uv run python -m kodocs.ingest.alio
