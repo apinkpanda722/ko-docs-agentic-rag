@@ -21,7 +21,9 @@ from kodocs.ingest.manifest import (
     repo_relative,
     sha256_file,
 )
-from kodocs.parsing.pypdf_adapter import PARSER_NAME, parse_pdf
+from kodocs.parsing.docling_adapter import DoclingAdapter
+from kodocs.parsing.pypdf_adapter import PARSER_NAME as PYPDF_PARSER_NAME
+from kodocs.parsing.pypdf_adapter import parse_pdf
 from kodocs.parsing.schema import (
     ParsedDocument,
     content_stats,
@@ -94,7 +96,7 @@ class ParseRunError(RuntimeError):
 
 
 class _PypdfAdapter:
-    name = PARSER_NAME
+    name = PYPDF_PARSER_NAME
 
     def __init__(self) -> None:
         self.parser_version = version("pypdf")
@@ -106,7 +108,10 @@ class _PypdfAdapter:
         return parse_pdf(item.input_path, root=root)
 
 
-ADAPTERS: dict[str, Callable[[], Adapter]] = {"pypdf": _PypdfAdapter}
+ADAPTERS: dict[str, Callable[[], Adapter]] = {
+    "docling": DoclingAdapter,
+    "pypdf": _PypdfAdapter,
+}
 
 
 def load_inputs(root: Path, *, limit: int | None = None) -> list[ParseInput]:

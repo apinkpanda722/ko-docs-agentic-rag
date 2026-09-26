@@ -1,4 +1,4 @@
-.PHONY: verify up down logs test-integration collect-law collect-alio match-versions convert-hwp parse-targets parse-pypdf
+.PHONY: verify up down logs test-integration collect-law collect-alio match-versions convert-hwp parse-targets parse-pypdf docling-models parse-docling
 
 # 하네스의 단일 검증 진입점. Stop hook, scripts/execute.py, step AC가 모두 이 타깃을 호출한다.
 verify:
@@ -35,3 +35,9 @@ parse-targets:
 
 parse-pypdf:
 	uv run python -m kodocs.parsing.run --parser pypdf
+
+docling-models:
+	uv run --group docling docling-tools models download
+
+parse-docling:
+	uv run --group docling python -m kodocs.parsing.run --parser docling
