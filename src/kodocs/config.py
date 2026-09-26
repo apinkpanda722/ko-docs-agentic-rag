@@ -12,6 +12,7 @@ KEY_ENV_VARS: tuple[str, ...] = (
     "OPENAI_API_KEY",
     "GEMINI_API_KEY",
     "UPSTAGE_API_KEY",
+    "LAW_OPEN_API_KEY",
 )
 
 DEFAULT_MONTHLY_BUDGET_USD = 35.0
