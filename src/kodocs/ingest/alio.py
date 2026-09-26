@@ -44,7 +44,7 @@ _KOREAN_YEAR_DATE = re.compile(r"(?<![\d-])(\d{4})년(?:도)?")
 _RULE_DATE = re.compile(r"^(\d{4})[.\-](\d{1,2})[.\-](\d{1,2})$")
 _COMPACT_RULE_DATE = re.compile(r"^(\d{4})(\d{2})(\d{2})$")
 _FAILURE_REQUIRED_FIELDS = frozenset(
-    {"rule_no", "file_no", "file_name", "reason", "collected_at"}
+    {"rule_no", "rule_title", "file_no", "file_name", "reason", "collected_at"}
 )
 
 
@@ -257,7 +257,7 @@ class AlioClient:
 
 
 def extract_zip(zip_path: Path, dest_dir: Path) -> list[Path]:
-    """Safely extract one plain zip, restoring legacy cp949 member names."""
+    """Safely extract one plain zip, restoring flagless UTF-8/cp949 member names."""
     destination = dest_dir.resolve()
     destination.mkdir(parents=True, exist_ok=True)
     extracted: list[Path] = []
@@ -337,8 +337,20 @@ def collect(
     failure_count = 0
     skipped_count = 0
 
-    for rule_no, _listed_title in selected_rules:
-        rule = client.fetch_rule(rule_no)
+    for rule_no, listed_title in selected_rules:
+        try:
+            rule = client.fetch_rule(rule_no)
+        except (httpx.HTTPError, AlioError) as exc:
+            _append_failure(
+                failure_path,
+                rule_no=rule_no,
+                rule_title=listed_title,
+                file_no="-",
+                file_name="-",
+                reason=f"detail failed: {type(exc).__name__}: {exc}",
+            )
+            failure_count += 1
+            continue
         for file_ref in rule.files:
             download_url = _download_url(file_ref.file_no)
             raw_path = (
@@ -357,9 +369,8 @@ def collect(
                 except (httpx.HTTPError, AlioError) as exc:
                     _append_failure(
                         failure_path,
-                        rule,
-                        file_ref,
-                        f"download failed: {type(exc).__name__}: {exc}",
+                        **_failure_target(rule, file_ref),
+                        reason=f"download failed: {type(exc).__name__}: {exc}",
                     )
                     failure_count += 1
                     continue
@@ -369,9 +380,8 @@ def collect(
                     raw_path.unlink(missing_ok=True)
                     _append_failure(
                         failure_path,
-                        rule,
-                        file_ref,
-                        f"invalid file kind: {kind.value}",
+                        **_failure_target(rule, file_ref),
+                        reason=f"invalid file kind: {kind.value}",
                     )
                     failure_count += 1
                     continue
@@ -397,7 +407,18 @@ def collect(
                 zip_dir = (
                     root / "data/raw/alio" / rule.rule_no / f"{file_ref.file_no}__zip"
                 )
-                for member_path in extract_zip(raw_path, zip_dir):
+                try:
+                    member_paths = extract_zip(raw_path, zip_dir)
+                except AlioError as exc:
+                    # 원본 zip 레코드는 manifest에 남기고 다음 파일로 넘어간다.
+                    _append_failure(
+                        failure_path,
+                        **_failure_target(rule, file_ref),
+                        reason=f"zip extract failed: {exc}",
+                    )
+                    failure_count += 1
+                    continue
+                for member_path in member_paths:
                     member_relative = member_path.relative_to(
                         zip_dir.resolve()
                     ).as_posix()
@@ -575,12 +596,22 @@ def _safe_file_name(file_name: str) -> str:
 
 
 def _decode_zip_member_name(file_name: str, flag_bits: int) -> str:
+    """Undo zipfile's cp437 decoding when the UTF-8 flag is absent.
+
+    Flagless archives may still hold UTF-8 names, so try UTF-8 before cp949.
+    """
     if flag_bits & 0x800:
         return file_name
     try:
-        return file_name.encode("cp437").decode("cp949")
-    except (UnicodeEncodeError, UnicodeDecodeError):
+        raw = file_name.encode("cp437")
+    except UnicodeEncodeError:
         return file_name
+    for encoding in ("utf-8", "cp949"):
+        try:
+            return raw.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+    return file_name
 
 
 def _unsafe_zip_member(member_name: str, member_path: PurePosixPath) -> bool:
@@ -630,18 +661,31 @@ def _file_record(
     return record
 
 
+def _failure_target(rule: AlioRule, file_ref: AlioFileRef) -> dict[str, str]:
+    return {
+        "rule_no": rule.rule_no,
+        "rule_title": rule.title,
+        "file_no": file_ref.file_no,
+        "file_name": file_ref.file_name,
+    }
+
+
 def _append_failure(
     failure_path: Path,
-    rule: AlioRule,
-    file_ref: AlioFileRef,
+    *,
+    rule_no: str,
+    rule_title: str,
+    file_no: str,
+    file_name: str,
     reason: str,
 ) -> None:
     append_record(
         failure_path,
         {
-            "rule_no": rule.rule_no,
-            "file_no": file_ref.file_no,
-            "file_name": file_ref.file_name,
+            "rule_no": rule_no,
+            "rule_title": rule_title,
+            "file_no": file_no,
+            "file_name": file_name,
             "reason": reason,
             "collected_at": now_iso(),
         },

@@ -461,3 +461,125 @@ def test_cli_rejects_too_short_interval_before_constructing_http(
     assert exit_code == 2
     assert constructed is False
     assert "0.5" in capsys.readouterr().err
+
+
+class FlaglessUtf8ZipInfo(ZipInfo):
+    """Write a member with UTF-8 bytes but without the UTF-8 filename flag."""
+
+    def _encodeFilenameFlags(self) -> tuple[bytes, int]:
+        return self.filename.encode("utf-8"), self.flag_bits & ~0x800
+
+
+def test_extract_zip_decodes_flagless_utf8_and_cp949_names(tmp_path: Path) -> None:
+    archive_path = tmp_path / "bundle.zip"
+    with ZipFile(archive_path, "w") as archive:
+        archive.writestr(
+            FlaglessUtf8ZipInfo("여비규정(2024년 11월 개정).hwp"), HWP3_HEADER
+        )
+        archive.writestr(
+            Cp949ZipInfo("사택 운영지침(2021년 3월 16일).hwp"), HWP3_HEADER
+        )
+    destination = tmp_path / "expanded"
+
+    extracted = extract_zip(archive_path, destination)
+
+    assert {path.relative_to(destination).as_posix() for path in extracted} == {
+        "여비규정(2024년 11월 개정).hwp",
+        "사택 운영지침(2021년 3월 16일).hwp",
+    }
+
+
+def _two_rule_handler(
+    detail: Callable[[httpx.Request, str], httpx.Response],
+    downloads: dict[str, bytes],
+) -> Callable[[httpx.Request], httpx.Response]:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("itemReportListSusi.json"):
+            return httpx.Response(
+                200,
+                json=list_payload(("1", "첫 규정"), ("2", "둘째 규정")),
+                request=request,
+            )
+        if request.url.path.endswith("findRuleDtl.json"):
+            return detail(request, request.url.params["seq"])
+        return httpx.Response(
+            200, content=downloads[request.url.params["fileNo"]], request=request
+        )
+
+    return handler
+
+
+def test_collect_continues_after_detail_failure(tmp_path: Path) -> None:
+    def detail(request: httpx.Request, rule_no: str) -> httpx.Response:
+        if rule_no == "1":
+            return httpx.Response(500, request=request)
+        return httpx.Response(
+            200,
+            json=detail_payload(rule_no, title="둘째 규정", bfiles="201|둘째.hwp"),
+            request=request,
+        )
+
+    handler = _two_rule_handler(detail, {"201": hwp5_bytes()})
+    with make_http(handler) as http:
+        summary = collect(tmp_path, AlioClient(http))
+
+    assert summary.file_count == 1
+    assert summary.failure_count == 1
+    records = read_jsonl(tmp_path / "data/manifest/alio.jsonl")
+    assert [record["rule_no"] for record in records] == ["2"]
+    failures = read_jsonl(tmp_path / "data/manifest/alio_failures.jsonl")
+    assert len(failures) == 1
+    assert failures[0]["rule_no"] == "1"
+    assert failures[0]["rule_title"] == "첫 규정"
+    assert failures[0]["file_no"] == "-"
+    assert str(failures[0]["reason"]).startswith("detail failed:")
+
+
+def corrupt_member_zip_bytes(tmp_path: Path) -> bytes:
+    """A zip whose directory is valid but whose member data fails the CRC check."""
+    path = tmp_path / "corrupt.zip"
+    payload = b"ORIGINAL-MEMBER-PAYLOAD"
+    with ZipFile(path, "w") as archive:
+        archive.writestr("member.hwp", payload)
+    data = path.read_bytes()
+    assert data.count(payload) == 1
+    return data.replace(payload, b"X" * len(payload))
+
+
+def test_collect_continues_after_zip_extract_failure(tmp_path: Path) -> None:
+    def detail(request: httpx.Request, rule_no: str) -> httpx.Response:
+        bfiles = (
+            "101|과거본(2016-2024년 개정).zip" if rule_no == "1" else "201|둘째.hwp"
+        )
+        return httpx.Response(
+            200,
+            json=detail_payload(rule_no, bfiles=bfiles),
+            request=request,
+        )
+
+    downloads = {"101": corrupt_member_zip_bytes(tmp_path), "201": hwp5_bytes()}
+    with make_http(_two_rule_handler(detail, downloads)) as http:
+        summary = collect(tmp_path, AlioClient(http))
+
+    records = read_jsonl(tmp_path / "data/manifest/alio.jsonl")
+    assert [(record["file_no"], record["file_kind"]) for record in records] == [
+        ("101", "zip"),
+        ("201", "hwp5"),
+    ]
+    failures = read_jsonl(tmp_path / "data/manifest/alio_failures.jsonl")
+    assert len(failures) == 1
+    assert failures[0]["file_no"] == "101"
+    assert str(failures[0]["reason"]).startswith("zip extract failed:")
+    assert summary.failure_count == 1
+
+
+def test_collect_list_failure_still_aborts_everything(tmp_path: Path) -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("itemReportListSusi.json"):
+            return httpx.Response(500, request=request)
+        raise AssertionError("no detail or download after a list failure")
+
+    with make_http(handler) as http, pytest.raises(httpx.HTTPError):
+        collect(tmp_path, AlioClient(http))
+
+    assert not (tmp_path / "data/manifest/alio_failures.jsonl").exists()
