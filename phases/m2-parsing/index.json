@@ -103,7 +103,16 @@
     {
       "step": 7,
       "name": "table-golden",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-26T23:49:01+0900",
+      "summary": "HWPX XML 기반 표 초안 추출·검수 정답 manifest·파서별 셀 채점과 invalid 격리, gitignore·Make 타깃·TDD 테스트를 추가했으며 AC 및 make verify(365 passed)를 통과했습니다.",
+      "completed_at": "2026-09-26T23:59:55+0900",
+      "usage": {
+        "input_tokens": 1949285,
+        "cached_input_tokens": 1824128,
+        "output_tokens": 32162,
+        "attempts": 1
+      }
     },
     {
       "step": 8,
