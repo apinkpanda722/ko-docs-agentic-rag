@@ -1,4 +1,4 @@
-.PHONY: verify up down logs test-integration collect-law collect-alio match-versions convert-hwp parse-targets
+.PHONY: verify up down logs test-integration collect-law collect-alio match-versions convert-hwp parse-targets parse-pypdf
 
 # 하네스의 단일 검증 진입점. Stop hook, scripts/execute.py, step AC가 모두 이 타깃을 호출한다.
 verify:
@@ -32,3 +32,6 @@ convert-hwp:
 
 parse-targets:
 	uv run python -m kodocs.ingest.parse_targets
+
+parse-pypdf:
+	uv run python -m kodocs.parsing.run --parser pypdf

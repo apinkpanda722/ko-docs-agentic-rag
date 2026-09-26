@@ -52,6 +52,7 @@ make collect-alio   # ALIO 내부규정 원본 파일 수집(전 버전, zip 해
 make match-versions # ALIO 파일 ↔ 법제처 버전 발령일자 매칭 (네트워크 없음)
 make convert-hwp    # HWP/HWPX → PDF (LibreOffice + H2Orestart 로컬 도구 필요, 실행 시 점검), 사용자 실행
 make parse-targets  # M2 파싱 대상 목록(현행 전부 + 과거 버전 일부, 예상 페이지 수) (네트워크 없음)
+make parse-pypdf     # M2 pypdf 기준선 파싱 (로컬, 네트워크 없음), 사용자 실행
 make generate    # 합성 코퍼스 생성 — 실제 API 호출, 사용자 실행
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)

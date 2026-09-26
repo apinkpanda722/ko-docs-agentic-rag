@@ -2,7 +2,7 @@
 
 import hashlib
 import json
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
@@ -54,6 +54,7 @@ class ParsedTable:
     page: int
     block_position: int
     cells: tuple[TableCell, ...]
+    invalid_reason: str | None = None
 
 
 @dataclass(frozen=True)
@@ -114,6 +115,7 @@ def to_json(doc: ParsedDocument) -> str:
                     }
                     for cell in table.cells
                 ],
+                "invalid_reason": table.invalid_reason,
             }
             for table in doc.tables
         ],
@@ -131,6 +133,7 @@ def from_json(text: str) -> ParsedDocument:
             page=table["page"],
             block_position=table["block_position"],
             cells=tuple(TableCell(**cell) for cell in table["cells"]),
+            invalid_reason=table.get("invalid_reason"),
         )
         for table in payload.pop("tables")
     )
@@ -140,6 +143,34 @@ def from_json(text: str) -> ParsedDocument:
 def output_path(root: Path, parser: str, input_sha256: str) -> Path:
     """Return the parser- and input-addressed interim output path."""
     return root / "data/interim/parsed" / parser / f"{input_sha256}.json"
+
+
+def build_table(
+    page: int,
+    block_position: int,
+    cells: Sequence[TableCell],
+) -> tuple[ParsedTable, str]:
+    """Build one table and its block text without failing the whole document."""
+    # Local import avoids a module cycle: tables uses the schema's TableCell type.
+    from kodocs.parsing.tables import cells_to_grid, grid_to_markdown
+
+    cell_tuple = tuple(cells)
+    try:
+        text = grid_to_markdown(cells_to_grid(cell_tuple))
+    except ValueError as exc:
+        reason = _first_line(f"cell_overlap: {type(exc).__name__}: {exc}")
+        table = ParsedTable(
+            page=page,
+            block_position=block_position,
+            cells=cell_tuple,
+            invalid_reason=reason,
+        )
+        fallback = "\t".join(
+            cell.text
+            for cell in sorted(cell_tuple, key=lambda cell: (cell.row, cell.col))
+        )
+        return table, fallback
+    return ParsedTable(page=page, block_position=block_position, cells=cell_tuple), text
 
 
 def content_stats(doc: ParsedDocument) -> dict[str, int]:
@@ -152,4 +183,10 @@ def content_stats(doc: ParsedDocument) -> dict[str, int]:
         ),
         "blocks": len(doc.blocks),
         "tables": len(doc.tables),
+        "invalid_tables": sum(table.invalid_reason is not None for table in doc.tables),
     }
+
+
+def _first_line(message: str) -> str:
+    lines = message.splitlines()
+    return (lines[0] if lines else "")[:200]

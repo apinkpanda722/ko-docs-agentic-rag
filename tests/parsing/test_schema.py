@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+from dataclasses import replace
 from pathlib import Path
 
 from kodocs.parsing.schema import (
@@ -10,6 +11,7 @@ from kodocs.parsing.schema import (
     ParsedDocument,
     ParsedTable,
     TableCell,
+    build_table,
     content_stats,
     from_json,
     output_path,
@@ -92,4 +94,54 @@ def test_content_stats_counts_raw_block_text_hangul_blocks_and_tables() -> None:
         "hangul_distinct": 10,
         "blocks": 2,
         "tables": 1,
+        "invalid_tables": 0,
     }
+
+
+def test_build_table_marks_only_overlapping_table_invalid_and_round_trips() -> None:
+    invalid, fallback = build_table(
+        page=1,
+        block_position=0,
+        cells=(
+            TableCell(row=0, col=0, row_span=1, col_span=2, text="가"),
+            TableCell(row=0, col=1, row_span=1, col_span=1, text="나"),
+        ),
+    )
+    valid, markdown = build_table(
+        page=2,
+        block_position=1,
+        cells=(
+            TableCell(row=0, col=0, row_span=1, col_span=1, text="항목"),
+            TableCell(row=0, col=1, row_span=1, col_span=1, text="값"),
+            TableCell(row=1, col=0, row_span=1, col_span=1, text="이름"),
+            TableCell(row=1, col=1, row_span=1, col_span=1, text="한글"),
+        ),
+    )
+    document = replace(
+        _document(),
+        blocks=(
+            Block(page=1, kind="table", text=fallback),
+            Block(page=2, kind="table", text=markdown),
+        ),
+        tables=(invalid, valid),
+    )
+
+    restored = from_json(to_json(document))
+
+    assert fallback == "가\t나"
+    assert markdown == "|항목|값|\n|---|---|\n|이름|한글|"
+    assert restored.tables[0].cells == invalid.cells
+    assert restored.tables[0].invalid_reason is not None
+    assert restored.tables[0].invalid_reason.startswith("cell_overlap: ValueError:")
+    assert restored.tables[1] == valid
+    assert restored.tables[1].invalid_reason is None
+    assert content_stats(restored)["invalid_tables"] == 1
+
+
+def test_from_json_defaults_missing_invalid_reason_to_none() -> None:
+    payload = json.loads(to_json(_document()))
+    del payload["tables"][0]["invalid_reason"]
+
+    restored = from_json(json.dumps(payload))
+
+    assert restored.tables[0].invalid_reason is None
