@@ -59,7 +59,9 @@ def document_to_parsed(doc: object, *, item: ParseInput, root: Path, settings: M
 - 변환기는 어댑터 인스턴스당 한 번만 만든다(파일마다 모델을 다시 올리지 않게).
 - 라벨 → `BlockKind` 매핑: `title`·`section_header` → `heading`, `text`·`paragraph` → `text`, `list_item` → `list_item`, `page_header` → `header`, `page_footer` → `footer`, `caption` → `caption`, `table` → `table`, 나머지 → `other`.
   `furniture` 층 항목도 포함해 순서대로 넣는다(머리말 잡음 제거는 분할기가 라벨을 보고 한다. 파서가 머리말을 구분하는 능력도 측정 대상이다).
-- 표: `table_cells`를 `TableCell(row=start_row_offset_idx, col=start_col_offset_idx, row_span, col_span, text)`로 옮긴다. 같은 anchor가 중복으로 나오면 한 번만 넣는다. **격자화는 `tables.cells_to_grid`만 쓴다.** 표 블록 텍스트도 step 1 규칙(격자 기준 `\t`/`\n`)으로 만든다.
+- 표: `table_cells`를 `TableCell(row=start_row_offset_idx, col=start_col_offset_idx, row_span, col_span, text)`로 옮긴다. 같은 anchor가 중복으로 나오면 한 번만 넣는다. **격자화는 `tables.cells_to_grid`만 쓴다.** 표 객체와 표 블록 텍스트는 step 2의 `schema.build_table`로 만든다.
+- **표 단위 실패 격리(FP-030)**: 표 하나를 만들다 예외가 나면(`cells_to_grid`의 셀 겹침 `ValueError`, `table_cells` 속성 누락 등) 그 표만 `invalid_reason`에 사유를 적은 invalid 표로 남기고 **문서 파싱은 계속한다**. 문서 전체를 `ParseError`로 만들지 마라. 문서의 invalid 표 수는 `content_stats`의 `invalid_tables`로 실행 기록에 남는다.
+  - 테스트(필수): 가짜 문서에 **겹치는 셀을 가진 표 1개 + 정상 표 1개** → 문서 파싱 성공, `tables` 2개 중 invalid 1개(사유에 `ValueError` 포함), 정상 표 격자는 기대값과 같다.
 - 쪽 번호가 없는 항목(`prov` 비어 있음)은 직전 항목의 쪽을 쓴다.
 - docling 변환 예외는 `ParseError`로 감싸 원인 타입 이름을 남긴다(FP-011). 실행기가 기록 후 계속한다.
 - `run.ADAPTERS`에 `"docling"`을 등록한다.
@@ -85,7 +87,7 @@ uv run python -c "import kodocs.parsing.docling_adapter as m; from kodocs.parsin
 1. 위 AC 커맨드를 실행한다.
 2. 아키텍처 체크리스트를 확인한다:
    - `make verify`가 docling 미설치 상태에서 통과하는가? 테스트가 docling을 import하지 않는가?
-   - 표 격자화가 `cells_to_grid`를 거치는가?
+   - 표 격자화가 `cells_to_grid`를 거치는가? 겹치는 셀 표 1개 + 정상 표 1개 → 문서 성공·invalid 1 테스트가 있는가?
    - settings에 버전·OCR 끔·표 구조 옵션이 기록되는가?
 3. 결과를 최종 응답(JSON)으로 보고한다. `phases/` 아래 파일은 수정하지 않고 git commit도 하지 않는다:
    - 성공 → `"status": "completed"`, `"summary": "산출물 한 줄 요약"`

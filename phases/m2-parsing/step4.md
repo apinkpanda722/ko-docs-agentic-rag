@@ -87,7 +87,9 @@ def plan(root: Path, inputs: Sequence[ParseInput]) -> DryRunPlan: ...   # 캐시
 
 **응답 → 공통 스키마**
 - `elements`를 `id` 순으로 `Block(page, kind, content.text)`로 옮긴다. category 매핑: `heading1`·`heading`·`title` 계열 → `heading`, `paragraph` → `text`, `list` → `list_item`, `header` → `header`, `footer` → `footer`, `caption` → `caption`, `table` → `table`, 나머지 → `other`.
-- `category == "table"`인 요소는 `content.html`의 `<table>`을 표준 라이브러리 `html.parser`로 읽어 행마다 `(text, rowspan, colspan)` 목록을 만들고 **`tables.place_html_rows` → `TableCell`**로 바꾼다. 격자화는 `cells_to_grid`만 쓴다. `<br>`은 공백 하나.
+- `category == "table"`인 요소는 `content.html`의 `<table>`을 표준 라이브러리 `html.parser`로 읽어 행마다 `(text, rowspan, colspan)` 목록을 만들고 **`tables.place_html_rows` → `TableCell`**로 바꾼다. 격자화는 `cells_to_grid`만 쓰고, 표 객체와 표 블록 텍스트는 `schema.build_table`로 만든다. `<br>`은 공백 하나.
+- **표 단위 실패 격리(FP-030)**: 표 하나의 변환 예외(깨진 HTML, `<table>` 없음, `rowspan`이 숫자가 아님, 셀 겹침 `ValueError`)는 그 표만 invalid로 표시한다(`invalid_reason`에 사유, HTML 파싱 자체가 실패해 셀을 못 만들면 `cells=()`, 블록 텍스트는 요소의 `content.text`). **문서 파싱은 계속하고**, invalid 표 수는 실행 기록의 `invalid_tables`로 남는다. 캐시·원장 기록은 표 실패와 무관하게 유지한다.
+  - 테스트(필수): 응답에 **겹치는 셀을 가진 표 1개(예: rowspan이 다음 행의 명시 셀과 겹침) + 정상 표 1개** → 문서 파싱 성공, invalid 1개(사유 기록), 정상 표 격자는 기대값과 같다. 깨진 HTML 표 1개도 같은 방식으로 invalid가 되는지 테스트한다.
 - `parser_version`은 응답 `model`(예: `document-parse-260630`), settings에 `apiVersion`도 남긴다. `elapsed_s`는 캐시에 저장된 최초 호출 시간.
 
 ### 2. CLI 연결 — `run.py` 확장
@@ -120,6 +122,7 @@ grep -n "parse-upstage" Makefile AGENTS.md
 1. 위 AC 커맨드를 실행한다.
 2. 아키텍처 체크리스트를 확인한다:
    - 테스트: 캐시 있음 → 호출 0회, 캐시 옵션 불일치 → 호출 0회 + 오류, 429(헤더 있음/없음) 대기·재시도, 4xx 비재시도, 100쪽 초과 비호출, 상한 초과 → `BudgetExceededError`로 전체 중단, 원장 기록이 캐시 쓰기보다 먼저, 키 문자열 비노출, dry-run 네트워크 0회, 확인 입력 `n` → 호출 0회.
+   - 겹치는 셀 표 1개 + 정상 표 1개 → 문서 성공·invalid 1 테스트가 있는가?
    - `mode=standard`가 요청 폼에 실제로 들어가는가(MockTransport에서 폼 필드 검사)?
 3. 결과를 최종 응답(JSON)으로 보고한다. `phases/` 아래 파일은 수정하지 않고 git commit도 하지 않는다:
    - 성공 → `"status": "completed"`, `"summary": "산출물 한 줄 요약"`

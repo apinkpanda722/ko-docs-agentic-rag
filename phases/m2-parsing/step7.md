@@ -109,6 +109,9 @@ def main(argv: list[str] | None = None) -> int: ...   # python -m kodocs.eval.ta
 - 예측 문서: `pdf_sha256`으로 파서별 `ParsedDocument`를 찾는다.
 - 예측 표 선택: 그 문서의 모든 `ParsedTable`을 `cells_to_grid`로 격자화하고, golden 격자와 **(0,0)에 맞춰 겹친 칸**의 정규화(`text_normalize.normalize`) 완전 일치 수가 가장 큰 표를 고른다. 동점이면 앞 표.
 - `cell_exact_rate` 분모 = golden 격자의 모든 칸 수(빈 칸 포함). 예측 격자에 없는 칸은 불일치. `shape_match` = 행·열 수가 같음.
+- **invalid 표 격리(FP-030)**: `invalid_reason`이 있는 예측 표, 또는 채점 중 `cells_to_grid`가 예외를 낸 예측 표는 **후보에서 빼고** `invalid_candidates` 수로 센다. 그 문서의 표가 전부 invalid라 후보가 0개면 그 정답은 `status="all_invalid"`, `cell_exact_rate=0.0`, `cell_sim_mean=0.0`, `shape_match=False`로 채점하고(불일치, 평균에 포함) 사유(invalid 사유 목록 요약)를 남긴다. 표 기능이 있는데 표를 하나도 내지 않은 `no_tables`와 구분한다. 어떤 경우에도 채점 실행을 멈추지 않는다.
+  - `TableScore`에 `invalid_candidates: int`, `reason: str | None` 필드를 추가한다. `table_scores.json`과 요약 표에 파서별 invalid 표 수를 싣는다.
+  - 테스트(필수): 예측 문서에 **겹치는 셀을 가진 표 1개 + 정상 표 1개** → 채점 성공, `invalid_candidates=1`, 정상 표로 채점. 그리고 invalid 표만 있는 문서 → `all_invalid`, 수치 0, 사유 기록, 다음 정답 채점 계속.
 - 여러 쪽으로 나뉜 예측 표를 합치지 않는다(엄격 채점). 나뉜 경우는 결과의 실패 사례로 드러난다.
 - **pypdf처럼 표 추출 기능이 없는 파서는 `applicable=False`, 수치 `None`으로 두고 평균에서 제외한다.** 보고 표에는 "해당 없음(표 추출 기능 없음)"으로 적는다. 파서가 표 기능이 있는데 그 문서에서 표를 하나도 내지 않았으면 `no_tables`, 수치 0으로 평균에 포함한다.
 - 출력: `data/manifest/table_scores.json`(커밋, 셀 텍스트 없음 — id·수치·상태만), 표준 출력에 파서별 요약 표.
@@ -141,6 +144,7 @@ test ! -e data/golden/tables/README.md
    - 초안이 파서 출력이 아니라 HWPX XML에서만 나오는가?
    - 병합 셀 복제가 `cells_to_grid`만 거치는가(HWPX 경로 테스트에서 같은 논리 표가 step 1 테스트와 같은 격자를 내는가)?
    - `table_golden.json`·`table_scores.json`에 셀 텍스트가 없는가(테스트)?
+   - invalid 표 격리 테스트(겹치는 셀 표 1개 + 정상 표 1개 → 채점 성공·invalid 1, 전부 invalid → `all_invalid` 0점·계속)가 있는가?
    - pypdf가 평균에서 빠지고 "해당 없음"으로 표시되는가(테스트)?
 3. 결과를 최종 응답(JSON)으로 보고한다. `phases/` 아래 파일은 수정하지 않고 git commit도 하지 않는다:
    - 성공 → `"status": "completed"`, `"summary": "산출물 한 줄 요약"`

@@ -49,7 +49,7 @@ def main(argv: list[str] | None = None) -> int: ...   # python -m kodocs.parsing
 - **출력**: `schema.output_path(root, parser, input_sha256)` = `data/interim/parsed/{parser}/{input_sha256}.json`.
 - **멱등성(FP-033)**: 건너뛰기 판단 키는 출력을 결정하는 키와 같게 한다 = `(parser, input_sha256)`. 출력 파일이 있고 그 안의 `settings_hash`가 현재 어댑터 설정 해시와 같으면 건너뛴다(`skipped`). 설정이 다르면 다시 파싱한다. `--force`면 항상 다시 파싱한다. 같은 `input_sha256`이 대상 목록에 두 번 나오면 한 번만 파싱한다.
 - **실행 기록**: `data/manifest/parse_runs.jsonl`(커밋 대상, 원문 없음)에 입력 1건마다 한 줄 append:
-  `run_id`, `parser`, `parser_version`, `settings_hash`, `input_sha256`, `input_kind`, `target_key`, `status`(`ok`|`skipped`|`failed`|`empty`), `elapsed_s`, `page_count`, `text_chars`, `hangul_distinct`, `blocks`, `tables`, `error_type`, `error`(메시지 첫 줄, 200자 이내), `ts`.
+  `run_id`, `parser`, `parser_version`, `settings_hash`, `input_sha256`, `input_kind`, `target_key`, `status`(`ok`|`skipped`|`failed`|`empty`), `elapsed_s`, `page_count`, `text_chars`, `hangul_distinct`, `blocks`, `tables`, `invalid_tables`, `error_type`, `error`(메시지 첫 줄, 200자 이내), `ts`.
   읽을 때는 `latest_records(key=(parser, input_sha256))`로 읽는다(FP-032).
 - **내용 지표 판정(FP-001)**: 어댑터가 예외 없이 끝나도 `hangul_distinct == 0`이면 `status="empty"`로 기록한다(출력 파일은 남긴다). 형식만 보고 성공 판정하지 않는다.
 - **실패 후 계속(FP-030)**: 어댑터 예외(`ParseError` 포함 모든 `Exception`)는 그 입력만 `failed`로 기록하고 다음 입력으로 간다. 대상 목록을 읽지 못하는 경우(파일 없음·JSON 오류)만 전체 중단.
@@ -59,7 +59,18 @@ def main(argv: list[str] | None = None) -> int: ...   # python -m kodocs.parsing
 - **요약**: 끝나면 상태별 건수, 총 쪽수, 총 시간, 쪽당 시간(초/쪽)을 출력한다. `failed`가 1건 이상이면 종료 코드 1, 아니면 0.
 - 출력 파일 쓰기는 임시 파일에 쓴 뒤 `replace`로 교체한다(중간에 멈춰도 반쯤 쓴 JSON이 남지 않게).
 
-### 2. Make 타깃
+### 2. 표 단위 실패 표시 — `schema.py` 확장 (step 3·4·7이 쓴다)
+
+`tables.cells_to_grid`는 셀이 겹치면 `ValueError`를 낸다. 실제 파서 출력(Docling 병합 셀 반복, 깨진 HTML)에서 날 수 있으므로, 표 하나의 실패가 문서 전체 실패가 되지 않게 표시 필드를 둔다(FP-030).
+
+- `ParsedTable`에 `invalid_reason: str | None = None` 필드를 **마지막에 기본값과 함께** 추가한다. `None`이면 정상 표, 문자열이면 격자화할 수 없는 표(예: `"cell_overlap: ValueError: ..."`, 200자 이내). invalid 표도 원래 셀은 `cells`에 그대로 남긴다(디버깅용).
+- `to_json`/`from_json`에 반영한다. 키가 없는 기존 JSON은 `None`으로 읽는다(하위 호환, `SCHEMA_VERSION`은 1 유지). 왕복 테스트를 추가한다.
+- `schema.py`에 공용 헬퍼를 둔다: `build_table(page, block_position, cells) -> tuple[ParsedTable, str]` — `cells_to_grid`를 시도해 성공하면 정상 표와 step 1 규칙의 표 블록 텍스트를, `ValueError`면 `invalid_reason`을 채운 표와 대체 텍스트(anchor `(row, col)` 순으로 셀 텍스트를 `\t`로 이은 것)를 돌려준다. 어댑터는 이 헬퍼만 쓴다.
+- `content_stats`에 `invalid_tables`(invalid 표 수)를 추가한다.
+- 실행 기록(`parse_runs.jsonl`)에 `invalid_tables`를 추가한다. invalid 표가 있어도 문서 `status`는 `ok`다.
+- 테스트: 겹치는 셀을 가진 표 1개 + 정상 표 1개로 `build_table`을 두 번 부른 문서 → 직렬화·역직렬화 후 `invalid_tables == 1`, 정상 표는 그대로.
+
+### 3. Make 타깃
 
 - `Makefile`: `parse-pypdf: uv run python -m kodocs.parsing.run --parser pypdf`. `.PHONY`에 추가. `verify`는 건드리지 않는다.
 - `AGENTS.md` 명령어 절: `make parse-pypdf     # M2 pypdf 기준선 파싱 (로컬, 네트워크 없음), 사용자 실행`
@@ -76,7 +87,7 @@ grep -n "parse-pypdf" Makefile AGENTS.md
 
 1. 위 AC 커맨드를 실행한다.
 2. 아키텍처 체크리스트를 확인한다:
-   - 테스트가 1건 실패 후 계속, 상한 초과 시 전체 중단, 설정 해시 기준 건너뛰기, 진행 출력 flush, 빈 텍스트 `empty` 판정을 모두 다루는가?
+   - 테스트가 표 1개 invalid → 문서 `ok` + `invalid_tables=1` 기록, 1건 실패 후 계속, 상한 초과 시 전체 중단, 설정 해시 기준 건너뛰기, 진행 출력 flush, 빈 텍스트 `empty` 판정을 모두 다루는가?
    - `parse_runs.jsonl`에 원문 텍스트가 없는가?
 3. 결과를 최종 응답(JSON)으로 보고한다. `phases/` 아래 파일은 수정하지 않고 git commit도 하지 않는다:
    - 성공 → `"status": "completed"`, `"summary": "산출물 한 줄 요약"`
