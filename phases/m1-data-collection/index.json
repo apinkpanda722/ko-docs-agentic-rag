@@ -1,0 +1,51 @@
+{
+  "project": "ko-docs-agentic-rag",
+  "phase": "m1-data-collection",
+  "steps": [
+    {
+      "step": 0,
+      "name": "docs-decisions",
+      "status": "completed",
+      "started_at": "2026-09-26T13:08:04+0900",
+      "summary": "NIA 규정의 무가공 로컬 사용, 법제처·ALIO 이중 수집과 버전 매칭 결정을 5개 문서에 반영했으며 모든 AC와 make verify(88 passed)를 통과했습니다.",
+      "completed_at": "2026-09-26T13:10:28+0900",
+      "usage": {
+        "input_tokens": 287028,
+        "cached_input_tokens": 241024,
+        "output_tokens": 6553,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 1,
+      "name": "ingest-core",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "name": "law-api",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "name": "alio",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "name": "version-matching",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "name": "hwp-convert",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "name": "parse-targets",
+      "status": "pending"
+    }
+  ],
+  "created_at": "2026-09-26T13:08:04+0900"
+}
