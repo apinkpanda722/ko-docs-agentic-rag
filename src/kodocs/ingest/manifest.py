@@ -2,7 +2,7 @@
 
 import hashlib
 import json
-from collections.abc import Collection, Mapping
+from collections.abc import Callable, Collection, Hashable, Iterable, Mapping
 from datetime import datetime, timedelta, timezone
 from pathlib import Path, PurePosixPath
 from typing import Final
@@ -105,6 +105,20 @@ def load_records(manifest_path: Path) -> list[dict[str, object]]:
             if line.strip():
                 records.append(json.loads(line))
     return records
+
+
+def latest_records(
+    records: Iterable[Mapping[str, object]],
+    key: Callable[[Mapping[str, object]], Hashable],
+) -> list[Mapping[str, object]]:
+    """Keep the last record per key, ordered by each key's first appearance.
+
+    Re-collection appends a new line for an existing key, so the last line is current.
+    """
+    latest: dict[Hashable, Mapping[str, object]] = {}
+    for record in records:
+        latest[key(record)] = record
+    return list(latest.values())
 
 
 def repo_relative(path: Path, root: Path) -> str:

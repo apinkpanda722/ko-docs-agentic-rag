@@ -9,6 +9,7 @@ import pytest
 from kodocs.ingest.manifest import (
     LICENSE_NOTE_NO_KOGL,
     append_record,
+    latest_records,
     load_records,
     now_iso,
     repo_relative,
@@ -148,3 +149,18 @@ def test_manifest_json_keys_are_sorted(tmp_path: Path) -> None:
         object_pairs_hook=list,
     )
     assert [key for key, _ in parsed_pairs] == sorted(key for key, _ in parsed_pairs)
+
+
+def test_latest_records_keeps_last_line_per_key_in_first_seen_order() -> None:
+    records = [
+        {"serial": "1", "sha256": "old"},
+        {"serial": "2", "sha256": "only"},
+        {"serial": "1", "sha256": "new"},
+    ]
+
+    latest = latest_records(records, lambda record: record["serial"])
+
+    assert latest == [
+        {"serial": "1", "sha256": "new"},
+        {"serial": "2", "sha256": "only"},
+    ]

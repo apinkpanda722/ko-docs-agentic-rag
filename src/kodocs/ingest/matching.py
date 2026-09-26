@@ -10,7 +10,12 @@ from enum import StrEnum
 from pathlib import Path
 
 from kodocs.ingest.law_api import NIA_AGENCY_NAME
-from kodocs.ingest.manifest import append_record, load_records, now_iso
+from kodocs.ingest.manifest import (
+    append_record,
+    latest_records,
+    load_records,
+    now_iso,
+)
 
 _MATCHABLE_FILE_KINDS = frozenset({"hwp5", "hwpx"})
 _MATCH_REQUIRED_FIELDS = frozenset(
@@ -235,8 +240,18 @@ def run(root: Path, *, approx_days: int = 7) -> MatchSummary:
     if missing_guidance:
         raise MatchingError(" ".join(missing_guidance))
 
-    law_records = load_records(law_manifest)
-    alio_records = load_records(alio_manifest)
+    # 재수집은 같은 키로 줄을 추가하므로 키마다 마지막 줄만 쓴다.
+    law_records = latest_records(
+        load_records(law_manifest), lambda record: record.get("serial")
+    )
+    alio_records = latest_records(
+        load_records(alio_manifest),
+        lambda record: (
+            record.get("source"),
+            record.get("file_no"),
+            record.get("zip_member_path"),
+        ),
+    )
     rule_matches = match_rules(alio_records, law_records)
     titles_by_rule = _alio_titles_by_rule(alio_records)
     law_by_rule_id: dict[str, list[Mapping[str, object]]] = defaultdict(list)

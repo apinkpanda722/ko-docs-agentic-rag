@@ -382,3 +382,44 @@ def test_main_reports_each_missing_manifest_and_returns_nonzero(
     error = capsys.readouterr().err
     assert "make collect-law" in error
     assert "make collect-alio" in error
+
+
+def test_run_ignores_duplicate_manifest_lines_and_uses_last_law_values(
+    tmp_path: Path,
+) -> None:
+    """재수집으로 같은 키의 줄이 쌓여도 매칭 결과는 한 줄이고 마지막 줄이 이긴다."""
+    law_records = [
+        law_version("100", issued_date="2023-01-01"),
+        law_version("100", issued_date="2024-01-01", is_current=True),
+    ]
+    alio = alio_record(
+        file_no="2",
+        local_path="data/raw/alio/10/2__규정.hwp",
+        filename_date={"date": "2024-01-01", "precision": "day"},
+    )
+    member = alio_record(
+        file_no="8",
+        local_path="data/raw/alio/10/8__zip/과거.hwp",
+        source="alio_zip_member",
+        zip_member_path="과거.hwp",
+        filename_date={"date": "2023-06-01", "precision": "day"},
+    )
+    write_jsonl(tmp_path / "data/manifest/law_api.jsonl", law_records)
+    write_jsonl(
+        tmp_path / "data/manifest/alio.jsonl",
+        [alio, member, {**alio, "sha256": "b" * 64}, member],
+    )
+
+    summary = run(tmp_path)
+
+    records = read_jsonl(tmp_path / "data/manifest/version_matches.jsonl")
+    assert [(r["alio_file_no"], r["confidence"]) for r in records] == [
+        ("2", "exact"),
+        ("8", "failed"),
+    ]
+    assert records[0]["law_serial"] == "100"
+    assert records[0]["law_issued_date"] == "2024-01-01"
+    assert records[0]["law_is_current"] is True
+    assert records[0]["alio_sha256"] == "b" * 64
+    assert "중복" not in records[0]["basis"]
+    assert summary.confidence_counts == {"exact": 1, "approximate": 0, "failed": 1}

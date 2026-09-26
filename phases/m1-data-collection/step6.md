@@ -58,6 +58,7 @@ def main(argv: list[str] | None = None) -> int: ...   # python -m kodocs.ingest.
   **가장 오래된 것과 가장 최근 과거 버전**부터 `versions_per_rule`개를 고른다(1개면 가장 최근 과거 버전).
 - `confidence=failed`는 절대 포함하지 않는다.
 - 페이지 수는 `conversions.jsonl`의 `status=ok` 레코드를 `source_sha256`으로 찾는다. 없으면 `page_count=None`, 요약에 "변환 전" 수로 센다.
+- **manifest는 `kodocs.ingest.manifest.latest_records`로 읽는다**(키마다 마지막 줄). 키: 법제처 `serial`, ALIO `(source, file_no, zip_member_path)`, 변환 기록 `source_sha256`. `version_matches.jsonl`은 매번 새로 쓰므로 그대로 읽는다.
 
 ### 2. 출력
 
@@ -102,7 +103,7 @@ def main(argv: list[str] | None = None) -> int: ...   # python -m kodocs.ingest.
    - 이 확인은 M2에서 파서 비교 전에 수행한다. M1은 방법만 남긴다.
 7. **결과 수치** — 표 틀만: 법제처 현행·연혁 버전 수, ALIO 규정·파일 수(형식별: hwp5·hwpx·hwp3·ole_other·zip·pdf, zip 멤버), 다운로드 실패 수, 매칭 신뢰도별 파일 수,
    변환 성공·실패 수, 파싱 대상 수와 예상 페이지 수. 값은 `(실행 후 기록)`.
-8. **한계** — HWP 3.x·구형 OLE(.doc 등) 파일은 H2Orestart 미지원·비대상이라 변환·파싱에서 빠진다(형식별 수로 보고), 파일명 날짜의 불규칙성, 매칭 실패 파일 제외에 따른 과거 버전 표본 감소, 법제처 조문과 ALIO 원본의 편집 차이 가능성.
+8. **한계** — 폐지 규정과 이름이 같은 현행 규정은 규정 매칭이 "모호함"으로 실패할 수 있다(현행 우선 규칙은 넣지 않았고, 실측한 "규정 매칭 실패" 목록을 원인별로 본 뒤 판단한다). HWP 3.x·구형 OLE(.doc 등) 파일은 H2Orestart 미지원·비대상이라 변환·파싱에서 빠진다(형식별 수로 보고), 파일명 날짜의 불규칙성, 매칭 실패 파일 제외에 따른 과거 버전 표본 감소, 법제처 조문과 ALIO 원본의 편집 차이 가능성.
 
 ## Acceptance Criteria
 

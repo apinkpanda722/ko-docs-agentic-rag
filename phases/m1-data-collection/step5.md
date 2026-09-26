@@ -83,6 +83,7 @@ def main(argv: list[str] | None = None) -> int: ...   # python -m kodocs.ingest.
 
 - 입력: `data/manifest/alio.jsonl`의 레코드 중 로컬 파일을 **다시 `sniff`해서** `HWP5`/`HWPX`인 것. manifest의 `file_kind`만 믿지 마라.
   `--only-eligible`이면 `data/manifest/version_matches.jsonl`에서 `parse_eval_eligible=true`인 파일만 변환한다.
+- **manifest는 `kodocs.ingest.manifest.latest_records`로 읽는다.** 재수집하면 같은 키의 줄이 추가되므로 키마다 마지막 줄만 쓴다(ALIO 키: `(source, file_no, zip_member_path)`, 변환 기록 키: `source_sha256`).
 - **출력 파일명에 원본 확장자와 해시를 넣는다**: `data/raw/pdf/{rule_no}/{원본파일명(확장자 포함)}.{sha256 앞 12자}.pdf`
   예: `사택 운영지침(2024년도 11월 개정).hwp.3fa1c2d4e5f6.pdf`. 원본 파일명은 step 3과 같은 규칙으로 안전하게 바꾼다.
 - soffice는 `--outdir`에 `<입력 stem>.pdf`를 쓰므로, **파일마다 새 임시 폴더를 `--outdir`로 주고** 결과를 최종 경로로 옮긴다.
