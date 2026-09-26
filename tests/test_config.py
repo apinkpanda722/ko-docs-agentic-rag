@@ -38,6 +38,7 @@ def test_load_settings_reads_present_api_keys() -> None:
             "OPENAI_API_KEY": "openai-secret",
             "GEMINI_API_KEY": "gemini-secret",
             "UPSTAGE_API_KEY": "upstage-secret",
+            "LAW_OPEN_API_KEY": "law-secret",
         }
     )
 
@@ -46,6 +47,7 @@ def test_load_settings_reads_present_api_keys() -> None:
         "OPENAI_API_KEY": "openai-secret",
         "GEMINI_API_KEY": "gemini-secret",
         "UPSTAGE_API_KEY": "upstage-secret",
+        "LAW_OPEN_API_KEY": "law-secret",
     }
 
 

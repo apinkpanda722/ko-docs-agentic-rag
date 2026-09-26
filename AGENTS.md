@@ -9,7 +9,8 @@
 - 검색: OpenSearch 3.x (로컬 Docker, nori는 `analysis-nori` 플러그인, k-NN·neural-search는 기본 번들, hybrid 쿼리 + RRF·정규화 search pipeline), SQLite(티켓·결재 정형 데이터)
 - 임베딩: BGE-M3 (로컬)
 - 에이전트: LangGraph (+ langchain-openai 모델 래퍼, `@tool`, `ToolRuntime`)
-- 파싱: pypdf, Docling, 업스테이지 Document Parse, LibreOffice + H2Orestart(HWP → PDF)
+- 수집: httpx(법제처 Open API·ALIO, 속도 제한), olefile(HWP 5.x 판정)
+- 파싱: pypdf, Docling, 업스테이지 Document Parse, LibreOffice + H2Orestart(HWP → PDF), fontconfig 대체 규칙(`infra/fontconfig/fonts.conf`) + 함초롬 글꼴(사용자 설치, 저장소 미포함)
 - LLM: Anthropic API(합성 데이터 생성), OpenAI API(시스템 답변), Gemini API(답변 채점)
 - MCP 서버: streamable HTTP (데모용 정적 토큰)
 - 데모 GUI: Streamlit
@@ -23,7 +24,8 @@
 - CRITICAL: 외부 LLM 호출은 `src/kodocs/llm/` 래퍼를 통해서만 한다. 모델명·temperature는 설정에서 읽고 호출 결과에 함께 기록한다.
 - CRITICAL: `data/golden/`(질의셋·qrels·사람 채점)은 사람이 검수해 확정한 기준이다. 에이전트는 수정하지 않는다. 수치를 맞추려고 golden을 바꾸지 않는다.
 - CRITICAL: `data/raw/`(다운로드한 원문)는 커밋하지 않는다. 출처·해시·라이선스는 `data/manifest/`에 기록한다.
-- CRITICAL: 합성 문서는 가상 회사 이름으로만 만든다. 실존 기관·인물 이름으로 회의록·티켓 같은 기록을 생성하지 않는다.
+- CRITICAL: `data/interim/`(정제 산출물)도 원문을 담으므로 커밋하지 않는다. 법제처 응답의 담당자명·전화번호는 정제 산출물과 manifest에 넣지 않는다. 법제처 인증키(`OC`)는 로그·manifest·예외 메시지에 남기지 않는다.
+- CRITICAL: 합성 문서는 가상 회사 이름으로만 만든다. 실존 기관·인물 이름으로 회의록·티켓 같은 기록을 생성하지 않는다. 실제 규정은 기관명 없이 규정명·조항만 참조한다.
 - 합성 문서에는 생성 모델, 프롬프트 템플릿 해시, 랜덤 시드, 출처가 된 시드 데이터 사실 ID를 메타데이터로 남긴다.
 - CRITICAL: MCP 도구의 입출력 스키마를 호환되지 않게 바꿀 때는 도구 버전을 올린다. 계약 테스트가 이를 강제한다.
 - CRITICAL: 실제 API를 호출하는 스크립트는 누적 비용을 기록하고, 설정한 월 상한을 넘기 전에 멈춘다.
@@ -45,6 +47,11 @@ make up          # OpenSearch 기동 (docker compose, 이미지 빌드 포함)
 make down        # OpenSearch 중지
 make logs        # OpenSearch 로그 추적
 make test-integration  # 실행 중인 OpenSearch가 필요한 테스트 — make verify에서는 제외된다, 사용자 실행
+make collect-law    # 법제처 Open API 규정 수집(현행·연혁) — 네트워크 호출, 사용자 실행
+make collect-alio   # ALIO 내부규정 원본 파일 수집(전 버전, zip 해제) — 네트워크 호출, 사용자 실행
+make match-versions # ALIO 파일 ↔ 법제처 버전 발령일자 매칭 (네트워크 없음)
+make convert-hwp    # HWP/HWPX → PDF (LibreOffice + H2Orestart 로컬 도구 필요, 실행 시 점검), 사용자 실행
+make parse-targets  # M2 파싱 대상 목록(현행 전부 + 과거 버전 일부, 예상 페이지 수) (네트워크 없음)
 make generate    # 합성 코퍼스 생성 — 실제 API 호출, 사용자 실행
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)

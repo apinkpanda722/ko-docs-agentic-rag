@@ -7,6 +7,9 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "httpx>=0.28.1",
+    "olefile>=0.47",
+    "pypdf>=6.19.0",
     "python-dotenv>=1.2.3",
 ]
 

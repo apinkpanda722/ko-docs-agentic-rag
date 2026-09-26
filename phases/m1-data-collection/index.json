@@ -1,0 +1,106 @@
+{
+  "project": "ko-docs-agentic-rag",
+  "phase": "m1-data-collection",
+  "steps": [
+    {
+      "step": 0,
+      "name": "docs-decisions",
+      "status": "completed",
+      "started_at": "2026-09-26T13:08:04+0900",
+      "summary": "NIA 규정의 무가공 로컬 사용, 법제처·ALIO 이중 수집과 버전 매칭 결정을 5개 문서에 반영했으며 모든 AC와 make verify(88 passed)를 통과했습니다.",
+      "completed_at": "2026-09-26T13:10:28+0900",
+      "usage": {
+        "input_tokens": 287028,
+        "cached_input_tokens": 241024,
+        "output_tokens": 6553,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 1,
+      "name": "ingest-core",
+      "status": "completed",
+      "started_at": "2026-09-26T13:25:33+0900",
+      "summary": "LAW_OPEN_API_KEY 설정, httpx 기반 속도 제한·재시도 클라이언트, 안전한 JSONL manifest, 시그니처 기반 파일 형식 판정을 TDD로 구현했으며 모든 AC와 make verify(118 passed)를 통과했습니다.",
+      "completed_at": "2026-09-26T13:31:02+0900",
+      "usage": {
+        "input_tokens": 714653,
+        "cached_input_tokens": 654592,
+        "output_tokens": 16019,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 2,
+      "name": "law-api",
+      "status": "completed",
+      "started_at": "2026-09-26T13:39:30+0900",
+      "summary": "법제처 현행·연혁 규정 수집·정제·manifest·재개 기능과 안전한 CLI를 TDD로 구현했으며 모든 AC와 make verify(140 passed)를 통과했습니다.",
+      "completed_at": "2026-09-26T13:49:58+0900",
+      "usage": {
+        "input_tokens": 1226899,
+        "cached_input_tokens": 1147392,
+        "output_tokens": 28693,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 3,
+      "name": "alio",
+      "status": "completed",
+      "started_at": "2026-09-26T14:20:22+0900",
+      "summary": "ALIO 전 버전 원본 수집·서명 판정·안전한 ZIP 해제·manifest/재개·CLI를 TDD로 구현했으며 make verify(162 passed)와 --help AC를 통과했습니다.",
+      "completed_at": "2026-09-26T14:30:19+0900",
+      "usage": {
+        "input_tokens": 1966367,
+        "cached_input_tokens": 1826560,
+        "output_tokens": 29238,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 4,
+      "name": "version-matching",
+      "status": "completed",
+      "started_at": "2026-09-26T14:36:24+0900",
+      "summary": "법제처·ALIO manifest 기반 결정론적 버전 매칭, 신뢰도·근거·평가 제외 기록, 요약·CLI·Make 타깃을 TDD로 구현했으며 make verify(184 passed)와 --help AC를 통과했습니다.",
+      "completed_at": "2026-09-26T14:44:55+0900",
+      "usage": {
+        "input_tokens": 1560425,
+        "cached_input_tokens": 1472640,
+        "output_tokens": 24015,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 5,
+      "name": "hwp-convert",
+      "status": "completed",
+      "started_at": "2026-09-26T14:56:58+0900",
+      "summary": "HWP/HWPX 시그니처 기반 PDF 변환·도구 점검·manifest/멱등성·형식별 제외 집계·Make 타깃을 TDD로 구현했으며 make verify(197 passed)와 CLI --help AC를 통과했습니다.",
+      "completed_at": "2026-09-26T15:04:12+0900",
+      "usage": {
+        "input_tokens": 1628635,
+        "cached_input_tokens": 1537024,
+        "output_tokens": 24572,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 6,
+      "name": "parse-targets",
+      "status": "completed",
+      "started_at": "2026-09-26T15:23:51+0900",
+      "summary": "manifest 기반 M2 파싱 대상 선정·페이지/글꼴 메타데이터 출력, Make 타깃, M1 수집·별표 확인 리포트를 TDD로 구현했으며 모든 AC와 make verify(212 passed)를 통과했습니다.",
+      "completed_at": "2026-09-26T15:33:18+0900",
+      "usage": {
+        "input_tokens": 1608159,
+        "cached_input_tokens": 1510784,
+        "output_tokens": 24567,
+        "attempts": 1
+      }
+    }
+  ],
+  "created_at": "2026-09-26T13:08:04+0900",
+  "completed_at": "2026-09-26T15:33:18+0900"
+}
