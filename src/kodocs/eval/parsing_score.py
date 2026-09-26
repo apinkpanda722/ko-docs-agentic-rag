@@ -5,6 +5,10 @@ is a document in the all-target aggregate, including missing, failed, and empty
 results at zero.  A second aggregate includes only ``status=ok`` documents.
 Text micro metrics average matched articles; text macro metrics average document
 means.  Current and history roles are reported separately with the same rules.
+Targets whose Law Open API body has no article heads (``status=no_law_text``,
+e.g. the body is a single image) have no article truth: they are excluded from
+both denominators, counted under ``excluded``, and listed by id in the manifest.
+The same rule applies to the splitter ceiling, so "0 = 0" cannot inflate it.
 No article text is written to the committed score manifest or standard output;
 inspection text is confined to ignored ``data/interim/parse_diffs`` files.
 """
@@ -45,6 +49,9 @@ from kodocs.parsing.schema import ParsedDocument, from_json, output_path
 
 DEFAULT_PARSERS: tuple[str, ...] = ("pypdf", "docling", "upstage")
 LOW_SIMILARITY_THRESHOLD = 0.9
+NO_LAW_TEXT = "no_law_text"
+# Statuses without article truth; excluded from every metric denominator.
+EXCLUDED_STATUSES: frozenset[str] = frozenset({NO_LAW_TEXT})
 
 
 class ParsingScoreError(RuntimeError):
@@ -120,13 +127,18 @@ def splitter_ceiling(law: Mapping[object, object], *, target_key: str) -> DocSco
 def aggregate(scores: Sequence[DocScore]) -> dict[str, object]:
     """Aggregate both FP-043 document denominators and text micro/macro means."""
     all_scores = list(scores)
-    ok_scores = [score for score in all_scores if score.status == "ok"]
+    scored = [score for score in all_scores if score.status not in EXCLUDED_STATUSES]
+    ok_scores = [score for score in scored if score.status == "ok"]
+    excluded = Counter(
+        score.status for score in all_scores if score.status in EXCLUDED_STATUSES
+    )
     return {
         "status_counts": dict(
             sorted(Counter(score.status for score in all_scores).items())
         ),
-        "all_targets": _aggregate_group(all_scores),
+        "all_targets": _aggregate_group(scored),
         "ok_only": _aggregate_group(ok_scores),
+        "excluded": dict(sorted(excluded.items())),
     }
 
 
@@ -187,7 +199,8 @@ def run(
             law = law_by_target[target.target_key]
             comparison = _score_target(root, parser, target, record, law)
             scores.append(comparison.score)
-            _write_diff(root, comparison)
+            if comparison.score.status not in EXCLUDED_STATUSES:
+                _write_diff(root, comparison)
         parser_aggregate = _aggregate_with_roles(scores, targets)
         parser_payloads[parser] = {
             "status": "scored",
@@ -207,6 +220,15 @@ def run(
                 status="missing_law",
                 law_articles=0,
                 addenda_law=0,
+            )
+        elif not _law_articles(law):
+            score = _zero_score(
+                parser="splitter-ceiling",
+                target_key=target.target_key,
+                input_sha256="",
+                status=NO_LAW_TEXT,
+                law_articles=0,
+                addenda_law=len(_sequence_field(law, "addenda")),
             )
         else:
             comparison = _compare_ceiling(law, target_key=target.target_key)
@@ -237,10 +259,25 @@ def run(
             "target_documents": len(targets),
             "all_targets": "parse_targets.json 전체 대상(실패·빈 결과·누락은 0점)",
             "ok_only": "status=ok인 대상",
+            "excluded": "status=no_law_text(법제처 본문에 조문 텍스트 없음)는 두 분모에서 제외",
             "text_micro": "짝지어진 조문",
             "text_macro": "해당 분모의 문서",
         },
         "parsers": parser_payloads,
+        "excluded_targets": [
+            {
+                "target_key": target.target_key,
+                "law_rule_id": target.law_rule_id,
+                "law_serial": target.law_serial,
+                "role": target.role,
+                "status": NO_LAW_TEXT,
+                "reason": _no_law_text_reason(law),
+            }
+            for target in targets
+            if (law := law_by_target[target.target_key]) is not None
+            and not _law_articles(law)
+        ],
+        "law_versions_without_article_text": _law_corpus_without_article_text(root),
     }
     _write_json_atomic(root / "data/manifest/parse_scores.json", payload)
     _print_summary(rows, out=out)
@@ -439,6 +476,45 @@ def _law_articles(law: Mapping[object, object]) -> tuple[Article, ...]:
     return tuple(articles)
 
 
+def _no_law_text_reason(law: Mapping[object, object]) -> str:
+    lines = [str(value).strip() for value in _sequence_field(law, "articles")]
+    lines = [line for line in lines if line]
+    if len(lines) == 1 and lines[0].startswith("<img"):
+        return "법제처 본문이 이미지 한 줄"
+    if not lines:
+        return "법제처 본문 항목 없음"
+    return "법제처 본문에 조 머리가 없음"
+
+
+def _law_corpus_without_article_text(root: Path) -> dict[str, object]:
+    """Count every collected law version whose body has no article heads (ids only)."""
+    versions: list[dict[str, object]] = []
+    total = 0
+    for path in sorted((root / "data/interim/law").glob("*/*.json")):
+        try:
+            law = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(law, Mapping):
+            continue
+        total += 1
+        if _law_articles(law):
+            continue
+        versions.append(
+            {
+                "law_rule_id": path.parent.name,
+                "law_serial": path.stem,
+                "is_current": law.get("is_current"),
+                "reason": _no_law_text_reason(law),
+            }
+        )
+    return {
+        "versions_total": total,
+        "versions_without_article_text": len(versions),
+        "versions": versions,
+    }
+
+
 def _pair_first_unique(
     law_articles: Sequence[Article], parsed_articles: Sequence[Article]
 ) -> tuple[list[tuple[Article, Article]], list[int], list[int]]:
@@ -546,6 +622,15 @@ def _score_target(
             status="missing_law",
             law_articles=0,
             addenda_law=0,
+        )
+    if not _law_articles(law):
+        return _zero_comparison(
+            parser=parser,
+            target_key=target.target_key,
+            input_sha256=input_sha,
+            status=NO_LAW_TEXT,
+            law_articles=0,
+            addenda_law=len(_sequence_field(law, "addenda")),
         )
     if record is None:
         comparison = _compare_document(

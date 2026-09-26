@@ -40,7 +40,8 @@ def main(argv: list[str] | None = None) -> int: ...   # python -m kodocs.eval.pa
 
 `render_tables`가 만드는 표(각 표 위에 분모와 고정 조건을 한 줄로 적는다):
 1. **측정 정보**: 생성 시각, `git rev-parse HEAD`, 파서별 `parser_version`·`settings`(`parse_runs.jsonl` 최신 기록에서), 업스테이지 응답 `model` 버전 목록, `parse_targets.json`·`infra/fontconfig/fonts.conf`·`table_golden.json` sha256.
-2. **분할기 상한**: `splitter-ceiling` 행 — 구조 완전 일치율, 키 F1, 정규화 유사도. 100%가 아닌 대상 수.
+2. **분할기 상한**: `splitter-ceiling` 행 — 구조 완전 일치율, 키 F1, 정규화 유사도. 100%가 아닌 대상 수. 분모와 함께 `excluded`(`no_law_text`) 수를 적는다.
+   **제외 대상 표**: `parse_scores.json`의 `excluded_targets`(rule_id, serial, role, 사유 — 예: "법제처 본문이 이미지 한 줄"). 이 대상은 파싱·분할은 하되 조 구조·조문 텍스트 지표의 분모(전체·ok만·분할기 상한 모두)에서 뺀다고 표 위에 적는다. 표 채점은 법제처와 무관하므로 영향이 없다고 함께 적는다.
 3. **조 구조**(파서별): 문서 수(ok/전체), 구조 완전 일치율, 키 정밀도·재현율, 순서 LCS, 부칙 블록 수 일치율. 전체 대상 기준과 ok만 기준을 두 표로.
 4. **조문 텍스트**(파서별): 원문 비교 유사도·완전 일치율, 정규화 비교 유사도·완전 일치율(micro와 macro).
 5. **편집 차이**: 파서별 `editorial_law_only`·`editorial_parsed_only`·`editorial_both` 합.
@@ -62,6 +63,7 @@ def main(argv: list[str] | None = None) -> int: ...   # python -m kodocs.eval.pa
 7. 변환 경유 vs 직접 입력(업스테이지 보조 실험) — `(실행 후 기록)`, step 9가 표를 추가한다
 8. 비용 메모: 원장 금액은 **정가 + 부가세 10% 포함**, 크레딧 미반영. 업스테이지 콘솔 사용량은 VAT 제외라 원장 금액과 다를 수 있다. 콘솔 월 한도($25)는 서비스 쪽 차단으로 원장 상한과 별개다.
 9. 한계: 검색 영향(Recall@10)은 M5로 이월, 쪽수는 대체 글꼴에 좌우, 여러 쪽 표는 엄격 채점, 법제처 조문과 원본의 편집 차이.
+   **법제처 본문에 조문 텍스트가 없는 버전**: `parse_scores.json`의 `law_versions_without_article_text`(수집한 전체 법제처 버전 수, 조 머리 0개인 버전 수, 버전별 rule_id·serial·현행 여부·사유)를 생성 표로 싣는다. 파싱 대상 밖 버전도 포함하며, M4 질의셋 작성 시 이 규정은 조항 단위 정답을 법제처에서 얻을 수 없다는 점을 적는다.
 
 `Makefile`: `parse-report: uv run python -m kodocs.eval.parsing_report`, `.PHONY`에 추가. `AGENTS.md` 명령어 절: `make parse-report    # M2 파싱 결과표를 docs/results/{실행일}-m2-parsing.md에 생성·갱신 — 네트워크 없음`.
 

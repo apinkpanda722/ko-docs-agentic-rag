@@ -380,3 +380,93 @@ def test_docscore_serialization_contains_only_declared_numeric_key_status_fields
         "editorial_both",
     }
     assert "본문" not in json.dumps(asdict(score), ensure_ascii=False)
+
+
+def test_law_without_article_text_is_excluded_from_parser_and_ceiling_denominators(
+    tmp_path: Path,
+) -> None:
+    image, image_key, image_sha = _target(
+        tmp_path, rule="rule-img", serial="serial-img", source="3" * 64, role="current"
+    )
+    normal, normal_key, normal_sha = _target(
+        tmp_path, rule="rule-ok", serial="serial-ok", source="4" * 64, role="current"
+    )
+    (tmp_path / "data/manifest/parse_targets.json").write_text(
+        json.dumps({"targets": [image, normal]}), encoding="utf-8"
+    )
+    _write_law(
+        tmp_path,
+        "rule-img",
+        "serial-img",
+        {
+            "articles": ['<img alt="img1" src="/LSW/flDownload.do?flSeq=1">'],
+            "addenda": [{"text": "부칙 시행한다."}],
+            "annexes": [],
+        },
+    )
+    _write_law(
+        tmp_path,
+        "rule-ok",
+        "serial-ok",
+        {"articles": ["제1조(목적) 정상 조문"], "addenda": [], "annexes": []},
+    )
+    # A version outside parse_targets also counts toward the corpus-wide total.
+    _write_law(
+        tmp_path,
+        "rule-ok",
+        "serial-old",
+        {"articles": ["제1장 총칙"], "addenda": [], "annexes": []},
+    )
+    _write_document(
+        tmp_path,
+        _document("제1조(목적) 이미지 문서의 PDF 조문", input_sha256=image_sha),
+    )
+    _write_document(
+        tmp_path, _document("제1조(목적) 정상 조문", input_sha256=normal_sha)
+    )
+    (tmp_path / "data/manifest/parse_runs.jsonl").write_text(
+        json.dumps(_run_record("pypdf", image_key, image_sha, "ok"))
+        + "\n"
+        + json.dumps(_run_record("pypdf", normal_key, normal_sha, "ok"))
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = run(tmp_path, parsers=["pypdf"], out=io.StringIO())
+
+    pypdf = payload["parsers"]["pypdf"]
+    overall = pypdf["aggregate"]["overall"]
+    assert [d["status"] for d in pypdf["documents"]] == ["no_law_text", "ok"]
+    assert overall["status_counts"] == {"no_law_text": 1, "ok": 1}
+    assert overall["all_targets"]["documents"] == 1
+    assert overall["ok_only"]["documents"] == 1
+    assert overall["all_targets"]["structure_exact_rate"] == 1.0
+    assert overall["excluded"] == {"no_law_text": 1}
+
+    ceiling = payload["parsers"]["splitter-ceiling"]
+    assert [d["status"] for d in ceiling["documents"]] == ["no_law_text", "ok"]
+    assert ceiling["aggregate"]["overall"]["all_targets"]["documents"] == 1
+    assert ceiling["aggregate"]["overall"]["excluded"] == {"no_law_text": 1}
+
+    assert payload["excluded_targets"] == [
+        {
+            "target_key": image_key,
+            "law_rule_id": "rule-img",
+            "law_serial": "serial-img",
+            "role": "current",
+            "status": "no_law_text",
+            "reason": "법제처 본문이 이미지 한 줄",
+        }
+    ]
+    corpus = payload["law_versions_without_article_text"]
+    assert corpus["versions_total"] == 3
+    assert corpus["versions_without_article_text"] == 2
+    assert {
+        (v["law_rule_id"], v["law_serial"], v["reason"]) for v in corpus["versions"]
+    } == {
+        ("rule-img", "serial-img", "법제처 본문이 이미지 한 줄"),
+        ("rule-ok", "serial-old", "법제처 본문에 조 머리가 없음"),
+    }
+    assert not (
+        tmp_path / "data/interim/parse_diffs/pypdf" / f"{image_sha}.json"
+    ).exists()
