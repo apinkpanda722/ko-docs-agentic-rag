@@ -28,7 +28,7 @@
 | # | phase | 산출물 | 사용자 작업 |
 |---|---|---|---|
 | M0 | setup | uv 프로젝트, `make verify`, OpenSearch+nori compose, `.env.example`, 설정 로더(API 키 4개·월 비용 상한) | API 키 4개 `.env` 입력 |
-| M1 | data-collection | 법제처 Open API·ALIO 수집 스크립트, manifest(출처·해시·수집일), ALIO↔법제처 버전 매칭, HWP/HWPX→PDF 변환, M2 파싱 대상 목록(예상 페이지 수) | 법제처 인증키 입력, LibreOffice+H2Orestart 설치, 수집·변환 명령 실행 |
+| M1 | data-collection | 법제처 Open API·ALIO 수집 스크립트, manifest(출처·해시·수집일), ALIO↔법제처 버전 매칭, HWP/HWPX→PDF 변환, M2 파싱 대상 목록(예상 페이지 수) | 법제처 인증키 입력, LibreOffice+H2Orestart 설치, 함초롬 글꼴 설치, 수집·변환 명령 실행 |
 | M2 | parsing | pypdf·Docling·업스테이지 파서, 조문 분할기, 파싱 결과표 | 표 정답 약 10개 검수 |
 | M3 | synthetic-corpus | 시드 데이터 YAML, 생성 파이프라인, 카나리아, 간접 인젝션 문서, 티켓·결재 SQLite, 중복·다양성 지표 | `make generate` 실행, 합성 문서 표본 20건 검수 |
 | M4 | golden-set | 골드 50문항·실버 150문항, 구간 단위 qrels, dev/test 분리, 가설 사전 등록 | 골드 50문항 전부 검수, 실버 20% 표본 검수 |

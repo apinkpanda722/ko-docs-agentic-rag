@@ -42,9 +42,9 @@
 **트레이드오프**: 규정 외 문서는 문서 유형별 분할 규칙이 필요하다.
 
 ### ADR-008: 파서 비교는 실제 사규에서만, HWP는 PDF로 변환
-**결정**: HWP·HWPX → LibreOffice + H2Orestart → PDF를 기본 경로로 pypdf(기준선)·Docling·업스테이지를 비교한다. 변환 형식은 확장자가 아니라 파일 시그니처(HWP 5.x는 OLE 복합 문서, HWPX는 zip)로 판정한다. 업스테이지 HWP 직접 파싱은 공식 지원 확인 시 추가한다. 합성 문서는 Docling 하나로 처리한다.
+**결정**: HWP·HWPX → LibreOffice + H2Orestart → PDF를 기본 경로로 pypdf(기준선)·Docling·업스테이지를 비교한다. 변환 형식은 확장자가 아니라 파일 시그니처(HWP 5.x는 OLE 복합 문서, HWPX는 zip)로 판정한다. 변환 시 `FONTCONFIG_FILE=infra/fontconfig/fonts.conf`를 넘겨 HWP가 지정한 글꼴을 함초롬(HCR Batang/HCR Dotum)으로 대체하고, 규칙에 없는 글꼴은 HCR Dotum으로 고정한다. 업스테이지 HWP 직접 파싱은 공식 지원 확인 시 추가한다. 합성 문서는 Docling 하나로 처리한다.
 **이유**: Docling은 HWP/HWPX를 지원하지 않는다(공식 지원 형식 문서). H2Orestart는 HWP 5.x와 HWPX를 모두 지원한다. 합성 문서는 깨끗해서 파서 차이가 나지 않는다.
-**트레이드오프**: 변환 단계가 품질에 영향을 줄 수 있어, HWP 직접 파싱 결과가 있으면 함께 보고한다.
+**트레이드오프**: 변환 단계가 품질에 영향을 줄 수 있어, HWP 직접 파싱 결과가 있으면 함께 보고한다. headless soffice는 `FONTCONFIG_FILE` 없이는 한글이 빈칸인 PDF를 만든다(M1 실측, 함초롬을 설치해도 같았다). 쪽수·줄바꿈은 대체 글꼴에 좌우되지만, 파서 3종은 같은 PDF를 입력으로 하므로 상대 비교는 유효하다. 함초롬 글꼴은 사용자가 설치하며 저장소에 포함하지 않는다(상업적 재배포 금지).
 
 ### ADR-009: LangGraph로 조율하되 검색 추상화는 쓰지 않는다
 **결정**: A·B 모두 LangGraph. LangGraph 그래프·`@tool`·`ToolRuntime`·모델 래퍼는 쓰고, LangChain의 retriever·vectorstore·loader·splitter는 쓰지 않는다. `retrieval` 패키지의 langchain/langgraph import 금지를 테스트로 강제한다.

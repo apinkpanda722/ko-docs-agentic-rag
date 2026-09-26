@@ -9,7 +9,8 @@
 - 검색: OpenSearch 3.x (로컬 Docker, nori는 `analysis-nori` 플러그인, k-NN·neural-search는 기본 번들, hybrid 쿼리 + RRF·정규화 search pipeline), SQLite(티켓·결재 정형 데이터)
 - 임베딩: BGE-M3 (로컬)
 - 에이전트: LangGraph (+ langchain-openai 모델 래퍼, `@tool`, `ToolRuntime`)
-- 파싱: pypdf, Docling, 업스테이지 Document Parse, LibreOffice + H2Orestart(HWP → PDF)
+- 수집: httpx(법제처 Open API·ALIO, 속도 제한), olefile(HWP 5.x 판정)
+- 파싱: pypdf, Docling, 업스테이지 Document Parse, LibreOffice + H2Orestart(HWP → PDF), fontconfig 대체 규칙(`infra/fontconfig/fonts.conf`) + 함초롬 글꼴(사용자 설치, 저장소 미포함)
 - LLM: Anthropic API(합성 데이터 생성), OpenAI API(시스템 답변), Gemini API(답변 채점)
 - MCP 서버: streamable HTTP (데모용 정적 토큰)
 - 데모 GUI: Streamlit

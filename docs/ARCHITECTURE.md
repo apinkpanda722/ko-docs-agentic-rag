@@ -22,7 +22,7 @@ data/
 └── golden/       # 질의셋·qrels·사람 채점 (커밋, 사람만 수정)
 docs/results/     # 실험 결과표·가설 사전 등록 (날짜·커밋 해시 포함)
 logs/traces/      # answer() JSONL 트레이스 (커밋 안 함)
-infra/            # docker-compose (OpenSearch + nori)
+infra/            # docker-compose (OpenSearch + nori), fontconfig(HWP 변환 글꼴 대체 규칙)
 tests/
 ```
 
