@@ -61,7 +61,16 @@
     {
       "step": 4,
       "name": "version-matching",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-26T14:36:24+0900",
+      "summary": "법제처·ALIO manifest 기반 결정론적 버전 매칭, 신뢰도·근거·평가 제외 기록, 요약·CLI·Make 타깃을 TDD로 구현했으며 make verify(184 passed)와 --help AC를 통과했습니다.",
+      "completed_at": "2026-09-26T14:44:55+0900",
+      "usage": {
+        "input_tokens": 1560425,
+        "cached_input_tokens": 1472640,
+        "output_tokens": 24015,
+        "attempts": 1
+      }
     },
     {
       "step": 5,
