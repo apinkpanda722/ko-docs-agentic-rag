@@ -1,0 +1,51 @@
+{
+  "project": "ko-docs-agentic-rag",
+  "phase": "m3-synthetic-corpus",
+  "steps": [
+    {
+      "step": 0,
+      "name": "seed-schema",
+      "status": "pending"
+    },
+    {
+      "step": 1,
+      "name": "seed-data",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "name": "ledger-db",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "name": "doc-plan",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "name": "llm-batch",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "name": "doc-generate",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "name": "doc-validate",
+      "status": "pending"
+    },
+    {
+      "step": 7,
+      "name": "quality-metrics",
+      "status": "pending"
+    },
+    {
+      "step": 8,
+      "name": "review-tools",
+      "status": "pending"
+    }
+  ]
+}
