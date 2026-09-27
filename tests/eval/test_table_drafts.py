@@ -288,3 +288,25 @@ def test_table_golden_cli_writes_manifest_and_empty_directory_fails_with_instruc
     )
     assert manifest["tables"][0]["id"] == "one"
     assert "검수 셀 원문" not in json.dumps(manifest, ensure_ascii=False)
+
+
+def test_table_inside_a_paragraph_joins_inner_cells_with_spaces(
+    tmp_path: Path,
+) -> None:
+    # 실제 HWPX는 중첩 표를 바깥 셀 문단의 run 안에 둔다. 안쪽 셀 텍스트가
+    # 붙어 버리지 않도록 셀 단위로 join_cell_text를 적용한다.
+    path = tmp_path / "rule" / "inline.bin"
+    inner = _table(_cell(0, 0, "안1") + _cell(0, 1, "안2"))
+    outer_cell = f"""
+    <hp:tc>
+      <hp:cellAddr rowAddr="0" colAddr="0"/>
+      <hp:cellSpan rowSpan="1" colSpan="1"/>
+      <hp:subList><hp:p><hp:run><hp:t>바깥</hp:t></hp:run><hp:run>{inner}</hp:run><hp:run><hp:t>끝</hp:t></hp:run></hp:p></hp:subList>
+    </hp:tc>
+    """
+    _write_hwpx(path, _section(_table(outer_cell)))
+
+    drafts = extract_hwpx_tables(path)
+
+    assert drafts[0].nested is True
+    assert cells_to_grid(drafts[0].cells) == [["바깥 안1 안2 끝"]]
