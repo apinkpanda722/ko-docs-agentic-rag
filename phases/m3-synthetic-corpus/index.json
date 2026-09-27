@@ -33,7 +33,16 @@
     {
       "step": 2,
       "name": "ledger-db",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-27T20:19:35+0900",
+      "summary": "결정론적 티켓 500행·결재 150행 SQLite 생성기와 내용 해시 manifest, 원자적 DB 쓰기, 권한·앵커·FK 검증 테스트 및 build-db 연결을 구현했고 make verify(524 passed)와 모든 AC를 통과했습니다.",
+      "completed_at": "2026-09-27T20:31:48+0900",
+      "usage": {
+        "input_tokens": 3282057,
+        "cached_input_tokens": 3143936,
+        "output_tokens": 30239,
+        "attempts": 1
+      }
     },
     {
       "step": 3,
