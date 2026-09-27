@@ -5,7 +5,16 @@
     {
       "step": 0,
       "name": "seed-schema",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-27T17:52:18+0900",
+      "summary": "식별자·시드 스키마/누적 검증기·규정 색인 계약과 fixture 테스트를 구현하고, 현행 규정 94건 색인 생성 및 make verify(502 passed)를 완료했습니다.",
+      "completed_at": "2026-09-27T18:08:10+0900",
+      "usage": {
+        "input_tokens": 4082019,
+        "cached_input_tokens": 3954176,
+        "output_tokens": 41508,
+        "attempts": 1
+      }
     },
     {
       "step": 1,
@@ -47,5 +56,6 @@
       "name": "review-tools",
       "status": "pending"
     }
-  ]
+  ],
+  "created_at": "2026-09-27T17:52:18+0900"
 }
