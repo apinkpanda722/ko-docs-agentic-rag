@@ -145,6 +145,7 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **규칙**: 모델 로딩 같은 1회성 초기화는 어댑터 `prepare()`로 분리해 `init_s`에 따로 기록하고 문서별 시간에서 뺀다. 초기화 실패는 어떤 입력도 성공할 수 없으므로 실행 전체를 멈춘다. 실행 장치는 settings에 기록한다(FP-044).
 - **강제 수단**: `tests/parsing/test_run.py`(`test_run_prepares_once_and_records_init_time_separately`, `test_run_stops_when_adapter_initialization_fails`), `tests/parsing/test_docling_adapter.py`(`test_prepare_loads_converter_once_and_parse_times_only_conversion`)
 - **출처**: M2 step 3 이후 (42777a9)
+- **M2 사례(집계 분모·분자의 대상 집합 불일치)**: `parse-docling` 요약의 sec/page가 1차에는 실패 문서 시간을 분자에 넣어 0.884, 2차에는 건너뛴 문서 쪽수를 분모에 넣어 0.223이었다(문서별 elapsed_s 합 기준 실측 0.384). 결과 보고서도 쪽당 시간에 init_s를 더했다. 비율 지표는 **분자와 분모를 같은 대상 집합**(이번 실행에서 파싱한 ok 문서)에서 구하고, 초기화 시간은 별도 열로 둔다. 강제 수단: `test_seconds_per_page_uses_only_documents_parsed_ok_in_this_run`, `test_cost_table_excludes_model_loading_from_seconds_per_page`.
 
 ## E. 프로세스
 

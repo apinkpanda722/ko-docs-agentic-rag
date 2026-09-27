@@ -427,3 +427,41 @@ def test_run_copies_per_document_skip_and_table_drop_counts_into_records(
         assert record["table_dropped_warnings"] == 2
     assert other["skipped_items"] is None
     assert other["table_dropped_warnings"] is None
+
+
+def test_seconds_per_page_uses_only_documents_parsed_ok_in_this_run(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import kodocs.parsing.run as run_module
+
+    skipped = _input(tmp_path, "a.pdf", page_count=4)
+    run(tmp_path, FakeAdapter(), [skipped], out=io.StringIO())
+    clock = [0.0]
+    monkeypatch.setattr(run_module.time, "perf_counter", lambda: clock[0])
+    adapter = PreparingAdapter(clock, errors={"c.pdf": RuntimeError("boom")})
+    inputs = [
+        skipped,
+        _input(tmp_path, "b.pdf", page_count=3),
+        _input(tmp_path, "c.pdf", page_count=5),
+        _input(tmp_path, "d.pdf", page_count=1),
+    ]
+    out = io.StringIO()
+
+    summary = run(tmp_path, adapter, inputs, out=out)
+
+    # 건너뛴 a(4쪽)·실패한 c(1초)는 빼고, 파싱한 ok 문서 b·d만: 2초 ÷ 4쪽.
+    assert summary.parsed_page_count == 4
+    assert summary.seconds_per_page == pytest.approx(0.5)
+    assert "parsed_pages=4" in out.getvalue()
+    assert "sec/page=0.500" in out.getvalue()
+
+
+def test_seconds_per_page_is_zero_when_nothing_was_parsed(tmp_path: Path) -> None:
+    inputs = [_input(tmp_path, "a.pdf", page_count=4)]
+    run(tmp_path, FakeAdapter(), inputs, out=io.StringIO())
+
+    summary = run(tmp_path, FakeAdapter(), inputs, out=io.StringIO())
+
+    assert summary.parsed_page_count == 0
+    assert summary.seconds_per_page == 0.0

@@ -116,8 +116,11 @@ class RunSummary:
     empty_count: int
     total_page_count: int
     elapsed_s: float
-    seconds_per_page: float  # excludes init_s
+    # Sum of elapsed_s over documents parsed ok in this run divided by their
+    # page_count sum: excludes init_s, skipped, failed, and empty documents.
+    seconds_per_page: float
     init_s: float | None = None  # one-time adapter preparation (model loading)
+    parsed_page_count: int = 0  # pages of documents parsed ok in this run
 
 
 class ParseRunError(RuntimeError):
@@ -360,6 +363,8 @@ def run(
     failed_count = 0
     empty_count = 0
     total_page_count = 0
+    parsed_page_count = 0
+    parsed_elapsed_s = 0.0
     total = len(inputs)
     prepared = False
     init_s: float | None = None
@@ -484,6 +489,10 @@ def run(
         page_count = document.page_count
         if page_count is not None:
             total_page_count += page_count
+        document_elapsed_s = time.perf_counter() - item_started
+        if status == "ok" and page_count is not None:
+            parsed_page_count += page_count
+            parsed_elapsed_s += document_elapsed_s
         record = _record(
             run_id=run_id,
             parser=adapter.name,
@@ -491,7 +500,7 @@ def run(
             settings_hash_value=current_settings_hash,
             item=item,
             status=status,
-            elapsed_s=time.perf_counter() - item_started,
+            elapsed_s=document_elapsed_s,
             page_count=page_count,
             stats=stats,
             error_type=None,
@@ -504,8 +513,9 @@ def run(
         report_progress(index)
 
     elapsed_s = time.perf_counter() - started
-    parse_elapsed_s = elapsed_s - (init_s or 0.0)
-    seconds_per_page = parse_elapsed_s / total_page_count if total_page_count else 0.0
+    seconds_per_page = (
+        parsed_elapsed_s / parsed_page_count if parsed_page_count else 0.0
+    )
     summary = RunSummary(
         ok_count=ok_count,
         skipped_count=skipped_count,
@@ -515,13 +525,15 @@ def run(
         elapsed_s=elapsed_s,
         seconds_per_page=seconds_per_page,
         init_s=init_s,
+        parsed_page_count=parsed_page_count,
     )
     init_text = "none" if init_s is None else f"{init_s:.1f}s"
     print(
         f"[{adapter.name}] summary ok={ok_count} skipped={skipped_count} "
         f"failed={failed_count} empty={empty_count} pages={total_page_count} "
+        f"parsed_pages={parsed_page_count} "
         f"elapsed={elapsed_s:.1f}s init={init_text} "
-        f"sec/page={seconds_per_page:.3f} (init 제외)",
+        f"sec/page={seconds_per_page:.3f} (이번 실행 ok 문서 기준, init 제외)",
         file=out,
     )
     return summary

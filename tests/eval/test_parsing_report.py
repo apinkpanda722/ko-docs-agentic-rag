@@ -365,3 +365,61 @@ def test_answer_difference_table_explains_when_parsers_are_insufficient(
 
     assert "채점된 비교 파서가 2개 미만(pypdf)" in rendered
     assert "| pypdf | 2 | 1.0000 | - | 1.0000 | - |" in rendered
+
+
+def test_cost_table_excludes_model_loading_from_seconds_per_page(
+    tmp_path: Path,
+) -> None:
+    _write_manifests(tmp_path)
+    base = {"parser": "docling", "parser_version": "2.0", "error_type": None}
+    _write_jsonl(
+        tmp_path / "data/manifest/parse_runs.jsonl",
+        [
+            {
+                **base,
+                "run_id": "r1",
+                "input_sha256": "a",
+                "status": "ok",
+                "elapsed_s": 6.0,
+                "page_count": 2,
+                "init_s": 30.0,
+            },
+            {
+                **base,
+                "run_id": "r1",
+                "input_sha256": "b",
+                "status": "failed",
+                "elapsed_s": 100.0,
+                "page_count": 5,
+                "init_s": 30.0,
+                "error_type": "AttributeError",
+            },
+            {
+                **base,
+                "run_id": "r2",
+                "input_sha256": "a",
+                "status": "skipped",
+                "elapsed_s": 0.0,
+                "page_count": 2,
+                "init_s": None,
+            },
+            {
+                **base,
+                "run_id": "r2",
+                "input_sha256": "b",
+                "status": "ok",
+                "elapsed_s": 3.0,
+                "page_count": 4,
+                "init_s": 10.0,
+            },
+        ],
+    )
+
+    rendered = render_tables(tmp_path)
+
+    # 최신 ok 기록 a(6초·2쪽)·b(3초·4쪽): 9초 ÷ 6쪽, 로딩 30·10초는 따로 표시.
+    assert (
+        "| docling | 로컬(원장 기록 없음) | 6 | 9.000 | 1.500 | "
+        "30.000(최초), 10.000 | 0.0000 | 0.0000 |"
+    ) in rendered
+    assert "모델 로딩(초)" in rendered

@@ -569,12 +569,17 @@ def _cost_table(
                 if record.get("status") in {"ok", "empty"}
                 and _is_number(page_count := record.get("page_count"))
             )
-            elapsed = math.fsum(
-                float(value)
+            ok_timed = [
+                (float(elapsed_value), int(page_value))
                 for record in parser_runs
-                if _is_number(value := record.get("elapsed_s"))
-            ) + _initialization_seconds(parser_runs)
-            seconds_per_page: float | None = elapsed / pages if pages else None
+                if record.get("status") == "ok"
+                and _is_number(elapsed_value := record.get("elapsed_s"))
+                and _is_number(page_value := record.get("page_count"))
+            ]
+            elapsed = math.fsum(value for value, _ in ok_timed)
+            ok_pages = sum(page for _, page in ok_timed)
+            # Model loading is shown separately and never enters seconds per page.
+            seconds_per_page: float | None = elapsed / ok_pages if ok_pages else None
         else:
             pages = elapsed = seconds_per_page = None
 
@@ -598,19 +603,23 @@ def _cost_table(
                 pages,
                 _seconds(elapsed),
                 _seconds(seconds_per_page),
+                _initialization_text(
+                    [record for record in runs if record.get("parser") == parser]
+                ),
                 _usd(amount),
                 _usd(cost_per_page),
             ]
         )
     return _table(
         "처리 비용",
-        "분모: 파서·입력별 최신 실제 처리 기록의 성공·빈 결과 쪽수(실패 시간 포함). 고정 조건: 총 시간은 문서 elapsed와 실행별 초기화 1회를 합하고, 비용은 `costs.jsonl`의 service별 정가와 부가세 포함 금액을 합산한다.",
+        "분모: 총 쪽수·쪽당 비용은 파서·입력별 최신 실제 처리 기록의 성공·빈 결과 쪽수다. 문서 시간 합·쪽당 초는 최신 ok 기록만 쓴다(elapsed_s 합 ÷ page_count 합, 실패·빈 결과 제외). 고정 조건: 모델 로딩(init_s)은 쪽당 초에 넣지 않고 실행 순서대로 따로 적는다(최초가 캐시 없는 상태). 비용은 `costs.jsonl`의 service별 정가와 부가세 포함 금액을 합산한다.",
         [
             "파서",
             "비용 service",
             "총 쪽수",
-            "총 시간(초)",
-            "쪽당 초",
+            "문서 시간 합(초, ok)",
+            "쪽당 초(ok)",
+            "모델 로딩(초)",
             "원장 금액 합(USD, 세금 포함)",
             "쪽당 비용(USD)",
         ],
@@ -841,19 +850,20 @@ def _shape_match_count(values: object, parser: str) -> int | None:
     return sum(item.get("shape_match") is True for item in measured)
 
 
-def _initialization_seconds(records: Sequence[Mapping[str, object]]) -> float:
-    by_run: dict[str, float] = {}
-    without_run: list[float] = []
+def _initialization_text(records: Sequence[Mapping[str, object]]) -> str | None:
+    """List one init_s per run in manifest order, marking the first (cold) run."""
+    by_run: dict[object, float] = {}
     for record in records:
         value = record.get("init_s")
-        if not _is_number(value):
-            continue
-        run_id = record.get("run_id")
-        if isinstance(run_id, str) and run_id:
+        if _is_number(value):
+            run_id = record.get("run_id") or None
             by_run[run_id] = max(by_run.get(run_id, 0.0), float(value))
-        else:
-            without_run.append(float(value))
-    return math.fsum(by_run.values()) + (max(without_run) if without_run else 0.0)
+    if not by_run:
+        return "-" if records else None
+    values = [_seconds(value) for value in by_run.values()]
+    if len(values) == 1:
+        return values[0]
+    return ", ".join([f"{values[0]}(최초)", *values[1:]])
 
 
 def _settings(record: Mapping[str, object] | None) -> object:
