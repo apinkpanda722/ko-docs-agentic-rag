@@ -513,7 +513,8 @@ def response_to_parsed(
     document_settings = dict(stable_settings)
     if extra_settings is not None:
         document_settings.update(extra_settings)
-    document_settings["apiVersion"] = _text(response.get("apiVersion"))
+    # The response key is "api" (e.g. "2.0"), checked against cached responses.
+    document_settings["api"] = _text(response.get("api"))
     usage = response["usage"]
     assert isinstance(usage, Mapping)
     enhanced = usage.get("enhanced")

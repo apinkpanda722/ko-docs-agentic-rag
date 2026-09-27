@@ -82,7 +82,8 @@ def _response(
     elements: list[dict[str, object]] | None = None,
 ) -> dict[str, object]:
     return {
-        "apiVersion": "1.2",
+        # Real responses carry the API version under "api" (no "apiVersion").
+        "api": "2.0",
         "model": "document-parse-260630",
         "elements": elements
         if elements is not None
@@ -542,7 +543,7 @@ def test_response_maps_blocks_and_keeps_response_metadata_out_of_settings_hash(
         Block(2, "other", "기타"),
     )
     assert parsed.parser_version == "document-parse-260630"
-    assert parsed.settings["apiVersion"] == "1.2"
+    assert parsed.settings["api"] == "2.0"
     assert parsed.settings_hash == settings_hash(settings)
     assert parsed.elapsed_s == 0.75
 
@@ -657,6 +658,7 @@ def test_enhanced_usage_warns_and_is_saved_in_settings_and_run_record(
     assert summary.ok_count == 1
     assert output["settings"]["usage_enhanced"] == 1
     assert record["usage_enhanced"] == 1
+    assert record["api_version"] == "2.0"
     assert "enhanced" in capsys.readouterr().err
 
 

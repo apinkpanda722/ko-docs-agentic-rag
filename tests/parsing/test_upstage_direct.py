@@ -87,7 +87,7 @@ def _input(
 
 def _response(*, pages: int = 2) -> dict[str, object]:
     return {
-        "apiVersion": "1.2",
+        "api": "2.0",
         "model": "document-parse-test",
         "elements": [
             {
