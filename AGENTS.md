@@ -67,6 +67,7 @@ make parse-report    # M2 파싱 결과표를 docs/results/{실행일}-m2-parsin
 make reg-index   # 법제처 현행 규정의 규정명·조 번호·조 제목 색인 → data/manifest/regulation_refs.json (조문 본문 없음, 네트워크 없음)
 make seed-names  # 시드 인물 명단을 팀별로 출력(사람이 훑어보고 널리 알려진 인물과 겹치는 이름을 찾는 용도, 네트워크 없음)
 make build-db     # 시드 → 티켓·결재 SQLite(data/synthetic/ledger.sqlite, 비커밋) 결정론 빌드, 해시·행 수는 data/manifest/synth_db.json (네트워크 없음)
+make plan-docs    # 시드 → 문서 200건 생성 계획·카나리아·인젝션 레지스트리(data/synthetic/, 커밋) (네트워크 없음)
 make generate    # 합성 코퍼스 생성 — 실제 API 호출, 사용자 실행
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)

@@ -1,0 +1,335 @@
+"""Contracts for the deterministic synthetic-document generation plan."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import re
+from collections import Counter, defaultdict
+from dataclasses import asdict
+from datetime import date, datetime, timedelta
+from pathlib import Path
+
+import pytest
+
+from kodocs.synth.db import build_rows
+from kodocs.synth.identifiers import INCIDENT_RE
+from kodocs.synth.injection_texts import INJECTION_TEXTS
+from kodocs.synth.plan import (
+    ACCESS_COUNTS,
+    CANARIES_PATH,
+    DOC_TYPES,
+    INJECTION_COUNTS,
+    INJECTIONS_PATH,
+    PLAN_PATH,
+    TYPE_COUNTS,
+    build_plan,
+    write_plan,
+)
+from kodocs.synth.seed import PERIOD_END, TEAMS, SeedError, load_seed
+
+REPO_ROOT = Path(__file__).parents[2]
+MIN_ROOT = Path(__file__).parent / "fixtures/seed_min"
+FACT_COUNT_RANGES = {
+    "meeting": (4, 8),
+    "weekly": (5, 8),
+    "incident": (8, 12),
+    "runbook": (4, 7),
+    "guide": (3, 6),
+    "notice": (2, 5),
+}
+DOC_ID_RE = re.compile(r"^[a-z0-9-]{1,40}$")
+CANARY_RE = re.compile(r"^[가-힣]+-[0-9]{4}$")
+
+
+@pytest.fixture(scope="module")
+def built():
+    seed = load_seed(REPO_ROOT)
+    plans, canaries, injections = build_plan(seed)
+    return seed, plans, canaries, injections
+
+
+def _record(plan) -> dict[str, object]:
+    return json.loads(json.dumps(asdict(plan), ensure_ascii=False))
+
+
+def test_build_plan_is_deterministic_and_has_exact_distributions(built) -> None:
+    seed, plans, canaries, injections = built
+
+    assert build_plan(seed) == (plans, canaries, injections)
+    assert len(plans) == 200
+    assert Counter(plan.doc_type for plan in plans) == TYPE_COUNTS
+    assert Counter(plan.access.level for plan in plans) == ACCESS_COUNTS
+    assert [plan.doc_type for plan in plans[: TYPE_COUNTS["meeting"]]] == [
+        "meeting"
+    ] * TYPE_COUNTS["meeting"]
+    assert all(plan.doc_type in DOC_TYPES for plan in plans)
+    assert len({plan.doc_id for plan in plans}) == len(plans)
+    assert all(DOC_ID_RE.fullmatch(plan.doc_id) for plan in plans)
+    for doc_type in DOC_TYPES:
+        ids = [plan.doc_id for plan in plans if plan.doc_type == doc_type]
+        assert ids == [
+            f"syn-{doc_type}-{number:03d}"
+            for number in range(1, TYPE_COUNTS[doc_type] + 1)
+        ]
+    team_counts = {
+        team: sum(
+            plan.team == team and plan.access.level in {"public", "team"}
+            for plan in plans
+        )
+        for team in TEAMS
+    }
+    assert all(team_counts[team] >= 10 for team in TEAMS)
+    for plan in plans:
+        expected_seed = int(
+            hashlib.sha256(
+                f"{seed.company['random_seed']}:{plan.doc_id}".encode()
+            ).hexdigest()[:8],
+            16,
+        )
+        assert plan.seed == expected_seed
+
+
+def test_fact_ranges_dates_authors_and_normal_fact_coverage(built) -> None:
+    seed, plans, _, _ = built
+    people = {person.person_id: person for person in seed.people}
+    covered_normal: set[str] = set()
+
+    for plan in plans:
+        assigned_seed_facts = [
+            seed.facts[fact_id] for fact_id in plan.fact_ids if fact_id in seed.facts
+        ]
+        count_without_canary = len(plan.fact_ids) - (plan.canary_fact_id is not None)
+        minimum, maximum = FACT_COUNT_RANGES[plan.doc_type]
+        assert minimum <= count_without_canary <= maximum
+        assert plan.fact_ids == tuple(sorted(plan.fact_ids))
+        assert plan.regulation_refs == tuple(sorted(plan.regulation_refs))
+        assert plan.related_doc_ids == tuple(sorted(plan.related_doc_ids))
+        assert people[plan.author_id].team == plan.team
+        if plan.access.level == "restricted":
+            assert people[plan.author_id].grade >= 4
+        fact_dates = [fact.date for fact in assigned_seed_facts if fact.date]
+        if fact_dates:
+            assert date.fromisoformat(plan.date) >= max(fact_dates)
+        assert date.fromisoformat(plan.date) <= PERIOD_END
+        assert plan.title_hint
+        assert set(plan.style) == {
+            "tone",
+            "structure",
+            "length_target_chars",
+            "persona",
+        }
+        covered_normal.update(
+            fact.fact_id for fact in assigned_seed_facts if fact.sensitivity == "normal"
+        )
+
+    normal_facts = {
+        fact.fact_id for fact in seed.facts.values() if fact.sensitivity == "normal"
+    }
+    assert len(covered_normal) / len(normal_facts) >= 0.70
+
+
+def test_incidents_are_one_to_one_linked_and_dated_from_recovery(built) -> None:
+    seed, plans, _, _ = built
+    incident_entities = {
+        entity_id: entity
+        for entity_id, entity in seed.entities.items()
+        if INCIDENT_RE.fullmatch(entity_id)
+    }
+    incident_plans = [plan for plan in plans if plan.doc_type == "incident"]
+    assert len(incident_plans) == len(incident_entities) == 25
+
+    for plan, (incident_id, entity) in zip(
+        incident_plans, sorted(incident_entities.items()), strict=True
+    ):
+        incident_fact_ids = {
+            fact.fact_id for fact in seed.facts.values() if fact.subject == incident_id
+        }
+        assert set(plan.fact_ids) == incident_fact_ids
+        assert plan.team == entity["owner_team"]
+        restored = next(
+            fact
+            for fact in seed.facts.values()
+            if fact.subject == incident_id and fact.fact_id.endswith("-restored")
+        )
+        recovery_date = datetime.fromisoformat(str(restored.value)).date()
+        assert (
+            recovery_date
+            <= date.fromisoformat(plan.date)
+            <= recovery_date + timedelta(days=14)
+        )
+        linked = [
+            other
+            for other in plans
+            if other.doc_type in {"meeting", "weekly"}
+            and incident_fact_ids.intersection(other.fact_ids)
+        ]
+        assert len(linked) >= 2
+        expected_related = {
+            other.doc_id
+            for other in plans
+            if other.doc_id != plan.doc_id
+            and set(plan.fact_ids).intersection(other.fact_ids)
+        }
+        assert set(plan.related_doc_ids) == expected_related
+        assert {other.doc_id for other in linked} <= set(plan.related_doc_ids)
+
+
+def test_restricted_facts_and_canaries_are_isolated(built) -> None:
+    seed, plans, canaries, _ = built
+    restricted_fact_ids = {
+        fact.fact_id for fact in seed.facts.values() if fact.sensitivity == "restricted"
+    }
+    restricted_plans = [plan for plan in plans if plan.access.level == "restricted"]
+    canary_rows = canaries["canaries"]
+
+    assert canaries["count"] == len(canary_rows) == len(restricted_plans) == 30
+    assert {row["doc_id"] for row in canary_rows} == {
+        plan.doc_id for plan in restricted_plans
+    }
+    assert all(
+        not restricted_fact_ids.intersection(plan.fact_ids)
+        for plan in plans
+        if plan.access.level != "restricted"
+    )
+    for plan in plans:
+        if plan.access.level == "restricted":
+            assert plan.access.teams == (plan.team,)
+            assert plan.access.min_grade == 4
+            assert plan.canary_fact_id in plan.fact_ids
+            assert restricted_fact_ids.intersection(plan.fact_ids)
+        else:
+            assert plan.canary_fact_id is None
+            assert not any(fact_id.startswith("f-canary-") for fact_id in plan.fact_ids)
+
+    values = [str(row["value"]) for row in canary_rows]
+    assert len(values) == len(set(values)) == 30
+    assert all(CANARY_RE.fullmatch(value) for value in values)
+    assert not any(
+        left in right
+        for index, left in enumerate(values)
+        for other_index, right in enumerate(values)
+        if index != other_index
+    )
+    seed_text = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in sorted((REPO_ROOT / "data/seed").rglob("*.yaml"))
+    )
+    row_text = json.dumps(build_rows(seed), ensure_ascii=False, sort_keys=True)
+    assert all(value not in seed_text and value not in row_text for value in values)
+
+
+def test_regulation_references_match_teams_and_cover_thirty_documents(built) -> None:
+    seed, plans, _, _ = built
+    eligible = [
+        plan
+        for plan in plans
+        if plan.doc_type in {"guide", "notice", "meeting"} and plan.regulation_refs
+    ]
+    allowed = defaultdict(set)
+    for row in seed.regulation_refs:
+        reference = f"{row['name']} {row['article']}"
+        for team in row["teams"]:
+            allowed[str(team)].add(reference)
+
+    assert len(eligible) >= 30
+    assert all(1 <= len(plan.regulation_refs) <= 2 for plan in eligible)
+    assert all(set(plan.regulation_refs) <= allowed[plan.team] for plan in eligible)
+
+
+def test_injection_registry_has_balanced_nonleaking_slots(built) -> None:
+    seed, plans, canaries, injections = built
+    plan_by_id = {plan.doc_id: plan for plan in plans}
+    rows = injections["injections"]
+
+    assert injections["count"] == len(rows) == 12
+    assert Counter(row["access_level"] for row in rows) == INJECTION_COUNTS
+    assert Counter(row["variant"] for row in rows) == {
+        variant: 3 for variant in INJECTION_TEXTS
+    }
+    assert (
+        max(Counter(plan_by_id[row["doc_id"]].doc_type for row in rows).values()) <= 4
+    )
+    assert all(row["insert_rule"] == "before_last_h2" for row in rows)
+    assert all(row["text"] == INJECTION_TEXTS[row["variant"]] for row in rows)
+    assert all(
+        plan_by_id[row["doc_id"]].injection_id == row["injection_id"] for row in rows
+    )
+    assert all(
+        plan.injection_id is None
+        for plan in plans
+        if plan.doc_id not in {row["doc_id"] for row in rows}
+    )
+
+    forbidden = (
+        {str(row["value"]) for row in canaries["canaries"]}
+        | {
+            str(fact.value)
+            for fact in seed.facts.values()
+            if fact.sensitivity == "restricted"
+        }
+        | {
+            str(entity["title"])
+            for entity in seed.entities.values()
+            if entity.get("sensitivity") == "restricted"
+        }
+    )
+    assert all(secret not in str(row["text"]) for row in rows for secret in forbidden)
+
+
+def test_write_plan_is_byte_deterministic_and_uses_fixed_json_keys(
+    built, tmp_path: Path
+) -> None:
+    _, plans, canaries, injections = built
+    write_plan(plans, canaries, injections, root=tmp_path)
+    first = {
+        path: (tmp_path / path).read_bytes()
+        for path in (PLAN_PATH, CANARIES_PATH, INJECTIONS_PATH)
+    }
+    write_plan(plans, canaries, injections, root=tmp_path)
+    assert first == {
+        path: (tmp_path / path).read_bytes()
+        for path in (PLAN_PATH, CANARIES_PATH, INJECTIONS_PATH)
+    }
+    records = [
+        json.loads(line)
+        for line in (tmp_path / PLAN_PATH).read_text(encoding="utf-8").splitlines()
+    ]
+    assert len(records) == 200
+    assert list(records[0]) == [
+        "doc_id",
+        "doc_type",
+        "team",
+        "access",
+        "author_id",
+        "date",
+        "title_hint",
+        "fact_ids",
+        "regulation_refs",
+        "canary_fact_id",
+        "injection_id",
+        "style",
+        "seed",
+        "related_doc_ids",
+    ]
+
+
+def test_committed_plan_and_registries_match_current_seed(built) -> None:
+    _, plans, canaries, injections = built
+    committed_plans = [
+        json.loads(line)
+        for line in (REPO_ROOT / PLAN_PATH).read_text(encoding="utf-8").splitlines()
+    ]
+    assert committed_plans == [_record(plan) for plan in plans]
+    assert (
+        json.loads((REPO_ROOT / CANARIES_PATH).read_text(encoding="utf-8")) == canaries
+    )
+    assert (
+        json.loads((REPO_ROOT / INJECTIONS_PATH).read_text(encoding="utf-8"))
+        == injections
+    )
+
+
+def test_insufficient_seed_fails_instead_of_reducing_counts() -> None:
+    with pytest.raises(SeedError, match="document plan requires 25 incidents"):
+        build_plan(load_seed(MIN_ROOT))
