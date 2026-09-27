@@ -29,8 +29,9 @@ TDD: `tests/synth/test_generate.py`를 먼저 작성한다.
   5. 카나리아(내부 코드명)가 제시되면 그 문자열을 정확히 한 번 이상 쓰고 표시로 감싼다.
 - 유형별 템플릿 6개(`meeting.md`, `weekly.md`, `incident.md`, `runbook.md`, `guide.md`, `notice.md`): 섹션 구성 후보, 길이 목표, 문체 규칙. 자리표시자(`{title_hint}`, `{author}`, `{date}`, `{team}`, `{facts_block}`, `{regulations_block}`, `{canary_block}`, `{style_block}`)만 쓰고 `str.format_map`으로 채운다.
 - 템플릿 해시: `template_hash(doc_type) = sha256(system.md 바이트 + b"\0" + {type}.md 바이트)`.
-- `style` 변수(계획의 `tone`·`structure`·`persona`)는 문체·구성 지시문으로 변환한다. 계획의 `seed`는 이미 변수 선택에 쓰였다. 여기서 추가 난수를 쓰지 않는다.
-- `facts_block`: 사실마다 `- fact_id | 종류 | 값 | 허용 표기: a / b / c` 한 줄(`surface_forms` 사용). 인물 사실은 이름·직급·팀.
+- `style` 변수(계획의 `tone`·`structure`·`persona`·`frame`)는 문체·구성 지시문으로 변환한다. `frame == "회고"`인 문서(회의록 최대 5건)는 "오래전 장애를 되돌아보는 회고 회의"라는 맥락을 지시한다. 계획의 `seed`는 이미 변수 선택에 쓰였다. 여기서 추가 난수를 쓰지 않는다.
+- `facts_block`: 사실마다 `- fact_id | 종류 | 값 | 허용 표기: a / b / c | 문서 날짜 기준 N일 전` 한 줄(`surface_forms` 사용, 경과 일수는 계획의 `fact_age_days`, 날짜 없는 사실은 경과 일수 생략). 인물 사실은 이름·직급·팀. system 규칙에 "경과 일수에 맞게 시점을 표현한다(예: 0~7일 '이번 주', 8~30일 '지난달'·'최근', 90일 초과 '지난해'·'과거 사례로')"를 넣는다. 이유: 문서 날짜보다 오래된 사실을 방금 일어난 일처럼 쓰지 않게 한다.
+- 계획 JSON의 키는 step 3 산출물에 `fact_age_days`(fact_id → 경과 일수)와 `style.frame`(`"일반"`|`"회고"`)이 추가된 형식이다. 테스트 fixture도 이 형식을 따른다.
 
 ### 2. `src/kodocs/synth/generate.py`
 

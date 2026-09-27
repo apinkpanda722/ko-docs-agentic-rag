@@ -24,6 +24,7 @@ from kodocs.synth.plan import (
     PLAN_PATH,
     TYPE_COUNTS,
     build_plan,
+    incident_age_summary,
     write_plan,
 )
 from kodocs.synth.seed import PERIOD_END, TEAMS, SeedError, load_seed
@@ -118,7 +119,9 @@ def test_fact_ranges_dates_authors_and_normal_fact_coverage(built) -> None:
             "structure",
             "length_target_chars",
             "persona",
+            "frame",
         }
+        assert plan.style["frame"] in {"일반", "회고"}
         covered_normal.update(
             fact.fact_id for fact in assigned_seed_facts if fact.sensitivity == "normal"
         )
@@ -311,6 +314,7 @@ def test_write_plan_is_byte_deterministic_and_uses_fixed_json_keys(
         "style",
         "seed",
         "related_doc_ids",
+        "fact_age_days",
     ]
 
 
@@ -333,3 +337,59 @@ def test_committed_plan_and_registries_match_current_seed(built) -> None:
 def test_insufficient_seed_fails_instead_of_reducing_counts() -> None:
     with pytest.raises(SeedError, match="document plan requires 25 incidents"):
         build_plan(load_seed(MIN_ROOT))
+
+
+INCIDENT_AGE_LIMITS = {"weekly": 30, "meeting": 90, "notice": 90}
+RETROSPECTIVE_CAP = 5
+
+
+def _incident_fact(seed, fact_id: str) -> bool:
+    fact = seed.facts.get(fact_id)
+    return fact is not None and INCIDENT_RE.fullmatch(fact.subject) is not None
+
+
+def test_fact_age_days_match_document_and_fact_dates(built) -> None:
+    seed, plans, _, _ = built
+    for plan in plans:
+        document_date = date.fromisoformat(plan.date)
+        expected = {
+            fact_id: (document_date - seed.facts[fact_id].date).days
+            for fact_id in plan.fact_ids
+            if fact_id in seed.facts and seed.facts[fact_id].date is not None
+        }
+        assert plan.fact_age_days == expected
+        assert all(age >= 0 for age in expected.values())
+
+
+def test_incident_facts_respect_type_age_limits_and_retrospective_cap(built) -> None:
+    seed, plans, _, _ = built
+    retrospective = [plan for plan in plans if plan.style["frame"] == "회고"]
+
+    assert len(retrospective) <= RETROSPECTIVE_CAP
+    assert all(plan.doc_type in {"meeting", "notice"} for plan in retrospective)
+    for plan in plans:
+        limit = INCIDENT_AGE_LIMITS.get(plan.doc_type)
+        if limit is None or plan.style["frame"] == "회고":
+            continue
+        stale = {
+            fact_id: age
+            for fact_id, age in plan.fact_age_days.items()
+            if _incident_fact(seed, fact_id) and age > limit
+        }
+        assert stale == {}, (plan.doc_id, stale)
+    for plan in retrospective:
+        assert any(
+            _incident_fact(seed, fact_id) and age > INCIDENT_AGE_LIMITS[plan.doc_type]
+            for fact_id, age in plan.fact_age_days.items()
+        ), plan.doc_id
+
+
+def test_incident_age_summary_reports_no_violations(built) -> None:
+    seed, plans, _, _ = built
+    summary = incident_age_summary(plans, seed)
+
+    assert summary["violations"] == []
+    assert summary["retrospective"] <= RETROSPECTIVE_CAP
+    assert sum(summary["buckets"]["incident"].values()) == 25
+    assert summary["buckets"]["weekly"]["31-90"] == 0
+    assert summary["buckets"]["weekly"]["91-365"] == 0

@@ -10,7 +10,7 @@ import tempfile
 from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from kodocs.synth.identifiers import INCIDENT_RE
@@ -20,6 +20,7 @@ from kodocs.synth.seed import (
     PERIOD_START,
     TEAMS,
     Access,
+    Fact,
     Seed,
     SeedError,
     load_seed,
@@ -39,6 +40,14 @@ TYPE_COUNTS = {
 }
 ACCESS_COUNTS = {"public": 90, "team": 80, "restricted": 30}
 INJECTION_COUNTS = {"public": 6, "team": 6}
+# 문서 날짜 기준 장애 사실의 최대 경과 일수. 가이드·런북은 교훈·재발 방지 맥락으로
+# 과거 장애를 참조할 수 있어 제한하지 않는다(장애 보고서는 복구 후 14일 규칙을 따른다).
+INCIDENT_AGE_LIMITS = {"weekly": 30, "meeting": 90, "notice": 90}
+# 더 오래된 장애를 다루는 회의록은 style frame "회고"로 표시하고 이 수를 넘기지 않는다.
+RETROSPECTIVE_CAP = 5
+FRAME_DEFAULT = "일반"
+FRAME_RETROSPECTIVE = "회고"
+_ANCHOR_OFFSET_DAYS = {"weekly": (1, 7), "meeting": (1, 14)}
 
 _FACT_COUNT_RANGES = {
     "meeting": (4, 8),
@@ -109,6 +118,7 @@ class DocPlan:
     style: dict[str, str | int]
     seed: int
     related_doc_ids: tuple[str, ...]
+    fact_age_days: dict[str, int]
 
 
 @dataclass
@@ -124,6 +134,8 @@ class _Draft:
     regulation_refs: tuple[str, ...] = ()
     canary_fact_id: str | None = None
     injection_id: str | None = None
+    anchor_date: date | None = None
+    retrospective: bool = False
 
 
 def build_plan(seed: Seed) -> tuple[list[DocPlan], dict, dict]:
@@ -266,7 +278,9 @@ def build_plan(seed: Seed) -> tuple[list[DocPlan], dict, dict]:
             (fact.date for fact in assigned_facts if fact.date is not None),
             default=PERIOD_START,
         )
-        document_date = max(draft.fixed_date or PERIOD_START, latest_fact_date)
+        document_date = max(
+            draft.fixed_date or draft.anchor_date or PERIOD_START, latest_fact_date
+        )
         if document_date > PERIOD_END:
             raise SeedError(
                 f"document date exceeds period end: {draft.doc_id}={document_date}"
@@ -289,6 +303,12 @@ def build_plan(seed: Seed) -> tuple[list[DocPlan], dict, dict]:
             "structure": rng.choice(_STRUCTURES[draft.doc_type]),
             "length_target_chars": rng.choice(_LENGTH_TARGETS[draft.doc_type]),
             "persona": rng.choice(_PERSONAS),
+            "frame": FRAME_RETROSPECTIVE if draft.retrospective else FRAME_DEFAULT,
+        }
+        fact_age_days = {
+            fact.fact_id: (document_date - fact.date).days
+            for fact in assigned_facts
+            if fact.date is not None
         }
         related = sorted(
             {
@@ -318,6 +338,7 @@ def build_plan(seed: Seed) -> tuple[list[DocPlan], dict, dict]:
                 style=style,
                 seed=draft.seed,
                 related_doc_ids=tuple(related),
+                fact_age_days=fact_age_days,
             )
         )
     return plans, canaries, injections
@@ -375,7 +396,65 @@ def main(argv: Sequence[str] | None = None) -> int:
         f"사실 커버리지: {len(covered_fact_ids)}/{len(normal_fact_ids)} "
         f"({coverage:.1%})"
     )
+    ages = incident_age_summary(plans, seed)
+    print(
+        "장애 사실 경과일(문서별 가장 오래된 장애 사실 기준, 장애 사실이 있는 문서만):"
+    )
+    for doc_type, counts in ages["buckets"].items():
+        limit = INCIDENT_AGE_LIMITS.get(doc_type)
+        print(f"  {doc_type}: {counts} (상한 {_age_limit_label(doc_type, limit)})")
+    print(f"회고 문서: {ages['retrospective']}건 (상한 {RETROSPECTIVE_CAP}건)")
+    print(f"경과일 규칙 위반: {len(ages['violations'])}건")
+    if ages["violations"]:
+        return 1
     return 0
+
+
+_AGE_BUCKETS = ((30, "0-30"), (90, "31-90"), (365, "91-365"))
+
+
+def incident_age_summary(plans: Sequence[DocPlan], seed: Seed) -> dict[str, object]:
+    """Per-type age buckets of incident facts and documents breaking the limits."""
+    buckets: dict[str, Counter[str]] = {doc_type: Counter() for doc_type in DOC_TYPES}
+    violations: list[str] = []
+    for plan in plans:
+        limit = INCIDENT_AGE_LIMITS.get(plan.doc_type)
+        retrospective = plan.style.get("frame") == FRAME_RETROSPECTIVE
+        oldest = max(
+            (
+                age
+                for fact_id, age in plan.fact_age_days.items()
+                if _is_incident_fact(seed.facts[fact_id])
+            ),
+            default=None,
+        )
+        if oldest is None:
+            continue
+        label = next((name for bound, name in _AGE_BUCKETS if oldest <= bound), "365+")
+        buckets[plan.doc_type][label] += 1
+        if limit is not None and not retrospective and oldest > limit:
+            violations.append(plan.doc_id)
+    return {
+        "buckets": {
+            doc_type: {
+                name: counts[name]
+                for name in [*(name for _, name in _AGE_BUCKETS), "365+"]
+            }
+            for doc_type, counts in buckets.items()
+        },
+        "retrospective": sum(
+            plan.style.get("frame") == FRAME_RETROSPECTIVE for plan in plans
+        ),
+        "violations": violations,
+    }
+
+
+def _age_limit_label(doc_type: str, limit: int | None) -> str:
+    if limit is not None:
+        return f"{limit}일"
+    if doc_type == "incident":
+        return "복구 후 14일 규칙"
+    return "없음(교훈·재발 방지 참조 허용)"
 
 
 def _document_seed(seed: Seed, doc_id: str) -> int:
@@ -455,34 +534,139 @@ def _link_incidents(
     seed: Seed,
     incidents: Sequence[tuple[str, Mapping[str, object]]],
 ) -> None:
-    candidates: dict[tuple[str, str], list[_Draft]] = defaultdict(list)
+    """Share each incident cause with two meeting/weekly docs dated near it.
+
+    Unanchored docs are anchored a few days after the incident; anchored docs
+    accept only incidents within their type's age limit. A meeting that is too
+    late for an incident may take it only as a retrospective (capped).
+    """
+    candidates: dict[str, list[_Draft]] = defaultdict(list)
     for draft in drafts:
         if (
             draft.doc_type in {"meeting", "weekly"}
             and draft.access.level != "restricted"
         ):
-            candidates[(draft.team, draft.doc_type)].append(draft)
-    team_offsets: Counter[tuple[str, str]] = Counter()
-    for incident_id, entity in incidents:
+            candidates[draft.team].append(draft)
+    retrospectives = 0
+    # Latest incidents first: docs anchored for a later incident can still take
+    # an earlier incident within their age limit, but never the reverse.
+    for incident_id, entity in sorted(
+        incidents,
+        key=lambda item: (str(item[1].get("date", "")), item[0]),
+        reverse=True,
+    ):
         team = _entity_team(entity, incident_id)
-        shared_fact = next(
+        shared = next(
             (
-                fact.fact_id
+                fact
                 for fact in seed.facts.values()
                 if fact.subject == incident_id and fact.fact_id.endswith("-cause")
             ),
             None,
         )
-        if shared_fact is None:
-            raise SeedError(f"incident has no cause fact: {incident_id}")
-        for doc_type in ("meeting", "weekly"):
-            options = candidates[(team, doc_type)]
-            if not options:
-                raise SeedError(f"no {doc_type} document for incident team: {team}")
-            offset_key = (team, doc_type)
-            target = options[team_offsets[offset_key] % len(options)]
-            team_offsets[offset_key] += 1
-            target.fact_ids.add(shared_fact)
+        if shared is None or shared.date is None:
+            raise SeedError(f"incident has no dated cause fact: {incident_id}")
+        linked: list[_Draft] = []
+        for doc_type in ("weekly", "meeting", "weekly", "meeting"):
+            if len(linked) == 2:
+                break
+            target = _link_target(candidates[team], doc_type, shared, linked, seed)
+            if target is not None:
+                _attach_incident(target, shared)
+                linked.append(target)
+        while len(linked) < 2 and retrospectives < RETROSPECTIVE_CAP:
+            target = next(
+                (
+                    draft
+                    for draft in candidates[team]
+                    if draft.doc_type == "meeting"
+                    and draft not in linked
+                    and not draft.retrospective
+                    and draft.anchor_date is not None
+                    and draft.anchor_date >= shared.date
+                ),
+                None,
+            )
+            if target is None:
+                break
+            target.retrospective = True
+            retrospectives += 1
+            target.fact_ids.add(shared.fact_id)
+            linked.append(target)
+        if len(linked) < 2:
+            raise SeedError(
+                f"cannot link incident to two dated meeting/weekly docs: {incident_id}"
+            )
+
+
+def _link_target(
+    options: Sequence[_Draft],
+    doc_type: str,
+    fact: Fact,
+    linked: Sequence[_Draft],
+    seed: Seed,
+) -> _Draft | None:
+    typed = [
+        draft for draft in options if draft.doc_type == doc_type and draft not in linked
+    ]
+    unanchored = next(
+        (draft for draft in typed if draft.anchor_date is None and not draft.fact_ids),
+        None,
+    )
+    if unanchored is not None:
+        return unanchored
+    return next(
+        (
+            draft
+            for draft in typed
+            if draft.anchor_date is not None and _can_add(draft, fact, seed)
+        ),
+        None,
+    )
+
+
+def _attach_incident(draft: _Draft, fact: Fact) -> None:
+    if draft.anchor_date is None:
+        low, high = _ANCHOR_OFFSET_DAYS[draft.doc_type]
+        offset = random.Random(f"{draft.seed}:anchor").randint(low, high)
+        draft.anchor_date = min(fact.date + timedelta(days=offset), PERIOD_END)
+    draft.fact_ids.add(fact.fact_id)
+
+
+def _is_incident_fact(fact: Fact) -> bool:
+    return INCIDENT_RE.fullmatch(fact.subject) is not None
+
+
+def _current_date(draft: _Draft, seed: Seed) -> date:
+    dates = [
+        seed.facts[fact_id].date
+        for fact_id in draft.fact_ids
+        if fact_id in seed.facts and seed.facts[fact_id].date is not None
+    ]
+    fixed = [value for value in (draft.fixed_date, draft.anchor_date) if value]
+    return max(fixed + dates, default=PERIOD_START)
+
+
+def _can_add(draft: _Draft, fact: Fact, seed: Seed) -> bool:
+    """Whether adding ``fact`` keeps the draft's dates consistent."""
+    if fact.date is None:
+        return True
+    if draft.anchor_date is not None and fact.date > draft.anchor_date:
+        return False
+    limit = None if draft.retrospective else INCIDENT_AGE_LIMITS.get(draft.doc_type)
+    if limit is None:
+        return True
+    new_date = max(_current_date(draft, seed), fact.date)
+    incident_dates = [
+        seed.facts[fact_id].date
+        for fact_id in draft.fact_ids
+        if fact_id in seed.facts
+        and seed.facts[fact_id].date is not None
+        and _is_incident_fact(seed.facts[fact_id])
+    ]
+    if _is_incident_fact(fact):
+        incident_dates.append(fact.date)
+    return all((new_date - value).days <= limit for value in incident_dates)
 
 
 def _cover_normal_facts(
@@ -516,7 +700,9 @@ def _cover_normal_facts(
             for offset in range(len(candidates)):
                 index = (cursor + offset) % len(candidates)
                 draft = candidates[index]
-                if len(draft.fact_ids) < _FACT_COUNT_RANGES[draft.doc_type][1]:
+                if len(draft.fact_ids) < _FACT_COUNT_RANGES[draft.doc_type][
+                    1
+                ] and _can_add(draft, seed.facts[fact_id], seed):
                     draft.fact_ids.add(fact_id)
                     chosen = index
                     break
@@ -557,7 +743,8 @@ def _fill_fact_targets(
         for fact_id in candidates:
             if len(draft.fact_ids) >= target:
                 break
-            draft.fact_ids.add(fact_id)
+            if _can_add(draft, seed.facts[fact_id], seed):
+                draft.fact_ids.add(fact_id)
         if len(draft.fact_ids) < target:
             raise SeedError(
                 f"insufficient facts for {draft.doc_id}: need {target}, "
@@ -735,6 +922,7 @@ def _plan_record(plan: DocPlan) -> dict[str, object]:
         "style": plan.style,
         "seed": plan.seed,
         "related_doc_ids": list(plan.related_doc_ids),
+        "fact_age_days": dict(plan.fact_age_days),
     }
 
 
