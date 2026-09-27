@@ -1,0 +1,15 @@
+id: INC-2025-009
+title: 관문 라우팅 오류
+date: "2025-12-03"
+owner_team: platform
+assignee_id: p-002
+service: core-gateway
+facts:
+  - {fact_id: f-inc-2025-009-start, kind: datetime, value: "2025-12-03T18:10", date: "2025-12-03"}
+  - {fact_id: f-inc-2025-009-restored, kind: datetime, value: "2025-12-03T18:52", date: "2025-12-03"}
+  - {fact_id: f-inc-2025-009-service, kind: service, value: core-gateway, date: "2025-12-03"}
+  - {fact_id: f-inc-2025-009-severity, kind: text, value: 심각도 1로 분류되었다., date: "2025-12-03"}
+  - {fact_id: f-inc-2025-009-cause, kind: text, value: 단계적 배포 설정에서 이전 경로가 남아 있었다., date: "2025-12-03"}
+  - {fact_id: f-inc-2025-009-action, kind: text, value: 이전 경로를 제거하고 설정 차이 검사를 추가했다., date: "2025-12-03"}
+  - {fact_id: f-inc-2025-009-owner, kind: person, value: p-002, date: "2025-12-03"}
+  - {fact_id: f-inc-2025-009-ticket, kind: id, value: PLT-1002, date: "2025-12-03"}

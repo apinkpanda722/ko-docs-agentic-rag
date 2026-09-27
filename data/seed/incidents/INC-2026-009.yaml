@@ -1,0 +1,15 @@
+id: INC-2026-009
+title: 청구 응답 지연
+date: "2026-05-05"
+owner_team: payments
+assignee_id: p-043
+service: billing-api
+facts:
+  - {fact_id: f-inc-2026-009-start, kind: datetime, value: "2026-05-05T12:12", date: "2026-05-05"}
+  - {fact_id: f-inc-2026-009-restored, kind: datetime, value: "2026-05-05T13:02", date: "2026-05-05"}
+  - {fact_id: f-inc-2026-009-service, kind: service, value: billing-api, date: "2026-05-05"}
+  - {fact_id: f-inc-2026-009-severity, kind: text, value: 심각도 2로 분류되었다., date: "2026-05-05"}
+  - {fact_id: f-inc-2026-009-cause, kind: text, value: 대량 청구 요청이 작은 요청과 같은 대기열을 사용했다., date: "2026-05-05"}
+  - {fact_id: f-inc-2026-009-action, kind: text, value: 대량 요청 전용 대기열을 분리했다., date: "2026-05-05"}
+  - {fact_id: f-inc-2026-009-owner, kind: person, value: p-043, date: "2026-05-05"}
+  - {fact_id: f-inc-2026-009-ticket, kind: id, value: PAY-1004, date: "2026-05-05"}

@@ -1,0 +1,15 @@
+id: INC-2025-002
+title: 청구 계산 누락
+date: "2025-03-20"
+owner_team: payments
+assignee_id: p-043
+service: billing-api
+facts:
+  - {fact_id: f-inc-2025-002-start, kind: datetime, value: "2025-03-20T13:20", date: "2025-03-20"}
+  - {fact_id: f-inc-2025-002-restored, kind: datetime, value: "2025-03-20T14:40", date: "2025-03-20"}
+  - {fact_id: f-inc-2025-002-service, kind: service, value: billing-api, date: "2025-03-20"}
+  - {fact_id: f-inc-2025-002-severity, kind: text, value: 심각도 2로 분류되었다., date: "2025-03-20"}
+  - {fact_id: f-inc-2025-002-cause, kind: text, value: 할인 규칙 캐시의 갱신 순서가 어긋났다., date: "2025-03-20"}
+  - {fact_id: f-inc-2025-002-action, kind: text, value: 캐시 갱신 절차를 직렬화하고 누락분을 재계산했다., date: "2025-03-20"}
+  - {fact_id: f-inc-2025-002-owner, kind: person, value: p-043, date: "2025-03-20"}
+  - {fact_id: f-inc-2025-002-ticket, kind: id, value: PAY-1001, date: "2025-03-20"}

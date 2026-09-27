@@ -1,0 +1,15 @@
+id: INC-2026-011
+title: 계약 검색 결과 누락
+date: "2026-05-20"
+owner_team: legal
+assignee_id: p-189
+service: contract-vault
+facts:
+  - {fact_id: f-inc-2026-011-start, kind: datetime, value: "2026-05-20T13:11", date: "2026-05-20"}
+  - {fact_id: f-inc-2026-011-restored, kind: datetime, value: "2026-05-20T14:06", date: "2026-05-20"}
+  - {fact_id: f-inc-2026-011-service, kind: service, value: contract-vault, date: "2026-05-20"}
+  - {fact_id: f-inc-2026-011-severity, kind: text, value: 심각도 3으로 분류되었다., date: "2026-05-20"}
+  - {fact_id: f-inc-2026-011-cause, kind: text, value: 보관 상태 변경 후 검색 색인이 갱신되지 않았다., date: "2026-05-20"}
+  - {fact_id: f-inc-2026-011-action, kind: text, value: 색인 갱신 이벤트를 재처리하고 감사를 추가했다., date: "2026-05-20"}
+  - {fact_id: f-inc-2026-011-owner, kind: person, value: p-189, date: "2026-05-20"}
+  - {fact_id: f-inc-2026-011-ticket, kind: id, value: LGL-1002, date: "2026-05-20"}

@@ -1,0 +1,157 @@
+people:
+- person_id: p-107
+  name: 서재서
+  team: sre
+  grade: 5
+  role: 사이트 신뢰성
+  joined: '2013-09-29'
+- person_id: p-108
+  name: 이재나
+  team: sre
+  grade: 4
+  role: 배포 자동화
+  joined: '2019-12-12'
+- person_id: p-109
+  name: 고가빈
+  team: sre
+  grade: 4
+  role: 사이트 신뢰성
+  joined: '2019-06-11'
+- person_id: p-110
+  name: 허보겸
+  team: sre
+  grade: 4
+  role: 클라우드 운영
+  joined: '2017-11-30'
+- person_id: p-111
+  name: 성지안
+  team: sre
+  grade: 4
+  role: 클라우드 운영
+  joined: '2015-04-15'
+- person_id: p-112
+  name: 강현현
+  team: sre
+  grade: 3
+  role: 클라우드 운영
+  joined: '2024-01-08'
+- person_id: p-113
+  name: 김아연
+  team: sre
+  grade: 3
+  role: 클라우드 운영
+  joined: '2019-02-17'
+- person_id: p-114
+  name: 곽가영
+  team: sre
+  grade: 3
+  role: 클라우드 운영
+  joined: '2016-09-11'
+- person_id: p-115
+  name: 신수빈
+  team: sre
+  grade: 2
+  role: 사이트 신뢰성
+  joined: '2018-04-18'
+- person_id: p-116
+  name: 김예연
+  team: sre
+  grade: 2
+  role: 클라우드 운영
+  joined: '2018-03-28'
+- person_id: p-117
+  name: 고은수
+  team: sre
+  grade: 2
+  role: 사이트 신뢰성
+  joined: '2023-07-20'
+- person_id: p-118
+  name: 허재서
+  team: sre
+  grade: 2
+  role: 클라우드 운영
+  joined: '2017-12-04'
+- person_id: p-119
+  name: 허다진
+  team: sre
+  grade: 2
+  role: 클라우드 운영
+  joined: '2014-08-23'
+- person_id: p-120
+  name: 허수진
+  team: sre
+  grade: 2
+  role: 배포 자동화
+  joined: '2020-04-26'
+- person_id: p-121
+  name: 임민윤
+  team: sre
+  grade: 2
+  role: 클라우드 운영
+  joined: '2024-08-20'
+- person_id: p-122
+  name: 오지겸
+  team: sre
+  grade: 1
+  role: 사이트 신뢰성
+  joined: '2019-01-14'
+- person_id: p-123
+  name: 고유담
+  team: sre
+  grade: 1
+  role: 클라우드 운영
+  joined: '2019-04-15'
+- person_id: p-124
+  name: 유태아
+  team: sre
+  grade: 1
+  role: 배포 자동화
+  joined: '2014-11-05'
+- person_id: p-125
+  name: 고현진
+  team: sre
+  grade: 1
+  role: 클라우드 운영
+  joined: '2020-10-14'
+- person_id: p-126
+  name: 권하원
+  team: sre
+  grade: 1
+  role: 관측성
+  joined: '2023-11-23'
+- person_id: p-127
+  name: 허재솔
+  team: sre
+  grade: 1
+  role: 클라우드 운영
+  joined: '2017-04-18'
+- person_id: p-128
+  name: 노가안
+  team: sre
+  grade: 1
+  role: 관측성
+  joined: '2016-01-06'
+- person_id: p-129
+  name: 양해현
+  team: sre
+  grade: 1
+  role: 클라우드 운영
+  joined: '2020-11-13'
+- person_id: p-130
+  name: 장연수
+  team: sre
+  grade: 1
+  role: 배포 자동화
+  joined: '2018-11-25'
+- person_id: p-131
+  name: 한건람
+  team: sre
+  grade: 1
+  role: 사이트 신뢰성
+  joined: '2016-11-25'
+- person_id: p-132
+  name: 강연은
+  team: sre
+  grade: 1
+  role: 사이트 신뢰성
+  joined: '2026-02-07'

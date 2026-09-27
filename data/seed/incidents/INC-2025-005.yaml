@@ -1,0 +1,15 @@
+id: INC-2025-005
+title: 보안 경보 수집 공백
+date: "2025-07-08"
+owner_team: security
+assignee_id: p-133
+service: security-center
+facts:
+  - {fact_id: f-inc-2025-005-start, kind: datetime, value: "2025-07-08T11:12", date: "2025-07-08"}
+  - {fact_id: f-inc-2025-005-restored, kind: datetime, value: "2025-07-08T12:02", date: "2025-07-08"}
+  - {fact_id: f-inc-2025-005-service, kind: service, value: security-center, date: "2025-07-08"}
+  - {fact_id: f-inc-2025-005-severity, kind: text, value: 심각도 2로 분류되었다., date: "2025-07-08"}
+  - {fact_id: f-inc-2025-005-cause, kind: text, value: 수집 인증서 갱신 작업이 일부 노드에서 누락되었다., date: "2025-07-08"}
+  - {fact_id: f-inc-2025-005-action, kind: text, value: 인증서를 일괄 갱신하고 만료 전 점검을 추가했다., date: "2025-07-08"}
+  - {fact_id: f-inc-2025-005-owner, kind: person, value: p-133, date: "2025-07-08"}
+  - {fact_id: f-inc-2025-005-ticket, kind: id, value: SEC-1001, date: "2025-07-08"}

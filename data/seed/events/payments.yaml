@@ -1,0 +1,74 @@
+events:
+  - id: evt-2025-009
+    title: 할인 캐시 개선 프로젝트
+    date: "2025-03-28"
+    owner_team: payments
+    type: project
+    facts:
+      - {fact_id: f-evt-009-incident, kind: id, value: INC-2025-002, date: "2025-03-28"}
+      - {fact_id: f-evt-009-plan, kind: text, value: 할인 규칙 캐시 갱신을 단일 절차로 만드는 프로젝트를 시작했다., date: "2025-03-28"}
+      - {fact_id: f-evt-009-service, kind: service, value: billing-api, date: "2025-03-28"}
+  - id: evt-2026-010
+    title: 재시도 기준 변경 결정
+    date: "2026-01-08"
+    owner_team: payments
+    type: decision
+    facts:
+      - {fact_id: f-evt-010-incident, kind: id, value: INC-2025-010, date: "2026-01-08"}
+      - {fact_id: f-evt-010-decision, kind: text, value: 지연 응답의 재시도 기준을 구간별로 나누기로 결정했다., date: "2026-01-08"}
+      - {fact_id: f-evt-010-service, kind: service, value: billing-api, date: "2026-01-08"}
+  - id: evt-2025-011
+    title: 결제 경로 상태판 배포
+    date: "2025-05-21"
+    owner_team: payments
+    type: release
+    facts:
+      - {fact_id: f-evt-011-version, kind: text, value: 결제 경로별 상태를 보여주는 화면을 배포했다., date: "2025-05-21"}
+      - {fact_id: f-evt-011-service, kind: service, value: payment-router, date: "2025-05-21"}
+      - {fact_id: f-evt-011-result, kind: text, value: 경로 편중을 운영자가 바로 확인할 수 있게 되었다., date: "2025-05-21"}
+  - id: evt-2025-012
+    title: 결제 변경 승인 정책
+    date: "2025-07-16"
+    owner_team: payments
+    type: policy
+    facts:
+      - {fact_id: f-evt-012-policy, kind: text, value: 결제 경로 가중치 변경에 별도 승인을 요구했다., date: "2025-07-16"}
+      - {fact_id: f-evt-012-owner, kind: person, value: p-043, date: "2025-07-16"}
+      - {fact_id: f-evt-012-service, kind: service, value: payment-router, date: "2025-07-16"}
+  - id: evt-2025-013
+    title: 청구 품질 담당 구성
+    date: "2025-10-14"
+    owner_team: payments
+    type: org
+    facts:
+      - {fact_id: f-evt-013-org, kind: text, value: 청구 품질 점검 담당을 팀 안에 구성했다., date: "2025-10-14"}
+      - {fact_id: f-evt-013-owner, kind: person, value: p-043, date: "2025-10-14"}
+      - {fact_id: f-evt-013-focus, kind: text, value: 월말 청구 표본 검사를 우선 과제로 정했다., date: "2025-10-14"}
+  - id: evt-2026-014
+    title: 미공개 요율 변경 검토
+    date: "2026-02-24"
+    owner_team: payments
+    type: sensitive
+    sensitivity: restricted
+    facts:
+      - {fact_id: f-evt-014-plan, kind: text, value: 공개 전인 요율 변경 시나리오를 내부 검토했다., date: "2026-02-24"}
+      - {fact_id: f-evt-014-owner, kind: person, value: p-043, date: "2026-02-24"}
+      - {fact_id: f-evt-014-service, kind: service, value: billing-api, date: "2026-02-24"}
+  - id: evt-2026-015
+    title: 청구 설정 검증 결정
+    date: "2026-06-28"
+    owner_team: payments
+    type: decision
+    facts:
+      - {fact_id: f-evt-015-incident, kind: id, value: INC-2026-031, date: "2026-06-28"}
+      - {fact_id: f-evt-015-decision, kind: text, value: 청구 설정 검증을 배포의 필수 단계로 두기로 결정했다., date: "2026-06-28"}
+      - {fact_id: f-evt-015-service, kind: service, value: billing-api, date: "2026-06-28"}
+  - id: evt-2026-016
+    title: 대량 청구 대기열 배포
+    date: "2026-05-18"
+    owner_team: payments
+    type: release
+    facts:
+      - {fact_id: f-evt-016-version, kind: text, value: 대량 청구 전용 대기열을 배포했다., date: "2026-05-18"}
+      - {fact_id: f-evt-016-service, kind: service, value: billing-api, date: "2026-05-18"}
+      - {fact_id: f-evt-016-result, kind: text, value: 작은 요청의 처리 지연이 줄어든 것을 확인했다., date: "2026-05-18"}

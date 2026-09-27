@@ -1,0 +1,66 @@
+events:
+  - id: evt-2025-033
+    title: 미공개 취약점 조치
+    date: "2025-02-11"
+    owner_team: security
+    type: sensitive
+    sensitivity: restricted
+    facts:
+      - {fact_id: f-evt-033-plan, kind: text, value: 공개 전인 취약점의 긴급 조치 순서를 내부에서 정했다., date: "2025-02-11"}
+      - {fact_id: f-evt-033-owner, kind: person, value: p-133, date: "2025-02-11"}
+      - {fact_id: f-evt-033-service, kind: service, value: security-center, date: "2025-02-11"}
+  - id: evt-2025-034
+    title: 인증서 만료 점검 프로젝트
+    date: "2025-07-15"
+    owner_team: security
+    type: project
+    facts:
+      - {fact_id: f-evt-034-incident, kind: id, value: INC-2025-005, date: "2025-07-15"}
+      - {fact_id: f-evt-034-plan, kind: text, value: 수집 인증서 만료 전 점검 프로젝트를 시작했다., date: "2025-07-15"}
+      - {fact_id: f-evt-034-service, kind: service, value: security-center, date: "2025-07-15"}
+  - id: evt-2026-035
+    title: 취약점 형식 검증 결정
+    date: "2026-04-27"
+    owner_team: security
+    type: decision
+    facts:
+      - {fact_id: f-evt-035-incident, kind: id, value: INC-2026-007, date: "2026-04-27"}
+      - {fact_id: f-evt-035-decision, kind: text, value: 취약점 목록을 동기화하기 전에 형식을 검증하기로 결정했다., date: "2026-04-27"}
+      - {fact_id: f-evt-035-service, kind: service, value: security-center, date: "2026-04-27"}
+  - id: evt-2025-036
+    title: 경보 분류 화면 배포
+    date: "2025-09-04"
+    owner_team: security
+    type: release
+    facts:
+      - {fact_id: f-evt-036-version, kind: text, value: 보안 경보 분류 화면을 배포했다., date: "2025-09-04"}
+      - {fact_id: f-evt-036-service, kind: service, value: security-center, date: "2025-09-04"}
+      - {fact_id: f-evt-036-result, kind: text, value: 긴급 경보 확인 시간이 단축되었다., date: "2025-09-04"}
+  - id: evt-2025-037
+    title: 계정 점검 정책
+    date: "2025-11-28"
+    owner_team: security
+    type: policy
+    facts:
+      - {fact_id: f-evt-037-policy, kind: text, value: 장기 미사용 계정을 월별로 점검하도록 정했다., date: "2025-11-28"}
+      - {fact_id: f-evt-037-rule, kind: regulation, value: 정보보안 기본지침 제72조, date: "2025-11-28"}
+      - {fact_id: f-evt-037-owner, kind: person, value: p-133, date: "2025-11-28"}
+  - id: evt-2026-038
+    title: 미공개 모의공격 결과
+    date: "2026-05-09"
+    owner_team: security
+    type: sensitive
+    sensitivity: restricted
+    facts:
+      - {fact_id: f-evt-038-result, kind: text, value: 공개 전인 모의공격 결과와 보완 순서를 검토했다., date: "2026-05-09"}
+      - {fact_id: f-evt-038-owner, kind: person, value: p-133, date: "2026-05-09"}
+      - {fact_id: f-evt-038-service, kind: service, value: identity-api, date: "2026-05-09"}
+  - id: evt-2026-039
+    title: 제품 보안 담당 구성
+    date: "2026-06-09"
+    owner_team: security
+    type: org
+    facts:
+      - {fact_id: f-evt-039-org, kind: text, value: 제품 보안 검토 담당 역할을 팀 안에 구성했다., date: "2026-06-09"}
+      - {fact_id: f-evt-039-owner, kind: person, value: p-133, date: "2026-06-09"}
+      - {fact_id: f-evt-039-focus, kind: text, value: 배포 전 취약점 확인을 우선 과제로 정했다., date: "2026-06-09"}

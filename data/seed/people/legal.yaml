@@ -1,0 +1,73 @@
+people:
+- person_id: p-189
+  name: 노소겸
+  team: legal
+  grade: 5
+  role: 분쟁 대응
+  joined: '2024-12-03'
+- person_id: p-190
+  name: 노유담
+  team: legal
+  grade: 4
+  role: 준법 지원
+  joined: '2024-10-31'
+- person_id: p-191
+  name: 강라영
+  team: legal
+  grade: 3
+  role: 개인정보 지원
+  joined: '2023-07-22'
+- person_id: p-192
+  name: 강지현
+  team: legal
+  grade: 3
+  role: 분쟁 대응
+  joined: '2017-03-19'
+- person_id: p-193
+  name: 박하영
+  team: legal
+  grade: 3
+  role: 분쟁 대응
+  joined: '2017-03-19'
+- person_id: p-194
+  name: 오도연
+  team: legal
+  grade: 3
+  role: 개인정보 지원
+  joined: '2023-09-23'
+- person_id: p-195
+  name: 전서나
+  team: legal
+  grade: 2
+  role: 개인정보 지원
+  joined: '2014-12-11'
+- person_id: p-196
+  name: 임도현
+  team: legal
+  grade: 2
+  role: 계약 검토
+  joined: '2015-08-03'
+- person_id: p-197
+  name: 송태인
+  team: legal
+  grade: 2
+  role: 준법 지원
+  joined: '2025-02-24'
+- person_id: p-198
+  name: 임예온
+  team: legal
+  grade: 2
+  role: 계약 검토
+  joined: '2025-04-19'
+- person_id: p-199
+  name: 유수현
+  team: legal
+  grade: 1
+  role: 준법 지원
+  joined: '2023-05-16'
+- person_id: p-200
+  name: 양연수
+  team: legal
+  grade: 1
+  role: 계약 검토
+  joined: '2019-09-18'

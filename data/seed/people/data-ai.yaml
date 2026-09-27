@@ -1,0 +1,181 @@
+people:
+- person_id: p-077
+  name: 오가안
+  team: data-ai
+  grade: 5
+  role: 분석 모델링
+  joined: '2014-08-23'
+- person_id: p-078
+  name: 임경민
+  team: data-ai
+  grade: 4
+  role: 분석 모델링
+  joined: '2014-10-12'
+- person_id: p-079
+  name: 유예수
+  team: data-ai
+  grade: 4
+  role: 데이터 엔지니어링
+  joined: '2020-12-12'
+- person_id: p-080
+  name: 한가수
+  team: data-ai
+  grade: 4
+  role: 분석 모델링
+  joined: '2014-04-25'
+- person_id: p-081
+  name: 조연서
+  team: data-ai
+  grade: 4
+  role: ML 플랫폼
+  joined: '2019-02-20'
+- person_id: p-082
+  name: 최다경
+  team: data-ai
+  grade: 3
+  role: ML 플랫폼
+  joined: '2019-12-11'
+- person_id: p-083
+  name: 노은우
+  team: data-ai
+  grade: 3
+  role: 데이터 엔지니어링
+  joined: '2018-02-28'
+- person_id: p-084
+  name: 신수서
+  team: data-ai
+  grade: 3
+  role: 분석 모델링
+  joined: '2016-09-15'
+- person_id: p-085
+  name: 장해솔
+  team: data-ai
+  grade: 3
+  role: 데이터 품질
+  joined: '2020-06-10'
+- person_id: p-086
+  name: 강현인
+  team: data-ai
+  grade: 3
+  role: 데이터 엔지니어링
+  joined: '2024-07-23'
+- person_id: p-087
+  name: 안민민
+  team: data-ai
+  grade: 3
+  role: ML 플랫폼
+  joined: '2014-09-15'
+- person_id: p-088
+  name: 남시은
+  team: data-ai
+  grade: 3
+  role: ML 플랫폼
+  joined: '2021-05-28'
+- person_id: p-089
+  name: 유예겸
+  team: data-ai
+  grade: 3
+  role: ML 플랫폼
+  joined: '2020-02-05'
+- person_id: p-090
+  name: 강소나
+  team: data-ai
+  grade: 3
+  role: 데이터 엔지니어링
+  joined: '2013-06-22'
+- person_id: p-091
+  name: 곽지솔
+  team: data-ai
+  grade: 3
+  role: 분석 모델링
+  joined: '2022-01-23'
+- person_id: p-092
+  name: 임서린
+  team: data-ai
+  grade: 3
+  role: 데이터 품질
+  joined: '2020-10-18'
+- person_id: p-093
+  name: 최유영
+  team: data-ai
+  grade: 2
+  role: 데이터 품질
+  joined: '2024-11-29'
+- person_id: p-094
+  name: 양은린
+  team: data-ai
+  grade: 2
+  role: ML 플랫폼
+  joined: '2020-12-27'
+- person_id: p-095
+  name: 한시윤
+  team: data-ai
+  grade: 2
+  role: ML 플랫폼
+  joined: '2025-01-23'
+- person_id: p-096
+  name: 한태겸
+  team: data-ai
+  grade: 2
+  role: ML 플랫폼
+  joined: '2023-09-22'
+- person_id: p-097
+  name: 남보우
+  team: data-ai
+  grade: 2
+  role: 분석 모델링
+  joined: '2021-08-23'
+- person_id: p-098
+  name: 곽채수
+  team: data-ai
+  grade: 2
+  role: ML 플랫폼
+  joined: '2014-06-12'
+- person_id: p-099
+  name: 박건안
+  team: data-ai
+  grade: 1
+  role: 분석 모델링
+  joined: '2024-08-01'
+- person_id: p-100
+  name: 서하우
+  team: data-ai
+  grade: 1
+  role: 데이터 엔지니어링
+  joined: '2022-11-11'
+- person_id: p-101
+  name: 정현서
+  team: data-ai
+  grade: 1
+  role: 분석 모델링
+  joined: '2025-05-05'
+- person_id: p-102
+  name: 유유민
+  team: data-ai
+  grade: 1
+  role: ML 플랫폼
+  joined: '2026-04-18'
+- person_id: p-103
+  name: 서연서
+  team: data-ai
+  grade: 1
+  role: 데이터 품질
+  joined: '2015-11-17'
+- person_id: p-104
+  name: 배소원
+  team: data-ai
+  grade: 1
+  role: 분석 모델링
+  joined: '2019-03-09'
+- person_id: p-105
+  name: 최연인
+  team: data-ai
+  grade: 1
+  role: 분석 모델링
+  joined: '2012-01-30'
+- person_id: p-106
+  name: 한태진
+  team: data-ai
+  grade: 1
+  role: 데이터 엔지니어링
+  joined: '2013-12-25'

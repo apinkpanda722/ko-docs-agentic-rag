@@ -1,0 +1,66 @@
+events:
+  - id: evt-2025-054
+    title: 법무 분쟁 대응
+    date: "2025-01-17"
+    owner_team: legal
+    type: sensitive
+    sensitivity: restricted
+    facts:
+      - {fact_id: f-evt-054-plan, kind: text, value: 가상 계약 분쟁의 비공개 대응 시나리오를 검토했다., date: "2025-01-17"}
+      - {fact_id: f-evt-054-owner, kind: person, value: p-189, date: "2025-01-17"}
+      - {fact_id: f-evt-054-rule, kind: regulation, value: 법무업무규정 제12조, date: "2025-01-17"}
+  - id: evt-2025-055
+    title: 계약 일정 점검 프로젝트
+    date: "2025-11-18"
+    owner_team: legal
+    type: project
+    facts:
+      - {fact_id: f-evt-055-incident, kind: id, value: INC-2025-008, date: "2025-11-18"}
+      - {fact_id: f-evt-055-plan, kind: text, value: 계약 기한의 휴일 계산을 점검하는 프로젝트를 시작했다., date: "2025-11-18"}
+      - {fact_id: f-evt-055-service, kind: service, value: contract-vault, date: "2025-11-18"}
+  - id: evt-2026-056
+    title: 색인 감사 결정
+    date: "2026-05-27"
+    owner_team: legal
+    type: decision
+    facts:
+      - {fact_id: f-evt-056-incident, kind: id, value: INC-2026-011, date: "2026-05-27"}
+      - {fact_id: f-evt-056-decision, kind: text, value: 계약 상태 변경 뒤 검색 색인을 감사하기로 결정했다., date: "2026-05-27"}
+      - {fact_id: f-evt-056-service, kind: service, value: contract-vault, date: "2026-05-27"}
+  - id: evt-2025-057
+    title: 계약 기한 화면 배포
+    date: "2025-05-30"
+    owner_team: legal
+    type: release
+    facts:
+      - {fact_id: f-evt-057-version, kind: text, value: 계약별 검토 기한 화면을 배포했다., date: "2025-05-30"}
+      - {fact_id: f-evt-057-service, kind: service, value: contract-vault, date: "2025-05-30"}
+      - {fact_id: f-evt-057-result, kind: text, value: 만료 예정 계약 확인 시간이 단축되었다., date: "2025-05-30"}
+  - id: evt-2025-058
+    title: 계약서 검토 정책
+    date: "2025-08-22"
+    owner_team: legal
+    type: policy
+    facts:
+      - {fact_id: f-evt-058-policy, kind: text, value: 고액 계약서에 법무 검토 기록을 남기도록 정했다., date: "2025-08-22"}
+      - {fact_id: f-evt-058-rule, kind: regulation, value: 구매계약업무규칙 제40조, date: "2025-08-22"}
+      - {fact_id: f-evt-058-owner, kind: person, value: p-189, date: "2025-08-22"}
+  - id: evt-2025-059
+    title: 준법 지원 담당 구성
+    date: "2025-12-08"
+    owner_team: legal
+    type: org
+    facts:
+      - {fact_id: f-evt-059-org, kind: text, value: 준법 문의 지원 담당 역할을 팀 안에 구성했다., date: "2025-12-08"}
+      - {fact_id: f-evt-059-owner, kind: person, value: p-189, date: "2025-12-08"}
+      - {fact_id: f-evt-059-focus, kind: text, value: 계약 검토 이력 관리를 우선 과제로 정했다., date: "2025-12-08"}
+  - id: evt-2026-060
+    title: 미공개 합의안 검토
+    date: "2026-06-17"
+    owner_team: legal
+    type: sensitive
+    sensitivity: restricted
+    facts:
+      - {fact_id: f-evt-060-plan, kind: text, value: 가상 분쟁의 공개 전 합의 후보안을 제한 회의에서 검토했다., date: "2026-06-17"}
+      - {fact_id: f-evt-060-owner, kind: person, value: p-189, date: "2026-06-17"}
+      - {fact_id: f-evt-060-rule, kind: regulation, value: 법무업무규정 제13조, date: "2026-06-17"}

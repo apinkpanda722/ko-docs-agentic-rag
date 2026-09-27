@@ -1,0 +1,15 @@
+id: INC-2026-010
+title: 교육 신청 저장 실패
+date: "2026-05-12"
+owner_team: hr
+assignee_id: p-151
+service: people-portal
+facts:
+  - {fact_id: f-inc-2026-010-start, kind: datetime, value: "2026-05-12T09:02", date: "2026-05-12"}
+  - {fact_id: f-inc-2026-010-restored, kind: datetime, value: "2026-05-12T09:50", date: "2026-05-12"}
+  - {fact_id: f-inc-2026-010-service, kind: service, value: people-portal, date: "2026-05-12"}
+  - {fact_id: f-inc-2026-010-severity, kind: text, value: 심각도 3으로 분류되었다., date: "2026-05-12"}
+  - {fact_id: f-inc-2026-010-cause, kind: text, value: 신청 마감 시각 비교에서 시간대 변환이 빠졌다., date: "2026-05-12"}
+  - {fact_id: f-inc-2026-010-action, kind: text, value: 시간대 처리를 통일하고 실패 신청을 복원했다., date: "2026-05-12"}
+  - {fact_id: f-inc-2026-010-owner, kind: person, value: p-151, date: "2026-05-12"}
+  - {fact_id: f-inc-2026-010-ticket, kind: id, value: HRM-1002, date: "2026-05-12"}

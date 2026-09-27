@@ -1,0 +1,15 @@
+id: INC-2025-007
+title: 원장 집계 지연
+date: "2025-10-05"
+owner_team: finance
+assignee_id: p-170
+service: finance-ledger
+facts:
+  - {fact_id: f-inc-2025-007-start, kind: datetime, value: "2025-10-05T01:15", date: "2025-10-05"}
+  - {fact_id: f-inc-2025-007-restored, kind: datetime, value: "2025-10-05T03:20", date: "2025-10-05"}
+  - {fact_id: f-inc-2025-007-service, kind: service, value: finance-ledger, date: "2025-10-05"}
+  - {fact_id: f-inc-2025-007-severity, kind: text, value: 심각도 2로 분류되었다., date: "2025-10-05"}
+  - {fact_id: f-inc-2025-007-cause, kind: text, value: 월말 집계 쿼리의 임시 공간이 부족했다., date: "2025-10-05"}
+  - {fact_id: f-inc-2025-007-action, kind: text, value: 집계 단계를 분할하고 용량 경보를 추가했다., date: "2025-10-05"}
+  - {fact_id: f-inc-2025-007-owner, kind: person, value: p-170, date: "2025-10-05"}
+  - {fact_id: f-inc-2025-007-ticket, kind: id, value: FIN-1001, date: "2025-10-05"}

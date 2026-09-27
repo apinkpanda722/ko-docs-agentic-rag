@@ -1,0 +1,253 @@
+people:
+- person_id: p-001
+  name: 남채진
+  team: platform
+  grade: 6
+  role: 개발 생산성
+  joined: '2017-03-21'
+- person_id: p-002
+  name: 문다람
+  team: platform
+  grade: 5
+  role: 백엔드 개발
+  joined: '2016-05-08'
+- person_id: p-003
+  name: 안유솔
+  team: platform
+  grade: 4
+  role: API 설계
+  joined: '2026-04-06'
+- person_id: p-004
+  name: 장다온
+  team: platform
+  grade: 4
+  role: 플랫폼 개발
+  joined: '2014-11-06'
+- person_id: p-005
+  name: 송해솔
+  team: platform
+  grade: 4
+  role: 백엔드 개발
+  joined: '2016-10-23'
+- person_id: p-006
+  name: 배라안
+  team: platform
+  grade: 4
+  role: 개발 생산성
+  joined: '2017-08-24'
+- person_id: p-007
+  name: 노태우
+  team: platform
+  grade: 4
+  role: API 설계
+  joined: '2022-07-25'
+- person_id: p-008
+  name: 윤아서
+  team: platform
+  grade: 3
+  role: 개발 생산성
+  joined: '2021-09-18'
+- person_id: p-009
+  name: 안나나
+  team: platform
+  grade: 3
+  role: 개발 생산성
+  joined: '2019-07-06'
+- person_id: p-010
+  name: 이아린
+  team: platform
+  grade: 3
+  role: 플랫폼 개발
+  joined: '2019-01-10'
+- person_id: p-011
+  name: 홍소민
+  team: platform
+  grade: 3
+  role: 개발 생산성
+  joined: '2014-03-30'
+- person_id: p-012
+  name: 전서우
+  team: platform
+  grade: 3
+  role: API 설계
+  joined: '2014-05-03'
+- person_id: p-013
+  name: 곽경겸
+  team: platform
+  grade: 3
+  role: 플랫폼 개발
+  joined: '2022-09-27'
+- person_id: p-014
+  name: 고채나
+  team: platform
+  grade: 3
+  role: 개발 생산성
+  joined: '2012-10-28'
+- person_id: p-015
+  name: 최가아
+  team: platform
+  grade: 3
+  role: 백엔드 개발
+  joined: '2015-02-02'
+- person_id: p-016
+  name: 전도솔
+  team: platform
+  grade: 3
+  role: API 설계
+  joined: '2013-09-19'
+- person_id: p-017
+  name: 성아빈
+  team: platform
+  grade: 3
+  role: API 설계
+  joined: '2017-09-26'
+- person_id: p-018
+  name: 정경수
+  team: platform
+  grade: 3
+  role: 플랫폼 개발
+  joined: '2026-03-13'
+- person_id: p-019
+  name: 박경별
+  team: platform
+  grade: 3
+  role: API 설계
+  joined: '2017-03-12'
+- person_id: p-020
+  name: 최나온
+  team: platform
+  grade: 3
+  role: 플랫폼 개발
+  joined: '2016-01-17'
+- person_id: p-021
+  name: 차태아
+  team: platform
+  grade: 3
+  role: 플랫폼 개발
+  joined: '2015-02-08'
+- person_id: p-022
+  name: 고경수
+  team: platform
+  grade: 3
+  role: API 설계
+  joined: '2012-09-05'
+- person_id: p-023
+  name: 이보준
+  team: platform
+  grade: 2
+  role: 백엔드 개발
+  joined: '2024-11-28'
+- person_id: p-024
+  name: 김재안
+  team: platform
+  grade: 2
+  role: 개발 생산성
+  joined: '2013-03-01'
+- person_id: p-025
+  name: 곽라수
+  team: platform
+  grade: 2
+  role: 백엔드 개발
+  joined: '2022-04-23'
+- person_id: p-026
+  name: 장라나
+  team: platform
+  grade: 2
+  role: 플랫폼 개발
+  joined: '2023-11-30'
+- person_id: p-027
+  name: 문서경
+  team: platform
+  grade: 2
+  role: 개발 생산성
+  joined: '2016-06-12'
+- person_id: p-028
+  name: 한재린
+  team: platform
+  grade: 2
+  role: 백엔드 개발
+  joined: '2023-12-10'
+- person_id: p-029
+  name: 고연서
+  team: platform
+  grade: 2
+  role: 플랫폼 개발
+  joined: '2017-07-04'
+- person_id: p-030
+  name: 노소나
+  team: platform
+  grade: 2
+  role: 개발 생산성
+  joined: '2024-12-08'
+- person_id: p-031
+  name: 차서별
+  team: platform
+  grade: 1
+  role: 플랫폼 개발
+  joined: '2015-02-06'
+- person_id: p-032
+  name: 한소진
+  team: platform
+  grade: 1
+  role: 개발 생산성
+  joined: '2020-01-25'
+- person_id: p-033
+  name: 김가은
+  team: platform
+  grade: 1
+  role: 플랫폼 개발
+  joined: '2023-12-09'
+- person_id: p-034
+  name: 정은린
+  team: platform
+  grade: 1
+  role: 플랫폼 개발
+  joined: '2018-04-17'
+- person_id: p-035
+  name: 이태별
+  team: platform
+  grade: 1
+  role: 백엔드 개발
+  joined: '2018-10-09'
+- person_id: p-036
+  name: 김재우
+  team: platform
+  grade: 1
+  role: 백엔드 개발
+  joined: '2013-09-22'
+- person_id: p-037
+  name: 전소윤
+  team: platform
+  grade: 1
+  role: 백엔드 개발
+  joined: '2017-01-03'
+- person_id: p-038
+  name: 윤유나
+  team: platform
+  grade: 1
+  role: 개발 생산성
+  joined: '2019-08-18'
+- person_id: p-039
+  name: 노라서
+  team: platform
+  grade: 1
+  role: 플랫폼 개발
+  joined: '2014-09-25'
+- person_id: p-040
+  name: 박다담
+  team: platform
+  grade: 1
+  role: 백엔드 개발
+  joined: '2022-04-21'
+- person_id: p-041
+  name: 임태경
+  team: platform
+  grade: 1
+  role: 개발 생산성
+  joined: '2016-06-28'
+- person_id: p-042
+  name: 오보별
+  team: platform
+  grade: 1
+  role: 플랫폼 개발
+  joined: '2020-10-02'

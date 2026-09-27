@@ -1,0 +1,109 @@
+people:
+- person_id: p-151
+  name: 최가윤
+  team: hr
+  grade: 5
+  role: 인재 운영
+  joined: '2015-07-12'
+- person_id: p-152
+  name: 홍채린
+  team: hr
+  grade: 4
+  role: 채용
+  joined: '2017-07-03'
+- person_id: p-153
+  name: 최예온
+  team: hr
+  grade: 4
+  role: 인재 운영
+  joined: '2014-09-11'
+- person_id: p-154
+  name: 이태수
+  team: hr
+  grade: 4
+  role: 조직문화
+  joined: '2014-02-07'
+- person_id: p-155
+  name: 최해서
+  team: hr
+  grade: 4
+  role: 채용
+  joined: '2020-04-15'
+- person_id: p-156
+  name: 홍은람
+  team: hr
+  grade: 3
+  role: 채용
+  joined: '2022-06-18'
+- person_id: p-157
+  name: 양서안
+  team: hr
+  grade: 3
+  role: 인재 운영
+  joined: '2012-11-09'
+- person_id: p-158
+  name: 문태은
+  team: hr
+  grade: 3
+  role: 인재 운영
+  joined: '2013-07-21'
+- person_id: p-159
+  name: 고은윤
+  team: hr
+  grade: 3
+  role: 교육 기획
+  joined: '2012-05-28'
+- person_id: p-160
+  name: 유아빈
+  team: hr
+  grade: 2
+  role: 인재 운영
+  joined: '2013-02-05'
+- person_id: p-161
+  name: 신수담
+  team: hr
+  grade: 2
+  role: 조직문화
+  joined: '2024-06-13'
+- person_id: p-162
+  name: 배수원
+  team: hr
+  grade: 1
+  role: 인재 운영
+  joined: '2018-04-03'
+- person_id: p-163
+  name: 윤서영
+  team: hr
+  grade: 1
+  role: 교육 기획
+  joined: '2013-05-17'
+- person_id: p-164
+  name: 윤유인
+  team: hr
+  grade: 1
+  role: 조직문화
+  joined: '2012-02-16'
+- person_id: p-165
+  name: 김채진
+  team: hr
+  grade: 1
+  role: 채용
+  joined: '2023-12-02'
+- person_id: p-166
+  name: 이예원
+  team: hr
+  grade: 1
+  role: 인재 운영
+  joined: '2025-10-14'
+- person_id: p-167
+  name: 양가우
+  team: hr
+  grade: 1
+  role: 인재 운영
+  joined: '2020-11-06'
+- person_id: p-168
+  name: 배지경
+  team: hr
+  grade: 1
+  role: 채용
+  joined: '2019-05-06'

@@ -1,0 +1,15 @@
+id: INC-2026-003
+title: 결제 경로 편중
+date: "2026-03-14"
+owner_team: payments
+assignee_id: p-043
+service: payment-router
+facts:
+  - {fact_id: f-inc-2026-003-start, kind: datetime, value: "2026-03-14T11:05", date: "2026-03-14"}
+  - {fact_id: f-inc-2026-003-restored, kind: datetime, value: "2026-03-14T11:58", date: "2026-03-14"}
+  - {fact_id: f-inc-2026-003-service, kind: service, value: payment-router, date: "2026-03-14"}
+  - {fact_id: f-inc-2026-003-severity, kind: text, value: 심각도 1로 분류되었다., date: "2026-03-14"}
+  - {fact_id: f-inc-2026-003-cause, kind: text, value: 가중치 설정 오류로 요청이 한 경로에 집중되었다., date: "2026-03-14"}
+  - {fact_id: f-inc-2026-003-action, kind: text, value: 가중치를 복구하고 배포 전 합계 검사를 추가했다., date: "2026-03-14"}
+  - {fact_id: f-inc-2026-003-owner, kind: person, value: p-043, date: "2026-03-14"}
+  - {fact_id: f-inc-2026-003-ticket, kind: id, value: PAY-1003, date: "2026-03-14"}

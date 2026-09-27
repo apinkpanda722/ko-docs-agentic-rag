@@ -1,0 +1,31 @@
+regulation_refs:
+  - {name: 출장규칙, article: 제8조, context: 출장비 정산 검토 시 출장규칙 제8조를 참조, teams: [finance]}
+  - {name: 출장규칙, article: 제5조, context: 출장 신청 절차 점검 시 출장규칙 제5조를 참조, teams: [hr, finance]}
+  - {name: 출장규칙, article: 제11조, context: 출장 결과 보고 안내 시 출장규칙 제11조를 참조, teams: [hr]}
+  - {name: 보안업무규칙, article: 제55조, context: 보안 사고 조치 검토 시 보안업무규칙 제55조를 참조, teams: [security]}
+  - {name: 보안업무규칙, article: 제56조, context: 보안 교육 계획 수립 시 보안업무규칙 제56조를 참조, teams: [security, hr]}
+  - {name: 보안업무규칙, article: 제57조, context: 정기 보안 점검 준비 시 보안업무규칙 제57조를 참조, teams: [security]}
+  - {name: 정보보안 기본지침, article: 제37조, context: 취약점 조치 계획 검토 시 정보보안 기본지침 제37조를 참조, teams: [security, platform]}
+  - {name: 정보보안 기본지침, article: 제54조, context: 로그 보관 업무 점검 시 정보보안 기본지침 제54조를 참조, teams: [security, sre]}
+  - {name: 정보보안 기본지침, article: 제72조, context: 계정 관리 절차 검토 시 정보보안 기본지침 제72조를 참조, teams: [security, platform]}
+  - {name: 인사규정, article: 제15조, context: 평가 일정 검토 시 인사규정 제15조를 참조, teams: [hr]}
+  - {name: 인사규정, article: 제16조, context: 교육 계획 검토 시 인사규정 제16조를 참조, teams: [hr]}
+  - {name: 인사규정, article: 제21조, context: 인사 안건 준비 시 인사규정 제21조를 참조, teams: [hr, legal]}
+  - {name: 근무성적평정규칙, article: 제10조, context: 평가 점수 검토 시 근무성적평정규칙 제10조를 참조, teams: [hr]}
+  - {name: 근무성적평정규칙, article: 제13조, context: 평가 이의 절차 안내 시 근무성적평정규칙 제13조를 참조, teams: [hr, legal]}
+  - {name: 구매계약업무규칙, article: 제6조, context: 구매 요청 접수 시 구매계약업무규칙 제6조를 참조, teams: [finance]}
+  - {name: 구매계약업무규칙, article: 제40조, context: 계약서 작성 검토 시 구매계약업무규칙 제40조를 참조, teams: [finance, legal]}
+  - {name: 구매계약업무규칙, article: 제56조, context: 대금 지급 검토 시 구매계약업무규칙 제56조를 참조, teams: [finance]}
+  - {name: 법무업무규정, article: 제12조, context: 분쟁 수행 계획 검토 시 법무업무규정 제12조를 참조, teams: [legal]}
+  - {name: 법무업무규정, article: 제13조, context: 분쟁 종결 후속 조치 시 법무업무규정 제13조를 참조, teams: [legal]}
+  - {name: 회계규정, article: 제16조, context: 예산 집행 검토 시 회계규정 제16조를 참조, teams: [finance]}
+  - {name: 회계규정, article: 제25조, context: 증빙 서류 점검 시 회계규정 제25조를 참조, teams: [finance]}
+  - {name: 회계규칙, article: 제28조, context: 회계 증빙 확인 시 회계규칙 제28조를 참조, teams: [finance]}
+  - {name: 법인카드 관리 및 사용지침, article: 제5조, context: 법인카드 사용 검토 시 법인카드 관리 및 사용지침 제5조를 참조, teams: [finance]}
+  - {name: 법인카드 관리 및 사용지침, article: 제9조, context: 카드 사용 점검 시 법인카드 관리 및 사용지침 제9조를 참조, teams: [finance]}
+  - {name: 문서관리규칙, article: 제21조, context: 내부 문서 결재 흐름 점검 시 문서관리규칙 제21조를 참조, teams: [legal, finance]}
+  - {name: 문서관리규칙, article: 제32조, context: 문서 보존기간 검토 시 문서관리규칙 제32조를 참조, teams: [legal]}
+  - {name: 기록물관리규정, article: 제10조, context: 회의록 관리 안내 시 기록물관리규정 제10조를 참조, teams: [legal]}
+  - {name: 취업규칙, article: 제12조, context: 연차 안내 검토 시 취업규칙 제12조를 참조, teams: [hr]}
+  - {name: 교육훈련규칙, article: 제19조, context: 교육 예산 검토 시 교육훈련규칙 제19조를 참조, teams: [hr, finance]}
+  - {name: 자산관리규칙, article: 제15조, context: 장비 취득 검토 시 자산관리규칙 제15조를 참조, teams: [finance, sre]}

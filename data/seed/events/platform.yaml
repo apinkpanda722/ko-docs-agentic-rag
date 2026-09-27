@@ -1,0 +1,74 @@
+events:
+  - id: evt-2025-001
+    title: 연결 풀 자동 조정 결정
+    date: "2025-01-22"
+    owner_team: platform
+    type: decision
+    facts:
+      - {fact_id: f-evt-001-incident, kind: id, value: INC-2025-001, date: "2025-01-22"}
+      - {fact_id: f-evt-001-decision, kind: text, value: 연결 풀 상한을 부하에 맞춰 자동 조정하기로 결정했다., date: "2025-01-22"}
+      - {fact_id: f-evt-001-service, kind: service, value: core-gateway, date: "2025-01-22"}
+  - id: evt-2025-002
+    title: 인증 캐시 배포
+    date: "2025-03-07"
+    owner_team: platform
+    type: release
+    facts:
+      - {fact_id: f-evt-002-version, kind: text, value: 인증 키 캐시의 새 버전을 배포했다., date: "2025-03-07"}
+      - {fact_id: f-evt-002-service, kind: service, value: identity-api, date: "2025-03-07"}
+      - {fact_id: f-evt-002-result, kind: text, value: 키 조회 지연이 감소한 것을 확인했다., date: "2025-03-07"}
+  - id: evt-2025-003
+    title: 라우팅 설정 검증 프로젝트
+    date: "2025-12-10"
+    owner_team: platform
+    type: project
+    facts:
+      - {fact_id: f-evt-003-incident, kind: id, value: INC-2025-009, date: "2025-12-10"}
+      - {fact_id: f-evt-003-plan, kind: text, value: 배포 전 라우팅 설정 차이를 검사하는 프로젝트를 시작했다., date: "2025-12-10"}
+      - {fact_id: f-evt-003-service, kind: service, value: core-gateway, date: "2025-12-10"}
+  - id: evt-2025-004
+    title: API 변경 검토 정책
+    date: "2025-06-02"
+    owner_team: platform
+    type: policy
+    facts:
+      - {fact_id: f-evt-004-policy, kind: text, value: 호환성 검사를 API 변경 검토에 포함했다., date: "2025-06-02"}
+      - {fact_id: f-evt-004-review, kind: text, value: 변경 검토자는 두 명으로 정했다., date: "2025-06-02"}
+      - {fact_id: f-evt-004-service, kind: service, value: core-gateway, date: "2025-06-02"}
+  - id: evt-2025-005
+    title: 개발 생산성 담당 구성
+    date: "2025-08-18"
+    owner_team: platform
+    type: org
+    facts:
+      - {fact_id: f-evt-005-org, kind: text, value: 개발 생산성 담당 역할을 팀 안에 구성했다., date: "2025-08-18"}
+      - {fact_id: f-evt-005-owner, kind: person, value: p-002, date: "2025-08-18"}
+      - {fact_id: f-evt-005-focus, kind: text, value: 공통 배포 도구 개선을 우선 과제로 정했다., date: "2025-08-18"}
+  - id: evt-2026-006
+    title: 미공개 용량 협상안
+    date: "2026-02-16"
+    owner_team: platform
+    type: sensitive
+    sensitivity: restricted
+    facts:
+      - {fact_id: f-evt-006-plan, kind: text, value: 다음 반기 용량 협상안을 내부 검토했다., date: "2026-02-16"}
+      - {fact_id: f-evt-006-service, kind: service, value: core-gateway, date: "2026-02-16"}
+      - {fact_id: f-evt-006-owner, kind: person, value: p-002, date: "2026-02-16"}
+  - id: evt-2026-007
+    title: 인증 키 갱신 방식 결정
+    date: "2026-04-06"
+    owner_team: platform
+    type: decision
+    facts:
+      - {fact_id: f-evt-007-incident, kind: id, value: INC-2026-004, date: "2026-04-06"}
+      - {fact_id: f-evt-007-decision, kind: text, value: 인증 키 갱신에 이중 버퍼를 사용하기로 결정했다., date: "2026-04-06"}
+      - {fact_id: f-evt-007-service, kind: service, value: identity-api, date: "2026-04-06"}
+  - id: evt-2026-008
+    title: 요청 제한 키 배포
+    date: "2026-06-04"
+    owner_team: platform
+    type: release
+    facts:
+      - {fact_id: f-evt-008-version, kind: text, value: 환경을 구분하는 새 요청 제한 키를 배포했다., date: "2026-06-04"}
+      - {fact_id: f-evt-008-service, kind: service, value: core-gateway, date: "2026-06-04"}
+      - {fact_id: f-evt-008-result, kind: text, value: 제한 키 충돌이 발생하지 않음을 확인했다., date: "2026-06-04"}

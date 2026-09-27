@@ -1,0 +1,109 @@
+people:
+- person_id: p-133
+  name: 권도온
+  team: security
+  grade: 5
+  role: 보안 거버넌스
+  joined: '2012-01-03'
+- person_id: p-134
+  name: 차가준
+  team: security
+  grade: 4
+  role: 보안 거버넌스
+  joined: '2019-07-29'
+- person_id: p-135
+  name: 남도인
+  team: security
+  grade: 4
+  role: 접근 통제
+  joined: '2020-07-22'
+- person_id: p-136
+  name: 남수서
+  team: security
+  grade: 4
+  role: 제품 보안
+  joined: '2013-05-28'
+- person_id: p-137
+  name: 이소현
+  team: security
+  grade: 3
+  role: 보안 거버넌스
+  joined: '2021-12-05'
+- person_id: p-138
+  name: 양은민
+  team: security
+  grade: 3
+  role: 접근 통제
+  joined: '2012-06-03'
+- person_id: p-139
+  name: 송하윤
+  team: security
+  grade: 3
+  role: 제품 보안
+  joined: '2012-05-18'
+- person_id: p-140
+  name: 고도담
+  team: security
+  grade: 3
+  role: 보안 관제
+  joined: '2022-08-15'
+- person_id: p-141
+  name: 고도빈
+  team: security
+  grade: 3
+  role: 보안 관제
+  joined: '2023-02-15'
+- person_id: p-142
+  name: 안지민
+  team: security
+  grade: 2
+  role: 보안 관제
+  joined: '2018-05-09'
+- person_id: p-143
+  name: 이재영
+  team: security
+  grade: 2
+  role: 보안 거버넌스
+  joined: '2015-07-10'
+- person_id: p-144
+  name: 박시빈
+  team: security
+  grade: 2
+  role: 보안 거버넌스
+  joined: '2024-05-29'
+- person_id: p-145
+  name: 문은나
+  team: security
+  grade: 2
+  role: 보안 관제
+  joined: '2017-12-13'
+- person_id: p-146
+  name: 한태온
+  team: security
+  grade: 1
+  role: 접근 통제
+  joined: '2024-05-25'
+- person_id: p-147
+  name: 이도원
+  team: security
+  grade: 1
+  role: 보안 관제
+  joined: '2020-04-03'
+- person_id: p-148
+  name: 문하별
+  team: security
+  grade: 1
+  role: 보안 거버넌스
+  joined: '2015-11-16'
+- person_id: p-149
+  name: 조시진
+  team: security
+  grade: 1
+  role: 보안 거버넌스
+  joined: '2018-11-30'
+- person_id: p-150
+  name: 강유솔
+  team: security
+  grade: 1
+  role: 보안 거버넌스
+  joined: '2014-01-20'

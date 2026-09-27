@@ -1,0 +1,15 @@
+id: INC-2026-002
+title: 경보 전달 지연
+date: "2026-02-05"
+owner_team: sre
+assignee_id: p-107
+service: monitoring-hub
+facts:
+  - {fact_id: f-inc-2026-002-start, kind: datetime, value: "2026-02-05T07:30", date: "2026-02-05"}
+  - {fact_id: f-inc-2026-002-restored, kind: datetime, value: "2026-02-05T08:25", date: "2026-02-05"}
+  - {fact_id: f-inc-2026-002-service, kind: service, value: monitoring-hub, date: "2026-02-05"}
+  - {fact_id: f-inc-2026-002-severity, kind: text, value: 심각도 2로 분류되었다., date: "2026-02-05"}
+  - {fact_id: f-inc-2026-002-cause, kind: text, value: 경보 묶음 크기가 전달 처리량을 초과했다., date: "2026-02-05"}
+  - {fact_id: f-inc-2026-002-action, kind: text, value: 경보 묶음을 분할하고 대기열 용량을 늘렸다., date: "2026-02-05"}
+  - {fact_id: f-inc-2026-002-owner, kind: person, value: p-107, date: "2026-02-05"}
+  - {fact_id: f-inc-2026-002-ticket, kind: id, value: SRE-1002, date: "2026-02-05"}

@@ -1,0 +1,15 @@
+id: INC-2026-013
+title: 결제 우회 경로 실패
+date: "2026-06-05"
+owner_team: payments
+assignee_id: p-043
+service: payment-router
+facts:
+  - {fact_id: f-inc-2026-013-start, kind: datetime, value: "2026-06-05T10:32", date: "2026-06-05"}
+  - {fact_id: f-inc-2026-013-restored, kind: datetime, value: "2026-06-05T11:27", date: "2026-06-05"}
+  - {fact_id: f-inc-2026-013-service, kind: service, value: payment-router, date: "2026-06-05"}
+  - {fact_id: f-inc-2026-013-severity, kind: text, value: 심각도 1로 분류되었다., date: "2026-06-05"}
+  - {fact_id: f-inc-2026-013-cause, kind: text, value: 우회 경로 상태 정보가 오래된 값으로 남았다., date: "2026-06-05"}
+  - {fact_id: f-inc-2026-013-action, kind: text, value: 상태 만료 기준을 줄이고 능동 점검을 추가했다., date: "2026-06-05"}
+  - {fact_id: f-inc-2026-013-owner, kind: person, value: p-043, date: "2026-06-05"}
+  - {fact_id: f-inc-2026-013-ticket, kind: id, value: PAY-1005, date: "2026-06-05"}

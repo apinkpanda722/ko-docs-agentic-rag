@@ -1,0 +1,15 @@
+id: INC-2026-001
+title: 특성 조회 시간 초과
+date: "2026-01-10"
+owner_team: data-ai
+assignee_id: p-077
+service: feature-store
+facts:
+  - {fact_id: f-inc-2026-001-start, kind: datetime, value: "2026-01-10T10:20", date: "2026-01-10"}
+  - {fact_id: f-inc-2026-001-restored, kind: datetime, value: "2026-01-10T11:05", date: "2026-01-10"}
+  - {fact_id: f-inc-2026-001-service, kind: service, value: feature-store, date: "2026-01-10"}
+  - {fact_id: f-inc-2026-001-severity, kind: text, value: 심각도 2로 분류되었다., date: "2026-01-10"}
+  - {fact_id: f-inc-2026-001-cause, kind: text, value: 인기 특성의 캐시 만료 시점이 한꺼번에 겹쳤다., date: "2026-01-10"}
+  - {fact_id: f-inc-2026-001-action, kind: text, value: 캐시 만료 시점을 분산하고 사전 적재를 추가했다., date: "2026-01-10"}
+  - {fact_id: f-inc-2026-001-owner, kind: person, value: p-077, date: "2026-01-10"}
+  - {fact_id: f-inc-2026-001-ticket, kind: id, value: DAI-1002, date: "2026-01-10"}

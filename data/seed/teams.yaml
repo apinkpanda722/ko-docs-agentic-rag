@@ -1,0 +1,9 @@
+teams:
+  - {code: platform, name_ko: 플랫폼개발, project_key: PLT, headcount_target: 42}
+  - {code: payments, name_ko: 결제서비스, project_key: PAY, headcount_target: 34}
+  - {code: data-ai, name_ko: 데이터AI, project_key: DAI, headcount_target: 30}
+  - {code: sre, name_ko: SRE인프라, project_key: SRE, headcount_target: 26}
+  - {code: security, name_ko: 정보보안, project_key: SEC, headcount_target: 18}
+  - {code: hr, name_ko: 인사, project_key: HRM, headcount_target: 18}
+  - {code: finance, name_ko: 재무, project_key: FIN, headcount_target: 20}
+  - {code: legal, name_ko: 법무컴플라이언스, project_key: LGL, headcount_target: 12}

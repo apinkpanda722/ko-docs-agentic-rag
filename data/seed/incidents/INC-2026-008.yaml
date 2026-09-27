@@ -1,0 +1,15 @@
+id: INC-2026-008
+title: 배포 단계 정지
+date: "2026-04-29"
+owner_team: sre
+assignee_id: p-107
+service: deploy-control
+facts:
+  - {fact_id: f-inc-2026-008-start, kind: datetime, value: "2026-04-29T14:18", date: "2026-04-29"}
+  - {fact_id: f-inc-2026-008-restored, kind: datetime, value: "2026-04-29T15:04", date: "2026-04-29"}
+  - {fact_id: f-inc-2026-008-service, kind: service, value: deploy-control, date: "2026-04-29"}
+  - {fact_id: f-inc-2026-008-severity, kind: text, value: 심각도 2로 분류되었다., date: "2026-04-29"}
+  - {fact_id: f-inc-2026-008-cause, kind: text, value: 상태 전이 메시지 하나가 순서와 다르게 도착했다., date: "2026-04-29"}
+  - {fact_id: f-inc-2026-008-action, kind: text, value: 상태 전이에 순번 확인과 재처리를 추가했다., date: "2026-04-29"}
+  - {fact_id: f-inc-2026-008-owner, kind: person, value: p-107, date: "2026-04-29"}
+  - {fact_id: f-inc-2026-008-ticket, kind: id, value: SRE-1003, date: "2026-04-29"}
