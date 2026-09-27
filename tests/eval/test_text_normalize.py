@@ -2,6 +2,8 @@
 
 import unicodedata
 
+import pytest
+
 from kodocs.eval.text_normalize import (
     EDITORIAL_PATTERNS,
     normalize,
@@ -19,8 +21,7 @@ def test_raw_compare_form_only_applies_nfc_and_trims_outer_whitespace() -> None:
 def test_normalize_applies_n1_to_n5_in_order_with_nfkc_in_n3() -> None:
     source = " 제1조\u3000(목적)\n“이\t규정”은 ①ㆍA・B･C‧D <개정 2021. 3. 16.> "
 
-    # NFKC는 원문자 번호를 숫자로 바꾼다(①→1). 양쪽 텍스트에 똑같이 적용된다.
-    assert normalize(source) == '제1조(목적)"이규정"은1·A·B·C·D'
+    assert normalize(source) == '제1조(목적)"이규정"은①·A·B·C·D'
 
 
 def test_strip_editorial_removes_all_supported_balanced_annotations() -> None:
@@ -78,8 +79,19 @@ def test_normalize_applies_nfkc_to_compatibility_forms() -> None:
 def test_nfkc_keeps_hangul_syllables_digits_and_article_heads() -> None:
     source = "제12조의3(정의) 가나다라마바사 힣 0123456789 ①항 제2호"
 
-    assert normalize(source) == "제12조의3(정의)가나다라마바사힣01234567891항제2호"
+    assert normalize(source) == "제12조의3(정의)가나다라마바사힣0123456789①항제2호"
 
 
 def test_raw_compare_form_does_not_apply_nfkc_or_unification() -> None:
     assert raw_compare_form(" 목적：ㆍ“가” ① ") == "목적：ㆍ“가” ①"
+
+
+@pytest.mark.parametrize("marker", ["①", "⑳", "⑴", "⒜", "⓪", "⓿"])
+def test_enclosed_alphanumerics_are_protected_from_nfkc(marker: str) -> None:
+    # ①은 항, 1.은 호: NFKC로 숫자가 되면 항 번호를 잘못 뽑아도 일치로 숨는다.
+    assert normalize(f"{marker} 본문") == f"{marker}본문"
+    assert normalize("①") != normalize("1")
+
+
+def test_nfkc_still_applies_next_to_protected_markers() -> None:
+    assert normalize("①목적：（가）⑵１２") == "①목적:(가)⑵12"

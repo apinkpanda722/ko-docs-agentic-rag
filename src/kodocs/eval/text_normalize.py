@@ -13,8 +13,10 @@ applied only while scoring, in this fixed order:
 
 N3 unifies before NFKC because NFKC would turn ``ㆍ`` into a conjoining jamo,
 ``․`` into ``.``, and ``´`` into a space plus an accent; the second pass catches
-full-width quotes that NFKC creates.  NFKC also maps circled numbers to digits
-(``①`` -> ``1``) on both sides of the comparison.  Raw comparison skips N2-N4.
+full-width quotes that NFKC creates.  Enclosed alphanumerics (U+2460-U+24FF:
+``①``, ``⑴``, ``⒜`` ...) are kept out of NFKC: in rules ``①`` is a paragraph
+(항) and ``1.`` an item (호), so folding ``①`` to ``1`` would hide a wrong
+paragraph number.  Raw comparison skips N2-N4.
 """
 
 import re
@@ -33,13 +35,15 @@ EDITORIAL_PATTERNS: tuple[re.Pattern[str], ...] = (
 NORMALIZATION_RULES: dict[str, str] = {
     "N1": "유니코드 NFC 적용",
     "N2": "균형 잡힌 법령 편집 주석 제거",
-    "N3": "따옴표·가운뎃점 변형 통일 → NFKC(전각 문자 등 호환 문자, ①→1) → 다시 통일",
+    "N3": "따옴표·가운뎃점 변형 통일 → NFKC(전각 문자 등 호환 문자, 원문자 번호 U+2460–U+24FF 제외) → 다시 통일",
     "N4": "모든 유니코드 공백 제거",
     "N5": "그 외 문자는 변경하지 않음",
 }
 
 _QUOTES = "'“”„‟‘’‚‛`´＂＇"
 _MIDDLE_DOTS = "ㆍ․‧∙・･"
+# Runs outside U+2460-U+24FF; only these runs go through NFKC.
+_NFKC_RUN = re.compile(r"[^\u2460-\u24ff]+")
 _PUNCTUATION_TRANSLATION = str.maketrans(
     {**dict.fromkeys(_QUOTES, '"'), **dict.fromkeys(_MIDDLE_DOTS, "·")}
 )
@@ -55,7 +59,9 @@ def normalize(s: str) -> str:
     normalized = unicodedata.normalize("NFC", s)
     normalized, _ = strip_editorial(normalized)
     normalized = normalized.translate(_PUNCTUATION_TRANSLATION)
-    normalized = unicodedata.normalize("NFKC", normalized)
+    normalized = _NFKC_RUN.sub(
+        lambda run: unicodedata.normalize("NFKC", run.group()), normalized
+    )
     normalized = normalized.translate(_PUNCTUATION_TRANSLATION)
     return re.sub(r"\s+", "", normalized)
 
