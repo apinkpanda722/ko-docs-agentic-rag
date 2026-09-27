@@ -26,15 +26,22 @@ _EDITORIAL_METADATA = r"[0-9\s.,·ㆍ~～\-年月日時제조의항호부터시�
 
 EDITORIAL_PATTERNS: tuple[re.Pattern[str], ...] = (
     re.compile(rf"<\s*(?:개정|신설|삭제|종전){_EDITORIAL_METADATA}>"),
+    # The Law Open API writes [본조신설 …]; source files write 〔본조신설 …〕.
     re.compile(
         rf"\[\s*(?:본조신설|전문개정|종전|제목개정|시행일)"
         rf"{_EDITORIAL_METADATA}\]"
     ),
+    re.compile(
+        rf"〔\s*(?:본조신설|전문개정|종전|제목개정|시행일)"
+        rf"{_EDITORIAL_METADATA}〕"
+    ),
+    # Law-only date after a deleted item ("삭제 <2002. 1. 1.>"); "삭제" stays.
+    re.compile(r"(?<=삭제)\s*<\s*\d[\d.,\s]*>"),
 )
 
 NORMALIZATION_RULES: dict[str, str] = {
     "N1": "유니코드 NFC 적용",
-    "N2": "균형 잡힌 법령 편집 주석 제거",
+    "N2": "균형 잡힌 법령 편집 주석 제거(<…>, […], 〔…〕, 삭제 뒤 날짜 꺾쇠)",
     "N3": "따옴표·가운뎃점 변형 통일 → NFKC(전각 문자 등 호환 문자, 원문자 번호 U+2460–U+24FF 제외) → 다시 통일",
     "N4": "모든 유니코드 공백 제거",
     "N5": "그 외 문자는 변경하지 않음",

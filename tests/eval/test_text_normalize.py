@@ -95,3 +95,45 @@ def test_enclosed_alphanumerics_are_protected_from_nfkc(marker: str) -> None:
 
 def test_nfkc_still_applies_next_to_protected_markers() -> None:
     assert normalize("①목적：（가）⑵１２") == "①목적:(가)⑵12"
+
+
+@pytest.mark.parametrize(
+    "deleted",
+    [
+        "3. 삭제 <2002. 1. 1.>",
+        "3. 삭제<2019.12.31>",
+        "3. 삭제 < 2019. 1. 12.>",
+        "3. 삭제 <2019. 12., 12.>",
+    ],
+)
+def test_date_bracket_after_deletion_is_removed_but_word_is_kept(
+    deleted: str,
+) -> None:
+    stripped, count = strip_editorial(deleted)
+
+    assert count == 1
+    assert stripped.strip() == "3. 삭제"
+    assert normalize(deleted) == normalize("3. 삭제")
+
+
+def test_date_bracket_not_after_deletion_is_kept() -> None:
+    source = "부 칙 <2002. 1. 1.> 제1조(시행일)"
+
+    assert strip_editorial(source) == (source, 0)
+
+
+@pytest.mark.parametrize(
+    "annotation",
+    ["〔본조신설 2014.12.31〕", "〔전문개정 2020. 1. 1.〕", "〔본조신설 2014. 1. 2.〕"],
+)
+def test_tortoise_shell_bracket_annotations_are_removed_like_square_brackets(
+    annotation: str,
+) -> None:
+    assert strip_editorial(f"본문 {annotation} 끝")[1] == 1
+    assert normalize(f"본문 {annotation}") == normalize("본문 [본조신설 2014. 12. 31.]")
+
+
+def test_tortoise_shell_bracket_without_editorial_keyword_is_kept() -> None:
+    source = "〔별표1〕 〔〕"
+
+    assert strip_editorial(source) == (source, 0)
