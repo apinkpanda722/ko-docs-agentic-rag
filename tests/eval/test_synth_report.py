@@ -292,12 +292,12 @@ def test_write_report_preserves_outside_generated_region_and_omits_doc_body(
     assert "문서 형식 다양성 없음" in first
     assert "동일 요청 재현 불가" in first
 
-    edited = first.replace("(검수 후 기록)", "사람이 작성한 검수 해석")
+    edited = first.replace("(사용자 기록)", "사용자가 기록한 콘솔 값", 1)
     out.write_text(edited, encoding="utf-8")
     write_report(tmp_path, run_date=date(2026, 9, 27), out_path=out)
     updated = out.read_text(encoding="utf-8")
 
-    assert "사람이 작성한 검수 해석" in updated
+    assert "사용자가 기록한 콘솔 값" in updated
     assert updated[: updated.index(BEGIN)] == edited[: edited.index(BEGIN)]
     assert (
         updated[updated.index(END) + len(END) :]

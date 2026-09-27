@@ -20,7 +20,7 @@ data/
 ├── interim/      # 정제 산출물·파싱 결과·diff·표 초안 (커밋 안 함, 법제처 담당자 정보 제거)
 ├── seed/         # 시드 데이터 YAML (커밋)
 ├── synthetic/    # 문서 계획·생성 문서 JSON(본문·fact span)·카나리아·인젝션 레지스트리·검수 템플릿 (커밋). 티켓·결재 SQLite는 커밋 안 함(해시만 manifest)
-└── golden/       # 질의셋·qrels·사람 채점 (커밋, 사람만 수정). 예외: golden/tables/ 표 정답 마크다운은 원문이라 커밋하지 않고, 선정 정보·해시는 manifest/table_golden.json에 커밋
+└── golden/       # 질의셋·qrels·사람 채점·synthetic_review/(합성 문서 표본 사람 검수 결과, 사람만 작성) (커밋, 사람만 수정). 예외: golden/tables/ 표 정답 마크다운은 원문이라 커밋하지 않고, 선정 정보·해시는 manifest/table_golden.json에 커밋
 docs/results/     # 실험 결과표·가설 사전 등록 (날짜·커밋 해시 포함)
 logs/traces/      # answer() JSONL 트레이스 (커밋 안 함)
 infra/            # docker-compose (OpenSearch + nori), fontconfig(HWP 변환 글꼴 대체 규칙)

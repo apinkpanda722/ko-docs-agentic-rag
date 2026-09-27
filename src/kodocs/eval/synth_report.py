@@ -23,6 +23,7 @@ BEGIN, END = "<!-- BEGIN generated -->", "<!-- END generated -->"
 _PLACEHOLDER = "(실행 후 기록)"
 _METRICS_PATH = Path("data/manifest/synth_metrics.json")
 _VALIDATION_PATH = Path("data/manifest/synth_validation.json")
+_REVIEW_PATH = Path("data/manifest/synth_review.json")
 _DB_PATH = Path("data/manifest/synth_db.json")
 _BATCHES_PATH = Path("data/manifest/anthropic_batches.jsonl")
 _COSTS_PATH = Path("data/manifest/costs.jsonl")
@@ -110,6 +111,7 @@ def _render_tables(root: Path, *, run_date: date | None) -> str:
     plans = _load_optional_jsonl(root / _PLAN_PATH)
     canaries = _load_optional_json(root / _CANARIES_PATH)
     injections = _load_optional_json(root / _INJECTIONS_PATH)
+    review = _load_optional_json(root / _REVIEW_PATH)
     latest_batches = _latest_batches(batches)
     sections = [
         _execution_section(root, run_date, metrics, synth_db, latest_batches),
@@ -118,6 +120,7 @@ def _render_tables(root: Path, *, run_date: date | None) -> str:
         _validation_section(validation, canaries, injections),
         _quality_section(metrics),
         _database_section(synth_db),
+        _review_section(review),
     ]
     return "\n\n".join(sections)
 
@@ -575,6 +578,148 @@ def _database_section(synth_db: Mapping[str, object]) -> str:
             _table(["테이블", "행 수", "전사", "팀", "제한"], rows),
         ]
     )
+
+
+def _review_section(review: Mapping[str, object]) -> str:
+    completion = _mapping(review.get("completion"))
+    consistency = _mapping(review.get("fact_consistency"))
+    style = _mapping(review.get("style_natural"))
+    realism = _mapping(review.get("realism"))
+    injection = _mapping(review.get("injection_visible"))
+    has_review = bool(review)
+    placeholder = "(검수 후 기록)"
+
+    def result(value: object) -> object:
+        return value if has_review else placeholder
+
+    reviewed, expected = completion.get("reviewed"), completion.get("expected")
+    selected = (
+        f"{reviewed}/{expected} ({_percent(completion.get('rate'))})"
+        if _integer(reviewed) is not None and _integer(expected) is not None
+        else None
+    )
+    consistent, consistency_reviewed = (
+        consistency.get("consistent"),
+        consistency.get("reviewed"),
+    )
+    consistency_text = (
+        f"{consistent}/{consistency_reviewed} ({_percent(consistency.get('rate'))})"
+        if _integer(consistent) is not None
+        and _integer(consistency_reviewed) is not None
+        else None
+    )
+    injection_reviewed = injection.get("reviewed")
+    injection_yes = injection.get("yes")
+    injection_text = (
+        f"y {injection_yes}/{injection_reviewed} ({_percent(injection.get('rate'))})"
+        if _integer(injection_yes) is not None
+        and _integer(injection_reviewed) is not None
+        else None
+    )
+    invalid = review.get("invalid_rows")
+    missing = review.get("missing_doc_ids")
+    invalid_count = len(invalid) if isinstance(invalid, list) else None
+    missing_count = len(missing) if isinstance(missing, list) else None
+    rows = [
+        ["검수 표본 선정", result(selected)],
+        ["사실 일관성", result(consistency_text)],
+        [
+            "문체 다양성",
+            result(_rating_text(style)),
+        ],
+        ["현실감", result(_rating_text(realism))],
+        ["인젝션 이질감", result(injection_text)],
+        [
+            "형식 제외·누락",
+            result(
+                f"형식 제외 {invalid_count}행 / 누락 {missing_count}건"
+                if invalid_count is not None and missing_count is not None
+                else None
+            ),
+        ],
+    ]
+    return "\n".join(
+        [
+            "## 7. 사람 검수(20건)",
+            "",
+            _table(["항목", "결과"], rows),
+            "",
+            "### 유형별 문체·현실감",
+            "",
+            _review_group_table(style, realism, "by_type", has_review),
+            "",
+            "### 권한별 문체·현실감",
+            "",
+            _review_group_table(style, realism, "by_access", has_review),
+            "",
+            "### 사실 오류",
+            "",
+            _fact_error_table(review, has_review),
+        ]
+    )
+
+
+def _rating_text(values: Mapping[str, object]) -> str | None:
+    mean = _decimal(values.get("mean"))
+    distribution = _mapping_text(_mapping(values.get("distribution")))
+    if mean is None and distribution is None:
+        return None
+    return f"평균 {mean} / 분포 {distribution}"
+
+
+def _review_group_table(
+    style: Mapping[str, object],
+    realism: Mapping[str, object],
+    dimension: str,
+    has_review: bool,
+) -> str:
+    style_groups = _mapping(style.get(dimension))
+    realism_groups = _mapping(realism.get(dimension))
+    categories = sorted(set(style_groups) | set(realism_groups))
+    rows = [
+        [
+            category,
+            _mapping(style_groups.get(category)).get("count"),
+            _decimal(_mapping(style_groups.get(category)).get("mean")),
+            _mapping_text(
+                _mapping(_mapping(style_groups.get(category)).get("distribution"))
+            ),
+            _decimal(_mapping(realism_groups.get(category)).get("mean")),
+            _mapping_text(
+                _mapping(_mapping(realism_groups.get(category)).get("distribution"))
+            ),
+        ]
+        for category in categories
+    ]
+    if not rows:
+        placeholder = "(검수 후 기록)" if not has_review else None
+        rows = [[placeholder] * 6]
+    return _table(
+        ["구분", "검수", "문체 평균", "문체 분포", "현실감 평균", "현실감 분포"],
+        rows,
+    )
+
+
+def _fact_error_table(review: Mapping[str, object], has_review: bool) -> str:
+    errors = review.get("fact_errors")
+    rows: list[list[object]] = []
+    if isinstance(errors, list):
+        rows.extend(
+            [
+                error.get("doc_id"),
+                ", ".join(_string_list(error.get("fact_ids"))),
+                error.get("description"),
+            ]
+            for error in errors
+            if isinstance(error, Mapping)
+        )
+    if not rows:
+        rows = (
+            [["없음", "-", "-"]]
+            if has_review
+            else [["(검수 후 기록)", "(검수 후 기록)", "(검수 후 기록)"]]
+        )
+    return _table(["doc_id", "fact_id", "설명"], rows)
 
 
 def _generation_records(

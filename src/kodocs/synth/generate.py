@@ -79,6 +79,8 @@ _CUSTOM_ID_ATTEMPT_RE = re.compile(
 )
 
 type PrintFn = Callable[..., object]
+type PostCollectionFn = Callable[[Path], int]
+type PostCollectionStage = tuple[str, PostCollectionFn]
 
 
 def template_hash(doc_type: str, *, templates_dir: Path | None = None) -> str:
@@ -289,6 +291,7 @@ def run(
     print_fn: PrintFn = print,
     only: Sequence[str] | None = None,
     monthly_budget_usd: float = DEFAULT_MONTHLY_BUDGET_USD,
+    after_collection: PostCollectionFn | None = None,
 ) -> int:
     """Advance generation by exactly one safe state-machine transition."""
     root = Path(root)
@@ -312,6 +315,7 @@ def run(
         if opened:
             any_save_failure = False
             any_in_progress = False
+            collected_batches = 0
             loaded: tuple[list[DocPlan], Seed, Mapping[str, str]] | None = None
             for open_record in opened:
                 batch_id = open_record.get("batch_id")
@@ -346,9 +350,19 @@ def run(
                     print_fn=print_fn,
                 )
                 any_save_failure = any_save_failure or not saved
+                collected_batches += int(saved)
             if any_in_progress:
                 print_fn("진행 중입니다. 나중에 `make generate`를 다시 실행하세요.")
-            return 1 if any_save_failure else 0
+                return 1 if any_save_failure else 0
+            if any_save_failure:
+                return 1
+            if (
+                collected_batches
+                and after_collection is not None
+                and any((root / GENERATIONS_DIR).glob("*.json"))
+            ):
+                return after_collection(root)
+            return 0
 
     plans = _load_plan(root)
     seed = load_seed(root)
@@ -364,7 +378,7 @@ def run(
             print_fn("생성 0건: 계획 또는 생성 대상이 없고 생성 캐시도 없습니다.")
             return 1
         _print_completion_summary(root, selected_scope, exhausted, print_fn)
-        return 0
+        return after_collection(root) if after_collection is not None else 0
 
     requests: list[BatchRequest] = []
     metadata_by_custom_id: dict[str, dict[str, object]] = {}
@@ -389,7 +403,7 @@ def run(
 
     if not requests:
         _print_completion_summary(root, selected_scope, exhausted, print_fn)
-        return 0
+        return after_collection(root) if after_collection is not None else 0
 
     ledger = CostLedger(root / DEFAULT_LEDGER_PATH)
     estimates = _cost_estimates(requests, targets, config)
@@ -454,6 +468,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--limit", type=_positive_int)
     parser.add_argument("--yes", action="store_true")
+    parser.add_argument(
+        "--then-validate",
+        action="store_true",
+        help="수거 완료 후 검증, 품질 지표, 결과 문서를 차례로 생성",
+    )
     parser.add_argument("--only", nargs="+", metavar="DOC_ID")
     parser.add_argument("--status", action="store_true")
     parser.add_argument(
@@ -465,7 +484,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--reason", metavar="TEXT")
     args = parser.parse_args(argv)
     if args.dry_run and (
-        args.status or args.adopt_batch or args.abandon_submission or args.reason
+        args.status
+        or args.adopt_batch
+        or args.abandon_submission
+        or args.reason
+        or args.then_validate
     ):
         parser.error("--dry-run은 상태 해결 옵션과 함께 쓸 수 없습니다")
     if (args.abandon_submission is None) != (args.reason is None):
@@ -478,6 +501,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         parser.error(
             "--status, --adopt-batch, --abandon-submission 중 하나만 지정하세요"
         )
+    if args.then_validate and action_count:
+        parser.error("--then-validate는 상태 해결 옵션과 함께 쓸 수 없습니다")
 
     root = args.root.resolve()
     config = load_generation_config()
@@ -534,10 +559,40 @@ def main(argv: Sequence[str] | None = None) -> int:
             assume_yes=args.yes,
             only=args.only,
             monthly_budget_usd=settings.monthly_budget_usd,
+            after_collection=_run_post_collection if args.then_validate else None,
         )
     except (OSError, TypeError, ValueError, RuntimeError) as exc:
         print(f"생성 실행 실패: {_first_line(str(exc))}")
         return 1
+
+
+def _run_post_collection(
+    root: Path,
+    *,
+    stages: Sequence[PostCollectionStage] | None = None,
+) -> int:
+    """Run deterministic post-collection stages in order, stopping on failure."""
+    if stages is None:
+        from kodocs.eval import synth_metrics, synth_report
+        from kodocs.synth import validate
+
+        stages = (
+            ("검증", lambda stage_root: validate.run(stage_root)),
+            ("품질 지표", lambda stage_root: synth_metrics.run(stage_root)),
+            (
+                "결과 문서",
+                lambda stage_root: synth_report.main(
+                    ["--root", str(stage_root.resolve())]
+                ),
+            ),
+        )
+    for label, stage in stages:
+        print(f"수거 후 {label} 실행")
+        code = stage(root)
+        if code != 0:
+            print(f"수거 후 {label} 실패(exit={code})")
+            return code
+    return 0
 
 
 def _facts_block(

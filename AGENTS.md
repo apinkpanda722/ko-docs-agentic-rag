@@ -70,9 +70,11 @@ make build-db     # 시드 → 티켓·결재 SQLite(data/synthetic/ledger.sqlit
 make plan-docs    # 시드 → 문서 200건 생성 계획·카나리아·인젝션 레지스트리(data/synthetic/, 커밋) (네트워크 없음)
 make generate-dry   # 합성 문서 생성 예상 토큰·비용(Batch)만 출력 — 네트워크 없음
 make generate-pilot # 파일럿 10건 Batch 제출/수거 — 실제 API 호출·과금, 확인 후 실행, 사용자 실행
-make generate       # 합성 문서 Batch 생성(재실행 시 상태 조회·수거·재생성 이어서) — 실제 API 호출·과금, 사용자 실행
+make generate       # 합성 문서 Batch 생성(재실행 시 조회·수거) → 수거 후 검증·지표·결과 문서 — 실제 API 호출·과금, 사용자 실행
 make synth-validate # 생성 결과 결정론 검증 → data/synthetic/docs/·validation_failures.jsonl·data/manifest/synth_validation.json (네트워크 없음)
 make synth-metrics  # 합성 문서 중복·다양성·분포·사실 커버리지 → data/manifest/synth_metrics.json (네트워크 없음)
 make synth-report   # M3 결과 문서 docs/results/{실행일}-m3-synthetic.md 생성·갱신 (네트워크 없음)
+make review-sample  # 검증 통과 문서에서 유형·권한 층화 표본 20건 + 검수 양식 → data/synthetic/review/ (네트워크 없음)
+make review-score   # data/golden/synthetic_review/*.csv 사람 검수 결과 집계 → data/manifest/synth_review.json·결과 문서 7절 (네트워크 없음)
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)

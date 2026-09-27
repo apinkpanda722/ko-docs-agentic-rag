@@ -412,6 +412,33 @@ def test_open_in_progress_batch_blocks_new_submit(
     assert client.submit_calls == []
 
 
+def test_in_progress_batch_does_not_run_post_collection_pipeline(
+    corpus: tuple[Seed, list[DocPlan]],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seed, plans = corpus
+    _prepare_root(tmp_path, plans[:1], monkeypatch, seed)
+    client = FakeClient(
+        opened=[{"batch_id": "batch-open"}],
+        statuses={"batch-open": _status("in_progress")},
+    )
+    calls: list[Path] = []
+
+    code = run(
+        tmp_path,
+        client=client,  # type: ignore[arg-type]
+        config=_config(),
+        dry_run=False,
+        limit=None,
+        assume_yes=True,
+        after_collection=lambda root: calls.append(root) or 0,
+    )
+
+    assert code == 0
+    assert calls == []
+
+
 def _append_submitted(
     root: Path,
     plan: DocPlan,
@@ -495,6 +522,73 @@ def test_ended_batch_collects_by_custom_id_and_marks_collected(
     assert cached["generation"]["temperature"] is None
     assert client.mark_collected_calls == ["batch-ended"]
     assert client.submit_calls == []
+
+
+def test_ended_batch_runs_post_collection_pipeline_after_storing_result(
+    corpus: tuple[Seed, list[DocPlan]],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seed, plans = corpus
+    plan = plans[0]
+    _prepare_root(tmp_path, [plan], monkeypatch, seed)
+    request = _append_submitted(tmp_path, plan, seed, attempt=1, batch_id="batch-ended")
+    result = BatchResult(
+        custom_id=request.custom_id,
+        result_type="succeeded",
+        text="# 생성 결과",
+        model="claude-sonnet-5-20260901",
+        stop_reason="end_turn",
+        usage={"input_tokens": 10, "output_tokens": 20},
+        error=None,
+    )
+    client = FakeClient(
+        opened=[{"batch_id": "batch-ended"}],
+        statuses={"batch-ended": _status("ended")},
+        results={"batch-ended": [result]},
+    )
+    calls: list[str] = []
+
+    def pipeline(root: Path) -> int:
+        assert (root / GENERATIONS_DIR / f"{request.cache_key}.json").is_file()
+        calls.extend(["validate", "metrics", "report"])
+        return 0
+
+    code = run(
+        tmp_path,
+        client=client,  # type: ignore[arg-type]
+        config=_config(),
+        dry_run=False,
+        limit=None,
+        assume_yes=True,
+        after_collection=pipeline,
+    )
+
+    assert code == 0
+    assert calls == ["validate", "metrics", "report"]
+
+
+def test_post_collection_pipeline_stops_on_first_failed_stage(tmp_path: Path) -> None:
+    calls: list[str] = []
+
+    def stage(name: str, code: int):
+        def invoke(_root: Path) -> int:
+            calls.append(name)
+            return code
+
+        return invoke
+
+    code = generate._run_post_collection(
+        tmp_path,
+        stages=(
+            ("검증", stage("validate", 0)),
+            ("지표", stage("metrics", 1)),
+            ("보고서", stage("report", 0)),
+        ),
+    )
+
+    assert code == 1
+    assert calls == ["validate", "metrics"]
 
 
 def test_mixed_collected_results_retry_only_errored_and_expired(
