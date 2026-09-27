@@ -95,6 +95,12 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **강제 수단**: `?`·`&`·`oc=`·`Note:`가 섞인 조문 동일성 테스트
 - **출처**: M1 step 2 이후 (011e20d)
 
+### FP-021 정답이 없거나 의심스러운 대상·키가 분모에 들어감
+- **증상**: 두 가지로 나타났다. 법제처 본문이 이미지 한 줄인 대상(조 머리 0개)은 모든 파서를 조 구조 불일치·텍스트 0점으로 깎았고, 분할기 상한은 "0개=0개 일치"로 부풀렸다. 원본≠법제처인 조 키(원본 누락·번호 체계 차이)는 모든 파서의 재현율을 같은 이유로 깎아 파서 차이처럼 보였다.
+- **규칙**: 정답이 없는 대상은 별도 상태(`no_law_text`)로 표시해 모든 지표 분모와 분할기 상한 분모에서 빼고, 제외 목록(id·사유)을 manifest에 남긴다. 파서 여럿이 공통으로 놓친 정답 키는 정답 차이로 따로 집계하고 원래 값과 보정 값을 함께 보고한다. 정답(golden·법제처 텍스트)은 고치지 않는다.
+- **강제 수단**: `tests/eval/test_parsing_score.py`(`test_law_without_article_text_is_excluded_from_parser_and_ceiling_denominators`, `test_keys_missed_by_every_ok_parser_are_reported_as_answer_differences`, `test_answer_differences_need_two_scored_comparison_parsers`)
+- **출처**: M2 실측 (383cc1d, bf37332)
+
 ## D. 배치 수집·기록
 
 ### FP-030 항목 하나의 실패가 배치 전체를 멈춤
@@ -126,6 +132,18 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **규칙**: 1분 넘게 걸릴 수 있는 명령은 N건마다 진행 줄을 `flush=True`로 출력한다(make·uv를 거쳐도 즉시 보이게). 진행 줄에 URL·인증값을 넣지 않는다.
 - **강제 수단**: 수집기·변환 진행 출력 테스트(`test_collect_prints_progress_*`, `test_run_prints_progress_*`)
 - **출처**: M1 실측 (c177148, da58f2e)
+
+### FP-035 전송 후 실패를 재시도해 이중 과금
+- **증상**: 업스테이지 요청의 ReadTimeout·WriteTimeout·RemoteProtocolError 같은 전송 후 실패를 재시도하면 서버가 이미 처리·과금했을 수 있다. 기본 타임아웃 300초는 긴 문서(대상 최대 85쪽)의 동기 파싱에서 불필요한 실패를 냈다.
+- **규칙**: 과금 API는 요청 전송 전 실패(ConnectError·ConnectTimeout)와 429·5xx만 재시도한다. 전송 후 실패는 재전송하지 않고 `billing_uncertain=true`로 그 문서만 실패 기록한다. 인증·결제·한도 오류(401·402·403, 한도 초과 4xx, 지속 429)는 실행 전체를 멈춘다. 타임아웃은 대상 최대 쪽수로 정한다.
+- **강제 수단**: `tests/parsing/test_upstage_adapter.py`(`test_post_send_transport_error_is_not_retried_and_marks_billing_uncertain`, `test_read_timeout_records_failed_billing_uncertain_without_ledger`, `test_fatal_response_raises_fatal_error`, `test_persistent_rate_limit_after_retries_is_fatal`, `test_default_timeout_is_600_seconds_for_long_documents`)
+- **출처**: M2 step 4 이후 (9b8f866, acb5a25)
+
+### FP-036 1회성 초기화 시간이 문서별 처리 시간에 섞임
+- **증상**: Docling 레이아웃·표 모델 로딩이 첫 문서의 `elapsed_s`에 들어가 문서별·쪽당 처리 시간이 부풀었다. 실행 장치(mps·cuda·cpu)가 기록되지 않아 시간 비교의 조건을 알 수 없었다.
+- **규칙**: 모델 로딩 같은 1회성 초기화는 어댑터 `prepare()`로 분리해 `init_s`에 따로 기록하고 문서별 시간에서 뺀다. 초기화 실패는 어떤 입력도 성공할 수 없으므로 실행 전체를 멈춘다. 실행 장치는 settings에 기록한다(FP-044).
+- **강제 수단**: `tests/parsing/test_run.py`(`test_run_prepares_once_and_records_init_time_separately`, `test_run_stops_when_adapter_initialization_fails`), `tests/parsing/test_docling_adapter.py`(`test_prepare_loads_converter_once_and_parse_times_only_conversion`)
+- **출처**: M2 step 3 이후 (42777a9)
 
 ## E. 프로세스
 
