@@ -75,7 +75,16 @@
     {
       "step": 5,
       "name": "doc-generate",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-27T21:01:32+0900",
+      "summary": "6종 프롬프트와 멱등 생성 캐시·재시도형 Anthropic Batch 상태 머신을 구현하고, make verify 585 passed 및 200건 generate-dry AC를 통과했습니다.",
+      "completed_at": "2026-09-27T21:16:12+0900",
+      "usage": {
+        "input_tokens": 2554207,
+        "cached_input_tokens": 2435200,
+        "output_tokens": 37505,
+        "attempts": 1
+      }
     },
     {
       "step": 6,
