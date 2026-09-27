@@ -69,6 +69,8 @@ PARSE_RUN_REQUIRED_FIELDS = frozenset(
         "api_version",
         "usage_enhanced",
         "possibly_truncated",
+        "skipped_items",
+        "table_dropped_warnings",
         "init_s",
         "billing_uncertain",
         "error_type",
@@ -851,6 +853,16 @@ def _record(
         ),
         "possibly_truncated": (
             document_settings.get("possibly_truncated")
+            if document_settings is not None
+            else None
+        ),
+        "skipped_items": (
+            document_settings.get("skipped_items")
+            if document_settings is not None
+            else None
+        ),
+        "table_dropped_warnings": (
+            document_settings.get("table_dropped_warnings")
             if document_settings is not None
             else None
         ),

@@ -396,3 +396,34 @@ def test_run_stops_when_adapter_initialization_fails(tmp_path: Path) -> None:
     with pytest.raises(ParseRunError, match="RuntimeError"):
         run(tmp_path, adapter, [_input(tmp_path, "a.pdf")], out=io.StringIO())
     assert adapter.calls == []
+
+
+def test_run_copies_per_document_skip_and_table_drop_counts_into_records(
+    tmp_path: Path,
+) -> None:
+    from dataclasses import replace
+
+    class CountingAdapter(FakeAdapter):
+        def parse(self, item: ParseInput, *, root: Path) -> ParsedDocument:
+            document = super().parse(item, root=root)
+            return replace(
+                document,
+                settings={
+                    **document.settings,
+                    "skipped_items": {"picture": 1},
+                    "table_dropped_warnings": 2,
+                },
+            )
+
+    inputs = [_input(tmp_path, "a.pdf")]
+    run(tmp_path, CountingAdapter(), inputs, out=io.StringIO())
+    run(tmp_path, CountingAdapter(), inputs, out=io.StringIO())
+    run(tmp_path, FakeAdapter(), [_input(tmp_path, "b.pdf")], out=io.StringIO())
+
+    parsed, skipped, other = _records(tmp_path)
+    assert (parsed["status"], skipped["status"]) == ("ok", "skipped")
+    for record in (parsed, skipped):
+        assert record["skipped_items"] == {"picture": 1}
+        assert record["table_dropped_warnings"] == 2
+    assert other["skipped_items"] is None
+    assert other["table_dropped_warnings"] is None

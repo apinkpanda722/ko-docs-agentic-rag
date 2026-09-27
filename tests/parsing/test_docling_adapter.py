@@ -1,5 +1,6 @@
 """Tests for the optional Docling PDF parsing adapter."""
 
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
@@ -42,12 +43,30 @@ class FakeTableData:
     table_cells: tuple[FakeCell, ...]
 
 
+# Fakes mirror docling_core item types: TextItem·TitleItem·SectionHeaderItem·
+# ListItem have ``text``; TableItem (table·document_index) and PictureItem
+# (picture·chart) do not.
 @dataclass(frozen=True)
-class FakeItem:
+class FakeTextItem:
     label: FakeLabel
     prov: tuple[FakeProvenance, ...] = ()
     text: str = ""
+
+
+@dataclass(frozen=True)
+class FakeTableItem:
+    label: FakeLabel
+    prov: tuple[FakeProvenance, ...] = ()
     data: object | None = None
+
+
+@dataclass(frozen=True)
+class FakePictureItem:
+    label: FakeLabel
+    prov: tuple[FakeProvenance, ...] = ()
+
+
+FakeItem = FakeTextItem | FakeTableItem | FakePictureItem
 
 
 class FakeDocument:
@@ -148,15 +167,14 @@ def test_document_maps_labels_including_furniture_and_reuses_previous_page(
 ) -> None:
     fake_document = FakeDocument(
         [
-            FakeItem(FakeLabel("title"), (FakeProvenance(1),), "문서 제목"),
-            FakeItem(FakeLabel("section_header"), text="섹션"),
-            FakeItem(FakeLabel("text"), (FakeProvenance(2),), "본문"),
-            FakeItem(FakeLabel("paragraph"), text="문단"),
-            FakeItem(FakeLabel("list_item"), text="항목"),
-            FakeItem(FakeLabel("page_header"), text="머리말"),
-            FakeItem(FakeLabel("page_footer"), text="꼬리말"),
-            FakeItem(FakeLabel("caption"), text="캡션"),
-            FakeItem(FakeLabel("picture"), text="그림"),
+            FakeTextItem(FakeLabel("title"), (FakeProvenance(1),), "문서 제목"),
+            FakeTextItem(FakeLabel("section_header"), text="섹션"),
+            FakeTextItem(FakeLabel("text"), (FakeProvenance(2),), "본문"),
+            FakeTextItem(FakeLabel("paragraph"), text="문단"),
+            FakeTextItem(FakeLabel("list_item"), text="항목"),
+            FakeTextItem(FakeLabel("page_header"), text="머리말"),
+            FakeTextItem(FakeLabel("page_footer"), text="꼬리말"),
+            FakeTextItem(FakeLabel("caption"), text="캡션"),
         ]
     )
 
@@ -178,7 +196,6 @@ def test_document_maps_labels_including_furniture_and_reuses_previous_page(
         Block(2, "header", "머리말"),
         Block(2, "footer", "꼬리말"),
         Block(2, "caption", "캡션"),
-        Block(2, "other", "그림"),
     )
     assert parsed.parser_version == "2.68.0"
     assert parsed.settings_hash == settings_hash(_settings())
@@ -190,7 +207,7 @@ def test_document_maps_labels_including_furniture_and_reuses_previous_page(
 def test_overlapping_table_is_invalid_and_following_table_stays_valid(
     tmp_path: Path,
 ) -> None:
-    overlapping = FakeItem(
+    overlapping = FakeTableItem(
         FakeLabel("table"),
         (FakeProvenance(1),),
         data=FakeTableData(
@@ -200,7 +217,7 @@ def test_overlapping_table_is_invalid_and_following_table_stays_valid(
             )
         ),
     )
-    normal = FakeItem(
+    normal = FakeTableItem(
         FakeLabel("table"),
         (FakeProvenance(2),),
         data=FakeTableData(
@@ -235,7 +252,7 @@ def test_overlapping_table_is_invalid_and_following_table_stays_valid(
 def test_table_deduplicates_anchor_and_isolates_missing_cells_attribute(
     tmp_path: Path,
 ) -> None:
-    duplicate_anchor = FakeItem(
+    duplicate_anchor = FakeTableItem(
         FakeLabel("table"),
         data=FakeTableData(
             (
@@ -244,7 +261,7 @@ def test_table_deduplicates_anchor_and_isolates_missing_cells_attribute(
             )
         ),
     )
-    missing_cells = FakeItem(FakeLabel("table"), text="표 대체 텍스트", data=object())
+    missing_cells = FakeTableItem(FakeLabel("table"), data=object())
 
     parsed = document_to_parsed(
         FakeDocument([duplicate_anchor, missing_cells]),
@@ -264,8 +281,8 @@ def test_table_deduplicates_anchor_and_isolates_missing_cells_attribute(
 def test_adapter_builds_converter_once_and_converts_each_input(
     tmp_path: Path,
 ) -> None:
-    first_document = FakeDocument([FakeItem(FakeLabel("text"), text="첫 문서")])
-    second_document = FakeDocument([FakeItem(FakeLabel("text"), text="둘째 문서")])
+    first_document = FakeDocument([FakeTextItem(FakeLabel("text"), text="첫 문서")])
+    second_document = FakeDocument([FakeTextItem(FakeLabel("text"), text="둘째 문서")])
     converter = FakeConverter([first_document, second_document])
     factory_calls: list[DoclingSettings] = []
 
@@ -377,3 +394,107 @@ def test_parse_without_prepare_still_excludes_converter_creation(
     )
 
     assert parsed.elapsed_s == 0.0
+
+
+def _real_kind_document() -> FakeDocument:
+    return FakeDocument(
+        [
+            FakeTextItem(FakeLabel("page_header"), (FakeProvenance(1),), "머리말"),
+            FakeTextItem(FakeLabel("section_header"), text="제1장 총칙"),
+            FakeTextItem(FakeLabel("text"), text="제1조(목적) 본문"),
+            FakePictureItem(FakeLabel("picture"), (FakeProvenance(2),)),
+            FakeTableItem(
+                FakeLabel("table"),
+                data=FakeTableData((FakeCell(0, 0, 1, 1, "셀"),)),
+            ),
+            FakeTextItem(FakeLabel("page_footer"), text="- 2 -"),
+        ]
+    )
+
+
+def test_items_without_text_are_skipped_and_counted_per_label(
+    tmp_path: Path,
+) -> None:
+    parsed = document_to_parsed(
+        _real_kind_document(),
+        item=_input(tmp_path),
+        root=tmp_path,
+        settings=_settings(),
+        elapsed_s=0.1,
+    )
+
+    assert [block.kind for block in parsed.blocks] == [
+        "header",
+        "heading",
+        "text",
+        "table",
+        "footer",
+    ]
+    assert parsed.blocks[3] == Block(2, "table", "|셀|\n|---|")
+    assert parsed.settings["skipped_items"] == {"picture": 1}
+    # 문서별 기록은 설정 해시(재파싱 판단)에 들어가지 않는다.
+    assert parsed.settings_hash == settings_hash(_settings())
+
+
+@pytest.mark.parametrize(
+    "item",
+    [
+        FakePictureItem(FakeLabel("chart")),
+        FakeTableItem(FakeLabel("document_index")),
+    ],
+)
+def test_other_text_less_item_kinds_are_skipped_not_filled(
+    tmp_path: Path, item: FakeItem
+) -> None:
+    parsed = document_to_parsed(
+        FakeDocument([FakeTextItem(FakeLabel("text"), text="본문"), item]),
+        item=_input(tmp_path),
+        root=tmp_path,
+        settings=_settings(),
+        elapsed_s=0.1,
+    )
+
+    assert parsed.blocks == (Block(1, "text", "본문"),)
+    assert parsed.settings["skipped_items"] == {item.label.value: 1}
+
+
+def test_document_without_skipped_items_records_empty_counts(tmp_path: Path) -> None:
+    parsed = document_to_parsed(
+        FakeDocument([FakeTextItem(FakeLabel("text"), text="본문")]),
+        item=_input(tmp_path),
+        root=tmp_path,
+        settings=_settings(),
+        elapsed_s=0.1,
+    )
+
+    assert parsed.settings["skipped_items"] == {}
+
+
+def test_parse_counts_table_matching_dropped_warnings_per_document(
+    tmp_path: Path,
+) -> None:
+    matcher_log = logging.getLogger("MatchingPostProcessor")
+
+    class WarningConverter:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def convert(self, path: Path) -> object:
+            self.calls += 1
+            if self.calls == 1:
+                for _ in range(2):
+                    matcher_log.warning(
+                        "3 of 40 pdf cells matched neither a row nor a column band "
+                        "of the 4x5 grid and were dropped from the table"
+                    )
+                matcher_log.warning("unrelated warning")
+            return SimpleNamespace(document=_real_kind_document())
+
+    adapter = DoclingAdapter(converter_factory=lambda settings: WarningConverter())
+    first = adapter.parse(_input(tmp_path, "first.pdf"), root=tmp_path)
+    second = adapter.parse(_input(tmp_path, "second.pdf"), root=tmp_path)
+    matcher_log.warning("were dropped from the table after parsing")
+
+    assert first.settings["table_dropped_warnings"] == 2
+    assert second.settings["table_dropped_warnings"] == 0
+    assert first.settings_hash == second.settings_hash

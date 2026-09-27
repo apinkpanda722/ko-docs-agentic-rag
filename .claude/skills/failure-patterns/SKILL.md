@@ -55,6 +55,7 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **규칙**: 외부 라이브러리가 손상 입력에서 던지는 예외는 **손상 입력을 실제로 넣어** 확인하고 회귀 테스트로 남긴다.
 - **강제 수단**: 손상 OLE 회귀 테스트
 - **출처**: M1 (011e20d)
+- **M2 사례(속성 가정)**: Docling 어댑터가 표가 아닌 모든 요소에 `text`가 있다고 가정했다. mock에 그림 요소가 없어서(오히려 그림에 `text`를 넣어서) 테스트가 통과했지만, 실제 `make parse-docling`에서는 115건 중 41건이 `'PictureItem' object has no attribute 'text'`로 실패했다. 외부 라이브러리 어댑터는 **실제 출력 1건으로 요소 종류(클래스·라벨·속성)를 확인한 뒤** fixture에 반영한다. 없는 속성은 추측해 채우지 말고 건너뛴 사실을 기록한다(`skipped_items`). 강제 수단: `tests/parsing/test_docling_adapter.py`(`test_items_without_text_are_skipped_and_counted_per_label`, `test_other_text_less_item_kinds_are_skipped_not_filled`).
 
 ### FP-012 인코딩 가정 순서
 - **증상**: UTF-8 플래그 없는 zip 멤버 이름을 곧장 cp437→cp949로 복원 → macOS에서 만든 UTF-8 zip은 깨진 이름, 파일명 속 한글 날짜 소실.
