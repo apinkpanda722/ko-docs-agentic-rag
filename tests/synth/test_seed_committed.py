@@ -10,7 +10,13 @@ import yaml
 
 from kodocs.synth.bootstrap_people import generate_people, main
 from kodocs.synth.regulations import load_index
-from kodocs.synth.seed import TEAMS, find_banned_names, load_seed, validate_seed
+from kodocs.synth.seed import (
+    TEAMS,
+    find_banned_names,
+    load_public_figures,
+    load_seed,
+    validate_seed,
+)
 
 REPO_ROOT = Path(__file__).parents[2]
 SEED_DIR = REPO_ROOT / "data/seed"
@@ -267,3 +273,48 @@ def test_regulation_references_and_denylist_meet_quantity_basis() -> None:
         if path.is_file() and path.name != "banned_names.yaml"
     )
     assert find_banned_names(text, tuple(denied["names"])) == []
+
+
+def test_public_figures_list_is_reviewed_and_absent_from_people() -> None:
+    figures = load_public_figures(REPO_ROOT)
+    people_names = {person.name for person in load_seed(REPO_ROOT).people}
+
+    assert len(figures) >= 30
+    assert len(figures) == len(set(figures))
+    assert people_names.isdisjoint(figures)
+
+
+def test_bootstrap_replaces_only_the_excluded_person_name() -> None:
+    baseline = generate_people(random_seed=20250101, team_sizes=TEAM_SIZES)
+    excluded = baseline["payments"][3]["name"]
+
+    replaced = generate_people(
+        random_seed=20250101, team_sizes=TEAM_SIZES, excluded_names=(excluded,)
+    )
+    again = generate_people(
+        random_seed=20250101, team_sizes=TEAM_SIZES, excluded_names=(excluded,)
+    )
+
+    assert replaced == again
+    before = [person for team in TEAMS for person in baseline[team]]
+    after = [person for team in TEAMS for person in replaced[team]]
+    changed = [(old, new) for old, new in zip(before, after, strict=True) if old != new]
+    assert len(changed) == 1
+    old, new = changed[0]
+    assert old["name"] == excluded and new["name"] != excluded
+    assert {key: value for key, value in old.items() if key != "name"} == {
+        key: value for key, value in new.items() if key != "name"
+    }
+    names = [person["name"] for person in after]
+    assert len(names) == len(set(names))
+
+
+def test_bootstrap_with_committed_public_figures_emits_none_of_them() -> None:
+    figures = load_public_figures(REPO_ROOT)
+    people = generate_people(
+        random_seed=20250101, team_sizes=TEAM_SIZES, excluded_names=figures
+    )
+
+    assert {
+        person["name"] for records in people.values() for person in records
+    }.isdisjoint(figures)

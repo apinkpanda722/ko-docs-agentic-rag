@@ -21,6 +21,7 @@ from kodocs.synth.seed import (
     SeedError,
     find_banned_names,
     load_banned_names,
+    load_public_figures,
     load_seed,
     surface_forms,
     validate_seed,
@@ -334,3 +335,18 @@ def test_banned_name_loading_and_ascii_boundaries() -> None:
         ("NIA", "NIA"),
     ]
     assert [start for _, start, _ in found] == [0, 15]
+
+
+def test_validate_seed_rejects_person_names_equal_to_public_figures() -> None:
+    seed = _seed()
+    assert load_public_figures(SEED_ROOT) == ("노태우",)
+    assert seed.public_figures == ("노태우",)
+    first, *rest = seed.people
+    renamed = replace(first, name="노태우")
+
+    errors = validate_seed(
+        replace(seed, people=(renamed, *rest)), regulation_index=REGULATION_INDEX
+    )
+
+    assert f"person name matches public figure: {first.person_id}=노태우" in errors
+    assert validate_seed(seed, regulation_index=REGULATION_INDEX) == []

@@ -5,13 +5,13 @@ from __future__ import annotations
 import argparse
 import random
 import sys
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from datetime import date, timedelta
 from pathlib import Path
 
 import yaml
 
-from kodocs.synth.seed import TEAMS
+from kodocs.synth.seed import TEAMS, load_public_figures
 
 DEFAULT_RANDOM_SEED = 20250101
 DEFAULT_TEAM_SIZES: Mapping[str, int] = {
@@ -128,9 +128,17 @@ _JOIN_END = date(2026, 5, 31)
 
 
 def generate_people(
-    *, random_seed: int, team_sizes: Mapping[str, int]
+    *,
+    random_seed: int,
+    team_sizes: Mapping[str, int],
+    excluded_names: Collection[str] = (),
 ) -> dict[str, list[dict]]:
-    """Return people in fixed team order and descending grade order."""
+    """Return people in fixed team order and descending grade order.
+
+    A drawn name in ``excluded_names`` is replaced from a separate generator
+    keyed by the drawn name, so the main draw sequence (and every other person)
+    stays the same as without the exclusion.
+    """
     unknown = set(team_sizes).difference(TEAMS)
     missing = set(TEAMS).difference(team_sizes)
     if unknown or missing:
@@ -142,6 +150,7 @@ def generate_people(
         raise ValueError("team sizes must be positive integers")
 
     generator = random.Random(random_seed)
+    excluded = frozenset(excluded_names)
     used_names: set[str] = set()
     pending: dict[str, list[dict[str, object]]] = {}
     join_span = (_JOIN_END - _JOIN_START).days
@@ -159,7 +168,7 @@ def generate_people(
         )
         records: list[dict[str, object]] = []
         for sequence, grade in enumerate(grades):
-            name = _unique_name(generator, used_names)
+            name = _unique_name(generator, used_names, excluded, random_seed)
             records.append(
                 {
                     "name": name,
@@ -194,6 +203,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=Path("data/seed/people"))
     parser.add_argument("--random-seed", type=int, default=DEFAULT_RANDOM_SEED)
     parser.add_argument("--force", action="store_true")
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=Path("."),
+        help="public_figures를 읽을 저장소 루트(data/seed/banned_names.yaml)",
+    )
     args = parser.parse_args(argv)
 
     targets = [args.out / f"{team}.yaml" for team in TEAMS]
@@ -208,6 +223,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     people = generate_people(
         random_seed=args.random_seed,
         team_sizes=DEFAULT_TEAM_SIZES,
+        excluded_names=load_public_figures(args.root),
     )
     args.out.mkdir(parents=True, exist_ok=True)
     for team, target in zip(TEAMS, targets, strict=True):
@@ -220,19 +236,42 @@ def main(argv: Sequence[str] | None = None) -> int:
     return 0
 
 
-def _unique_name(generator: random.Random, used_names: set[str]) -> str:
+def _unique_name(
+    generator: random.Random,
+    used_names: set[str],
+    excluded: frozenset[str],
+    random_seed: int,
+) -> str:
     capacity = len(SURNAME_POOL) * len(GIVEN_FIRST_POOL) * len(GIVEN_SECOND_POOL)
-    if len(used_names) >= capacity:
+    if len(used_names) + len(excluded) >= capacity:
         raise ValueError("name pools do not contain enough unique combinations")
     while True:
-        candidate = (
-            generator.choice(SURNAME_POOL)
-            + generator.choice(GIVEN_FIRST_POOL)
-            + generator.choice(GIVEN_SECOND_POOL)
-        )
-        if candidate not in used_names:
-            used_names.add(candidate)
+        candidate = _draw_name(generator)
+        if candidate in used_names:
+            continue
+        if candidate in excluded:
+            candidate = _replacement_name(candidate, used_names, excluded, random_seed)
+        used_names.add(candidate)
+        return candidate
+
+
+def _replacement_name(
+    drawn: str, used_names: set[str], excluded: frozenset[str], random_seed: int
+) -> str:
+    # A separate generator keeps the main draw sequence unchanged.
+    replacement_generator = random.Random(f"{random_seed}:replace:{drawn}")
+    while True:
+        candidate = _draw_name(replacement_generator)
+        if candidate not in used_names and candidate not in excluded:
             return candidate
+
+
+def _draw_name(generator: random.Random) -> str:
+    return (
+        generator.choice(SURNAME_POOL)
+        + generator.choice(GIVEN_FIRST_POOL)
+        + generator.choice(GIVEN_SECOND_POOL)
+    )
 
 
 if __name__ == "__main__":
