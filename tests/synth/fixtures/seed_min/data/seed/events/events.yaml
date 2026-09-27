@@ -1,0 +1,13 @@
+events:
+  - id: ev-2025-014
+    title: 청구 처리 개선 결정
+    date: "2025-11-03"
+    owner_team: platform
+    assignee_id: p-001
+    sensitivity: restricted
+    facts:
+      - fact_id: f-event-2025-014-decision
+        kind: text
+        value: 청구 처리 재시도 정책을 개선하기로 결정했다.
+        date: "2025-11-03"
+

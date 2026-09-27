@@ -64,6 +64,7 @@ make table-drafts  # HWPX 원본 표(hp:tbl)에서 파서 중립 표 정답 초�
 make table-golden  # 사람이 확정한 data/golden/tables/*.md의 선정 정보·해시를 data/manifest/table_golden.json에 기록
 make table-score   # 파서별 표 셀 일치율 채점
 make parse-report    # M2 파싱 결과표를 docs/results/{실행일}-m2-parsing.md에 생성·갱신 — 네트워크 없음
+make reg-index   # 법제처 현행 규정의 규정명·조 번호·조 제목 색인 → data/manifest/regulation_refs.json (조문 본문 없음, 네트워크 없음)
 make generate    # 합성 코퍼스 생성 — 실제 API 호출, 사용자 실행
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)

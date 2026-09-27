@@ -1,0 +1,13 @@
+tickets:
+  total: 10
+  access:
+    public: 6
+    team: 3
+    restricted: 1
+approvals:
+  total: 5
+  access:
+    public: 1
+    team: 3
+    restricted: 1
+

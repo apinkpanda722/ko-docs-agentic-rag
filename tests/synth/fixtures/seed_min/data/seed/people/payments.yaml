@@ -1,0 +1,14 @@
+people:
+  - person_id: p-003
+    name: 이가은
+    team: payments
+    grade: 4
+    role: 결제 개발
+    joined: "2023-07-10"
+  - person_id: p-004
+    name: 최하준
+    team: payments
+    grade: 5
+    role: 팀 운영
+    joined: "2022-11-21"
+

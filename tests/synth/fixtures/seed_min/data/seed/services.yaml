@@ -1,0 +1,10 @@
+services:
+  - name: billing-api
+    owner_team: payments
+    description: 가상 회사의 청구 처리 서비스
+    facts:
+      - fact_id: f-service-billing-owner
+        kind: text
+        value: 결제서비스 팀이 청구 처리 서비스를 운영한다.
+        date: null
+

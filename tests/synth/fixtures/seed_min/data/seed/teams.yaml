@@ -1,0 +1,10 @@
+teams:
+  - code: platform
+    name_ko: 플랫폼개발
+    project_key: PLT
+    headcount_target: 2
+  - code: payments
+    name_ko: 결제서비스
+    project_key: PAY
+    headcount_target: 2
+

@@ -11,6 +11,7 @@ dependencies = [
     "olefile>=0.47",
     "pypdf>=6.19.0",
     "python-dotenv>=1.2.3",
+    "pyyaml>=6.0.3",
 ]
 
 [build-system]
@@ -30,7 +31,6 @@ markers = [
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
-    "pyyaml>=6.0.3",
     "ruff>=0.16.9",
 ]
 docling = [
