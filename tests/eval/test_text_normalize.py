@@ -16,10 +16,11 @@ def test_raw_compare_form_only_applies_nfc_and_trims_outer_whitespace() -> None:
     assert raw_compare_form(f" \t{decomposed} ① “문장”\n") == "가 ① “문장”"
 
 
-def test_normalize_applies_n1_to_n5_in_order_without_nfkc() -> None:
+def test_normalize_applies_n1_to_n5_in_order_with_nfkc_in_n3() -> None:
     source = " 제1조\u3000(목적)\n“이\t규정”은 ①ㆍA・B･C‧D <개정 2021. 3. 16.> "
 
-    assert normalize(source) == '제1조(목적)"이규정"은①·A·B·C·D'
+    # NFKC는 원문자 번호를 숫자로 바꾼다(①→1). 양쪽 텍스트에 똑같이 적용된다.
+    assert normalize(source) == '제1조(목적)"이규정"은1·A·B·C·D'
 
 
 def test_strip_editorial_removes_all_supported_balanced_annotations() -> None:
@@ -55,4 +56,30 @@ def test_strip_editorial_accepts_compact_empty_and_mixed_history_variants() -> N
 def test_normalize_unifies_quote_variants_and_all_unicode_whitespace() -> None:
     source = "“가”„나‟ ‘다’‚라‛\u00a0마\u3000바\r\n사"
 
-    assert normalize(source) == "\"가\"\"나\"'다''라'마바사"
+    assert normalize(source) == '"가""나""다""라"마바사'
+
+
+def test_normalize_unifies_every_quote_variant_to_one_character() -> None:
+    variants = ['"', "'", "“", "”", "‘", "’", "`", "´", "＂", "＇"]
+
+    assert {normalize(f"가{quote}나") for quote in variants} == {'가"나'}
+
+
+def test_normalize_unifies_every_middle_dot_variant_to_one_character() -> None:
+    variants = ["ㆍ", "·", "․", "‧", "∙", "・", "･"]
+
+    assert {normalize(f"장{dot}절") for dot in variants} == {"장·절"}
+
+
+def test_normalize_applies_nfkc_to_compatibility_forms() -> None:
+    assert normalize("목적：（가）　１２") == "목적:(가)12"
+
+
+def test_nfkc_keeps_hangul_syllables_digits_and_article_heads() -> None:
+    source = "제12조의3(정의) 가나다라마바사 힣 0123456789 ①항 제2호"
+
+    assert normalize(source) == "제12조의3(정의)가나다라마바사힣01234567891항제2호"
+
+
+def test_raw_compare_form_does_not_apply_nfkc_or_unification() -> None:
+    assert raw_compare_form(" 목적：ㆍ“가” ① ") == "목적：ㆍ“가” ①"
