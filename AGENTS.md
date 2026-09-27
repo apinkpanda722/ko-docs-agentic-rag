@@ -57,6 +57,8 @@ make docling-models  # Docling 그룹 설치(torch 포함 대용량)·모델 다
 make parse-docling   # M2 Docling 파싱 (로컬, 시간이 오래 걸릴 수 있음), 사용자 실행
 make parse-upstage-dry  # 업스테이지 예상 비용(캐시 없는 대상의 쪽수 × 단가) 출력만 — 네트워크 없음
 make parse-upstage      # 업스테이지 Document Parse(standard) 파싱 — 실제 API 호출·과금, 확인 후 실행, 사용자 실행
+make parse-upstage-direct-dry  # 보조 실험: 업스테이지 HWP/HWPX 직접 입력 예상 비용 — 네트워크 없음
+make parse-upstage-direct      # 보조 실험: 업스테이지 HWP/HWPX 직접 입력 파싱 — 실제 API 호출·과금, 사용자 실행
 make parse-score     # 파서별 파싱 결과를 조문 분할 후 법제처 조문과 대조(분할기 상한 포함) — 네트워크 없음, 사용자 실행
 make table-drafts  # HWPX 원본 표(hp:tbl)에서 파서 중립 표 정답 초안 추출 → data/interim/table_drafts/
 make table-golden  # 사람이 확정한 data/golden/tables/*.md의 선정 정보·해시를 data/manifest/table_golden.json에 기록

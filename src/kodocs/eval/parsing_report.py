@@ -14,6 +14,7 @@ from datetime import date, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from kodocs.eval.direct_compare import compare as compare_direct
 from kodocs.ingest.manifest import now_iso, sha256_file
 
 TEMPLATE_PATH = Path(__file__).parent / "templates" / "m2_parsing.md"
@@ -58,6 +59,7 @@ def render_tables(root: Path) -> str:
         _text_table(scores),
         _editorial_table(scores),
         _table_score_table(table_golden, table_scores),
+        _direct_compare_table(root),
         _cost_table(runs, costs, costs_present=manifest_paths["costs.jsonl"].is_file()),
         _failure_table(runs),
         _law_without_text_table(scores),
@@ -394,6 +396,50 @@ def _table_score_table(
             "셀 완전 일치율 평균",
             "셀 유사도 평균",
             "크기 일치 수",
+        ],
+        rows,
+    )
+
+
+def _direct_compare_table(root: Path) -> str:
+    comparison = compare_direct(root)
+    if comparison is None:
+        return "### 변환 경유 vs 직접 입력\n\n(실행 후 기록)"
+
+    rows: list[list[object]] = []
+    for parser, label in (
+        ("upstage", "변환 PDF"),
+        ("upstage-direct", "HWP/HWPX 원본"),
+    ):
+        metrics = _mapping(comparison.get(parser))
+        rows.append(
+            [
+                label,
+                _percent(_field(metrics, "structure_exact_rate")),
+                _decimal(_field(metrics, "key_f1_mean")),
+                _decimal(_field(metrics, "text_sim_raw_mean")),
+                _decimal(_field(metrics, "text_sim_norm_mean")),
+                _decimal(_field(metrics, "table_cell_exact_rate")),
+                _field(metrics, "billed_pages"),
+                _seconds(_field(metrics, "seconds_per_page")),
+            ]
+        )
+    return _table(
+        "변환 경유 vs 직접 입력",
+        "분모: 양쪽 결과가 모두 있는 대상 "
+        f"{_display(comparison.get('paired_targets'))}개(표 정답 "
+        f"{_display(comparison.get('paired_tables'))}개). 고정 조건: 동일한 요청 옵션·"
+        "조문 분할기·채점 함수를 쓴다. HWP 과금 쪽수 = 응답 usage.pages, "
+        "PDF 쪽수와 다를 수 있음.",
+        [
+            "입력",
+            "구조 완전 일치율",
+            "키 F1",
+            "원문 유사도",
+            "정규화 유사도",
+            "표 셀 일치율",
+            "과금 쪽수 합",
+            "쪽당 시간(초)",
         ],
         rows,
     )

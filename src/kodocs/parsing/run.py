@@ -41,9 +41,11 @@ from kodocs.parsing.schema import (
     to_json,
 )
 from kodocs.parsing.upstage_adapter import (
+    ESTIMATE_PAGE_FACTOR_DIRECT,
     DryRunPlan,
     UpstageAdapter,
     UpstageClient,
+    UpstageDirectAdapter,
     plan,
 )
 
@@ -66,6 +68,7 @@ PARSE_RUN_REQUIRED_FIELDS = frozenset(
         "invalid_tables",
         "api_version",
         "usage_enhanced",
+        "possibly_truncated",
         "init_s",
         "billing_uncertain",
         "error_type",
@@ -84,6 +87,7 @@ class ParseInput:
     input_sha256: str
     input_kind: str
     page_count: int | None
+    expected_sha256: str | None = None
 
 
 class Adapter(Protocol):
@@ -141,6 +145,7 @@ ADAPTERS: dict[str, Callable[[], Adapter]] = {
     "docling": DoclingAdapter,
     "pypdf": _PypdfAdapter,
     "upstage": _upstage_cli_only,
+    "upstage-direct": _upstage_cli_only,
 }
 
 
@@ -211,6 +216,107 @@ def load_inputs(root: Path, *, limit: int | None = None) -> list[ParseInput]:
                     if isinstance(page_count, int) and not isinstance(page_count, bool)
                     else None
                 ),
+            )
+        )
+    return inputs
+
+
+def load_direct_inputs(
+    root: Path,
+    *,
+    max_pages: int = 300,
+    hwp5_count: int = 20,
+) -> list[ParseInput]:
+    """Select original HWP/HWPX inputs using PDF pages as a cost proxy."""
+    if max_pages < 0:
+        raise ValueError("max_pages must be non-negative")
+    if hwp5_count < 0:
+        raise ValueError("hwp5_count must be non-negative")
+
+    target_path = root / "data/manifest/parse_targets.json"
+    try:
+        payload = json.loads(target_path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise ParseRunError(
+            "data/manifest/parse_targets.json이 없습니다. "
+            "먼저 make parse-targets를 실행하세요."
+        ) from exc
+    except json.JSONDecodeError as exc:
+        raise ParseRunError(
+            "data/manifest/parse_targets.json을 읽을 수 없습니다: "
+            f"JSONDecodeError: {exc.msg}"
+        ) from exc
+    targets = payload.get("targets") if isinstance(payload, dict) else None
+    if not isinstance(targets, list) or not targets:
+        raise ParseRunError(
+            "파싱 대상이 0건입니다. 먼저 make parse-targets를 실행하세요."
+        )
+    if any(not isinstance(target, dict) for target in targets):
+        raise ParseRunError("parse_targets.json targets 항목이 객체가 아닙니다.")
+
+    golden_sources = _table_golden_sources(root)
+    eligible = [
+        target
+        for target in targets
+        if _page_count(target.get("page_count")) is not None
+    ]
+    hwpx = sorted(
+        (target for target in eligible if target.get("source_kind") == "hwpx"),
+        key=lambda target: (
+            _text(target.get("source_sha256")) not in golden_sources,
+            _rule_sort_key(target.get("rule_no")),
+            _target_key(target),
+        ),
+    )
+    hwp5 = sorted(
+        (
+            target
+            for target in eligible
+            if target.get("source_kind") == "hwp5" and target.get("role") == "current"
+        ),
+        key=lambda target: (_rule_sort_key(target.get("rule_no")), _target_key(target)),
+    )
+
+    selected = list(hwpx)
+    cumulative_pages = sum(_page_count(target["page_count"]) or 0 for target in hwpx)
+    selected_hwp5 = 0
+    for target in hwp5:
+        if selected_hwp5 >= hwp5_count:
+            break
+        pages = _page_count(target["page_count"])
+        assert pages is not None
+        if cumulative_pages + pages > max_pages:
+            continue
+        selected.append(target)
+        selected_hwp5 += 1
+        cumulative_pages += pages
+
+    inputs: list[ParseInput] = []
+    for index, target in enumerate(selected, start=1):
+        source_sha256 = _text(target.get("source_sha256"))
+        source_path = target.get("source_path")
+        input_path = (
+            root / source_path
+            if isinstance(source_path, str) and source_path
+            else root
+            / "data/raw/alio/.missing"
+            / f"{index}-{source_sha256 or 'unknown'}"
+        )
+        input_sha256 = ""
+        try:
+            if input_path.is_file():
+                input_sha256 = sha256_file(input_path)
+        except OSError:
+            pass
+        kind = _text(target.get("source_kind"))
+        inputs.append(
+            ParseInput(
+                target_key=_target_key(target),
+                input_path=input_path,
+                input_sha256=input_sha256,
+                input_kind=kind,
+                page_count=_page_count(target.get("page_count")),
+                expected_sha256=source_sha256,
             )
         )
     return inputs
@@ -431,6 +537,16 @@ def main(
     parser.add_argument("--root", type=Path, default=Path("."))
     parser.add_argument("--parser", choices=sorted(ADAPTERS), required=True)
     parser.add_argument("--limit", type=_positive_int)
+    parser.add_argument(
+        "--max-pages",
+        type=_non_negative_int,
+        help="직접 입력 선정의 변환 PDF 기준 누적 쪽수 상한(기본 300)",
+    )
+    parser.add_argument(
+        "--hwp5-count",
+        type=_non_negative_int,
+        help="직접 입력 선정의 현행 HWP5 문서 수 상한(기본 20)",
+    )
     parser.add_argument("--force", action="store_true")
     parser.add_argument(
         "--dry-run",
@@ -445,9 +561,35 @@ def main(
     args = parser.parse_args(argv)
 
     try:
-        inputs = load_inputs(args.root, limit=args.limit)
-        if args.parser == "upstage":
-            dry_run_plan = plan(args.root, inputs)
+        if args.parser == "upstage-direct":
+            if args.limit is not None:
+                parser.error(
+                    "--limit은 --parser upstage-direct에서 사용할 수 없습니다."
+                )
+            inputs = load_direct_inputs(
+                args.root,
+                max_pages=args.max_pages if args.max_pages is not None else 300,
+                hwp5_count=(args.hwp5_count if args.hwp5_count is not None else 20),
+            )
+            _print_direct_selection(inputs)
+        else:
+            if args.max_pages is not None or args.hwp5_count is not None:
+                parser.error(
+                    "--max-pages와 --hwp5-count는 "
+                    "--parser upstage-direct에서만 사용할 수 있습니다."
+                )
+            inputs = load_inputs(args.root, limit=args.limit)
+
+        if args.parser in {"upstage", "upstage-direct"}:
+            dry_run_plan = (
+                plan(
+                    args.root,
+                    inputs,
+                    estimate_page_factor=ESTIMATE_PAGE_FACTOR_DIRECT,
+                )
+                if args.parser == "upstage-direct"
+                else plan(args.root, inputs)
+            )
             _print_upstage_plan(dry_run_plan)
             if dry_run_plan.exceeds_budget:
                 print(
@@ -470,7 +612,12 @@ def main(
                 print(str(exc), file=sys.stderr)
                 return 2
             run_id = str(uuid.uuid4())
-            adapter = _build_upstage_adapter(
+            builder = (
+                _build_upstage_direct_adapter
+                if args.parser == "upstage-direct"
+                else _build_upstage_adapter
+            )
+            adapter = builder(
                 args.root,
                 api_key=api_key,
                 monthly_budget_usd=settings.monthly_budget_usd,
@@ -487,7 +634,7 @@ def main(
 
         if args.dry_run or args.yes:
             parser.error(
-                "--dry-run과 --yes는 --parser upstage에서만 사용할 수 있습니다."
+                "--dry-run과 --yes는 업스테이지 파서에서만 사용할 수 있습니다."
             )
         summary = run(
             args.root,
@@ -526,6 +673,23 @@ def _build_upstage_adapter(
     )
 
 
+def _build_upstage_direct_adapter(
+    root: Path,
+    *,
+    api_key: str,
+    monthly_budget_usd: float,
+    run_id: str,
+) -> UpstageDirectAdapter:
+    ledger = CostLedger(root / DEFAULT_LEDGER_PATH)
+    return UpstageDirectAdapter(
+        root,
+        client_factory=_upstage_client_factory(api_key),
+        ledger=ledger,
+        guard=BudgetGuard(ledger, monthly_budget_usd),
+        run_id=run_id,
+    )
+
+
 def _print_upstage_plan(dry_run_plan: DryRunPlan) -> None:
     print(
         f"캐시 없음 {dry_run_plan.uncached_count}건 / "
@@ -534,6 +698,16 @@ def _print_upstage_plan(dry_run_plan: DryRunPlan) -> None:
         f"이번 달 누적 ${dry_run_plan.month_total_usd:.2f} / "
         f"상한 ${dry_run_plan.monthly_budget_usd:.2f} / "
         f"실행 후 남은 예산 ${dry_run_plan.remaining_after_usd:.2f}"
+    )
+
+
+def _print_direct_selection(inputs: Sequence[ParseInput]) -> None:
+    hwpx_count = sum(item.input_kind == "hwpx" for item in inputs)
+    hwp5_count = sum(item.input_kind == "hwp5" for item in inputs)
+    pages = sum(item.page_count or 0 for item in inputs)
+    print(
+        f"직접 입력 선정 {len(inputs)}건 / HWPX {hwpx_count}건 / "
+        f"HWP5 {hwp5_count}건 / 변환 PDF 기준 {pages}쪽"
     )
 
 
@@ -561,7 +735,7 @@ def _validate_input(
     conversion_hashes: Mapping[str, str],
 ) -> tuple[str, str] | None:
     if not item.input_path.is_file():
-        return "missing_input", "PDF 입력 파일이 없습니다."
+        return "missing_input", f"{item.input_kind} 입력 파일이 없습니다."
     try:
         actual_sha256 = sha256_file(item.input_path)
     except OSError as exc:
@@ -569,7 +743,12 @@ def _validate_input(
     if actual_sha256 != item.input_sha256:
         return (
             "input_sha256_mismatch",
-            "PDF 입력 파일의 SHA-256이 대상 로드 시 계산값과 다릅니다.",
+            f"{item.input_kind} 입력 파일의 SHA-256이 대상 로드 시 계산값과 다릅니다.",
+        )
+    if item.expected_sha256 is not None and actual_sha256 != item.expected_sha256:
+        return (
+            "input_sha256_mismatch",
+            f"{item.input_kind} 입력 파일의 SHA-256이 manifest 값과 다릅니다.",
         )
     try:
         relative_path = repo_relative(item.input_path, root)
@@ -670,6 +849,11 @@ def _record(
             if document_settings is not None
             else None
         ),
+        "possibly_truncated": (
+            document_settings.get("possibly_truncated")
+            if document_settings is not None
+            else None
+        ),
         "init_s": init_s,
         "billing_uncertain": billing_uncertain,
         "error_type": error_type,
@@ -710,6 +894,58 @@ def _positive_int(value: str) -> int:
     if parsed < 1:
         raise argparse.ArgumentTypeError("1 이상의 정수를 입력해야 합니다")
     return parsed
+
+
+def _non_negative_int(value: str) -> int:
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("정수를 입력해야 합니다") from exc
+    if parsed < 0:
+        raise argparse.ArgumentTypeError("0 이상의 정수를 입력해야 합니다")
+    return parsed
+
+
+def _page_count(value: object) -> int | None:
+    return value if isinstance(value, int) and not isinstance(value, bool) else None
+
+
+def _target_key(target: Mapping[str, object]) -> str:
+    return ":".join(
+        (
+            _text(target.get("law_rule_id")),
+            _text(target.get("law_serial")),
+            _text(target.get("source_sha256")),
+        )
+    )
+
+
+def _rule_sort_key(value: object) -> tuple[int, int, str]:
+    text = _text(value)
+    return (0, int(text), text) if text.isdecimal() else (1, 0, text)
+
+
+def _table_golden_sources(root: Path) -> frozenset[str]:
+    path = root / "data/manifest/table_golden.json"
+    if not path.exists():
+        return frozenset()
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ParseRunError(
+            "data/manifest/table_golden.json을 읽을 수 없습니다: "
+            f"JSONDecodeError: {exc.msg}"
+        ) from exc
+    values = payload.get("tables") if isinstance(payload, dict) else None
+    if not isinstance(values, list):
+        return frozenset()
+    return frozenset(
+        value
+        for item in values
+        if isinstance(item, dict)
+        and isinstance((value := item.get("source_sha256")), str)
+        and value
+    )
 
 
 if __name__ == "__main__":

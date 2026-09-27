@@ -47,7 +47,9 @@ from kodocs.parsing.articles import (
 )
 from kodocs.parsing.schema import ParsedDocument, from_json, output_path
 
-DEFAULT_PARSERS: tuple[str, ...] = ("pypdf", "docling", "upstage")
+COMPARISON_PARSERS: tuple[str, ...] = ("pypdf", "docling", "upstage")
+DIRECT_PARSER = "upstage-direct"
+DEFAULT_PARSERS: tuple[str, ...] = (*COMPARISON_PARSERS, DIRECT_PARSER)
 LOW_SIMILARITY_THRESHOLD = 0.9
 NO_LAW_TEXT = "no_law_text"
 # Statuses without article truth; excluded from every metric denominator.
@@ -99,6 +101,7 @@ class _Target:
     law_serial: str
     role: str
     input_sha256: str
+    source_sha256: str
 
 
 def score_document(
@@ -179,7 +182,8 @@ def run(
     if not runnable:
         raise ParsingScoreError(
             "선택한 파서의 실행 결과가 없습니다. 먼저 make parse-pypdf, "
-            "make parse-docling 또는 make parse-upstage를 실행하세요."
+            "make parse-docling, make parse-upstage 또는 "
+            "make parse-upstage-direct를 실행하세요."
         )
 
     law_by_target: dict[str, Mapping[object, object] | None] = {
@@ -195,7 +199,7 @@ def run(
             continue
         scores: list[DocScore] = []
         for target in targets:
-            record = _record_for_target(records, target)
+            record = _record_for_target(records, target, parser=parser)
             law = law_by_target[target.target_key]
             comparison = _score_target(root, parser, target, record, law)
             scores.append(comparison.score)
@@ -613,7 +617,10 @@ def _score_target(
     law: Mapping[object, object] | None,
 ) -> _Comparison:
     record_sha = _string(record.get("input_sha256")) if record is not None else ""
-    input_sha = record_sha or target.input_sha256
+    target_sha = (
+        target.source_sha256 if parser == DIRECT_PARSER else target.input_sha256
+    )
+    input_sha = record_sha or target_sha
     if law is None:
         return _zero_comparison(
             parser=parser,
@@ -676,18 +683,24 @@ def _record_status(record: Mapping[str, object]) -> str:
 
 
 def _record_for_target(
-    records: Sequence[Mapping[str, object]], target: _Target
+    records: Sequence[Mapping[str, object]],
+    target: _Target,
+    *,
+    parser: str,
 ) -> Mapping[str, object] | None:
     candidates = [
         record for record in records if record.get("target_key") == target.target_key
     ]
     if not candidates:
         return None
-    if target.input_sha256:
+    expected_sha256 = (
+        target.source_sha256 if parser == DIRECT_PARSER else target.input_sha256
+    )
+    if expected_sha256:
         matching = [
             record
             for record in candidates
-            if record.get("input_sha256") == target.input_sha256
+            if record.get("input_sha256") == expected_sha256
         ]
         if matching:
             return matching[-1]
@@ -728,6 +741,7 @@ def _load_targets(root: Path, path: Path) -> list[_Target]:
                 law_serial=serial,
                 role=role,
                 input_sha256=input_sha,
+                source_sha256=source_sha,
             )
         )
     return targets
@@ -774,6 +788,8 @@ def _print_summary(
     )
     print("| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |", file=out)
     for parser, overall in rows:
+        if parser == DIRECT_PARSER:
+            continue
         status_counts = overall["status_counts"]
         all_targets = overall["all_targets"]
         ok_documents = status_counts.get("ok", 0)  # type: ignore[union-attr]
@@ -786,6 +802,17 @@ def _print_summary(
             f"{_number(all_targets['text_sim_norm_mean_micro'])} | "  # type: ignore[index]
             f"{_percent(all_targets['text_exact_norm_rate_micro'])} | "  # type: ignore[index]
             f"{_number(all_targets['text_sim_raw_mean_micro'])} |",  # type: ignore[index]
+            file=out,
+        )
+    for parser, overall in rows:
+        if parser != DIRECT_PARSER:
+            continue
+        all_targets = overall["all_targets"]
+        status_counts = overall["status_counts"]
+        print(
+            "upstage-direct 보조 실험 채점 완료: "
+            f"ok={status_counts.get('ok', 0)}, "  # type: ignore[union-attr]
+            f"전체={all_targets['documents']}",  # type: ignore[index]
             file=out,
         )
 

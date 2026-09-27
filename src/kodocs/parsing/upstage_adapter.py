@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 import sys
 import tempfile
@@ -42,7 +43,9 @@ if TYPE_CHECKING:
     from kodocs.parsing.run import ParseInput
 
 PARSER_NAME = "upstage"
+PARSER_NAME_DIRECT = "upstage-direct"
 SERVICE = "upstage.document-parse.standard"
+ESTIMATE_PAGE_FACTOR_DIRECT = 1.5
 REQUEST_OPTIONS: Mapping[str, str] = {
     "model": "document-parse",
     "mode": "standard",
@@ -273,8 +276,8 @@ class UpstageAdapter:
                 )
             response = _validated_response(cached.get("response"), body="cached JSON")
             elapsed_s = _non_negative_number(cached.get("elapsed_s"), "elapsed_s")
-            self._warn_enhanced(response)
-            return response_to_parsed(
+            self._warn_response(response, item)
+            return self._to_parsed(
                 response,
                 item=item,
                 root=root,
@@ -282,18 +285,13 @@ class UpstageAdapter:
                 elapsed_s=elapsed_s,
             )
 
-        page_count = item.page_count
-        if page_count is None or page_count > MAX_PAGES_PER_REQUEST:
-            raise ParseError(
-                "업스테이지 호출 전 쪽수 검사가 실패했습니다: "
-                f"page_count={page_count!r}, 최대 {MAX_PAGES_PER_REQUEST}쪽"
-            )
+        estimated_pages = self._estimated_pages(item)
         if item.input_path.stat().st_size > MAX_FILE_BYTES:
             raise ParseError(
                 "업스테이지 호출 전 파일 크기 검사가 실패했습니다: "
                 f"최대 {MAX_FILE_BYTES} bytes"
             )
-        self._guard.check(estimate_usd(SERVICE, page_count))
+        self._guard.check(estimate_usd(SERVICE, estimated_pages))
 
         if self._client is None:
             self._client = self._client_factory()
@@ -320,14 +318,45 @@ class UpstageAdapter:
             "response": response,
         }
         _write_cache_atomic(destination, cache_payload)
-        self._warn_enhanced(response)
-        return response_to_parsed(
+        self._warn_response(response, item)
+        return self._to_parsed(
             response,
             item=item,
             root=root,
             settings=current_settings,
             elapsed_s=elapsed_s,
         )
+
+    def _estimated_pages(self, item: ParseInput) -> int:
+        page_count = item.page_count
+        if page_count is None or page_count > MAX_PAGES_PER_REQUEST:
+            raise ParseError(
+                "업스테이지 호출 전 쪽수 검사가 실패했습니다: "
+                f"page_count={page_count!r}, 최대 {MAX_PAGES_PER_REQUEST}쪽"
+            )
+        return page_count
+
+    def _to_parsed(
+        self,
+        response: Mapping[str, object],
+        *,
+        item: ParseInput,
+        root: Path,
+        settings: Mapping[str, object],
+        elapsed_s: float,
+    ) -> ParsedDocument:
+        return response_to_parsed(
+            response,
+            item=item,
+            root=root,
+            settings=settings,
+            elapsed_s=elapsed_s,
+            parser_name=self.name,
+        )
+
+    def _warn_response(self, response: Mapping[str, object], item: ParseInput) -> None:
+        del item
+        self._warn_enhanced(response)
 
     def _warn_enhanced(self, response: Mapping[str, object]) -> None:
         usage = response.get("usage")
@@ -340,6 +369,63 @@ class UpstageAdapter:
             )
 
 
+class UpstageDirectAdapter(UpstageAdapter):
+    """Upstage experiment that changes only the input from PDF to HWP/HWPX."""
+
+    name = PARSER_NAME_DIRECT
+
+    def settings(self) -> Mapping[str, object]:
+        return {
+            "input": "original",
+            "request_options": dict(REQUEST_OPTIONS),
+            "estimate_page_factor": ESTIMATE_PAGE_FACTOR_DIRECT,
+        }
+
+    def _estimated_pages(self, item: ParseInput) -> int:
+        if item.page_count is None:
+            raise ParseError(
+                "업스테이지 직접 입력 호출 전 쪽수 검사가 실패했습니다: page_count=None"
+            )
+        return math.ceil(item.page_count * ESTIMATE_PAGE_FACTOR_DIRECT)
+
+    def _to_parsed(
+        self,
+        response: Mapping[str, object],
+        *,
+        item: ParseInput,
+        root: Path,
+        settings: Mapping[str, object],
+        elapsed_s: float,
+    ) -> ParsedDocument:
+        usage = response["usage"]
+        assert isinstance(usage, Mapping)
+        pages = usage["pages"]
+        assert isinstance(pages, int)
+        return response_to_parsed(
+            response,
+            item=item,
+            root=root,
+            settings=settings,
+            elapsed_s=elapsed_s,
+            parser_name=self.name,
+            page_count=pages,
+            extra_settings={"possibly_truncated": pages >= MAX_PAGES_PER_REQUEST},
+        )
+
+    def _warn_response(self, response: Mapping[str, object], item: ParseInput) -> None:
+        super()._warn_response(response, item)
+        usage = response["usage"]
+        assert isinstance(usage, Mapping)
+        pages = usage["pages"]
+        assert isinstance(pages, int)
+        if pages >= MAX_PAGES_PER_REQUEST:
+            print(
+                f"경고: {item.input_sha256[:12]} usage.pages={pages}; "
+                "앞 100쪽만 처리됐을 수 있습니다(possibly_truncated).",
+                file=self._err or sys.stderr,
+            )
+
+
 def response_to_parsed(
     resp: Mapping[object, object],
     *,
@@ -347,6 +433,9 @@ def response_to_parsed(
     root: Path,
     settings: Mapping[str, object],
     elapsed_s: float,
+    parser_name: str = PARSER_NAME,
+    page_count: int | None = None,
+    extra_settings: Mapping[str, object] | None = None,
 ) -> ParsedDocument:
     """Normalize one validated Upstage response to the common parser schema."""
     response = _validated_response(resp, body="response mapping")
@@ -378,6 +467,8 @@ def response_to_parsed(
 
     stable_settings = dict(settings)
     document_settings = dict(stable_settings)
+    if extra_settings is not None:
+        document_settings.update(extra_settings)
     document_settings["apiVersion"] = _text(response.get("apiVersion"))
     usage = response["usage"]
     assert isinstance(usage, Mapping)
@@ -387,7 +478,7 @@ def response_to_parsed(
 
     return ParsedDocument(
         schema_version=SCHEMA_VERSION,
-        parser=PARSER_NAME,
+        parser=parser_name,
         parser_version=str(response["model"]),
         settings=document_settings,
         # Response metadata is recorded but does not change output-determining settings.
@@ -395,7 +486,7 @@ def response_to_parsed(
         input_path=repo_relative(item.input_path, root),
         input_sha256=item.input_sha256,
         input_kind=item.input_kind,  # type: ignore[arg-type]
-        page_count=item.page_count,
+        page_count=item.page_count if page_count is None else page_count,
         blocks=tuple(blocks),
         tables=tuple(tables),
         elapsed_s=elapsed_s,
@@ -418,15 +509,22 @@ class DryRunPlan:
         return self.remaining_after_usd < 0
 
 
-def plan(root: Path, inputs: Sequence[ParseInput]) -> DryRunPlan:
+def plan(
+    root: Path,
+    inputs: Sequence[ParseInput],
+    *,
+    estimate_page_factor: float = 1.0,
+) -> DryRunPlan:
     """Estimate tax-inclusive cost using only target metadata, cache, and ledger."""
+    if not math.isfinite(estimate_page_factor) or estimate_page_factor <= 0:
+        raise ValueError("estimate_page_factor must be a positive finite number")
     uncached = [
         item
         for item in inputs
         if not cache_path(root, item.input_kind, item.input_sha256).exists()
     ]
     page_count = sum(
-        item.page_count
+        math.ceil(item.page_count * estimate_page_factor)
         for item in uncached
         if item.page_count is not None and item.page_count > 0
     )

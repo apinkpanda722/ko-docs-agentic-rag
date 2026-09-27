@@ -21,7 +21,7 @@ manifest에서 생성한 실행일·커밋·도구 버전·설정 및 입력 해
 6. `make parse-upstage`
 7. `make table-drafts` → 사람이 약 10개를 검수해 `data/golden/tables/`에 확정 → `make table-golden` → `make table-score`
 8. `make parse-score` → `make parse-report`
-9. (보조 실험) HWP 직접 입력(step 9 명령)
+9. (보조 실험) `make parse-upstage-direct-dry` → `make parse-upstage-direct` → `make parse-score` → `make table-score` → `make parse-report`
 
 ## 3. 고정 조건
 
@@ -58,9 +58,7 @@ manifest에서 생성한 실행일·커밋·도구 버전·설정 및 입력 해
 
 ## 7. 변환 경유 vs 직접 입력(업스테이지 보조 실험)
 
-(실행 후 기록)
-
-step 9가 비교 표를 추가한다.
+`make parse-upstage-direct-dry`로 변환 PDF 쪽수 × 1.5 가정의 예상 비용을 확인한 뒤 `make parse-upstage-direct`를 사용자가 실행한다. 이어서 `make parse-score` → `make table-score` → `make parse-report` 순서로 실행하면 위 생성 결과표에 양쪽 결과가 있는 대상만 짝지은 비교가 추가된다. 실제 HWP/HWPX 과금 쪽수는 응답 `usage.pages`이며 PDF 쪽수와 다를 수 있다.
 
 ## 8. 비용 메모
 

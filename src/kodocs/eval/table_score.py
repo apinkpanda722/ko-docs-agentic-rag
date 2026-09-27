@@ -17,7 +17,9 @@ from kodocs.ingest.manifest import now_iso, sha256_file
 from kodocs.parsing.schema import ParsedDocument, from_json, output_path
 from kodocs.parsing.tables import cells_to_grid, markdown_to_grid
 
-DEFAULT_PARSERS: tuple[str, ...] = ("pypdf", "docling", "upstage")
+COMPARISON_PARSERS: tuple[str, ...] = ("pypdf", "docling", "upstage")
+DIRECT_PARSER = "upstage-direct"
+DEFAULT_PARSERS: tuple[str, ...] = (*COMPARISON_PARSERS, DIRECT_PARSER)
 NO_TABLE_PARSERS: frozenset[str] = frozenset({"pypdf"})
 
 
@@ -132,11 +134,14 @@ def run(root: Path, *, out: TextIO = sys.stdout) -> dict[str, object]:
         _validate_grid(golden_grid, golden_id)
         pdf_sha256 = value.get("pdf_sha256")
         pdf_sha = pdf_sha256 if isinstance(pdf_sha256, str) else ""
+        source_sha256 = value.get("source_sha256")
+        source_sha = source_sha256 if isinstance(source_sha256, str) else ""
         for parser in DEFAULT_PARSERS:
             if parser in NO_TABLE_PARSERS:
                 score = _not_applicable(parser)
             else:
-                parsed = _load_parsed(root, parser, pdf_sha)
+                input_sha = source_sha if parser == DIRECT_PARSER else pdf_sha
+                parsed = _load_parsed(root, parser, input_sha)
                 score = (
                     _zero_score(parser=parser, status="parse_missing")
                     if parsed is None
@@ -181,15 +186,15 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
-def _load_parsed(root: Path, parser: str, pdf_sha256: str) -> ParsedDocument | None:
-    if not pdf_sha256:
+def _load_parsed(root: Path, parser: str, input_sha256: str) -> ParsedDocument | None:
+    if not input_sha256:
         return None
-    path = output_path(root, parser, pdf_sha256)
+    path = output_path(root, parser, input_sha256)
     try:
         parsed = from_json(path.read_text(encoding="utf-8"))
     except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError):
         return None
-    if parsed.parser != parser or parsed.input_sha256 != pdf_sha256:
+    if parsed.parser != parser or parsed.input_sha256 != input_sha256:
         return None
     return parsed
 
@@ -328,7 +333,7 @@ def _print_summary(
         file=out,
     )
     print("| --- | ---: | --- | ---: | ---: | ---: | ---: |", file=out)
-    for parser in DEFAULT_PARSERS:
+    for parser in COMPARISON_PARSERS:
         summary = summaries[parser]
         if not summary["applicable"]:
             print(
@@ -344,6 +349,13 @@ def _print_summary(
             f"{summary['invalid_candidates']} |",
             file=out,
         )
+    direct = summaries[DIRECT_PARSER]
+    print(
+        "upstage-direct 보조 실험 표 채점 완료: "
+        f"채점 수={direct['measured']}, "
+        f"상태={_status_text(direct['status_counts'])}",
+        file=out,
+    )
 
 
 def _status_text(value: object) -> str:
