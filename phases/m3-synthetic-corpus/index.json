@@ -61,7 +61,16 @@
     {
       "step": 4,
       "name": "llm-batch",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-27T20:46:57+0900",
+      "summary": "Sonnet 5 가격·생성 설정과 무재시도 Anthropic Batch 래퍼, append-only 상태 관리·멱등 비용 원장을 구현했으며 make verify 568 passed 및 모든 AC를 통과했습니다.",
+      "completed_at": "2026-09-27T21:01:32+0900",
+      "usage": {
+        "input_tokens": 2862036,
+        "cached_input_tokens": 2747392,
+        "output_tokens": 37558,
+        "attempts": 1
+      }
     },
     {
       "step": 5,
