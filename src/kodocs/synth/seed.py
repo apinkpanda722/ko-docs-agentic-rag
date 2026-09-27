@@ -146,7 +146,6 @@ class Seed:
     regulation_refs: tuple[Mapping[str, object], ...]
     banned_names: tuple[str, ...]
     ledger_rules: Mapping[str, object]
-    public_figures: tuple[str, ...] = ()
 
 
 class SeedError(ValueError):
@@ -254,11 +253,9 @@ def load_seed(root: Path) -> Seed:
     ledger_rules = _mapping_file(seed_dir / "ledger/rules.yaml", errors)
     try:
         banned_names = load_banned_names(root)
-        public_figures = load_public_figures(root)
     except (OSError, TypeError, ValueError, yaml.YAMLError) as exc:
         errors.append(f"data/seed/banned_names.yaml: {exc}")
         banned_names = ()
-        public_figures = ()
 
     if errors:
         raise SeedError(errors)
@@ -271,7 +268,6 @@ def load_seed(root: Path) -> Seed:
         regulation_refs=regulation_refs,
         banned_names=banned_names,
         ledger_rules=ledger_rules,
-        public_figures=public_figures,
     )
 
 
@@ -373,12 +369,6 @@ def validate_seed(seed: Seed, *, regulation_index: Mapping[str, object]) -> list
     for path, value in _string_values(banned_values):
         for name, _, _ in find_banned_names(value, seed.banned_names):
             errors.append(f"banned name in seed: {name} at {path}")
-    public_figures = set(seed.public_figures)
-    for person in seed.people:
-        if person.name in public_figures:
-            errors.append(
-                f"person name matches public figure: {person.person_id}={person.name}"
-            )
     return errors
 
 
@@ -426,19 +416,6 @@ def load_banned_names(root: Path) -> tuple[str, ...]:
         isinstance(value, str) and value for value in values
     ):
         raise ValueError("banned_names.yaml must contain a non-empty string list")
-    return tuple(values)
-
-
-def load_public_figures(root: Path) -> tuple[str, ...]:
-    """Load public-figure names that generated person names must not equal."""
-    path = root / "data/seed/banned_names.yaml"
-    with path.open(encoding="utf-8") as source:
-        payload = yaml.safe_load(source)
-    values = payload.get("public_figures", []) if isinstance(payload, Mapping) else []
-    if not isinstance(values, list) or not all(
-        isinstance(value, str) and value for value in values
-    ):
-        raise ValueError("banned_names.yaml public_figures must be a string list")
     return tuple(values)
 
 

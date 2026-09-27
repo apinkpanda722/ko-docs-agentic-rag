@@ -11,7 +11,7 @@ from pathlib import Path
 
 import yaml
 
-from kodocs.synth.seed import TEAMS, load_public_figures
+from kodocs.synth.seed import GRADES, TEAMS
 
 DEFAULT_RANDOM_SEED = 20250101
 DEFAULT_TEAM_SIZES: Mapping[str, int] = {
@@ -57,59 +57,97 @@ SURNAME_POOL = (
     "허",
     "홍",
 )
-GIVEN_FIRST_POOL = (
-    "가",
-    "건",
-    "경",
-    "나",
-    "다",
-    "도",
-    "라",
-    "민",
-    "보",
-    "서",
-    "소",
-    "수",
-    "시",
-    "아",
-    "연",
-    "예",
-    "유",
-    "은",
-    "재",
-    "지",
-    "채",
-    "태",
-    "하",
-    "해",
-    "현",
-)
-GIVEN_SECOND_POOL = (
-    "겸",
-    "경",
-    "나",
-    "담",
-    "람",
-    "린",
-    "민",
-    "별",
-    "빈",
-    "서",
-    "솔",
-    "수",
-    "아",
-    "안",
-    "연",
-    "영",
-    "온",
-    "우",
-    "원",
-    "윤",
-    "은",
-    "인",
-    "준",
-    "진",
-    "현",
+# 요즘식·순우리말 두 글자 이름. 윗세대에 흔한 전통식 이름은 넣지 않는다
+# (조합이 실존 공인 이름과 겹칠 가능성을 줄이기 위해서다. 최종 확인은 사람이 명단을 훑어본다).
+GIVEN_NAME_POOL = (
+    "하린",
+    "서윤",
+    "지우",
+    "도윤",
+    "시우",
+    "하준",
+    "예린",
+    "다온",
+    "라온",
+    "하람",
+    "나래",
+    "가온",
+    "새봄",
+    "누리",
+    "한별",
+    "은솔",
+    "다솜",
+    "보람",
+    "슬기",
+    "이든",
+    "로운",
+    "윤슬",
+    "해솔",
+    "온유",
+    "아린",
+    "채원",
+    "지안",
+    "서아",
+    "유나",
+    "도하",
+    "이안",
+    "주원",
+    "하율",
+    "서진",
+    "예준",
+    "시아",
+    "소율",
+    "지호",
+    "은우",
+    "하온",
+    "나은",
+    "수아",
+    "리안",
+    "연우",
+    "다인",
+    "초아",
+    "아윤",
+    "로하",
+    "윤하",
+    "채아",
+    "가람",
+    "새론",
+    "여름",
+    "마루",
+    "바다",
+    "하늘",
+    "별하",
+    "단비",
+    "이서",
+    "민서",
+    "규리",
+    "세아",
+    "도담",
+    "라희",
+    "소담",
+    "해랑",
+    "겨레",
+    "한결",
+    "다올",
+    "온새",
+    "해든",
+    "새별",
+    "봄솔",
+    "다은",
+    "서우",
+    "유준",
+    "루아",
+    "이로",
+    "이음",
+    "하랑",
+    "찬솔",
+    "한솔",
+    "푸름",
+    "나린",
+    "다해",
+    "시온",
+    "우주",
+    "은하",
 )
 
 ROLE_POOLS: Mapping[str, tuple[str, ...]] = {
@@ -128,17 +166,9 @@ _JOIN_END = date(2026, 5, 31)
 
 
 def generate_people(
-    *,
-    random_seed: int,
-    team_sizes: Mapping[str, int],
-    excluded_names: Collection[str] = (),
+    *, random_seed: int, team_sizes: Mapping[str, int]
 ) -> dict[str, list[dict]]:
-    """Return people in fixed team order and descending grade order.
-
-    A drawn name in ``excluded_names`` is replaced from a separate generator
-    keyed by the drawn name, so the main draw sequence (and every other person)
-    stays the same as without the exclusion.
-    """
+    """Return people in fixed team order and descending grade order."""
     unknown = set(team_sizes).difference(TEAMS)
     missing = set(TEAMS).difference(team_sizes)
     if unknown or missing:
@@ -150,7 +180,6 @@ def generate_people(
         raise ValueError("team sizes must be positive integers")
 
     generator = random.Random(random_seed)
-    excluded = frozenset(excluded_names)
     used_names: set[str] = set()
     pending: dict[str, list[dict[str, object]]] = {}
     join_span = (_JOIN_END - _JOIN_START).days
@@ -168,7 +197,7 @@ def generate_people(
         )
         records: list[dict[str, object]] = []
         for sequence, grade in enumerate(grades):
-            name = _unique_name(generator, used_names, excluded, random_seed)
+            name = _unique_name(generator, used_names)
             records.append(
                 {
                     "name": name,
@@ -197,21 +226,104 @@ def generate_people(
     return result
 
 
+def rename_people(
+    people: Mapping[str, Sequence[Mapping[str, object]]],
+    person_ids: Collection[str],
+    *,
+    random_seed: int,
+) -> tuple[dict[str, list[dict]], list[tuple[str, str, str]]]:
+    """Redraw names for ``person_ids`` only; every other record stays unchanged.
+
+    Each redraw uses its own generator keyed by the person ID, so the result
+    does not depend on which other people are renamed in the same call.
+    """
+    known = {
+        str(person["person_id"]) for records in people.values() for person in records
+    }
+    unknown = sorted(set(person_ids).difference(known))
+    if unknown:
+        raise ValueError(f"unknown person_id: {', '.join(unknown)}")
+
+    used_names = {
+        str(person["name"]) for records in people.values() for person in records
+    }
+    renamed: dict[str, list[dict]] = {
+        team: [dict(person) for person in records] for team, records in people.items()
+    }
+    changes: list[tuple[str, str, str]] = []
+    for person_id in sorted(set(person_ids)):
+        generator = random.Random(f"{random_seed}:rename:{person_id}")
+        record = next(
+            person
+            for records in renamed.values()
+            for person in records
+            if person["person_id"] == person_id
+        )
+        new_name = _unique_name(generator, used_names)
+        changes.append((person_id, str(record["name"]), new_name))
+        record["name"] = new_name
+    return renamed, changes
+
+
+def format_roster(people: Mapping[str, Sequence[Mapping[str, object]]]) -> str:
+    """Render people grouped by team for a quick human scan of the names."""
+    lines: list[str] = []
+    total = 0
+    for team in TEAMS:
+        records = people.get(team, ())
+        total += len(records)
+        lines.append(f"[{team}] {len(records)}명")
+        cells = [
+            f"{person['person_id']} {person['name']}({GRADES[int(person['grade'])]})"
+            for person in records
+        ]
+        for index in range(0, len(cells), 5):
+            lines.append("  " + "  ".join(cells[index : index + 5]))
+    lines.append(f"총 {total}명")
+    return "\n".join(lines)
+
+
 def main(argv: Sequence[str] | None = None) -> int:
-    """Write one YAML file per team, refusing replacement without ``--force``."""
+    """Write, rename, or list the per-team people seed files."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, default=Path("data/seed/people"))
     parser.add_argument("--random-seed", type=int, default=DEFAULT_RANDOM_SEED)
-    parser.add_argument("--force", action="store_true")
-    parser.add_argument(
-        "--root",
-        type=Path,
-        default=Path("."),
-        help="public_figures를 읽을 저장소 루트(data/seed/banned_names.yaml)",
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--force", action="store_true")
+    mode.add_argument(
+        "--rename",
+        nargs="+",
+        metavar="PERSON_ID",
+        help="기존 명단에서 지정한 인물의 이름만 결정론적으로 다시 뽑는다",
     )
+    mode.add_argument("--list", action="store_true", help="팀별 명단을 출력한다")
     args = parser.parse_args(argv)
 
     targets = [args.out / f"{team}.yaml" for team in TEAMS]
+    if args.list or args.rename:
+        missing = [path for path in targets if not path.exists()]
+        if missing:
+            print(f"인물 시드가 없습니다: {missing[0]}", file=sys.stderr)
+            return 1
+        people = {
+            team: _read_people(target)
+            for team, target in zip(TEAMS, targets, strict=True)
+        }
+        if args.list:
+            print(format_roster(people))
+            return 0
+        try:
+            renamed, changes = rename_people(
+                people, args.rename, random_seed=args.random_seed
+            )
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        _write_people(renamed, targets)
+        for person_id, old, new in changes:
+            print(f"{person_id}: {old} -> {new}")
+        return 0
+
     existing = [path for path in targets if path.exists()]
     if existing and not args.force:
         print(
@@ -223,55 +335,42 @@ def main(argv: Sequence[str] | None = None) -> int:
     people = generate_people(
         random_seed=args.random_seed,
         team_sizes=DEFAULT_TEAM_SIZES,
-        excluded_names=load_public_figures(args.root),
     )
-    args.out.mkdir(parents=True, exist_ok=True)
-    for team, target in zip(TEAMS, targets, strict=True):
-        target.write_text(
-            yaml.safe_dump(
-                {"people": people[team]}, allow_unicode=True, sort_keys=False
-            ),
-            encoding="utf-8",
-        )
+    _write_people(people, targets)
     return 0
 
 
-def _unique_name(
-    generator: random.Random,
-    used_names: set[str],
-    excluded: frozenset[str],
-    random_seed: int,
-) -> str:
-    capacity = len(SURNAME_POOL) * len(GIVEN_FIRST_POOL) * len(GIVEN_SECOND_POOL)
-    if len(used_names) + len(excluded) >= capacity:
+def _read_people(path: Path) -> list[dict]:
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    return list(payload["people"])
+
+
+def _write_people(
+    people: Mapping[str, Sequence[Mapping]], targets: Sequence[Path]
+) -> None:
+    targets[0].parent.mkdir(parents=True, exist_ok=True)
+    for team, target in zip(TEAMS, targets, strict=True):
+        target.write_text(
+            yaml.safe_dump(
+                {"people": list(people[team])}, allow_unicode=True, sort_keys=False
+            ),
+            encoding="utf-8",
+        )
+
+
+def _unique_name(generator: random.Random, used_names: set[str]) -> str:
+    capacity = len(SURNAME_POOL) * len(GIVEN_NAME_POOL)
+    if len(used_names) >= capacity:
         raise ValueError("name pools do not contain enough unique combinations")
     while True:
         candidate = _draw_name(generator)
-        if candidate in used_names:
-            continue
-        if candidate in excluded:
-            candidate = _replacement_name(candidate, used_names, excluded, random_seed)
-        used_names.add(candidate)
-        return candidate
-
-
-def _replacement_name(
-    drawn: str, used_names: set[str], excluded: frozenset[str], random_seed: int
-) -> str:
-    # A separate generator keeps the main draw sequence unchanged.
-    replacement_generator = random.Random(f"{random_seed}:replace:{drawn}")
-    while True:
-        candidate = _draw_name(replacement_generator)
-        if candidate not in used_names and candidate not in excluded:
+        if candidate not in used_names:
+            used_names.add(candidate)
             return candidate
 
 
 def _draw_name(generator: random.Random) -> str:
-    return (
-        generator.choice(SURNAME_POOL)
-        + generator.choice(GIVEN_FIRST_POOL)
-        + generator.choice(GIVEN_SECOND_POOL)
-    )
+    return generator.choice(SURNAME_POOL) + generator.choice(GIVEN_NAME_POOL)
 
 
 if __name__ == "__main__":

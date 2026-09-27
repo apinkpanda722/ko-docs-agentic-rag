@@ -103,13 +103,8 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **강제 수단**: `tests/eval/test_parsing_score.py`(`test_law_without_article_text_is_excluded_from_parser_and_ceiling_denominators`, `test_keys_missed_by_every_ok_parser_are_reported_as_answer_differences`, `test_answer_differences_need_two_scored_comparison_parsers`)
 - **출처**: M2 실측 (383cc1d, bf37332)
 
-### FP-022 조합 생성한 가상 이름이 실존 공인과 겹침
-- **증상**: 성·이름 음절 풀을 무작위로 조합한 가상 인물 200명 중 1명(`p-007`)이 전직 대통령 이름과 같았다. 시드 검증기의 금지 이름 검사는 기관명만 대상이어서 통과했고, /review(외부 검토 세션)에서 발견됐다.
-- **원인**: "가상 이름은 조합하면 가상"이라고 가정했다. 흔한 성·음절 조합은 실존 공인 이름과 겹칠 수 있다.
-- **규칙**: 조합 생성한 가상 이름은 공인 이름 목록(`data/seed/banned_names.yaml`의 `public_figures`)과 **생성 시점과 검증 시점 양쪽에서** 대조한다. 생성기는 겹친 이름을 주 난수 흐름을 소비하지 않는 별도 결정론 난수로 대체해, 겹치지 않은 나머지 인물이 바뀌지 않게 한다. 인물 참조는 이름이 아니라 ID(`person_id`)로 해서, 이름을 교체해도 다른 시드 파일이 바뀌지 않게 한다. 공인 이름은 인물 이름과의 정확 일치로만 검사한다(짧은 이름을 본문 부분 문자열로 검사하면 오탐이 많다).
-- **강제 수단**: `tests/synth/test_seed.py`(`test_validate_seed_rejects_person_names_equal_to_public_figures`), `tests/synth/test_seed_committed.py`(`test_public_figures_list_is_reviewed_and_absent_from_people`, `test_bootstrap_replaces_only_the_excluded_person_name`, `test_bootstrap_with_committed_public_figures_emits_none_of_them`)
-- **관련**: FP-015(외부 데이터의 이름 불일치), AGENTS.md(실존 인물 이름으로 기록 생성 금지)
-- **출처**: M3 step 1 이후 검토
+### FP-022 조합 생성한 가상 이름이 실존 공인과 겹칠 수 있음
+- 음절 조합으로 만든 가상 인물 이름이 전직 대통령 이름과 같았다(M3 step 1) → 열린 목록(실존 인물 명단) 대조가 아니라 **이름 풀 설계(요즘식·순우리말 이름) + 사람 검토(`make seed-names` 후 `--rename PERSON_ID`)**로 막고, 인물은 이름이 아니라 `person_id`로 참조한다. 강제 수단: `data/seed/README.md` 인물 명단 검토 절차, `tests/synth/test_bootstrap_people.py`.
 
 ## D. 배치 수집·기록
 
