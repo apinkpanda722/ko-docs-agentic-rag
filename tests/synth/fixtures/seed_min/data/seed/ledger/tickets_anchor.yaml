@@ -7,10 +7,15 @@ tickets:
     assignee_id: p-003
     service: billing-api
     incident_id: INC-2026-031
+    status: resolved
+    priority: critical
+    ticket_type: incident
+    access_level: public
+    teams: []
+    min_grade: 1
     sensitivity: normal
     facts:
       - fact_id: f-ticket-pay-1234-status
         kind: text
         value: 장애 원인 조사를 완료했다.
         date: "2026-03-15"
-
