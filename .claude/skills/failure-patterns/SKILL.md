@@ -153,6 +153,7 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **규칙**: 과금 API의 첫 실행 뒤 공급자 콘솔 청구와 원장을 대조하고, 차이는 예산 검사 여유(`billing_margin`)로 반영한다. 원장은 응답 값 그대로 두고 여유는 사전 검사·dry-run에만 쓴다. 요청마다 HTTP 시도별 상태를 남겨(`attempts`) 다음 대조에서 재시도 과금을 가려낼 수 있게 한다. 과금 실행 절차에 실행 전후 콘솔 Usage 기록을 넣는다.
 - **강제 수단**: `tests/parsing/test_upstage_adapter.py`(`test_budget_check_uses_billing_margin_but_ledger_keeps_usage_pages`, `test_client_records_status_and_time_of_every_attempt`, `test_failed_request_carries_its_attempts_into_the_run_record`), 결과 문서 틀 2절 9번·7절
 - **출처**: M2 업스테이지 실측 대조
+- **2차 대조(M2 직접 입력 14건)**: 원장 276쪽 = 콘솔 증가분 276쪽(1,947→2,223)으로 정확히 일치했고, `attempts` 기록상 전 요청이 1회 시도·HTTP 200이었다. 1차 +60쪽은 시도 기록 도입 전의 일회성 차이로 보되, 원인이 확정되지 않아 `billing_margin`은 유지한다.
 
 ## E. 프로세스
 
