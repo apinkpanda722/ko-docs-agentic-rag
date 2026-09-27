@@ -45,12 +45,22 @@ class FakeTableData:
 
 # Fakes mirror docling_core item types: TextItem·TitleItem·SectionHeaderItem·
 # ListItem have ``text``; TableItem (table·document_index) and PictureItem
-# (picture·chart) do not.
+# (picture·chart) do not. A real ListItem keeps its marker ("1.", "①") apart
+# from ``text``; ``orig`` is marker + " " + text.
 @dataclass(frozen=True)
 class FakeTextItem:
     label: FakeLabel
     prov: tuple[FakeProvenance, ...] = ()
     text: str = ""
+
+
+@dataclass(frozen=True)
+class FakeListItem:
+    label: FakeLabel
+    prov: tuple[FakeProvenance, ...] = ()
+    text: str = ""
+    marker: str = ""
+    enumerated: bool = False
 
 
 @dataclass(frozen=True)
@@ -66,7 +76,7 @@ class FakePictureItem:
     prov: tuple[FakeProvenance, ...] = ()
 
 
-FakeItem = FakeTextItem | FakeTableItem | FakePictureItem
+FakeItem = FakeTextItem | FakeListItem | FakeTableItem | FakePictureItem
 
 
 class FakeDocument:
@@ -115,6 +125,7 @@ def _settings() -> dict[str, object]:
         "docling_version": "2.68.0",
         "docling_core_version": "2.50.0",
         "torch_version": "2.8.0",
+        "adapter_revision": docling_adapter.ADAPTER_REVISION,
     }
 
 
@@ -402,6 +413,12 @@ def _real_kind_document() -> FakeDocument:
             FakeTextItem(FakeLabel("page_header"), (FakeProvenance(1),), "머리말"),
             FakeTextItem(FakeLabel("section_header"), text="제1장 총칙"),
             FakeTextItem(FakeLabel("text"), text="제1조(목적) 본문"),
+            FakeListItem(
+                FakeLabel("list_item"),
+                text="정의는 다음과 같다.",
+                marker="1.",
+                enumerated=True,
+            ),
             FakePictureItem(FakeLabel("picture"), (FakeProvenance(2),)),
             FakeTableItem(
                 FakeLabel("table"),
@@ -427,10 +444,12 @@ def test_items_without_text_are_skipped_and_counted_per_label(
         "header",
         "heading",
         "text",
+        "list_item",
         "table",
         "footer",
     ]
-    assert parsed.blocks[3] == Block(2, "table", "|셀|\n|---|")
+    assert parsed.blocks[3] == Block(1, "list_item", "1. 정의는 다음과 같다.")
+    assert parsed.blocks[4] == Block(2, "table", "|셀|\n|---|")
     assert parsed.settings["skipped_items"] == {"picture": 1}
     # 문서별 기록은 설정 해시(재파싱 판단)에 들어가지 않는다.
     assert parsed.settings_hash == settings_hash(_settings())
@@ -498,3 +517,27 @@ def test_parse_counts_table_matching_dropped_warnings_per_document(
     assert first.settings["table_dropped_warnings"] == 2
     assert second.settings["table_dropped_warnings"] == 0
     assert first.settings_hash == second.settings_hash
+
+
+@pytest.mark.parametrize(
+    ("marker", "text", "expected"),
+    [
+        ("①", "위원회를 둔다.", "① 위원회를 둔다."),
+        ("1999.", "9. 15, 1999. 11. 29", "1999. 9. 15, 1999. 11. 29"),
+        ("", "제2조(정의) 본문", "제2조(정의) 본문"),
+        ("①", "① 이미 포함된 번호", "① 이미 포함된 번호"),
+        ("가.", "  가. 앞 공백 뒤 번호", "  가. 앞 공백 뒤 번호"),
+    ],
+)
+def test_list_item_marker_is_restored_before_text_without_duplication(
+    tmp_path: Path, marker: str, text: str, expected: str
+) -> None:
+    parsed = document_to_parsed(
+        FakeDocument([FakeListItem(FakeLabel("list_item"), text=text, marker=marker)]),
+        item=_input(tmp_path),
+        root=tmp_path,
+        settings=_settings(),
+        elapsed_s=0.1,
+    )
+
+    assert parsed.blocks == (Block(1, "list_item", expected),)

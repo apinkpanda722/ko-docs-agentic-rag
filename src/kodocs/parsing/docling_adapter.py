@@ -5,6 +5,8 @@ TableItem labelled document_index, ...) are not turned into blocks; the skipped
 count per label is kept in the document settings as ``skipped_items``. Table
 matching warnings that report dropped PDF cells are counted per document as
 ``table_dropped_warnings``. Neither per-document value enters ``settings_hash``.
+A ListItem keeps its marker ("1.", "①") apart from ``text``; the block text is
+rebuilt as marker + " " + text unless the text already starts with the marker.
 """
 
 from __future__ import annotations
@@ -36,6 +38,10 @@ if TYPE_CHECKING:
     from kodocs.parsing.run import ParseInput
 
 PARSER_NAME = "docling"
+# Bump when block text built from the same Docling output changes, so stored
+# outputs from an older adapter no longer match settings_hash and are re-parsed.
+# 2: ListItem marker restored.
+ADAPTER_REVISION = 2
 
 _CONTENT_LAYERS = {"body", "furniture"}
 _LABEL_KINDS: dict[str, BlockKind] = {
@@ -96,6 +102,7 @@ class DoclingAdapter:
             "docling_version": self.parser_version,
             "docling_core_version": _package_version("docling-core"),
             "torch_version": _package_version("torch"),
+            "adapter_revision": ADAPTER_REVISION,
         }
 
     def prepare(self) -> None:
@@ -179,7 +186,7 @@ def document_to_parsed(
             )
             tables.append(table)
         elif hasattr(source_item, "text"):
-            text = source_item.text
+            text = _item_text(source_item)
         else:
             # No text to keep (e.g. PictureItem); record the skip, never invent text.
             skipped[label] += 1
@@ -296,6 +303,14 @@ def _build_docling_table(
         reason = _first_line(f"table_parse: {type(exc).__name__}: {exc}")
         table, text = build_table(page, block_position, cells)
         return replace(table, invalid_reason=reason), text
+
+
+def _item_text(source_item: object) -> str:
+    text = source_item.text  # type: ignore[attr-defined]
+    marker = getattr(source_item, "marker", "")  # only ListItem defines marker
+    if not marker or text.lstrip().startswith(marker):
+        return text
+    return f"{marker} {text}"
 
 
 def _label_value(label: object) -> str:
