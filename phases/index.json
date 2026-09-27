@@ -17,8 +17,7 @@
     },
     {
       "dir": "m3-synthetic-corpus",
-      "status": "error",
-      "failed_at": "2026-09-27T22:36:04+0900"
+      "status": "pending"
     }
   ]
 }
