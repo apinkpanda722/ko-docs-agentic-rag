@@ -72,5 +72,7 @@ make generate-dry   # 합성 문서 생성 예상 토큰·비용(Batch)만 출�
 make generate-pilot # 파일럿 10건 Batch 제출/수거 — 실제 API 호출·과금, 확인 후 실행, 사용자 실행
 make generate       # 합성 문서 Batch 생성(재실행 시 상태 조회·수거·재생성 이어서) — 실제 API 호출·과금, 사용자 실행
 make synth-validate # 생성 결과 결정론 검증 → data/synthetic/docs/·validation_failures.jsonl·data/manifest/synth_validation.json (네트워크 없음)
+make synth-metrics  # 합성 문서 중복·다양성·분포·사실 커버리지 → data/manifest/synth_metrics.json (네트워크 없음)
+make synth-report   # M3 결과 문서 docs/results/{실행일}-m3-synthetic.md 생성·갱신 (네트워크 없음)
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)
