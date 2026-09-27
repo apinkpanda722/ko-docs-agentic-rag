@@ -117,7 +117,16 @@
     {
       "step": 8,
       "name": "review-tools",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-27T23:26:47+0900",
+      "summary": "층화 검수 표본·CSV/안내·사람 결과 집계·M3 7절 렌더링과 Batch 수거 후 검증 파이프라인을 구현했으며, make verify(648 passed)와 생성 전 표본 부족 exit=1을 포함한 모든 AC를 통과했습니다.",
+      "completed_at": "2026-09-27T23:40:14+0900",
+      "usage": {
+        "input_tokens": 4443997,
+        "cached_input_tokens": 4305664,
+        "output_tokens": 36036,
+        "attempts": 1
+      }
     }
   ],
   "created_at": "2026-09-27T17:52:18+0900"
