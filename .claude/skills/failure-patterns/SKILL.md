@@ -56,6 +56,7 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **강제 수단**: 손상 OLE 회귀 테스트
 - **출처**: M1 (011e20d)
 - **M2 사례(속성 가정)**: Docling 어댑터가 표가 아닌 모든 요소에 `text`가 있다고 가정했다. mock에 그림 요소가 없어서(오히려 그림에 `text`를 넣어서) 테스트가 통과했지만, 실제 `make parse-docling`에서는 115건 중 41건이 `'PictureItem' object has no attribute 'text'`로 실패했다. 외부 라이브러리 어댑터는 **실제 출력 1건으로 요소 종류(클래스·라벨·속성)를 확인한 뒤** fixture에 반영한다. 없는 속성은 추측해 채우지 말고 건너뛴 사실을 기록한다(`skipped_items`). 강제 수단: `tests/parsing/test_docling_adapter.py`(`test_items_without_text_are_skipped_and_counted_per_label`, `test_other_text_less_item_kinds_are_skipped_not_filled`).
+- **M2 사례(응답 필드명 추측)**: 업스테이지 응답의 API 버전을 문서 추측으로 `apiVersion`에서 읽어 모든 기록이 빈 값이었다. 실제 응답 키는 `api`("2.0")였고 테스트 fixture도 추측한 키를 써서 통과했다. API 응답 필드명은 **실제 응답(캐시) 키로 확인**한 뒤 코드와 fixture에 반영한다. 강제 수단: `test_enhanced_usage_warns_and_is_saved_in_settings_and_run_record`(`api_version == "2.0"`).
 
 ### FP-012 인코딩 가정 순서
 - **증상**: UTF-8 플래그 없는 zip 멤버 이름을 곧장 cp437→cp949로 복원 → macOS에서 만든 UTF-8 zip은 깨진 이름, 파일명 속 한글 날짜 소실.
@@ -152,6 +153,7 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **규칙**: 과금 API의 첫 실행 뒤 공급자 콘솔 청구와 원장을 대조하고, 차이는 예산 검사 여유(`billing_margin`)로 반영한다. 원장은 응답 값 그대로 두고 여유는 사전 검사·dry-run에만 쓴다. 요청마다 HTTP 시도별 상태를 남겨(`attempts`) 다음 대조에서 재시도 과금을 가려낼 수 있게 한다. 과금 실행 절차에 실행 전후 콘솔 Usage 기록을 넣는다.
 - **강제 수단**: `tests/parsing/test_upstage_adapter.py`(`test_budget_check_uses_billing_margin_but_ledger_keeps_usage_pages`, `test_client_records_status_and_time_of_every_attempt`, `test_failed_request_carries_its_attempts_into_the_run_record`), 결과 문서 틀 2절 9번·7절
 - **출처**: M2 업스테이지 실측 대조
+- **2차 대조(M2 직접 입력 14건)**: 원장 276쪽 = 콘솔 증가분 276쪽(1,947→2,223)으로 정확히 일치했고, `attempts` 기록상 전 요청이 1회 시도·HTTP 200이었다. 1차 +60쪽은 시도 기록 도입 전의 일회성 차이로 보되, 원인이 확정되지 않아 `billing_margin`은 유지한다.
 
 ## E. 프로세스
 

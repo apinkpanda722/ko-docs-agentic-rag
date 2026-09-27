@@ -862,9 +862,7 @@ def _record(
         "tables": stats["tables"] if stats is not None else 0,
         "invalid_tables": stats["invalid_tables"] if stats is not None else 0,
         "api_version": (
-            document_settings.get("apiVersion")
-            if document_settings is not None
-            else None
+            document_settings.get("api") if document_settings is not None else None
         ),
         "usage_enhanced": (
             document_settings.get("usage_enhanced")
