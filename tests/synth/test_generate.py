@@ -24,7 +24,7 @@ from kodocs.synth.generate import (
     run,
     template_hash,
 )
-from kodocs.synth.plan import DocPlan, build_plan
+from kodocs.synth.plan import DOC_TYPES, DocPlan, build_plan
 from kodocs.synth.seed import Seed, load_seed
 
 REPO_ROOT = Path(__file__).parents[2]
@@ -880,3 +880,63 @@ def test_prompt_gives_calendar_phrase_per_fact_and_forbids_own_relative_time(
         assert f"시점 표현: {phrase}" in line
     assert "임의로 상대 시점을 만들지 않는다" in request.system
     assert "지난해` 또는" not in request.system
+
+
+def test_pilot_limit_on_committed_plan_covers_types_access_canary_and_retrospective() -> (
+    None
+):
+    plans = generate._load_plan(REPO_ROOT)
+    targets = [(plan, 1) for plan in plans]
+
+    first = generate._balanced_limit(targets, 10)
+    second = generate._balanced_limit(targets, 10)
+    selected = [plan for plan, _ in first]
+
+    assert first == second
+    assert len(selected) == len({plan.doc_id for plan in selected}) == 10
+    assert {plan.doc_type for plan in selected} == set(DOC_TYPES)
+    assert {plan.access.level for plan in selected} == {"public", "team", "restricted"}
+    assert any(plan.canary_fact_id for plan in selected)
+    assert any(plan.style["frame"] == "회고" for plan in selected)
+    order = {plan.doc_id: index for index, plan in enumerate(plans)}
+    assert [order[plan.doc_id] for plan in selected] == sorted(
+        order[plan.doc_id] for plan in selected
+    )
+
+
+@pytest.mark.parametrize("limit", [6, 7, 8])
+def test_limit_of_six_or_more_covers_every_document_type(limit: int) -> None:
+    plans = generate._load_plan(REPO_ROOT)
+    selected = generate._balanced_limit([(plan, 1) for plan in plans], limit)
+
+    assert len(selected) == limit
+    assert {plan.doc_type for plan, _ in selected} == set(DOC_TYPES)
+
+
+def test_dry_run_with_limit_lists_selected_doc_ids(
+    corpus: tuple[Seed, list[DocPlan]],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seed, plans = corpus
+    _prepare_root(tmp_path, plans, monkeypatch, seed)
+    printed: list[str] = []
+
+    assert (
+        run(
+            tmp_path,
+            client=None,
+            config=_config(),
+            dry_run=True,
+            limit=10,
+            assume_yes=False,
+            print_fn=lambda message="", **_kwargs: printed.append(str(message)),
+        )
+        == 0
+    )
+    expected = [
+        plan.doc_id
+        for plan, _ in generate._balanced_limit([(plan, 1) for plan in plans], 10)
+    ]
+    line = next(line for line in printed if line.startswith("선택 문서"))
+    assert all(doc_id in line for doc_id in expected)

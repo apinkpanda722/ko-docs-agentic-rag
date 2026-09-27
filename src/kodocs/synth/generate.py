@@ -975,22 +975,65 @@ def _only_plans(plans: Sequence[DocPlan], only: Sequence[str] | None) -> list[Do
 def _balanced_limit(
     targets: Sequence[tuple[DocPlan, int]], limit: int
 ) -> list[tuple[DocPlan, int]]:
+    """Pick ``limit`` targets that cover as many plan strata as possible.
+
+    Coverage goals, in priority order: every document type (so ``limit >= 6``
+    always includes all six), every access level, one canary (restricted) doc,
+    and one retrospective meeting. Each pick takes the earliest target that adds
+    the most uncovered goals (types weigh most); remaining slots are filled by a
+    round-robin over (type, access) groups. No randomness, input order decides
+    ties, and the result keeps the input order.
+    """
     if len(targets) <= limit:
         return list(targets)
-    groups: dict[tuple[str, str], deque[tuple[DocPlan, int]]] = {}
-    for item in targets:
-        key = (item[0].doc_type, item[0].access.level)
-        groups.setdefault(key, deque()).append(item)
-    selected: list[tuple[DocPlan, int]] = []
-    while len(selected) < limit:
+
+    def goals(doc: DocPlan) -> tuple[set[str], set[str]]:
+        primary = {f"type:{doc.doc_type}"}
+        secondary = {f"access:{doc.access.level}"}
+        if doc.canary_fact_id:
+            secondary.add("canary")
+        if doc.style.get("frame") == "회고":
+            secondary.add("retrospective")
+        return primary, secondary
+
+    open_primary: set[str] = set()
+    open_secondary: set[str] = set()
+    for doc, _ in targets:
+        primary, secondary = goals(doc)
+        open_primary |= primary
+        open_secondary |= secondary
+
+    chosen: set[int] = set()
+    while len(chosen) < limit and (open_primary or open_secondary):
+        best: tuple[int, int] | None = None
+        best_index: int | None = None
+        for index, (doc, _) in enumerate(targets):
+            if index in chosen:
+                continue
+            primary, secondary = goals(doc)
+            score = (len(primary & open_primary), len(secondary & open_secondary))
+            if score > (0, 0) and (best is None or score > best):
+                best, best_index = score, index
+        if best_index is None:
+            break
+        chosen.add(best_index)
+        primary, secondary = goals(targets[best_index][0])
+        open_primary -= primary
+        open_secondary -= secondary
+
+    groups: dict[tuple[str, str], deque[int]] = {}
+    for index, (doc, _) in enumerate(targets):
+        if index not in chosen:
+            groups.setdefault((doc.doc_type, doc.access.level), deque()).append(index)
+    while len(chosen) < limit:
         changed = False
         for group in groups.values():
-            if group and len(selected) < limit:
-                selected.append(group.popleft())
+            if group and len(chosen) < limit:
+                chosen.add(group.popleft())
                 changed = True
         if not changed:
             break
-    return selected
+    return [targets[index] for index in sorted(chosen)]
 
 
 def _cost_estimates(
@@ -1043,6 +1086,10 @@ def _cost_estimates(
     }
 
 
+# Dry-run and confirmation list every doc_id for small (pilot-sized) runs.
+_LISTED_DOC_LIMIT = 20
+
+
 def _print_plan(
     targets: Sequence[tuple[DocPlan, int]],
     *,
@@ -1062,6 +1109,16 @@ def _print_plan(
         f"{dict(Counter(doc.doc_type for doc in requested_docs))} / 권한별 "
         f"{dict(Counter(doc.access.level for doc in requested_docs))}"
     )
+    if len(requested_docs) <= _LISTED_DOC_LIMIT:
+        labels = []
+        for doc in requested_docs:
+            tags = [doc.doc_type, doc.access.level]
+            if doc.canary_fact_id:
+                tags.append("카나리아")
+            if doc.style.get("frame") == "회고":
+                tags.append("회고")
+            labels.append(f"{doc.doc_id}({'/'.join(tags)})")
+        print_fn(f"선택 문서 {len(requested_docs)}건: {', '.join(labels)}")
     print_fn(
         f"추정 입력 {int(estimates['input_tokens']):,}토큰 / 최대 출력 "
         f"{int(estimates['maximum_output_tokens']):,}토큰 / 예상 비용(Batch, VAT 포함) "

@@ -530,3 +530,38 @@ def test_zero_passing_documents_returns_failure(
     )
 
     assert validate.run(tmp_path, print_fn=lambda *_args, **_kwargs: None) == 1
+
+
+def test_previously_passing_document_that_now_fails_is_kept_and_marked_regressed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    topic = _fact()
+    seed = _seed(topic)
+    stable = _plan(topic.fact_id, doc_id="syn-guide-001")
+    regressing = replace(stable, doc_id="syn-guide-002")
+    _prepare_run(tmp_path, monkeypatch, [stable, regressing], seed)
+    valid_text = _markdown("⟦F:f-topic⟧검증 대상 사실⟦/F⟧")
+    _write_cache(tmp_path, stable, valid_text, cache_key="stable")
+    _write_cache(tmp_path, regressing, valid_text, cache_key="regressing")
+    assert validate.run(tmp_path, print_fn=lambda *_args, **_kwargs: None) == 0
+    kept = tmp_path / DOCS_DIR / f"{regressing.doc_id}.json"
+    before = kept.read_bytes()
+
+    # The same cached generation now fails (e.g. after a stricter validator rule).
+    cache = tmp_path / "data/synthetic/generations/regressing.json"
+    generation = json.loads(cache.read_text(encoding="utf-8"))
+    generation["text"] = _markdown("표시가 없는 검증 대상 사실")
+    cache.write_text(json.dumps(generation, ensure_ascii=False), encoding="utf-8")
+    messages: list[str] = []
+
+    code = validate.run(
+        tmp_path, print_fn=lambda message, **_kwargs: messages.append(message)
+    )
+    summary = json.loads((tmp_path / SUMMARY_PATH).read_text(encoding="utf-8"))
+
+    assert code == 1
+    assert kept.read_bytes() == before
+    assert summary["regressed"] == 1
+    assert summary["passed"] == 1
+    assert summary["failed"] == 1
+    assert any("회귀 1건" in message for message in messages)
