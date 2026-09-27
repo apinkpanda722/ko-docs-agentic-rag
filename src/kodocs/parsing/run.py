@@ -117,8 +117,9 @@ class RunSummary:
     empty_count: int
     total_page_count: int
     elapsed_s: float
-    # Sum of elapsed_s over documents parsed ok in this run divided by their
-    # page_count sum: excludes init_s, skipped, failed, and empty documents.
+    # Sum of parser-reported elapsed_s over documents parsed ok in this run
+    # divided by their page_count sum: excludes init_s, skipped, failed, and
+    # empty documents.
     seconds_per_page: float
     init_s: float | None = None  # one-time adapter preparation (model loading)
     parsed_page_count: int = 0  # pages of documents parsed ok in this run
@@ -491,7 +492,9 @@ def run(
         page_count = document.page_count
         if page_count is not None:
             total_page_count += page_count
-        document_elapsed_s = time.perf_counter() - item_started
+        # The parser's own processing time (for a cache rebuild, the original
+        # API time), so rebuilding outputs never overwrites measured time.
+        document_elapsed_s = document.elapsed_s
         if status == "ok" and page_count is not None:
             parsed_page_count += page_count
             parsed_elapsed_s += document_elapsed_s

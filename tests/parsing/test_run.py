@@ -347,7 +347,7 @@ class PreparingAdapter(FakeAdapter):
 
     def parse(self, item: ParseInput, *, root: Path) -> ParsedDocument:
         self.clock[0] += 1.0
-        return super().parse(item, root=root)
+        return replace(super().parse(item, root=root), elapsed_s=1.0)
 
 
 def test_run_prepares_once_and_records_init_time_separately(
@@ -465,3 +465,30 @@ def test_seconds_per_page_is_zero_when_nothing_was_parsed(tmp_path: Path) -> Non
 
     assert summary.parsed_page_count == 0
     assert summary.seconds_per_page == 0.0
+
+
+def test_record_elapsed_is_the_parser_reported_time_not_wall_time(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import kodocs.parsing.run as run_module
+
+    clock = [0.0]
+    monkeypatch.setattr(run_module.time, "perf_counter", lambda: clock[0])
+
+    class CachedAdapter(FakeAdapter):
+        """Rebuilds from a cache in 0.5s wall time but reports the original 30s."""
+
+        def parse(self, item: ParseInput, *, root: Path) -> ParsedDocument:
+            clock[0] += 0.5
+            return replace(super().parse(item, root=root), elapsed_s=30.0)
+
+    out = io.StringIO()
+    summary = run(
+        tmp_path, CachedAdapter(), [_input(tmp_path, "a.pdf", page_count=3)], out=out
+    )
+
+    record = _records(tmp_path)[-1]
+    assert record["elapsed_s"] == 30.0
+    assert summary.seconds_per_page == pytest.approx(10.0)
+    assert "sec/page=10.000" in out.getvalue()
