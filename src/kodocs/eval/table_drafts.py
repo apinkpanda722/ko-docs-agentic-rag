@@ -16,7 +16,7 @@ from kodocs.ingest.filetype import FileKind, sniff
 from kodocs.ingest.manifest import repo_relative, sha256_file
 from kodocs.parsing.articles import ANNEX_RE
 from kodocs.parsing.schema import TableCell
-from kodocs.parsing.tables import cells_to_grid, grid_to_markdown
+from kodocs.parsing.tables import cells_to_grid, grid_to_markdown, join_cell_text
 
 _SECTION_RE = re.compile(r"^Contents/section(?P<number>\d+)\.xml$")
 _ANNEX_KIND_RANK = {"별표": 0, "별지": 1, "서식": 2, "부록": 3, None: 4}
@@ -211,7 +211,7 @@ def _table_cells(
 
 
 def _cell_text(cell: ET.Element, parents: Mapping[ET.Element, ET.Element]) -> str:
-    paragraphs: list[str] = []
+    parts: list[str] = []
     for sublist in cell.iter():
         if _local_name(sublist.tag) != "subList":
             continue
@@ -222,14 +222,37 @@ def _cell_text(cell: ET.Element, parents: Mapping[ET.Element, ET.Element]) -> st
                 continue
             if _has_intermediate_ancestor_named(paragraph, sublist, "p", parents):
                 continue
-            paragraphs.append(
-                "".join(
-                    node.text or ""
-                    for node in paragraph.iter()
-                    if _local_name(node.tag) == "t"
+            parts.extend(_paragraph_parts(paragraph, parents))
+    return join_cell_text(parts)
+
+
+def _paragraph_parts(
+    paragraph: ET.Element, parents: Mapping[ET.Element, ET.Element]
+) -> list[str]:
+    """Split a paragraph at inline tables: text runs, then one part per inner cell."""
+    parts: list[str] = []
+    buffer: list[str] = []
+
+    def walk(element: ET.Element) -> None:
+        for child in element:
+            name = _local_name(child.tag)
+            if name == "tbl":
+                parts.append("".join(buffer))
+                buffer.clear()
+                parts.extend(
+                    _cell_text(inner, parents)
+                    for inner in child.iter()
+                    if _local_name(inner.tag) == "tc"
+                    and _closest_ancestor_named(inner, "tbl", parents) is child
                 )
-            )
-    return " ".join(paragraphs).strip()
+                continue
+            if name == "t":
+                buffer.append(child.text or "")
+            walk(child)
+
+    walk(paragraph)
+    parts.append("".join(buffer))
+    return parts
 
 
 def _generate_drafts(root: Path, *, out: TextIO) -> int:

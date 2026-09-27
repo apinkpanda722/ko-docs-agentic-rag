@@ -13,6 +13,7 @@ from kodocs.costs import (
     BudgetGuard,
     CostLedger,
     Price,
+    budget_estimate_usd,
     estimate_usd,
 )
 
@@ -51,8 +52,16 @@ def test_upstage_standard_price_and_tax_inclusive_estimate() -> None:
             "https://console.upstage.ai/docs/models/compare/document-intelligence"
         ),
         checked_on="2026-09-26",
+        billing_margin=1.05,
     )
     assert round(estimate_usd(SERVICE, 1887), 2) == 20.76
+
+
+def test_budget_estimate_applies_billing_margin_only_to_the_estimate() -> None:
+    # 원장 금액(estimate_usd)은 그대로, 예산 검사용만 여유 5%를 곱한다.
+    assert budget_estimate_usd(SERVICE, 1887) == pytest.approx(
+        estimate_usd(SERVICE, 1887) * 1.05
+    )
 
 
 def test_price_is_frozen() -> None:

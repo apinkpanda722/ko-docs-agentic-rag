@@ -1,9 +1,20 @@
-"""Optional Docling adapter for layout- and table-aware PDF parsing."""
+"""Optional Docling adapter for layout- and table-aware PDF parsing.
+
+Docling items without a ``text`` attribute (PictureItem: picture·chart,
+TableItem labelled document_index, ...) are not turned into blocks; the skipped
+count per label is kept in the document settings as ``skipped_items``. Table
+matching warnings that report dropped PDF cells are counted per document as
+``table_dropped_warnings``. Neither per-document value enters ``settings_hash``.
+A ListItem keeps its marker ("1.", "①") apart from ``text``; the block text is
+rebuilt as marker + " " + text unless the text already starts with the marker.
+"""
 
 from __future__ import annotations
 
 import importlib.util
+import logging
 import time
+from collections import Counter
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
 from importlib import metadata
@@ -27,6 +38,10 @@ if TYPE_CHECKING:
     from kodocs.parsing.run import ParseInput
 
 PARSER_NAME = "docling"
+# Bump when block text built from the same Docling output changes, so stored
+# outputs from an older adapter no longer match settings_hash and are re-parsed.
+# 2: ListItem marker restored.
+ADAPTER_REVISION = 2
 
 _CONTENT_LAYERS = {"body", "furniture"}
 _LABEL_KINDS: dict[str, BlockKind] = {
@@ -40,6 +55,9 @@ _LABEL_KINDS: dict[str, BlockKind] = {
     "caption": "caption",
     "table": "table",
 }
+# docling_ibm_models TableFormer logs through a logger named after the class.
+_TABLE_MATCHING_LOGGER = "MatchingPostProcessor"
+_DROPPED_MESSAGE = "were dropped from the table"
 _MISSING_GROUP_MESSAGE = (
     "docling 그룹이 설치되지 않았다: `uv sync --group docling` 후 `make docling-models`"
 )
@@ -84,6 +102,7 @@ class DoclingAdapter:
             "docling_version": self.parser_version,
             "docling_core_version": _package_version("docling-core"),
             "torch_version": _package_version("torch"),
+            "adapter_revision": ADAPTER_REVISION,
         }
 
     def prepare(self) -> None:
@@ -96,6 +115,9 @@ class DoclingAdapter:
         converter = self._get_converter()
         # Only the conversion is timed; model loading happens in prepare().
         started = time.perf_counter()
+        dropped = _DroppedWarningCounter()
+        matcher_logger = logging.getLogger(_TABLE_MATCHING_LOGGER)
+        matcher_logger.addHandler(dropped)
         try:
             result = converter.convert(item.input_path)  # type: ignore[attr-defined]
             doc = result.document
@@ -103,6 +125,8 @@ class DoclingAdapter:
             raise ParseError(
                 f"docling conversion failed with {type(exc).__name__}: {exc}"
             ) from exc
+        finally:
+            matcher_logger.removeHandler(dropped)
         elapsed_s = time.perf_counter() - started
         return document_to_parsed(
             doc,
@@ -110,6 +134,7 @@ class DoclingAdapter:
             root=root,
             settings=current_settings,
             elapsed_s=elapsed_s,
+            extra_settings={"table_dropped_warnings": dropped.count},
         )
 
     def _torch_device_flags(self) -> Mapping[str, bool | None]:
@@ -136,10 +161,12 @@ def document_to_parsed(
     root: Path,
     settings: Mapping[str, object],
     elapsed_s: float,
+    extra_settings: Mapping[str, object] | None = None,
 ) -> ParsedDocument:
     """Normalize a converted Docling document without importing Docling types."""
     blocks: list[Block] = []
     tables: list[ParsedTable] = []
+    skipped: Counter[str] = Counter()
     previous_page = 1
 
     for source_item, _level in doc.iterate_items(  # type: ignore[attr-defined]
@@ -158,16 +185,25 @@ def document_to_parsed(
                 block_position=len(blocks),
             )
             tables.append(table)
+        elif hasattr(source_item, "text"):
+            text = _item_text(source_item)
         else:
-            text = source_item.text
+            # No text to keep (e.g. PictureItem); record the skip, never invent text.
+            skipped[label] += 1
+            continue
         blocks.append(Block(page=page, kind=kind, text=text))
 
     stable_settings = dict(settings)
+    document_settings = {
+        **stable_settings,
+        **(extra_settings or {}),
+        "skipped_items": dict(sorted(skipped.items())),
+    }
     return ParsedDocument(
         schema_version=SCHEMA_VERSION,
         parser=PARSER_NAME,
         parser_version=str(stable_settings["docling_version"]),
-        settings=stable_settings,
+        settings=document_settings,
         settings_hash=settings_hash(stable_settings),
         input_path=repo_relative(item.input_path, root),
         input_sha256=item.input_sha256,
@@ -177,6 +213,18 @@ def document_to_parsed(
         tables=tuple(tables),
         elapsed_s=elapsed_s,
     )
+
+
+class _DroppedWarningCounter(logging.Handler):
+    """Count TableFormer warnings about PDF cells dropped from a table."""
+
+    def __init__(self) -> None:
+        super().__init__(level=logging.WARNING)
+        self.count = 0
+
+    def emit(self, record: logging.LogRecord) -> None:
+        if _DROPPED_MESSAGE in record.getMessage():
+            self.count += 1
 
 
 def _default_converter_factory(settings: DoclingSettings) -> object:
@@ -255,6 +303,14 @@ def _build_docling_table(
         reason = _first_line(f"table_parse: {type(exc).__name__}: {exc}")
         table, text = build_table(page, block_position, cells)
         return replace(table, invalid_reason=reason), text
+
+
+def _item_text(source_item: object) -> str:
+    text = source_item.text  # type: ignore[attr-defined]
+    marker = getattr(source_item, "marker", "")  # only ListItem defines marker
+    if not marker or text.lstrip().startswith(marker):
+        return text
+    return f"{marker} {text}"
 
 
 def _label_value(label: object) -> str:

@@ -2,6 +2,8 @@
 
 import unicodedata
 
+import pytest
+
 from kodocs.eval.text_normalize import (
     EDITORIAL_PATTERNS,
     normalize,
@@ -16,7 +18,7 @@ def test_raw_compare_form_only_applies_nfc_and_trims_outer_whitespace() -> None:
     assert raw_compare_form(f" \t{decomposed} ① “문장”\n") == "가 ① “문장”"
 
 
-def test_normalize_applies_n1_to_n5_in_order_without_nfkc() -> None:
+def test_normalize_applies_n1_to_n5_in_order_with_nfkc_in_n3() -> None:
     source = " 제1조\u3000(목적)\n“이\t규정”은 ①ㆍA・B･C‧D <개정 2021. 3. 16.> "
 
     assert normalize(source) == '제1조(목적)"이규정"은①·A·B·C·D'
@@ -55,4 +57,123 @@ def test_strip_editorial_accepts_compact_empty_and_mixed_history_variants() -> N
 def test_normalize_unifies_quote_variants_and_all_unicode_whitespace() -> None:
     source = "“가”„나‟ ‘다’‚라‛\u00a0마\u3000바\r\n사"
 
-    assert normalize(source) == "\"가\"\"나\"'다''라'마바사"
+    assert normalize(source) == '"가""나""다""라"마바사'
+
+
+def test_normalize_unifies_every_quote_variant_to_one_character() -> None:
+    variants = ['"', "'", "“", "”", "‘", "’", "`", "´", "＂", "＇"]
+
+    assert {normalize(f"가{quote}나") for quote in variants} == {'가"나'}
+
+
+def test_normalize_unifies_every_middle_dot_variant_to_one_character() -> None:
+    variants = ["ㆍ", "·", "․", "‧", "∙", "・", "･"]
+
+    assert {normalize(f"장{dot}절") for dot in variants} == {"장·절"}
+
+
+def test_normalize_applies_nfkc_to_compatibility_forms() -> None:
+    assert normalize("목적：（가）　１２") == "목적:(가)12"
+
+
+def test_nfkc_keeps_hangul_syllables_digits_and_article_heads() -> None:
+    source = "제12조의3(정의) 가나다라마바사 힣 0123456789 ①항 제2호"
+
+    assert normalize(source) == "제12조의3(정의)가나다라마바사힣0123456789①항제2호"
+
+
+def test_raw_compare_form_does_not_apply_nfkc_or_unification() -> None:
+    assert raw_compare_form(" 목적：ㆍ“가” ① ") == "목적：ㆍ“가” ①"
+
+
+@pytest.mark.parametrize("marker", ["①", "⑳", "⑴", "⒜", "⓪", "⓿"])
+def test_enclosed_alphanumerics_are_protected_from_nfkc(marker: str) -> None:
+    # ①은 항, 1.은 호: NFKC로 숫자가 되면 항 번호를 잘못 뽑아도 일치로 숨는다.
+    assert normalize(f"{marker} 본문") == f"{marker}본문"
+    assert normalize("①") != normalize("1")
+
+
+def test_nfkc_still_applies_next_to_protected_markers() -> None:
+    assert normalize("①목적：（가）⑵１２") == "①목적:(가)⑵12"
+
+
+@pytest.mark.parametrize(
+    "deleted",
+    [
+        "3. 삭제 <2002. 1. 1.>",
+        "3. 삭제<2019.12.31>",
+        "3. 삭제 < 2019. 1. 12.>",
+        "3. 삭제 <2019. 12., 12.>",
+    ],
+)
+def test_date_bracket_after_deletion_is_removed_but_word_is_kept(
+    deleted: str,
+) -> None:
+    stripped, count = strip_editorial(deleted)
+
+    assert count == 1
+    assert stripped.strip() == "3. 삭제"
+    assert normalize(deleted) == normalize("3. 삭제")
+
+
+def test_date_bracket_not_after_deletion_is_kept() -> None:
+    source = "부 칙 <2002. 1. 1.> 제1조(시행일)"
+
+    assert strip_editorial(source) == (source, 0)
+
+
+@pytest.mark.parametrize(
+    "annotation",
+    ["〔본조신설 2014.12.31〕", "〔전문개정 2020. 1. 1.〕", "〔본조신설 2014. 1. 2.〕"],
+)
+def test_tortoise_shell_bracket_annotations_are_removed_like_square_brackets(
+    annotation: str,
+) -> None:
+    assert strip_editorial(f"본문 {annotation} 끝")[1] == 1
+    assert normalize(f"본문 {annotation}") == normalize("본문 [본조신설 2014. 12. 31.]")
+
+
+def test_tortoise_shell_bracket_without_editorial_keyword_is_kept() -> None:
+    source = "〔별표1〕 〔〕"
+
+    assert strip_editorial(source) == (source, 0)
+
+
+@pytest.mark.parametrize(
+    "inner",
+    [
+        "본조신설 2014. 12. 31.",
+        "본조개정 2012. 1. 2., 2015. 3. 4.",
+        "전문개정 2020. 1. 1",
+        "제목개정 2019. 5. 6.",
+        "본조 신설 2010. 1. 1., 본조개정 2012. 2. 3",
+        "본호신설 2016. 7. 8.",
+        "본호 신설 2016. 7. 8",
+        "본항신설 2017. 9. 10.",
+        "본조제목 개정 2018. 11. 12.",
+    ],
+)
+@pytest.mark.parametrize(("open_", "close"), [("[", "]"), ("〔", "〕")])
+def test_every_surveyed_editorial_keyword_is_removed_in_both_bracket_styles(
+    inner: str, open_: str, close: str
+) -> None:
+    stripped, count = strip_editorial(f"본문 {open_}{inner}{close} 끝")
+
+    assert count == 1
+    assert " ".join(stripped.split()) == "본문 끝"
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        "[별표 1]",
+        "[별표1의 2]",
+        "[별지 제3호서식]",
+        "[서식 제2호]",
+        "[같은 조 제1항제2호가목1)부터 3)까지]",
+        "[영문으로는 National Information Society Agency]",
+        "〔별표 1〕",
+    ],
+)
+def test_content_brackets_are_kept(content: str) -> None:
+    assert strip_editorial(f"본문 {content}") == (f"본문 {content}", 0)

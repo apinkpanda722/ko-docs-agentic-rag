@@ -1,0 +1,165 @@
+{
+  "generated_at": "2026-09-27T16:31:10+09:00",
+  "tables": [
+    {
+      "annex_label": "<별표2>",
+      "golden_file_sha256": "7a9bc5035828583f8f5496856dc8dbb053a028a7d523b5e05d969900c67420d0",
+      "id": "17229_0-00",
+      "pdf_sha256": "e397957f96f15e4716eaf435bae1e670672dc911b10d96e5c809e41805bb9fd9",
+      "reviewed_by": "taserlee",
+      "reviewed_on": "2026-09-27",
+      "rule_no": "17229",
+      "section": "Contents/section0.xml",
+      "shape": [
+        4,
+        3
+      ],
+      "source_sha256": "1dbd56d165d4f1a8ae91409ba921344dd591f0def62c72e557cced48cf9feb09",
+      "table_ordinal": 0
+    },
+    {
+      "annex_label": "<별표3>",
+      "golden_file_sha256": "a72371e00c58235d2b70653d15b399f749072bb6ce586fb6cb50dc49dc041efc",
+      "id": "17229_0-02",
+      "pdf_sha256": "e397957f96f15e4716eaf435bae1e670672dc911b10d96e5c809e41805bb9fd9",
+      "reviewed_by": "taserlee",
+      "reviewed_on": "2026-09-27",
+      "rule_no": "17229",
+      "section": "Contents/section0.xml",
+      "shape": [
+        5,
+        3
+      ],
+      "source_sha256": "1dbd56d165d4f1a8ae91409ba921344dd591f0def62c72e557cced48cf9feb09",
+      "table_ordinal": 2
+    },
+    {
+      "annex_label": "[별표 1] 단말기 단계별 보안관리 관련 규정",
+      "golden_file_sha256": "5879948720b8166cd9dcd48f38928f8f95a96b0db9756d898762289c11272fe0",
+      "id": "47161_0-00",
+      "pdf_sha256": "07c00ee39adb3341cb9305129d9602b07dd25cccd00cc426aecb31803e425a26",
+      "reviewed_by": "taserlee",
+      "reviewed_on": "2026-09-27",
+      "rule_no": "47161",
+      "section": "Contents/section0.xml",
+      "shape": [
+        5,
+        3
+      ],
+      "source_sha256": "2b8c2e48a61b57eed991f0995429a54ada0cce6076a3c661eeedbd4714b38a07",
+      "table_ordinal": 0
+    },
+    {
+      "annex_label": "[별표 2] 단말기 저장매체별 삭제방법",
+      "golden_file_sha256": "a1ed000c179b1e14022e53e8c28771224da961a822c5bc1ebb05a997a9d04b06",
+      "id": "47161_0-01",
+      "pdf_sha256": "07c00ee39adb3341cb9305129d9602b07dd25cccd00cc426aecb31803e425a26",
+      "reviewed_by": "taserlee",
+      "reviewed_on": "2026-09-27",
+      "rule_no": "47161",
+      "section": "Contents/section0.xml",
+      "shape": [
+        5,
+        5
+      ],
+      "source_sha256": "2b8c2e48a61b57eed991f0995429a54ada0cce6076a3c661eeedbd4714b38a07",
+      "table_ordinal": 1
+    },
+    {
+      "annex_label": "[별지 제2호서식] 법률자문 결과 평가표",
+      "golden_file_sha256": "3073520a6086c462bc4f8879749683a2eda320e169013d75fab172e7a1a2908d",
+      "id": "52871_0-03",
+      "pdf_sha256": "0e5a1ea5b83fa17312a5d09dda30343e41b4504537fa2c13a298f8a5c65b6a06",
+      "reviewed_by": "taserlee",
+      "reviewed_on": "2026-09-27",
+      "rule_no": "52871",
+      "section": "Contents/section0.xml",
+      "shape": [
+        6,
+        2
+      ],
+      "source_sha256": "26201a2a336a1197edf0771723812e06fc5699bdfc40ca97fe4fa1df2d5cfe02",
+      "table_ordinal": 3
+    },
+    {
+      "annex_label": "[별표 1] <신설 2025.1.9., 개정 2025.3.4.>",
+      "golden_file_sha256": "53ea2d7980a7da4941ab8955bdf4a79f4bfa5aec6fe3cdde0d99d40e2144c87a",
+      "id": "52921_0-00",
+      "pdf_sha256": "2e88e7a6b88be4087cd6c12b4cd875bbc6c4fc6fd3abde3074726590fd125d24",
+      "reviewed_by": "taserlee",
+      "reviewed_on": "2026-09-27",
+      "rule_no": "52921",
+      "section": "Contents/section0.xml",
+      "shape": [
+        4,
+        2
+      ],
+      "source_sha256": "16633dcadb201ebd258a4f186e4539605cc906425dbf7a176763a251fecc70f9",
+      "table_ordinal": 0
+    },
+    {
+      "annex_label": "【 별표 1 】",
+      "golden_file_sha256": "5287196ef0099385926f90c75c6b29c08e9e9f89f126f58c6ba2313cedc23ba1",
+      "id": "53959_0-00",
+      "pdf_sha256": "050e6a22afdbb8a2e58673d1e28afb05a38ce929d002b4f5fa82d09ebb7dc125",
+      "reviewed_by": "taserlee",
+      "reviewed_on": "2026-09-27",
+      "rule_no": "53959",
+      "section": "Contents/section0.xml",
+      "shape": [
+        28,
+        6
+      ],
+      "source_sha256": "bf03ff10d7a4bfb35457d86a88561cde7bc256a645e470649b43a1b10a0f3ae3",
+      "table_ordinal": 0
+    },
+    {
+      "annex_label": "【 별표 2 】",
+      "golden_file_sha256": "27ab43b82c36dbef0ed3798851621bc9faf48b7232ebfde148d298fde0c5c772",
+      "id": "53959_0-01",
+      "pdf_sha256": "050e6a22afdbb8a2e58673d1e28afb05a38ce929d002b4f5fa82d09ebb7dc125",
+      "reviewed_by": "taserlee",
+      "reviewed_on": "2026-09-27",
+      "rule_no": "53959",
+      "section": "Contents/section0.xml",
+      "shape": [
+        9,
+        3
+      ],
+      "source_sha256": "bf03ff10d7a4bfb35457d86a88561cde7bc256a645e470649b43a1b10a0f3ae3",
+      "table_ordinal": 1
+    },
+    {
+      "annex_label": "【 별표 3 】",
+      "golden_file_sha256": "92b6f96a135adb16155eab4f941a34438e767003ff927bda6f3a023d4d5a88f1",
+      "id": "53959_0-02",
+      "pdf_sha256": "050e6a22afdbb8a2e58673d1e28afb05a38ce929d002b4f5fa82d09ebb7dc125",
+      "reviewed_by": "taserlee",
+      "reviewed_on": "2026-09-27",
+      "rule_no": "53959",
+      "section": "Contents/section0.xml",
+      "shape": [
+        11,
+        4
+      ],
+      "source_sha256": "bf03ff10d7a4bfb35457d86a88561cde7bc256a645e470649b43a1b10a0f3ae3",
+      "table_ordinal": 2
+    },
+    {
+      "annex_label": "【 별표 5 】",
+      "golden_file_sha256": "1f8086e7b63386a999d6769a66dcf486651cb1bccbe1830a85fb5029cfe04865",
+      "id": "53959_0-04",
+      "pdf_sha256": "050e6a22afdbb8a2e58673d1e28afb05a38ce929d002b4f5fa82d09ebb7dc125",
+      "reviewed_by": "taserlee",
+      "reviewed_on": "2026-09-27",
+      "rule_no": "53959",
+      "section": "Contents/section0.xml",
+      "shape": [
+        7,
+        4
+      ],
+      "source_sha256": "bf03ff10d7a4bfb35457d86a88561cde7bc256a645e470649b43a1b10a0f3ae3",
+      "table_ordinal": 4
+    }
+  ]
+}

@@ -1,11 +1,21 @@
 """Common table placement, span expansion, and Markdown conversion."""
 
 import re
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 
 from kodocs.parsing.schema import TableCell
 
 _LINE_BREAK = re.compile(r"\r\n?|\n")
+
+
+def join_cell_text(parts: Iterable[str]) -> str:
+    """Join one cell's text parts in document order with single spaces.
+
+    Shared nested-table rule: an inner table's cell texts are appended to the
+    containing outer cell in document order (HWPX golden drafts and Upstage
+    HTML use the same function).
+    """
+    return " ".join(stripped for part in parts if (stripped := part.strip()))
 
 
 def cells_to_grid(cells: Sequence[TableCell]) -> list[list[str]]:

@@ -21,7 +21,7 @@ manifest에서 생성한 실행일·커밋·도구 버전·설정 및 입력 해
 6. `make parse-upstage`
 7. `make table-drafts` → 사람이 약 10개를 검수해 `data/golden/tables/`에 확정 → `make table-golden` → `make table-score`
 8. `make parse-score` → `make parse-report`
-9. (보조 실험) `make parse-upstage-direct-dry` → `make parse-upstage-direct` → `make parse-score` → `make table-score` → `make parse-report`
+9. (보조 실험) 실행 전 업스테이지 콘솔 Usage 쪽수 기록 → `make parse-upstage-direct-dry` → `make parse-upstage-direct` → 실행 후 콘솔 Usage 쪽수 기록, 원장(`costs.jsonl`)의 쪽수 합과 대조 → `make parse-score` → `make table-score` → `make parse-report`
 
 ## 3. 고정 조건
 
@@ -36,9 +36,9 @@ manifest에서 생성한 실행일·커밋·도구 버전·설정 및 입력 해
 
 | 규칙 | 변환 |
 | --- | --- |
-| N1 | 유니코드 NFC 적용(NFKC 미사용) |
-| N2 | 균형 잡힌 법령 편집 주석 제거 |
-| N3 | 따옴표와 가운뎃점 변형 통일 |
+| N1 | 유니코드 NFC 적용 |
+| N2 | 균형 잡힌 법령 편집 주석 제거: `<개정·신설·삭제·종전 …>`, `[…]`·원본의 `〔…〕` 중 편집 키워드(본조·본항·본호 (+제목) 신설·개정, 전문개정, 제목개정, 종전, 시행일)로 시작하는 주석, 삭제 항목 뒤 날짜 꺾쇠(`삭제 <2002. 1. 1.>`의 `<…>`, "삭제" 단어는 남김). 키워드는 법제처 267개 버전의 `[…]` 795건 전수 집계로 정했고, 내용 괄호(별표·별지·서식·조문 인용·명칭 표기)와 `부칙 <날짜>`는 남긴다 |
+| N3 | 따옴표(`` " ' “ ” ‘ ’ ` ´ `` 등)를 `"` 하나로, 가운뎃점(`ㆍ · ․ ‧ ∙` 등)을 `·` 하나로 통일한 뒤 NFKC(전각 콜론·괄호·숫자 등 호환 문자)를 적용하고 다시 통일한다. 원문자 번호(U+2460–U+24FF: ①~⑳, ⑴, ⒜ 등)는 NFKC에서 제외해 그대로 둔다(규정에서 ①은 항, 1.은 호로 구조적 의미가 다르므로 ①→1로 바꾸면 항 번호 오추출이 일치로 숨는다). NFKC를 먼저 하면 `ㆍ`가 조합형 자모로, `․`가 마침표로 바뀌므로 순서를 고정한다 |
 | N4 | 모든 유니코드 공백 제거 |
 | N5 | 그 외 문자는 변경하지 않음 |
 
@@ -58,7 +58,7 @@ manifest에서 생성한 실행일·커밋·도구 버전·설정 및 입력 해
 
 ## 7. 변환 경유 vs 직접 입력(업스테이지 보조 실험)
 
-`make parse-upstage-direct-dry`로 변환 PDF 쪽수 × 1.5 가정의 예상 비용을 확인한 뒤 `make parse-upstage-direct`를 사용자가 실행한다. 이어서 `make parse-score` → `make table-score` → `make parse-report` 순서로 실행하면 위 생성 결과표에 양쪽 결과가 있는 대상만 짝지은 비교가 추가된다. 실제 HWP/HWPX 과금 쪽수는 응답 `usage.pages`이며 PDF 쪽수와 다를 수 있다.
+실행 전에 업스테이지 콘솔 Usage 쪽수를 기록한다. `make parse-upstage-direct-dry`로 변환 PDF 쪽수 × 1.5 가정의 예상 비용(세금 10%·청구 여유 5% 포함)을 확인한 뒤 `make parse-upstage-direct`를 사용자가 실행한다. 실행 후 콘솔 Usage 쪽수 증가분을 원장에 새로 기록된 쪽수 합과 대조해 아래 비용 메모에 적는다. 이어서 `make parse-score` → `make table-score` → `make parse-report` 순서로 실행하면 위 생성 결과표에 양쪽 결과가 있는 대상만 짝지은 비교가 추가된다. 실제 HWP/HWPX 과금 쪽수는 응답 `usage.pages`이며 PDF 쪽수와 다를 수 있다.
 
 ## 8. 비용 메모
 

@@ -67,6 +67,8 @@ class ParsedTable:
     block_position: int
     cells: tuple[TableCell, ...]
     invalid_reason: str | None = None
+    # True when inner tables were flattened into this table's cells.
+    nested: bool = False
 
 
 @dataclass(frozen=True)
@@ -128,6 +130,7 @@ def to_json(doc: ParsedDocument) -> str:
                     for cell in table.cells
                 ],
                 "invalid_reason": table.invalid_reason,
+                "nested": table.nested,
             }
             for table in doc.tables
         ],
@@ -146,6 +149,7 @@ def from_json(text: str) -> ParsedDocument:
             block_position=table["block_position"],
             cells=tuple(TableCell(**cell) for cell in table["cells"]),
             invalid_reason=table.get("invalid_reason"),
+            nested=table.get("nested", False),
         )
         for table in payload.pop("tables")
     )

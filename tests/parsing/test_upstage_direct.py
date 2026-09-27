@@ -3,6 +3,7 @@
 import hashlib
 import io
 import json
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -230,7 +231,10 @@ def test_direct_uses_same_options_original_filename_and_separate_cache(
     second = adapter.parse(item, root=tmp_path)
 
     assert seen == 1
-    assert first == second
+    # 캐시 적중은 HTTP 요청이 없어 attempts만 다르다.
+    assert [a["status"] for a in first.settings["attempts"]] == [200]
+    assert second.settings["attempts"] == []
+    assert replace(first, settings={**first.settings, "attempts": []}) == second
     assert first.parser == PARSER_NAME_DIRECT
     assert first.settings["input"] == "original"
     assert first.settings["request_options"] == REQUEST_OPTIONS
@@ -265,6 +269,8 @@ def test_direct_usage_pages_at_limit_warns_and_is_recorded(
     err = io.StringIO()
 
     class FakeClient:
+        last_attempts: tuple[dict[str, object], ...] = ()
+
         def parse(self, path: Path) -> tuple[dict[str, object], float]:
             return _response(pages=100), 2.0
 
@@ -323,7 +329,7 @@ def test_direct_plan_uses_factor_per_uncached_document(
     )
 
     assert result.page_count == 7  # ceil(1.5) + ceil(4.5)
-    assert result.estimated_usd == pytest.approx(0.077)
+    assert result.estimated_usd == pytest.approx(0.077 * 1.05)  # 청구 여유 5%
 
 
 def test_direct_cli_forwards_selection_limits_and_dry_run_needs_no_key(

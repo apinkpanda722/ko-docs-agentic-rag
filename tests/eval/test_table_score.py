@@ -57,7 +57,7 @@ def _write_document(root: Path, document: ParsedDocument) -> None:
     path.write_text(to_json(document), encoding="utf-8")
 
 
-def _golden_markdown(pdf_sha256: str, cell: str) -> str:
+def _golden_markdown(pdf_sha256: str, cell: str, *, nested: bool = False) -> str:
     return (
         "---\n"
         'rule_no: "47161"\n'
@@ -68,7 +68,7 @@ def _golden_markdown(pdf_sha256: str, cell: str) -> str:
         'annex_label: "[별표 1] 제목"\n'
         'annex_kind: "별표"\n'
         "shape: [1, 1]\n"
-        "nested: false\n"
+        f"nested: {str(nested).lower()}\n"
         'reviewed_by: "reviewer"\n'
         'reviewed_on: "2026-09-26"\n'
         "---\n"
@@ -81,10 +81,12 @@ def _write_golden(
     golden_id: str,
     pdf_sha256: str,
     cell: str,
+    *,
+    nested: bool = False,
 ) -> dict[str, object]:
     path = root / "data/golden/tables" / f"{golden_id}.md"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(_golden_markdown(pdf_sha256, cell), encoding="utf-8")
+    path.write_text(_golden_markdown(pdf_sha256, cell, nested=nested), encoding="utf-8")
     return {
         "id": golden_id,
         "rule_no": "47161",
@@ -237,3 +239,45 @@ def test_run_marks_changed_golden_without_scoring_and_missing_or_no_tables_are_z
     assert upstage["no-tables"]["cell_exact_rate"] == 0.0
     assert upstage["missing"]["status"] == "parse_missing"
     assert upstage["missing"]["cell_sim_mean"] == 0.0
+
+
+def test_run_reports_scores_with_and_without_nested_tables(tmp_path: Path) -> None:
+    flat_sha, golden_nested_sha, parsed_nested_sha = "1" * 64, "2" * 64, "3" * 64
+    goldens = [
+        _write_golden(tmp_path, "flat", flat_sha, "셀"),
+        _write_golden(tmp_path, "golden-nested", golden_nested_sha, "셀", nested=True),
+        _write_golden(tmp_path, "parsed-nested", parsed_nested_sha, "셀"),
+    ]
+    manifest_path = tmp_path / "data/manifest/table_golden.json"
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(json.dumps({"tables": goldens}), encoding="utf-8")
+    right = _table(TableCell(0, 0, 1, 1, "셀"))
+    wrong = _table(TableCell(0, 0, 1, 1, "다름"))
+    _write_document(tmp_path, _document("upstage", flat_sha, (right,)))
+    _write_document(tmp_path, _document("upstage", golden_nested_sha, (wrong,)))
+    _write_document(
+        tmp_path,
+        _document(
+            "upstage",
+            parsed_nested_sha,
+            (ParsedTable(1, 0, (TableCell(0, 0, 1, 1, "다름"),), nested=True),),
+        ),
+    )
+
+    payload = run(tmp_path, out=io.StringIO())
+
+    upstage = {
+        row["golden_id"]: row for row in payload["scores"] if row["parser"] == "upstage"
+    }
+    assert [
+        upstage[key]["nested"] for key in ("flat", "golden-nested", "parsed-nested")
+    ] == [
+        False,
+        True,
+        True,
+    ]
+    assert payload["parsers"]["upstage"]["measured"] == 3
+    assert payload["parsers"]["upstage"]["cell_exact_rate_mean"] == pytest.approx(1 / 3)
+    excluding = payload["parsers_excluding_nested"]["upstage"]
+    assert excluding["measured"] == 1
+    assert excluding["cell_exact_rate_mean"] == 1.0

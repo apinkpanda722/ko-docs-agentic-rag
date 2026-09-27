@@ -347,7 +347,7 @@ class PreparingAdapter(FakeAdapter):
 
     def parse(self, item: ParseInput, *, root: Path) -> ParsedDocument:
         self.clock[0] += 1.0
-        return super().parse(item, root=root)
+        return replace(super().parse(item, root=root), elapsed_s=1.0)
 
 
 def test_run_prepares_once_and_records_init_time_separately(
@@ -396,3 +396,99 @@ def test_run_stops_when_adapter_initialization_fails(tmp_path: Path) -> None:
     with pytest.raises(ParseRunError, match="RuntimeError"):
         run(tmp_path, adapter, [_input(tmp_path, "a.pdf")], out=io.StringIO())
     assert adapter.calls == []
+
+
+def test_run_copies_per_document_skip_and_table_drop_counts_into_records(
+    tmp_path: Path,
+) -> None:
+    from dataclasses import replace
+
+    class CountingAdapter(FakeAdapter):
+        def parse(self, item: ParseInput, *, root: Path) -> ParsedDocument:
+            document = super().parse(item, root=root)
+            return replace(
+                document,
+                settings={
+                    **document.settings,
+                    "skipped_items": {"picture": 1},
+                    "table_dropped_warnings": 2,
+                },
+            )
+
+    inputs = [_input(tmp_path, "a.pdf")]
+    run(tmp_path, CountingAdapter(), inputs, out=io.StringIO())
+    run(tmp_path, CountingAdapter(), inputs, out=io.StringIO())
+    run(tmp_path, FakeAdapter(), [_input(tmp_path, "b.pdf")], out=io.StringIO())
+
+    parsed, skipped, other = _records(tmp_path)
+    assert (parsed["status"], skipped["status"]) == ("ok", "skipped")
+    for record in (parsed, skipped):
+        assert record["skipped_items"] == {"picture": 1}
+        assert record["table_dropped_warnings"] == 2
+    assert other["skipped_items"] is None
+    assert other["table_dropped_warnings"] is None
+
+
+def test_seconds_per_page_uses_only_documents_parsed_ok_in_this_run(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import kodocs.parsing.run as run_module
+
+    skipped = _input(tmp_path, "a.pdf", page_count=4)
+    run(tmp_path, FakeAdapter(), [skipped], out=io.StringIO())
+    clock = [0.0]
+    monkeypatch.setattr(run_module.time, "perf_counter", lambda: clock[0])
+    adapter = PreparingAdapter(clock, errors={"c.pdf": RuntimeError("boom")})
+    inputs = [
+        skipped,
+        _input(tmp_path, "b.pdf", page_count=3),
+        _input(tmp_path, "c.pdf", page_count=5),
+        _input(tmp_path, "d.pdf", page_count=1),
+    ]
+    out = io.StringIO()
+
+    summary = run(tmp_path, adapter, inputs, out=out)
+
+    # 건너뛴 a(4쪽)·실패한 c(1초)는 빼고, 파싱한 ok 문서 b·d만: 2초 ÷ 4쪽.
+    assert summary.parsed_page_count == 4
+    assert summary.seconds_per_page == pytest.approx(0.5)
+    assert "parsed_pages=4" in out.getvalue()
+    assert "sec/page=0.500" in out.getvalue()
+
+
+def test_seconds_per_page_is_zero_when_nothing_was_parsed(tmp_path: Path) -> None:
+    inputs = [_input(tmp_path, "a.pdf", page_count=4)]
+    run(tmp_path, FakeAdapter(), inputs, out=io.StringIO())
+
+    summary = run(tmp_path, FakeAdapter(), inputs, out=io.StringIO())
+
+    assert summary.parsed_page_count == 0
+    assert summary.seconds_per_page == 0.0
+
+
+def test_record_elapsed_is_the_parser_reported_time_not_wall_time(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import kodocs.parsing.run as run_module
+
+    clock = [0.0]
+    monkeypatch.setattr(run_module.time, "perf_counter", lambda: clock[0])
+
+    class CachedAdapter(FakeAdapter):
+        """Rebuilds from a cache in 0.5s wall time but reports the original 30s."""
+
+        def parse(self, item: ParseInput, *, root: Path) -> ParsedDocument:
+            clock[0] += 0.5
+            return replace(super().parse(item, root=root), elapsed_s=30.0)
+
+    out = io.StringIO()
+    summary = run(
+        tmp_path, CachedAdapter(), [_input(tmp_path, "a.pdf", page_count=3)], out=out
+    )
+
+    record = _records(tmp_path)[-1]
+    assert record["elapsed_s"] == 30.0
+    assert summary.seconds_per_page == pytest.approx(10.0)
+    assert "sec/page=10.000" in out.getvalue()

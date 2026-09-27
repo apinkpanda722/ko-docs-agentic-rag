@@ -469,26 +469,38 @@ def _table_score_table(
     golden_values = table_golden.get("tables") if table_golden else None
     golden_count = len(golden_values) if isinstance(golden_values, list) else None
     summaries = _mapping(table_scores.get("parsers")) if table_scores else None
+    excluding = (
+        _mapping(table_scores.get("parsers_excluding_nested")) if table_scores else None
+    )
     score_rows = table_scores.get("scores") if table_scores else None
     rows: list[list[object]] = []
     for parser in _PARSERS:
         if parser == "pypdf":
             rows.append([parser, "해당 없음(표 추출 기능 없음)", "-", "-", "-", "-"])
             continue
-        summary = _mapping(summaries.get(parser)) if summaries else None
-        rows.append(
-            [
-                parser,
-                "채점됨" if summary and summary.get("applicable") else None,
-                _field(summary, "measured"),
-                _decimal(_field(summary, "cell_exact_rate_mean")),
-                _decimal(_field(summary, "cell_sim_mean")),
-                _shape_match_count(score_rows, parser),
-            ]
-        )
+        variants: list[tuple[str, Mapping[str, object] | None, bool]] = [
+            (parser, _mapping(summaries.get(parser)) if summaries else None, True)
+        ]
+        if excluding is not None:
+            variants.append(
+                (f"{parser} (중첩 제외)", _mapping(excluding.get(parser)), False)
+            )
+        for label, summary, include_nested in variants:
+            rows.append(
+                [
+                    label,
+                    "채점됨" if summary and summary.get("applicable") else None,
+                    _field(summary, "measured"),
+                    _decimal(_field(summary, "cell_exact_rate_mean")),
+                    _decimal(_field(summary, "cell_sim_mean")),
+                    _shape_match_count(
+                        score_rows, parser, include_nested=include_nested
+                    ),
+                ]
+            )
     return _table(
         "표 셀 일치",
-        f"분모: 사람 검수 표 정답 {_display(golden_count)}개 중 파서별 채점 가능 정답. 고정 조건: 병합 셀은 덮는 모든 칸에 복제하고 여러 쪽 표도 엄격하게 채점한다.",
+        f"분모: 사람 검수 표 정답 {_display(golden_count)}개 중 파서별 채점 가능 정답. '중첩 제외' 행은 정답이 중첩 표이거나 선택된 파서 표가 중첩 표를 평탄화한 경우를 뺀다. 고정 조건: 병합 셀은 덮는 모든 칸에 복제하고, 중첩 표 셀 텍스트는 바깥 셀에 문서 순서대로 이어 붙이며(HWPX 정답과 같은 규칙), 여러 쪽 표도 엄격하게 채점한다.",
         [
             "파서",
             "적용",
@@ -569,12 +581,17 @@ def _cost_table(
                 if record.get("status") in {"ok", "empty"}
                 and _is_number(page_count := record.get("page_count"))
             )
-            elapsed = math.fsum(
-                float(value)
+            ok_timed = [
+                (float(elapsed_value), int(page_value))
                 for record in parser_runs
-                if _is_number(value := record.get("elapsed_s"))
-            ) + _initialization_seconds(parser_runs)
-            seconds_per_page: float | None = elapsed / pages if pages else None
+                if record.get("status") == "ok"
+                and _is_number(elapsed_value := record.get("elapsed_s"))
+                and _is_number(page_value := record.get("page_count"))
+            ]
+            elapsed = math.fsum(value for value, _ in ok_timed)
+            ok_pages = sum(page for _, page in ok_timed)
+            # Model loading is shown separately and never enters seconds per page.
+            seconds_per_page: float | None = elapsed / ok_pages if ok_pages else None
         else:
             pages = elapsed = seconds_per_page = None
 
@@ -598,19 +615,23 @@ def _cost_table(
                 pages,
                 _seconds(elapsed),
                 _seconds(seconds_per_page),
+                _initialization_text(
+                    [record for record in runs if record.get("parser") == parser]
+                ),
                 _usd(amount),
                 _usd(cost_per_page),
             ]
         )
     return _table(
         "처리 비용",
-        "분모: 파서·입력별 최신 실제 처리 기록의 성공·빈 결과 쪽수(실패 시간 포함). 고정 조건: 총 시간은 문서 elapsed와 실행별 초기화 1회를 합하고, 비용은 `costs.jsonl`의 service별 정가와 부가세 포함 금액을 합산한다.",
+        "분모: 총 쪽수·쪽당 비용은 파서·입력별 최신 실제 처리 기록의 성공·빈 결과 쪽수다. 문서 시간 합·쪽당 초는 최신 ok 기록만 쓴다(elapsed_s 합 ÷ page_count 합, 실패·빈 결과 제외). elapsed_s는 파서가 잰 처리 시간이며 캐시 재구성 기록은 원래 API 시간을 유지한다. 고정 조건: 모델 로딩(init_s)은 쪽당 초에 넣지 않고 실행 순서대로 따로 적는다(최초가 캐시 없는 상태). 비용은 `costs.jsonl`의 service별 정가와 부가세 포함 금액을 합산한다.",
         [
             "파서",
             "비용 service",
             "총 쪽수",
-            "총 시간(초)",
-            "쪽당 초",
+            "문서 시간 합(초, ok)",
+            "쪽당 초(ok)",
+            "모델 로딩(초)",
             "원장 금액 합(USD, 세금 포함)",
             "쪽당 비용(USD)",
         ],
@@ -828,7 +849,9 @@ def _addenda_match_rate(
     ) / len(selected)
 
 
-def _shape_match_count(values: object, parser: str) -> int | None:
+def _shape_match_count(
+    values: object, parser: str, *, include_nested: bool = True
+) -> int | None:
     if not isinstance(values, list):
         return None
     measured = [
@@ -837,23 +860,25 @@ def _shape_match_count(values: object, parser: str) -> int | None:
         if (item := _mapping(value)) is not None
         and item.get("parser") == parser
         and _is_number(item.get("cell_exact_rate"))
+        and (include_nested or item.get("nested") is not True)
     ]
     return sum(item.get("shape_match") is True for item in measured)
 
 
-def _initialization_seconds(records: Sequence[Mapping[str, object]]) -> float:
-    by_run: dict[str, float] = {}
-    without_run: list[float] = []
+def _initialization_text(records: Sequence[Mapping[str, object]]) -> str | None:
+    """List one init_s per run in manifest order, marking the first (cold) run."""
+    by_run: dict[object, float] = {}
     for record in records:
         value = record.get("init_s")
-        if not _is_number(value):
-            continue
-        run_id = record.get("run_id")
-        if isinstance(run_id, str) and run_id:
+        if _is_number(value):
+            run_id = record.get("run_id") or None
             by_run[run_id] = max(by_run.get(run_id, 0.0), float(value))
-        else:
-            without_run.append(float(value))
-    return math.fsum(by_run.values()) + (max(without_run) if without_run else 0.0)
+    if not by_run:
+        return "-" if records else None
+    values = [_seconds(value) for value in by_run.values()]
+    if len(values) == 1:
+        return values[0]
+    return ", ".join([f"{values[0]}(최초)", *values[1:]])
 
 
 def _settings(record: Mapping[str, object] | None) -> object:
