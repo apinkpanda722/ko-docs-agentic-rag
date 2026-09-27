@@ -137,3 +137,43 @@ def test_tortoise_shell_bracket_without_editorial_keyword_is_kept() -> None:
     source = "〔별표1〕 〔〕"
 
     assert strip_editorial(source) == (source, 0)
+
+
+@pytest.mark.parametrize(
+    "inner",
+    [
+        "본조신설 2014. 12. 31.",
+        "본조개정 2012. 1. 2., 2015. 3. 4.",
+        "전문개정 2020. 1. 1",
+        "제목개정 2019. 5. 6.",
+        "본조 신설 2010. 1. 1., 본조개정 2012. 2. 3",
+        "본호신설 2016. 7. 8.",
+        "본호 신설 2016. 7. 8",
+        "본항신설 2017. 9. 10.",
+        "본조제목 개정 2018. 11. 12.",
+    ],
+)
+@pytest.mark.parametrize(("open_", "close"), [("[", "]"), ("〔", "〕")])
+def test_every_surveyed_editorial_keyword_is_removed_in_both_bracket_styles(
+    inner: str, open_: str, close: str
+) -> None:
+    stripped, count = strip_editorial(f"본문 {open_}{inner}{close} 끝")
+
+    assert count == 1
+    assert " ".join(stripped.split()) == "본문 끝"
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        "[별표 1]",
+        "[별표1의 2]",
+        "[별지 제3호서식]",
+        "[서식 제2호]",
+        "[같은 조 제1항제2호가목1)부터 3)까지]",
+        "[영문으로는 National Information Society Agency]",
+        "〔별표 1〕",
+    ],
+)
+def test_content_brackets_are_kept(content: str) -> None:
+    assert strip_editorial(f"본문 {content}") == (f"본문 {content}", 0)
