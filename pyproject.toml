@@ -33,3 +33,6 @@ dev = [
     "pyyaml>=6.0.3",
     "ruff>=0.16.9",
 ]
+docling = [
+    "docling>=2.130.0",
+]

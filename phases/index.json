@@ -9,6 +9,11 @@
       "dir": "m1-data-collection",
       "status": "completed",
       "completed_at": "2026-09-26T15:33:18+0900"
+    },
+    {
+      "dir": "m2-parsing",
+      "status": "completed",
+      "completed_at": "2026-09-27T10:33:44+0900"
     }
   ]
 }

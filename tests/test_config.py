@@ -98,7 +98,8 @@ def test_require_key_rejects_unknown_name() -> None:
 def test_budget_defaults_when_unset_or_empty(value: str | None) -> None:
     env = {} if value is None else {BUDGET_ENV_VAR: value}
 
-    assert load_settings(env).monthly_budget_usd == DEFAULT_MONTHLY_BUDGET_USD
+    assert DEFAULT_MONTHLY_BUDGET_USD == 45.0
+    assert load_settings(env).monthly_budget_usd == 45.0
 
 
 def test_budget_reads_numeric_value() -> None:
@@ -126,3 +127,11 @@ def test_env_example_and_config_variable_names_match() -> None:
     )
 
     assert declared_names == CONFIG_ENV_VARS
+
+
+def test_env_example_budget_matches_config_default() -> None:
+    env_example = (PROJECT_ROOT / ".env.example").read_text(encoding="utf-8")
+    match = re.search(rf"^{BUDGET_ENV_VAR}=([^\n]+)$", env_example, flags=re.MULTILINE)
+
+    assert match is not None
+    assert float(match.group(1)) == DEFAULT_MONTHLY_BUDGET_USD

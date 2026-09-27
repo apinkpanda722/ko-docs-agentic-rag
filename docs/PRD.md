@@ -29,7 +29,7 @@
 |---|---|---|---|
 | M0 | setup | uv 프로젝트, `make verify`, OpenSearch+nori compose, `.env.example`, 설정 로더(API 키 4개·월 비용 상한) | API 키 4개 `.env` 입력 |
 | M1 | data-collection | 법제처 Open API·ALIO 수집 스크립트, manifest(출처·해시·수집일), ALIO↔법제처 버전 매칭, HWP/HWPX→PDF 변환, M2 파싱 대상 목록(예상 페이지 수) | 법제처 인증키 입력, LibreOffice+H2Orestart 설치, 함초롬 글꼴 설치, 수집·변환 명령 실행 |
-| M2 | parsing | pypdf·Docling·업스테이지 파서, 조문 분할기, 파싱 결과표 | 표 정답 약 10개 검수 |
+| M2 | parsing | 공통 파싱 스키마, pypdf·Docling·업스테이지 어댑터, 조문 분할기(파서 무관), 조문·표 채점, 비용 원장, 파싱 결과표 | 업스테이지 결제 수단 확인, Docling 그룹 설치(torch 포함 대용량)·모델 다운로드(`make docling-models`), 파싱·채점 명령 실행(Docling 로컬 실행은 오래 걸릴 수 있음), 표 정답 약 10개 검수 |
 | M3 | synthetic-corpus | 시드 데이터 YAML, 생성 파이프라인, 카나리아, 간접 인젝션 문서, 티켓·결재 SQLite, 중복·다양성 지표 | `make generate` 실행, 합성 문서 표본 20건 검수 |
 | M4 | golden-set | 골드 50문항·실버 150문항, 구간 단위 qrels, dev/test 분리, 가설 사전 등록 | 골드 50문항 전부 검수, 실버 20% 표본 검수 |
 | M5 | retrieval | 인덱스(분석기 변형), BGE-M3, hybrid, 권한 filter, 식별자 `keyword` 필드, `lookup_id`, `run_sql`, 전체 조합 검색 실험표, 계층 가드 테스트(`retrieval`은 `kodocs.agent`·`mcp_server`·`ui`를 상대 import 포함해 import하지 않는다) | 검색 평가 실행 |
@@ -41,7 +41,7 @@
 
 ## 일정과 예산
 - **기간:** 목표 6주. **3주차 말에 M5(검색 실험표) 완료 여부를 점검**한다. 늦으면 리랭커 → 업스테이지 비교 → n-gram 분석기 → 고정 길이 청킹 순으로 범위를 줄인다. 단순 RAG 대 Agentic RAG 비교, MCP 서버, 누설률, 신뢰구간은 줄이지 않는다(주장 자체이므로).
-- **API 비용:** 월 3~5만 원 상한. 생성·평가 스크립트가 누적 비용을 기록하고 상한을 넘기 전에 멈춘다.
+- **API 비용:** 상한은 설정값(`MONTHLY_BUDGET_USD`). M1 실측 쪽수 기준 $45로 조정. 생성·평가·파싱 스크립트가 누적 비용을 원장(정가 + 부가세 포함)에 기록하고 상한을 넘기 전에 멈춘다.
 
 ## MVP 제외 사항
 - 운영용 웹 애플리케이션 (데모 GUI만 제공)

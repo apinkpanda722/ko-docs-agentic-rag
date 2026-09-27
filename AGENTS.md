@@ -52,6 +52,18 @@ make collect-alio   # ALIO 내부규정 원본 파일 수집(전 버전, zip 해
 make match-versions # ALIO 파일 ↔ 법제처 버전 발령일자 매칭 (네트워크 없음)
 make convert-hwp    # HWP/HWPX → PDF (LibreOffice + H2Orestart 로컬 도구 필요, 실행 시 점검), 사용자 실행
 make parse-targets  # M2 파싱 대상 목록(현행 전부 + 과거 버전 일부, 예상 페이지 수) (네트워크 없음)
+make parse-pypdf     # M2 pypdf 기준선 파싱 (로컬, 네트워크 없음), 사용자 실행
+make docling-models  # Docling 그룹 설치(torch 포함 대용량)·모델 다운로드 — 네트워크, 사용자 실행
+make parse-docling   # M2 Docling 파싱 (로컬, 시간이 오래 걸릴 수 있음), 사용자 실행
+make parse-upstage-dry  # 업스테이지 예상 비용(캐시 없는 대상의 쪽수 × 단가) 출력만 — 네트워크 없음
+make parse-upstage      # 업스테이지 Document Parse(standard) 파싱 — 실제 API 호출·과금, 확인 후 실행, 사용자 실행
+make parse-upstage-direct-dry  # 보조 실험: 업스테이지 HWP/HWPX 직접 입력 예상 비용 — 네트워크 없음
+make parse-upstage-direct      # 보조 실험: 업스테이지 HWP/HWPX 직접 입력 파싱 — 실제 API 호출·과금, 사용자 실행
+make parse-score     # 파서별 파싱 결과를 조문 분할 후 법제처 조문과 대조(분할기 상한 포함) — 네트워크 없음, 사용자 실행
+make table-drafts  # HWPX 원본 표(hp:tbl)에서 파서 중립 표 정답 초안 추출 → data/interim/table_drafts/
+make table-golden  # 사람이 확정한 data/golden/tables/*.md의 선정 정보·해시를 data/manifest/table_golden.json에 기록
+make table-score   # 파서별 표 셀 일치율 채점
+make parse-report    # M2 파싱 결과표를 docs/results/{실행일}-m2-parsing.md에 생성·갱신 — 네트워크 없음
 make generate    # 합성 코퍼스 생성 — 실제 API 호출, 사용자 실행
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)
