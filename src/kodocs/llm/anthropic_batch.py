@@ -50,6 +50,26 @@ def _utc_now() -> datetime:
     return datetime.now(UTC)
 
 
+def anthropic_client_factory(
+    api_key: str,
+    *,
+    read_max_retries: int = 2,
+) -> Callable[..., object]:
+    """Build SDK clients inside the LLM boundary with explicit retry policy."""
+    if not api_key:
+        raise ValueError("api_key must not be empty")
+
+    def factory(**kwargs: object) -> object:
+        max_retries = kwargs.pop("max_retries", read_max_retries)
+        return anthropic.Anthropic(
+            api_key=api_key,
+            max_retries=max_retries,
+            **kwargs,
+        )
+
+    return factory
+
+
 @dataclass(frozen=True)
 class BatchRequest:
     custom_id: str
