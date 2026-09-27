@@ -89,8 +89,16 @@
     {
       "step": 6,
       "name": "doc-validate",
-      "status": "pending",
-      "started_at": "2026-09-27T22:31:52+0900"
+      "status": "completed",
+      "started_at": "2026-09-27T22:31:52+0900",
+      "summary": "결정론적 합성 문서 검증기·fact span/카나리아/인젝션 검증·실패 재시도 연동·요약 manifest·Make 명령과 28개 테스트를 구현했으며, make verify 626 passed 및 무캐시 CLI exit=1 AC를 통과했습니다.",
+      "completed_at": "2026-09-27T23:10:26+0900",
+      "usage": {
+        "input_tokens": 4173490,
+        "cached_input_tokens": 3854592,
+        "output_tokens": 40866,
+        "attempts": 1
+      }
     },
     {
       "step": 7,
