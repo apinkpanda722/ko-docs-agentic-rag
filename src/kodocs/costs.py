@@ -36,8 +36,9 @@ _UPSTAGE_DOCUMENT_PARSE_STANDARD = Price(
     unit_price_usd=0.01,
     source_url="https://console.upstage.ai/docs/models/compare/document-intelligence",
     checked_on="2026-09-26",
-    # M2 measurement: ledger 1887 pages (response usage.pages) vs console 1947
-    # pages (+60, +3.2%) for the same 115 requests; cause unconfirmed. 5% margin.
+    # M2: 1st run ledger 1887 pages (response usage.pages) vs console 1947 (+60,
+    # +3.2%); 2nd run 276 = 276 exactly with every request a single HTTP 200, so
+    # the gap looks one-off (unrecorded retries, unconfirmed). Keep 5% margin.
     billing_margin=1.05,
 )
 
