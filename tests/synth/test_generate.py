@@ -771,3 +771,18 @@ def test_collection_progress_lines_are_flushed(
         == 0
     )
     assert any(re.search(r"\[20/20\]", line) and flush for line, flush in calls)
+
+
+def test_prompt_gives_calendar_phrase_per_fact_and_forbids_own_relative_time(
+    corpus: tuple[Seed, list[DocPlan]],
+) -> None:
+    seed, plans = corpus
+    plan = next(plan for plan in plans if plan.fact_time_phrases)
+
+    request, _ = build_request(plan, seed, config=_config(), attempt=1)
+
+    for fact_id, phrase in plan.fact_time_phrases.items():
+        line = next(line for line in request.user.splitlines() if fact_id in line)
+        assert f"시점 표현: {phrase}" in line
+    assert "임의로 상대 시점을 만들지 않는다" in request.system
+    assert "지난해` 또는" not in request.system

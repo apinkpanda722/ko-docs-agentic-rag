@@ -119,6 +119,45 @@ class DocPlan:
     seed: int
     related_doc_ids: tuple[str, ...]
     fact_age_days: dict[str, int]
+    fact_time_phrases: dict[str, str]
+
+
+def time_phrase(fact_date: date, document_date: date) -> str:
+    """Calendar-based Korean phrase for when a fact happened, seen from the doc date.
+
+    Weeks are Monday-start ISO weeks; months and years follow the calendar, so
+    8 days earlier in the same month is never "지난달" and 100 days earlier in
+    the same year is never "지난해".
+    """
+    if fact_date > document_date:
+        raise ValueError(
+            f"fact date {fact_date} is after document date {document_date}"
+        )
+    if fact_date == document_date:
+        return "당일"
+    week_start = document_date - timedelta(days=document_date.weekday())
+    if fact_date >= week_start:
+        return "이번 주"
+    if fact_date >= week_start - timedelta(days=7):
+        return "지난주"
+    if (fact_date.year, fact_date.month) == (document_date.year, document_date.month):
+        return f"이달 {_part_of_month(fact_date)}"
+    previous_month = (document_date.replace(day=1) - timedelta(days=1)).replace(day=1)
+    if (fact_date.year, fact_date.month) == (previous_month.year, previous_month.month):
+        return f"지난달 {_part_of_month(fact_date)}"
+    if fact_date.year == document_date.year:
+        return f"올해 {fact_date.month}월"
+    if fact_date.year == document_date.year - 1:
+        return f"지난해 {fact_date.month}월"
+    return f"{fact_date.year}년 {fact_date.month}월"
+
+
+def _part_of_month(value: date) -> str:
+    if value.day <= 10:
+        return "초"
+    if value.day <= 20:
+        return "중순"
+    return "말"
 
 
 @dataclass
@@ -310,6 +349,11 @@ def build_plan(seed: Seed) -> tuple[list[DocPlan], dict, dict]:
             for fact in assigned_facts
             if fact.date is not None
         }
+        fact_time_phrases = {
+            fact.fact_id: time_phrase(fact.date, document_date)
+            for fact in assigned_facts
+            if fact.date is not None
+        }
         related = sorted(
             {
                 other_doc_id
@@ -339,6 +383,7 @@ def build_plan(seed: Seed) -> tuple[list[DocPlan], dict, dict]:
                 seed=draft.seed,
                 related_doc_ids=tuple(related),
                 fact_age_days=fact_age_days,
+                fact_time_phrases=fact_time_phrases,
             )
         )
     return plans, canaries, injections
@@ -923,6 +968,7 @@ def _plan_record(plan: DocPlan) -> dict[str, object]:
         "seed": plan.seed,
         "related_doc_ids": list(plan.related_doc_ids),
         "fact_age_days": dict(plan.fact_age_days),
+        "fact_time_phrases": dict(plan.fact_time_phrases),
     }
 
 

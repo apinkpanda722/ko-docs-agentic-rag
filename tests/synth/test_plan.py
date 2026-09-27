@@ -25,6 +25,7 @@ from kodocs.synth.plan import (
     TYPE_COUNTS,
     build_plan,
     incident_age_summary,
+    time_phrase,
     write_plan,
 )
 from kodocs.synth.seed import PERIOD_END, TEAMS, SeedError, load_seed
@@ -315,6 +316,7 @@ def test_write_plan_is_byte_deterministic_and_uses_fixed_json_keys(
         "seed",
         "related_doc_ids",
         "fact_age_days",
+        "fact_time_phrases",
     ]
 
 
@@ -393,3 +395,42 @@ def test_incident_age_summary_reports_no_violations(built) -> None:
     assert sum(summary["buckets"]["incident"].values()) == 25
     assert summary["buckets"]["weekly"]["31-90"] == 0
     assert summary["buckets"]["weekly"]["91-365"] == 0
+
+
+@pytest.mark.parametrize(
+    ("document", "fact", "expected"),
+    [
+        # 8일 전이지만 같은 달: "지난달"이 아니라 지난주
+        (date(2026, 6, 20), date(2026, 6, 12), "지난주"),
+        (date(2026, 6, 20), date(2026, 6, 20), "당일"),
+        (date(2026, 6, 20), date(2026, 6, 16), "이번 주"),
+        (date(2026, 6, 25), date(2026, 6, 3), "이달 초"),
+        (date(2026, 6, 30), date(2026, 6, 14), "이달 중순"),
+        # 전월: 5월 말 대 6월 중순
+        (date(2026, 6, 20), date(2026, 5, 28), "지난달 말"),
+        # 약 100일 전이지만 같은 해: "지난해"가 아니라 올해
+        (date(2025, 11, 20), date(2025, 8, 5), "올해 8월"),
+        # 1월 대 전년 12월: 연도는 바뀌었지만 전월
+        (date(2026, 1, 20), date(2025, 12, 15), "지난달 중순"),
+        # 1월 대 전년 11월: 전년
+        (date(2026, 1, 20), date(2025, 11, 3), "지난해 11월"),
+        # 월요일 문서, 전날(일요일)은 지난주
+        (date(2026, 6, 22), date(2026, 6, 21), "지난주"),
+    ],
+)
+def test_time_phrase_follows_calendar_boundaries(document, fact, expected) -> None:
+    assert time_phrase(fact, document) == expected
+
+
+def test_time_phrase_rejects_facts_after_the_document_date() -> None:
+    with pytest.raises(ValueError):
+        time_phrase(date(2026, 6, 21), date(2026, 6, 20))
+
+
+def test_plans_carry_a_calendar_phrase_for_every_dated_fact(built) -> None:
+    seed, plans, _, _ = built
+    for plan in plans:
+        document_date = date.fromisoformat(plan.date)
+        assert set(plan.fact_time_phrases) == set(plan.fact_age_days)
+        for fact_id, phrase in plan.fact_time_phrases.items():
+            assert phrase == time_phrase(seed.facts[fact_id].date, document_date)

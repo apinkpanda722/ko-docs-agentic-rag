@@ -557,7 +557,13 @@ def _facts_block(
         forms = surface_forms(fact, people=people)
         allowed = " / ".join(forms) if forms else "서술 요지를 자연스럽게"
         age = doc.fact_age_days.get(fact.fact_id)
-        age_text = f" | 문서 날짜 기준 {age}일 전" if age is not None else ""
+        phrase = doc.fact_time_phrases.get(fact.fact_id)
+        age_text = (
+            f" | 사실 날짜 {fact.date.isoformat()} | 시점 표현: {phrase} "
+            f"(문서 날짜 기준 {age}일 전)"
+            if age is not None and phrase is not None and fact.date is not None
+            else ""
+        )
         lines.append(
             f"- {fact.fact_id} | {_FACT_KIND_NAMES[fact.kind]} | {value} | "
             f"허용 표기: {allowed}{age_text}"
@@ -656,6 +662,10 @@ def _load_plan(root: Path) -> list[DocPlan]:
                         fact_age_days={
                             str(key): int(value)
                             for key, value in record["fact_age_days"].items()
+                        },
+                        fact_time_phrases={
+                            str(key): str(value)
+                            for key, value in record["fact_time_phrases"].items()
                         },
                     )
                 )
