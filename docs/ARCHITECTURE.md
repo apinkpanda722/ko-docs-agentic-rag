@@ -4,7 +4,9 @@
 ```
 src/kodocs/
 ├── ingest/       # 법제처 Open API·ALIO 수집, ALIO↔법제처 버전 매칭, HWP/HWPX → PDF 변환, 파싱 대상 목록, manifest 기록
-├── parsing/      # 파서 어댑터(pypdf·Docling·업스테이지), 조문 분할(`제N조` 정규식)
+├── parsing/      # 파서 어댑터(pypdf·Docling·업스테이지), 공통 파싱 스키마, 표 셀 격자화, 조문 분할(`제N조` 정규식)
+├── costs.py      # 외부 API 비용 원장·월 상한(모든 API 스크립트 공용)
+├── eval/         # 평가 러너, 지표, 부트스트랩, 결과표 생성
 ├── chunking/     # 구조 기준 청킹(조·별표 표·안건·섹션), 고정 길이 청킹
 ├── synth/        # 시드 데이터 → 합성 문서·티켓·결재 생성 (Anthropic API)
 ├── retrieval/    # OpenSearch·SQLite 검색, authorized_* (langchain·langgraph import 금지)
@@ -12,14 +14,13 @@ src/kodocs/
 ├── mcp_server/   # MCP 서버 (streamable HTTP, bearer 토큰 → 사용자 컨텍스트)
 ├── llm/          # Anthropic·OpenAI·Gemini 호출 래퍼 (모델명·온도·비용 기록, 월 상한)
 └── ui/           # Streamlit 데모 (answer()만 호출)
-eval/             # 평가 러너, 지표, 부트스트랩, 결과표 생성
 data/
-├── manifest/     # 원문 출처·해시·수집일·버전 매칭·변환 기록·파싱 대상 목록 (커밋)
-├── raw/          # 다운로드 원문·변환 PDF (커밋 안 함)
-├── interim/      # 정제 산출물(법제처 응답에서 담당자 정보 제거 등) (커밋 안 함)
+├── manifest/     # 원문 출처·해시·수집일·버전 매칭·변환·파싱 대상·비용 원장·파싱 실행·채점 결과 (커밋)
+├── raw/          # 다운로드 원문·변환 PDF·업스테이지 응답 캐시 (커밋 안 함)
+├── interim/      # 정제 산출물·파싱 결과·diff·표 초안 (커밋 안 함, 법제처 담당자 정보 제거)
 ├── seed/         # 시드 데이터 YAML (커밋)
 ├── synthetic/    # 생성 문서·메타데이터 (커밋)
-└── golden/       # 질의셋·qrels·사람 채점 (커밋, 사람만 수정)
+└── golden/       # 질의셋·qrels·사람 채점 (커밋, 사람만 수정). 예외: golden/tables/ 표 정답 마크다운은 원문이라 커밋하지 않고, 선정 정보·해시는 manifest/table_golden.json에 커밋
 docs/results/     # 실험 결과표·가설 사전 등록 (날짜·커밋 해시 포함)
 logs/traces/      # answer() JSONL 트레이스 (커밋 안 함)
 infra/            # docker-compose (OpenSearch + nori), fontconfig(HWP 변환 글꼴 대체 규칙)
@@ -36,7 +37,7 @@ tests/
 ```
 [적재]
 법제처 Open API(현행·연혁 조문·별표 목록) → 정제 JSON (파싱 정답·개정 날짜 기준)
-ALIO 사규(HWP/HWPX, 개정 버전) → 버전 매칭 → HWP/HWPX→PDF → 파서 → 조문 분할 → 구조 청킹 ─┐
+ALIO 사규(HWP/HWPX, 개정 버전) → 버전 매칭 → HWP/HWPX→PDF → 파서 어댑터 → 공통 파싱 결과 → 조문 분할 → 채점(법제처 조문·표 정답) → 구조 청킹 ─┐
 시드 데이터 YAML → 합성 문서(DOCX/XLSX/MD/HTML/PDF) → Docling → 청킹 ──────────────────┼→ BGE-M3 → OpenSearch (권한·식별자·날짜 메타데이터)
 시드 데이터 YAML → 티켓·결재 ────────────────────────────→ SQLite
 
