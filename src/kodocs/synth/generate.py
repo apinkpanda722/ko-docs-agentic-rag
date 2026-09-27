@@ -689,9 +689,14 @@ def _generation_history(root: Path) -> dict[str, dict[int, dict[str, object]]]:
     generations_dir = root / GENERATIONS_DIR
     if generations_dir.exists():
         for path in sorted(generations_dir.glob("*.json")):
-            payload = json.loads(path.read_text(encoding="utf-8"))
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                # The validator records this attempt as internal_error. Keep the
+                # append-only log authoritative so the next attempt can proceed.
+                continue
             if not isinstance(payload, dict):
-                raise TypeError(f"생성 캐시는 JSON 객체여야 합니다: {path}")
+                continue
             doc_id = payload.get("doc_id")
             attempt = payload.get("attempt")
             if (
@@ -699,7 +704,7 @@ def _generation_history(root: Path) -> dict[str, dict[int, dict[str, object]]]:
                 or not isinstance(attempt, int)
                 or attempt < 1
             ):
-                raise ValueError(f"생성 캐시의 doc_id/attempt가 잘못되었습니다: {path}")
+                continue
             history[doc_id][attempt] = {**payload, "_from_cache": True}
     return history
 
@@ -720,6 +725,7 @@ def _validation_failures(root: Path) -> dict[tuple[str, int], bool]:
             status in {"failed", "failure", "invalid", "error"}
             or record.get("passed") is False
             or record.get("valid") is False
+            or bool(record.get("issues"))
         )
     return failures
 
@@ -731,11 +737,15 @@ def _validated_doc_matches(
     if not path.exists():
         return False
     payload = json.loads(path.read_text(encoding="utf-8"))
-    return (
-        isinstance(payload, Mapping)
-        and isinstance(latest.get("cache_key"), str)
-        and payload.get("cache_key") == latest.get("cache_key")
+    if not isinstance(payload, Mapping) or not isinstance(latest.get("cache_key"), str):
+        return False
+    generation = payload.get("generation")
+    nested_cache_key = (
+        generation.get("cache_key") if isinstance(generation, Mapping) else None
     )
+    return payload.get("cache_key") == latest.get(
+        "cache_key"
+    ) or nested_cache_key == latest.get("cache_key")
 
 
 def _exhausted_docs(

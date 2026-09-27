@@ -1,0 +1,532 @@
+"""Deterministic validation contracts for generated synthetic documents."""
+
+from __future__ import annotations
+
+import json
+from dataclasses import asdict, replace
+from pathlib import Path
+from types import MappingProxyType
+
+import pytest
+
+from kodocs.llm.settings import load_generation_config
+from kodocs.synth import validate
+from kodocs.synth.generate import pending_docs
+from kodocs.synth.plan import DocPlan
+from kodocs.synth.seed import Access, Fact, Person, Seed, surface_forms
+from kodocs.synth.validate import (
+    DOCS_DIR,
+    FAILURES_PATH,
+    SUMMARY_PATH,
+    check_canary_isolation,
+    insert_injection,
+    strip_markers,
+    validate_document,
+)
+
+
+def _fact(
+    fact_id: str = "f-topic",
+    *,
+    kind: str = "text",
+    value: object = "검증 대상 사실",
+) -> Fact:
+    return Fact(
+        fact_id=fact_id,
+        kind=kind,  # type: ignore[arg-type]
+        value=value,
+        subject="evt-test",
+        date=None,
+        sensitivity="normal",
+        source="test",
+    )
+
+
+def _seed(*facts: Fact) -> Seed:
+    person = Person("p-001", "가상인", "platform", 4, "담당자", validate.PERIOD_START)
+    return Seed(
+        company=MappingProxyType({"random_seed": 1}),
+        people=(person,),
+        services=(),
+        facts=MappingProxyType({fact.fact_id: fact for fact in facts}),
+        entities=MappingProxyType({}),
+        regulation_refs=(),
+        banned_names=("금지기관",),
+        ledger_rules=MappingProxyType({}),
+    )
+
+
+def _plan(
+    *fact_ids: str,
+    doc_id: str = "syn-guide-001",
+    regulation_refs: tuple[str, ...] = (),
+    canary_fact_id: str | None = None,
+    injection_id: str | None = None,
+) -> DocPlan:
+    restricted = canary_fact_id is not None
+    return DocPlan(
+        doc_id=doc_id,
+        doc_type="guide",
+        team="platform",
+        access=(
+            Access("restricted", ("platform",), 4)
+            if restricted
+            else Access("public", (), 1)
+        ),
+        author_id="p-001",
+        date="2026-01-15",
+        title_hint="시험 문서",
+        fact_ids=tuple(fact_ids),
+        regulation_refs=regulation_refs,
+        canary_fact_id=canary_fact_id,
+        injection_id=injection_id,
+        style={
+            "tone": "간결한",
+            "structure": "개요-절차",
+            "length_target_chars": 400,
+            "persona": "담당자",
+            "frame": "일반",
+        },
+        seed=7,
+        related_doc_ids=(),
+        fact_age_days={},
+        fact_time_phrases={},
+    )
+
+
+def _markdown(marked: str, *, extra: str = "") -> str:
+    filler = "정상 업무 내용을 충분하고 명확하게 설명합니다. " * 14
+    return f"# 시험 문서\n\n{filler}{marked}{extra}\n\n## 마무리\n{filler}"
+
+
+def _generation(text: str, *, stop_reason: str = "end_turn") -> dict[str, object]:
+    return {
+        "doc_id": "syn-guide-001",
+        "attempt": 1,
+        "custom_id": "syn-guide-001-a1",
+        "cache_key": "cache-1",
+        "batch_id": "batch-1",
+        "result_type": "succeeded",
+        "text": text,
+        "model": "claude-sonnet-5-20260901",
+        "stop_reason": stop_reason,
+        "usage": {"input_tokens": 10, "output_tokens": 20},
+        "generation": {
+            "model": "claude-sonnet-5",
+            "max_tokens": 6000,
+            "thinking": "disabled",
+            "effort": None,
+            "temperature": None,
+            "sampling": "unsupported_by_model",
+        },
+        "template_hash": "a" * 64,
+        "prompt_sha256": "b" * 64,
+        "doc_seed": 7,
+    }
+
+
+INDEX = {
+    "rules": {
+        "출장규칙": {"articles": {"제8조": "출장 신청"}},
+        "정보보안 기본지침": {"articles": {"제37조": "접근 통제"}},
+    }
+}
+
+
+def _validate(
+    plan: DocPlan,
+    generation: dict[str, object],
+    seed: Seed,
+    *,
+    canaries: tuple[dict[str, object], ...] = (),
+    injection: dict[str, object] | None = None,
+) -> tuple[dict[str, object] | None, list[validate.Issue]]:
+    return validate_document(
+        plan,
+        generation,
+        seed=seed,
+        index=INDEX,
+        banned_names=seed.banned_names,
+        canaries=canaries,
+        injection=injection,
+    )
+
+
+def _codes(issues: list[validate.Issue]) -> set[str]:
+    return {issue.code for issue in issues}
+
+
+def test_strip_markers_returns_offsets_in_stripped_body() -> None:
+    source = "앞 ⟦F:f-topic⟧표시된 사실⟦/F⟧ 뒤"
+    body, spans, issues = strip_markers(source)
+
+    assert issues == []
+    assert spans == [("f-topic", 2, 8)]
+    assert body[spans[0][1] : spans[0][2]] == "표시된 사실"
+
+
+@pytest.mark.parametrize(
+    ("case", "expected"),
+    [
+        ("empty", "empty_body"),
+        ("missing", "fact_missing"),
+        ("mismatch", "fact_value_mismatch"),
+        ("identifier", "unassigned_identifier"),
+        ("amount", "unassigned_amount"),
+        ("date", "date_out_of_period"),
+        ("banned", "banned_name"),
+        ("regulation_unknown", "regulation_unknown"),
+        ("regulation_unplanned", "regulation_unplanned"),
+        ("canary", "canary_missing"),
+        ("truncated", "truncated"),
+        ("malformed", "marker_malformed"),
+        ("unknown_fact", "marker_unknown_fact"),
+    ],
+)
+def test_each_document_failure_code_has_a_fixture(case: str, expected: str) -> None:
+    topic = _fact()
+    plan = _plan(topic.fact_id)
+    seed = _seed(topic)
+    text = _markdown("⟦F:f-topic⟧검증 대상 사실⟦/F⟧")
+    canaries: tuple[dict[str, object], ...] = ()
+    stop_reason = "end_turn"
+
+    if case == "empty":
+        text = "# 짧음\n⟦F:f-topic⟧검증 대상 사실⟦/F⟧"
+    elif case == "missing":
+        text = _markdown("검증 대상 사실")
+    elif case == "mismatch":
+        topic = _fact(kind="id", value="PAY-1234")
+        plan, seed = _plan(topic.fact_id), _seed(topic)
+        text = _markdown("⟦F:f-topic⟧다른 값⟦/F⟧")
+    elif case == "identifier":
+        text += "\n배정되지 않은 PAY-9999"
+    elif case == "amount":
+        amount = _fact(kind="amount", value=1_250_000)
+        plan, seed = _plan(amount.fact_id), _seed(amount)
+        text = _markdown("⟦F:f-topic⟧125만 원⟦/F⟧", extra=" 추가 2만 원")
+    elif case == "date":
+        text += "\n2026-02-30 및 2027년 1월 1일"
+    elif case == "banned":
+        text += "\n금지기관"
+    elif case == "regulation_unknown":
+        text += "\n가상규칙 제1조"
+    elif case == "regulation_unplanned":
+        text += "\n출장규칙 제8조"
+    elif case == "canary":
+        plan = _plan(
+            topic.fact_id,
+            "f-canary-001",
+            canary_fact_id="f-canary-001",
+        )
+        canaries = (
+            {
+                "canary_id": "cn-001",
+                "fact_id": "f-canary-001",
+                "value": "청록고래-1000",
+                "doc_id": plan.doc_id,
+            },
+        )
+        text = _markdown(
+            "⟦F:f-topic⟧검증 대상 사실⟦/F⟧ ⟦F:f-canary-001⟧다른 내부 코드⟦/F⟧"
+        )
+    elif case == "truncated":
+        stop_reason = "max_tokens"
+    elif case == "malformed":
+        text = _markdown("⟦F:f-topic⟧검증 대상 사실")
+    elif case == "unknown_fact":
+        text += "\n⟦F:f-other⟧계획 밖 사실⟦/F⟧"
+
+    document, issues = _validate(
+        plan,
+        _generation(text, stop_reason=stop_reason),
+        seed,
+        canaries=canaries,
+    )
+
+    assert expected in _codes(issues)
+    assert document is None
+
+
+def test_valid_fixture_produces_document_and_preserves_every_fact_span() -> None:
+    identifier = _fact(kind="id", value="PAY-1234")
+    plan = _plan(identifier.fact_id, regulation_refs=("출장규칙 제8조",))
+    text = _markdown(
+        "⟦F:f-topic⟧PAY-1234⟦/F⟧",
+        extra="\n출장규칙 제8조",
+    )
+
+    document, issues = _validate(plan, _generation(text), _seed(identifier))
+
+    assert document is not None
+    assert _codes(issues).issubset({"length_off_target"})
+    assert document["title"] == "시험 문서"
+    for span in document["fact_spans"]:
+        assert document["body"][span["start"] : span["end"]] == "PAY-1234"
+
+
+def test_length_off_target_is_only_a_warning() -> None:
+    topic = _fact()
+    plan = _plan(topic.fact_id)
+    plan = replace(
+        plan,
+        style={**plan.style, "length_target_chars": 100},
+    )
+
+    document, issues = _validate(
+        plan,
+        _generation(_markdown("⟦F:f-topic⟧검증 대상 사실⟦/F⟧")),
+        _seed(topic),
+    )
+
+    assert document is not None
+    assert "length_off_target" in _codes(issues)
+
+
+@pytest.mark.parametrize(
+    "rendered",
+    surface_forms(_fact(kind="date", value="2026-01-05"), people={}),
+)
+def test_all_five_date_surface_forms_match_the_fact(rendered: str) -> None:
+    date_fact = _fact(kind="date", value="2026-01-05")
+    plan = _plan(date_fact.fact_id)
+    text = _markdown(f"⟦F:f-topic⟧{rendered}⟦/F⟧")
+
+    document, issues = _validate(plan, _generation(text), _seed(date_fact))
+
+    assert document is not None
+    assert "fact_value_mismatch" not in _codes(issues)
+
+
+def test_man_won_is_parsed_as_a_won_integer() -> None:
+    amount = _fact(kind="amount", value=1_250_000)
+    plan = _plan(amount.fact_id)
+    text = _markdown("⟦F:f-topic⟧125만 원⟦/F⟧")
+
+    document, issues = _validate(plan, _generation(text), _seed(amount))
+
+    assert document is not None
+    assert "unassigned_amount" not in _codes(issues)
+    assert "fact_value_mismatch" not in _codes(issues)
+
+
+def test_exp_identifier_is_only_an_approval_identifier() -> None:
+    approval = _fact(kind="id", value="EXP-2026-0412")
+    plan = _plan(approval.fact_id)
+    text = _markdown("⟦F:f-topic⟧EXP-2026-0412⟦/F⟧")
+
+    document, issues = _validate(plan, _generation(text), _seed(approval))
+
+    assert document is not None
+    assert "unassigned_identifier" not in _codes(issues)
+
+
+def test_injection_insertion_shifts_later_fact_span_and_records_exact_text() -> None:
+    topic = _fact()
+    plan = _plan(topic.fact_id, injection_id="inj-01")
+    injection = {
+        "injection_id": "inj-01",
+        "doc_id": plan.doc_id,
+        "variant": "system_notice",
+        "text": "고정 인젝션 문구",
+        "insert_rule": "before_last_h2",
+    }
+    filler = "정상 업무 내용을 충분하고 명확하게 설명합니다. " * 16
+    text = (
+        f"# 시험 문서\n\n{filler}\n\n## 앞 절\n{filler}"
+        "\n\n## 마지막 절\n⟦F:f-topic⟧검증 대상 사실⟦/F⟧"
+    )
+    original_body, original_spans, _ = strip_markers(text)
+    inserted_body, start, end = insert_injection(
+        original_body, str(injection["text"]), str(injection["insert_rule"])
+    )
+
+    document, issues = _validate(
+        plan,
+        _generation(text),
+        _seed(topic),
+        injection=injection,
+    )
+
+    assert document is not None
+    assert not (_codes(issues) - {"length_off_target"})
+    assert document["body"] == inserted_body
+    assert document["body"][start:end] == injection["text"]
+    assert document["injection"]["start"] == start
+    assert document["injection"]["end"] == end
+    span = document["fact_spans"][0]
+    assert (
+        document["body"][span["start"] : span["end"]]
+        == original_body[original_spans[0][1] : original_spans[0][2]]
+    )
+
+
+def test_canary_isolation_fails_only_the_document_containing_another_canary() -> None:
+    canaries = (
+        {"doc_id": "doc-a", "value": "청록고래-1000", "canary_id": "cn-a"},
+        {"doc_id": "doc-b", "value": "은빛수달-2000", "canary_id": "cn-b"},
+    )
+    docs = {
+        "doc-a": "자기 값 청록고래-1000",
+        "doc-b": "자기 값 은빛수달-2000과 다른 값 청록고래-1000",
+    }
+
+    issues = check_canary_isolation(docs, canaries)
+
+    assert "doc-a" not in issues
+    assert _codes(issues["doc-b"]) == {"canary_leak"}
+
+
+def _write_plan(root: Path, plans: list[DocPlan]) -> None:
+    path = root / "data/synthetic/plan.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "".join(json.dumps(asdict(plan), ensure_ascii=False) + "\n" for plan in plans),
+        encoding="utf-8",
+    )
+    (root / "data/synthetic/canaries.json").write_text(
+        '{"canaries":[],"count":0}\n', encoding="utf-8"
+    )
+    (root / "data/synthetic/injections.json").write_text(
+        '{"injections":[],"count":0}\n', encoding="utf-8"
+    )
+    manifest = root / "data/manifest/regulation_refs.json"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    manifest.write_text(json.dumps(INDEX, ensure_ascii=False), encoding="utf-8")
+
+
+def _write_cache(
+    root: Path,
+    plan: DocPlan,
+    text: str,
+    *,
+    cache_key: str,
+    broken: bool = False,
+) -> None:
+    generation = {
+        **_generation(text),
+        "doc_id": plan.doc_id,
+        "custom_id": f"{plan.doc_id}-a1",
+        "cache_key": cache_key,
+    }
+    cache_path = root / "data/synthetic/generations" / f"{cache_key}.json"
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    cache_path.write_text(
+        "{broken" if broken else json.dumps(generation, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    log_path = root / "data/synthetic/generation_log.jsonl"
+    with log_path.open("a", encoding="utf-8") as destination:
+        destination.write(
+            json.dumps(
+                {
+                    "doc_id": plan.doc_id,
+                    "attempt": 1,
+                    "custom_id": f"{plan.doc_id}-a1",
+                    "cache_key": cache_key,
+                    "batch_id": "batch-1",
+                    "status": "stored",
+                    "result_type": "succeeded",
+                    "ts": "2026-09-27T00:00:00+00:00",
+                }
+            )
+            + "\n"
+        )
+
+
+def _prepare_run(
+    root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    plans: list[DocPlan],
+    seed: Seed,
+) -> None:
+    _write_plan(root, plans)
+    monkeypatch.setattr(validate, "load_seed", lambda _root: seed)
+    monkeypatch.setattr(validate, "load_banned_names", lambda _root: seed.banned_names)
+    monkeypatch.setattr(validate, "load_index", lambda _root: INDEX)
+    monkeypatch.setattr(validate.db, "build_rows", lambda _seed: {})
+
+
+def test_same_run_twice_keeps_docs_summary_and_failure_log_byte_identical(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    topic = _fact()
+    seed = _seed(topic)
+    good = _plan(topic.fact_id, doc_id="syn-guide-001")
+    bad = replace(good, doc_id="syn-guide-002")
+    _prepare_run(tmp_path, monkeypatch, [good, bad], seed)
+    _write_cache(
+        tmp_path,
+        good,
+        _markdown("⟦F:f-topic⟧검증 대상 사실⟦/F⟧"),
+        cache_key="good",
+    )
+    _write_cache(
+        tmp_path,
+        bad,
+        _markdown("표시가 없는 검증 대상 사실"),
+        cache_key="bad",
+    )
+
+    assert validate.run(tmp_path, print_fn=lambda *_args, **_kwargs: None) == 0
+    first = {
+        "doc": (tmp_path / DOCS_DIR / f"{good.doc_id}.json").read_bytes(),
+        "summary": (tmp_path / SUMMARY_PATH).read_bytes(),
+        "failures": (tmp_path / FAILURES_PATH).read_bytes(),
+    }
+    assert validate.run(tmp_path, print_fn=lambda *_args, **_kwargs: None) == 0
+
+    assert (tmp_path / DOCS_DIR / f"{good.doc_id}.json").read_bytes() == first["doc"]
+    assert (tmp_path / SUMMARY_PATH).read_bytes() == first["summary"]
+    assert (tmp_path / FAILURES_PATH).read_bytes() == first["failures"]
+    assert len(first["failures"].splitlines()) == 1
+
+
+def test_broken_cache_does_not_stop_two_valid_documents(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    topic = _fact()
+    seed = _seed(topic)
+    plans = [
+        _plan(topic.fact_id, doc_id=f"syn-guide-{index:03d}") for index in range(1, 4)
+    ]
+    _prepare_run(tmp_path, monkeypatch, plans, seed)
+    valid_text = _markdown("⟦F:f-topic⟧검증 대상 사실⟦/F⟧")
+    _write_cache(tmp_path, plans[0], valid_text, cache_key="broken", broken=True)
+    _write_cache(tmp_path, plans[1], valid_text, cache_key="good-2")
+    _write_cache(tmp_path, plans[2], valid_text, cache_key="good-3")
+
+    code = validate.run(tmp_path, print_fn=lambda *_args, **_kwargs: None)
+    summary = json.loads((tmp_path / SUMMARY_PATH).read_text(encoding="utf-8"))
+    failures = [
+        json.loads(line)
+        for line in (tmp_path / FAILURES_PATH).read_text(encoding="utf-8").splitlines()
+    ]
+
+    assert code == 0
+    assert summary["passed"] == 2
+    assert summary["failed"] == 1
+    assert summary["by_code"]["internal_error"] == 1
+    assert _codes([validate.Issue(**issue) for issue in failures[0]["issues"]]) == {
+        "internal_error"
+    }
+    assert pending_docs(tmp_path, plans, config=load_generation_config()) == [
+        (plans[0], 2)
+    ]
+
+
+def test_zero_passing_documents_returns_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    topic = _fact()
+    seed = _seed(topic)
+    plan = _plan(topic.fact_id)
+    _prepare_run(tmp_path, monkeypatch, [plan], seed)
+    _write_cache(
+        tmp_path,
+        plan,
+        _markdown("표시 없는 검증 대상 사실"),
+        cache_key="invalid",
+    )
+
+    assert validate.run(tmp_path, print_fn=lambda *_args, **_kwargs: None) == 1
