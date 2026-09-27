@@ -42,9 +42,37 @@ _UPSTAGE_DOCUMENT_PARSE_STANDARD = Price(
     billing_margin=1.05,
 )
 
+_ANTHROPIC_PRICE_URL = "https://platform.claude.com/docs/en/about-claude/pricing"
+
+
+def _anthropic_token_price(service_suffix: str, unit_price_usd: float) -> Price:
+    return Price(
+        service=f"anthropic.claude-sonnet-5.{service_suffix}",
+        unit="token",
+        unit_price_usd=unit_price_usd,
+        source_url=_ANTHROPIC_PRICE_URL,
+        checked_on="2026-09-27",
+        # Keep the FP-037 reconciliation margin until the first console check.
+        billing_margin=1.05,
+    )
+
+
+_ANTHROPIC_PRICES = (
+    _anthropic_token_price("batch.input", 1e-6),
+    _anthropic_token_price("batch.output", 5e-6),
+    # Anthropic documents that Batch's 50% discount stacks with cache pricing
+    # modifiers, so these are the standard cache prices multiplied by 0.5.
+    _anthropic_token_price("batch.cache-write-5m", 1.25e-6),
+    _anthropic_token_price("batch.cache-write-1h", 2e-6),
+    _anthropic_token_price("batch.cache-read", 0.1e-6),
+    _anthropic_token_price("input", 2e-6),
+    _anthropic_token_price("output", 10e-6),
+)
+
 PRICES: Mapping[str, Price] = MappingProxyType(
     {
         _UPSTAGE_DOCUMENT_PARSE_STANDARD.service: (_UPSTAGE_DOCUMENT_PARSE_STANDARD),
+        **{price.service: price for price in _ANTHROPIC_PRICES},
     }
 )
 
