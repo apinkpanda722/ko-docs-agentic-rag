@@ -12,13 +12,13 @@ people:
   role: 분석 모델링
   joined: '2014-10-12'
 - person_id: p-079
-  name: 유예수
+  name: 차온새
   team: data-ai
   grade: 4
   role: 데이터 엔지니어링
   joined: '2020-12-12'
 - person_id: p-080
-  name: 한가수
+  name: 최다은
   team: data-ai
   grade: 4
   role: 분석 모델링
@@ -60,7 +60,7 @@ people:
   role: 데이터 엔지니어링
   joined: '2024-07-23'
 - person_id: p-087
-  name: 안민민
+  name: 한다온
   team: data-ai
   grade: 3
   role: ML 플랫폼
@@ -150,7 +150,7 @@ people:
   role: 분석 모델링
   joined: '2025-05-05'
 - person_id: p-102
-  name: 유유민
+  name: 남세아
   team: data-ai
   grade: 1
   role: ML 플랫폼

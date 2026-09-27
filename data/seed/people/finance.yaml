@@ -66,7 +66,7 @@ people:
   role: 경영 관리
   joined: '2021-10-07'
 - person_id: p-180
-  name: 안건겸
+  name: 권시아
   team: finance
   grade: 2
   role: 자금 운영
@@ -96,7 +96,7 @@ people:
   role: 경영 관리
   joined: '2022-03-19'
 - person_id: p-185
-  name: 서서영
+  name: 장시우
   team: finance
   grade: 1
   role: 재무 회계

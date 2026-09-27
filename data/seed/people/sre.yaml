@@ -30,7 +30,7 @@ people:
   role: 클라우드 운영
   joined: '2015-04-15'
 - person_id: p-112
-  name: 강현현
+  name: 박하린
   team: sre
   grade: 3
   role: 클라우드 운영
@@ -102,7 +102,7 @@ people:
   role: 클라우드 운영
   joined: '2019-04-15'
 - person_id: p-124
-  name: 유태아
+  name: 한예린
   team: sre
   grade: 1
   role: 배포 자동화

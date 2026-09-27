@@ -48,7 +48,7 @@ people:
   role: 개발 생산성
   joined: '2021-09-18'
 - person_id: p-009
-  name: 안나나
+  name: 양다올
   team: platform
   grade: 3
   role: 개발 생산성
@@ -72,7 +72,7 @@ people:
   role: API 설계
   joined: '2014-05-03'
 - person_id: p-013
-  name: 곽경겸
+  name: 전푸름
   team: platform
   grade: 3
   role: 플랫폼 개발
@@ -84,7 +84,7 @@ people:
   role: 개발 생산성
   joined: '2012-10-28'
 - person_id: p-015
-  name: 최가아
+  name: 곽다솜
   team: platform
   grade: 3
   role: 백엔드 개발
@@ -120,7 +120,7 @@ people:
   role: 플랫폼 개발
   joined: '2016-01-17'
 - person_id: p-021
-  name: 차태아
+  name: 차윤하
   team: platform
   grade: 3
   role: 플랫폼 개발

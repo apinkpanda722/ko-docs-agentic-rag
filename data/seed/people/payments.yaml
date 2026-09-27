@@ -48,7 +48,7 @@ people:
   role: 결제 개발
   joined: '2016-08-25'
 - person_id: p-051
-  name: 송유우
+  name: 안서우
   team: payments
   grade: 3
   role: 청구 운영
@@ -60,7 +60,7 @@ people:
   role: 정산 개발
   joined: '2019-12-14'
 - person_id: p-053
-  name: 정경겸
+  name: 안시온
   team: payments
   grade: 3
   role: 결제 개발
@@ -84,7 +84,7 @@ people:
   role: 청구 운영
   joined: '2012-12-27'
 - person_id: p-057
-  name: 안은은
+  name: 배시아
   team: payments
   grade: 2
   role: 결제 개발
@@ -162,7 +162,7 @@ people:
   role: 청구 운영
   joined: '2022-09-16'
 - person_id: p-070
-  name: 안건담
+  name: 정한결
   team: payments
   grade: 1
   role: 정산 개발
