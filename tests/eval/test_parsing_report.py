@@ -49,6 +49,7 @@ def _metrics(*, documents: int, exact: float) -> dict[str, object]:
         "editorial_law_only": 2,
         "editorial_parsed_only": 1,
         "editorial_both": 3,
+        "notation_variants": 2,
     }
 
 
@@ -152,6 +153,36 @@ def _write_manifests(root: Path) -> None:
                 "upstage": _parser_payload("upstage"),
                 "splitter-ceiling": _parser_payload("splitter-ceiling"),
             },
+            "answer_differences": {
+                "status": "scored",
+                "parsers": ["pypdf", "docling", "upstage"],
+                "total_keys": 2,
+                "targets": [
+                    {
+                        "target_key": "r1:s1:a",
+                        "law_rule_id": "r1",
+                        "law_serial": "s1",
+                        "role": "current",
+                        "ok_parsers": ["pypdf", "docling"],
+                        "law_keys": [[2, 0], [6, 4]],
+                    }
+                ],
+                "key_recall": {
+                    parser: {
+                        "all_targets": {
+                            "documents": 2,
+                            "key_recall_mean": 0.9,
+                            "key_recall_mean_adjusted": 0.95,
+                        },
+                        "ok_only": {
+                            "documents": 1,
+                            "key_recall_mean": 0.8,
+                            "key_recall_mean_adjusted": 1.0,
+                        },
+                    }
+                    for parser in ("pypdf", "docling", "upstage")
+                },
+            },
             "excluded_targets": [
                 {
                     "law_rule_id": "r3",
@@ -247,8 +278,12 @@ def test_render_tables_covers_every_manifest_section_without_source_text(
         "처리 비용",
         "실패 목록",
         "법제처 본문에 조문 텍스트가 없는 버전",
+        "원본 표기 변형·정답 차이",
+        "정답 차이 대상",
     ):
         assert heading in rendered
+    assert "| pypdf | 2 | 0.9000 | 0.9500 | 0.8000 | 1.0000 |" in rendered
+    assert "| r1 | s1 | current | pypdf, docling | 제2조, 제6조의4 |" in rendered
     assert "document-parse-260630" in rendered
     assert "해당 없음(표 추출 기능 없음)" in rendered
     assert "법제처 본문이 이미지 한 줄" in rendered
@@ -312,3 +347,21 @@ def test_write_report_refuses_malformed_markers_without_overwrite(
 def test_write_report_rejects_non_iso_date(tmp_path: Path, run_date: str) -> None:
     with pytest.raises(ValueError, match="YYYY-MM-DD"):
         write_report(tmp_path, run_date=run_date)
+
+
+def test_answer_difference_table_explains_when_parsers_are_insufficient(
+    tmp_path: Path,
+) -> None:
+    _write_manifests(tmp_path)
+    score_path = tmp_path / "data/manifest/parse_scores.json"
+    scores = json.loads(score_path.read_text(encoding="utf-8"))
+    scores["answer_differences"] = {
+        "status": "insufficient_parsers",
+        "parsers": ["pypdf"],
+    }
+    _write_json(score_path, scores)
+
+    rendered = render_tables(tmp_path)
+
+    assert "채점된 비교 파서가 2개 미만(pypdf)" in rendered
+    assert "| pypdf | 2 | 1.0000 | - | 1.0000 | - |" in rendered

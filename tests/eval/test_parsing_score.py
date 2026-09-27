@@ -378,6 +378,7 @@ def test_docscore_serialization_contains_only_declared_numeric_key_status_fields
         "editorial_law_only",
         "editorial_parsed_only",
         "editorial_both",
+        "notation_variants",
     }
     assert "본문" not in json.dumps(asdict(score), ensure_ascii=False)
 
@@ -470,3 +471,106 @@ def test_law_without_article_text_is_excluded_from_parser_and_ceiling_denominato
     assert not (
         tmp_path / "data/interim/parse_diffs/pypdf" / f"{image_sha}.json"
     ).exists()
+
+
+def test_score_document_counts_branch_notation_variants_as_matched_keys() -> None:
+    score = score_document(
+        _document("제6조(겸직) 본문\n제6조4(겸직 제한) 본문"),
+        {"articles": ["제6조(겸직) 본문", "제6조의4(겸직 제한) 본문"], "addenda": []},
+        status="ok",
+        target_key="target",
+        parser="pypdf",
+    )
+
+    assert score.matched == 2
+    assert score.structure_exact is True
+    assert score.notation_variants == 1
+    assert aggregate([score])["all_targets"]["notation_variants"] == 1
+
+
+def _write_two_parser_run(tmp_path: Path, *, docling_status: str) -> None:
+    first, first_key, first_sha = _target(
+        tmp_path, rule="rule-1", serial="serial-1", source="1" * 64, role="current"
+    )
+    second, second_key, second_sha = _target(
+        tmp_path, rule="rule-2", serial="serial-2", source="2" * 64, role="history"
+    )
+    (tmp_path / "data/manifest/parse_targets.json").write_text(
+        json.dumps({"targets": [first, second]}), encoding="utf-8"
+    )
+    _write_law(
+        tmp_path,
+        "rule-1",
+        "serial-1",
+        {
+            "articles": ["제1조(목적) 본문", "제2조(정의) 본문", "제3조(절차) 본문"],
+            "addenda": [],
+        },
+    )
+    _write_law(
+        tmp_path,
+        "rule-2",
+        "serial-2",
+        {"articles": ["제1조(목적) 본문", "제2조(정의) 본문"], "addenda": []},
+    )
+    documents = [
+        _document("제1조(목적) 본문", parser="pypdf", input_sha256=first_sha),
+        _document("제1조(목적) 본문", parser="pypdf", input_sha256=second_sha),
+        _document(
+            "제1조(목적) 본문\n제3조(절차) 본문",
+            parser="docling",
+            input_sha256=first_sha,
+        ),
+        _document("제1조(목적) 본문", parser="docling", input_sha256=second_sha),
+    ]
+    for document in documents:
+        _write_document(tmp_path, document)
+    records = [
+        _run_record("pypdf", first_key, first_sha, "ok"),
+        _run_record("pypdf", second_key, second_sha, "ok"),
+        _run_record("docling", first_key, first_sha, "ok"),
+        _run_record("docling", second_key, second_sha, docling_status),
+    ]
+    (tmp_path / "data/manifest/parse_runs.jsonl").write_text(
+        "".join(json.dumps(record) + "\n" for record in records), encoding="utf-8"
+    )
+
+
+def test_keys_missed_by_every_ok_parser_are_reported_as_answer_differences(
+    tmp_path: Path,
+) -> None:
+    _write_two_parser_run(tmp_path, docling_status="failed")
+
+    payload = run(tmp_path, parsers=["pypdf", "docling"], out=io.StringIO())
+
+    differences = payload["answer_differences"]
+    assert differences["status"] == "scored"
+    assert differences["parsers"] == ["pypdf", "docling"]
+    assert differences["total_keys"] == 1
+    # rule-2는 ok 파서가 pypdf 하나뿐이라 공통 누락으로 보지 않는다.
+    assert [
+        (item["target_key"], item["ok_parsers"], item["law_keys"])
+        for item in differences["targets"]
+    ] == [("rule-1:serial-1:" + "1" * 64, ["pypdf", "docling"], [[2, 0]])]
+    pypdf = differences["key_recall"]["pypdf"]["all_targets"]
+    assert pypdf["key_recall_mean"] == pytest.approx((1 / 3 + 1 / 2) / 2)
+    assert pypdf["key_recall_mean_adjusted"] == pytest.approx((1 / 2 + 1 / 2) / 2)
+    docling = differences["key_recall"]["docling"]
+    assert docling["all_targets"]["key_recall_mean_adjusted"] == pytest.approx(
+        (1.0 + 0.0) / 2
+    )
+    assert docling["ok_only"]["documents"] == 1
+    assert docling["ok_only"]["key_recall_mean_adjusted"] == pytest.approx(1.0)
+
+
+def test_answer_differences_need_two_scored_comparison_parsers(
+    tmp_path: Path,
+) -> None:
+    _write_two_parser_run(tmp_path, docling_status="ok")
+
+    payload = run(tmp_path, parsers=["pypdf"], out=io.StringIO())
+
+    assert payload["answer_differences"] == {
+        "status": "insufficient_parsers",
+        "parsers": ["pypdf"],
+    }

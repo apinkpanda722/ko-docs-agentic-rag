@@ -9,6 +9,10 @@ Targets whose Law Open API body has no article heads (``status=no_law_text``,
 e.g. the body is a single image) have no article truth: they are excluded from
 both denominators, counted under ``excluded``, and listed by id in the manifest.
 The same rule applies to the splitter ceiling, so "0 = 0" cannot inflate it.
+With two or more scored comparison parsers, Law Open API keys missed by every
+parser that returned ``ok`` for a target (at least two) are reported as answer
+differences (source text != Law Open API, estimated), and each parser's key
+recall is also reported with those keys removed from its denominator.
 No article text is written to the committed score manifest or standard output;
 inspection text is confined to ignored ``data/interim/parse_diffs`` files.
 """
@@ -41,6 +45,7 @@ from kodocs.parsing.articles import (
     ARTICLE_RE,
     Article,
     SplitResult,
+    article_branch,
     law_to_lines,
     split_document,
     split_text,
@@ -84,6 +89,7 @@ class DocScore:
     editorial_law_only: int
     editorial_parsed_only: int
     editorial_both: int
+    notation_variants: int
 
 
 @dataclass(frozen=True)
@@ -191,6 +197,7 @@ def run(
     }
     parser_payloads: dict[str, object] = {}
     rows: list[tuple[str, dict[str, object]]] = []
+    comparisons: dict[str, dict[str, _Comparison]] = {}
 
     for parser in selected_parsers:
         records = parser_records[parser]
@@ -198,10 +205,12 @@ def run(
             parser_payloads[parser] = {"status": "not_run"}
             continue
         scores: list[DocScore] = []
+        comparisons[parser] = {}
         for target in targets:
             record = _record_for_target(records, target, parser=parser)
             law = law_by_target[target.target_key]
             comparison = _score_target(root, parser, target, record, law)
+            comparisons[parser][target.target_key] = comparison
             scores.append(comparison.score)
             if comparison.score.status not in EXCLUDED_STATUSES:
                 _write_diff(root, comparison)
@@ -268,6 +277,7 @@ def run(
             "text_macro": "해당 분모의 문서",
         },
         "parsers": parser_payloads,
+        "answer_differences": _answer_differences(comparisons, targets, law_by_target),
         "excluded_targets": [
             {
                 "target_key": target.target_key,
@@ -448,6 +458,7 @@ def _compare_articles(
         editorial_law_only=law_only,
         editorial_parsed_only=parsed_only,
         editorial_both=both,
+        notation_variants=sum(article.notation_variant for article in parsed_articles),
     )
     return _Comparison(
         score=score,
@@ -470,7 +481,7 @@ def _law_articles(law: Mapping[object, object]) -> tuple[Article, ...]:
         articles.append(
             Article(
                 number=int(match.group("number")),
-                branch=int(match.group("branch") or 0),
+                branch=article_branch(match),
                 title=title.strip() if title is not None else None,
                 deleted=match.group("deleted") is not None,
                 text=text,
@@ -517,6 +528,98 @@ def _law_corpus_without_article_text(root: Path) -> dict[str, object]:
         "versions_without_article_text": len(versions),
         "versions": versions,
     }
+
+
+def _answer_differences(
+    comparisons: Mapping[str, Mapping[str, _Comparison]],
+    targets: Sequence[_Target],
+    law_by_target: Mapping[str, Mapping[object, object] | None],
+) -> dict[str, object]:
+    parsers = [parser for parser in COMPARISON_PARSERS if parser in comparisons]
+    if len(parsers) < 2:
+        return {"status": "insufficient_parsers", "parsers": parsers}
+
+    common_by_target: dict[str, set[tuple[int, int]]] = {}
+    target_rows: list[dict[str, object]] = []
+    for target in targets:
+        target_comparisons = [
+            comparisons[parser][target.target_key] for parser in parsers
+        ]
+        if target_comparisons[0].score.status in EXCLUDED_STATUSES | {"missing_law"}:
+            continue
+        ok_parsers = [
+            parser
+            for parser, comparison in zip(parsers, target_comparisons, strict=True)
+            if comparison.score.status == "ok"
+        ]
+        if len(ok_parsers) < 2:
+            continue
+        common = set.intersection(
+            *(
+                set(comparisons[parser][target.target_key].unmatched_law_keys)
+                for parser in ok_parsers
+            )
+        )
+        if not common:
+            continue
+        common_by_target[target.target_key] = common
+        law = law_by_target[target.target_key]
+        law_keys = [_key(article) for article in _law_articles(law)] if law else []
+        target_rows.append(
+            {
+                "target_key": target.target_key,
+                "law_rule_id": target.law_rule_id,
+                "law_serial": target.law_serial,
+                "role": target.role,
+                "ok_parsers": ok_parsers,
+                "law_keys": _json_keys(sorted(common, key=law_keys.index)),
+            }
+        )
+
+    key_recall: dict[str, object] = {}
+    for parser in parsers:
+        rows = [
+            (
+                comparison.score,
+                _adjusted_key_recall(
+                    comparison,
+                    law_by_target[target_key],
+                    common_by_target.get(target_key, set()),
+                ),
+            )
+            for target_key, comparison in comparisons[parser].items()
+            if comparison.score.status not in EXCLUDED_STATUSES
+        ]
+        key_recall[parser] = {
+            name: {
+                "documents": len(group),
+                "key_recall_mean": _mean([score.key_recall for score, _ in group]),
+                "key_recall_mean_adjusted": _mean([adjusted for _, adjusted in group]),
+            }
+            for name, group in (
+                ("all_targets", rows),
+                ("ok_only", [row for row in rows if row[0].status == "ok"]),
+            )
+        }
+    return {
+        "status": "scored",
+        "parsers": parsers,
+        "rule": "문서별로 status=ok인 비교 파서가 2개 이상이고 그 파서가 모두 놓친 법제처 조문 키",
+        "total_keys": sum(len(keys) for keys in common_by_target.values()),
+        "targets": target_rows,
+        "key_recall": key_recall,
+    }
+
+
+def _adjusted_key_recall(
+    comparison: _Comparison,
+    law: Mapping[object, object] | None,
+    excluded_keys: set[tuple[int, int]],
+) -> float:
+    law_keys = [_key(article) for article in _law_articles(law)] if law else []
+    denominator = sum(key not in excluded_keys for key in law_keys)
+    missed = sum(key not in excluded_keys for key in comparison.unmatched_law_keys)
+    return _ratio(denominator - missed, denominator)
 
 
 def _pair_first_unique(
@@ -590,6 +693,7 @@ def _aggregate_group(scores: Sequence[DocScore]) -> dict[str, int | float]:
         "editorial_law_only": sum(score.editorial_law_only for score in scores),
         "editorial_parsed_only": sum(score.editorial_parsed_only for score in scores),
         "editorial_both": sum(score.editorial_both for score in scores),
+        "notation_variants": sum(score.notation_variants for score in scores),
     }
 
 
@@ -872,6 +976,7 @@ def _zero_score(
         editorial_law_only=0,
         editorial_parsed_only=0,
         editorial_both=0,
+        notation_variants=0,
     )
 
 

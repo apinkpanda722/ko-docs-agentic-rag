@@ -56,6 +56,7 @@ def render_tables(root: Path) -> str:
         _excluded_table(scores),
         _structure_table(scores, denominator="all_targets"),
         _structure_table(scores, denominator="ok_only"),
+        _answer_difference_table(scores),
         _text_table(scores),
         _editorial_table(scores),
         _table_score_table(table_golden, table_scores),
@@ -289,6 +290,105 @@ def _structure_table(scores: Mapping[str, object] | None, *, denominator: str) -
         ],
         rows,
     )
+
+
+def _answer_difference_table(scores: Mapping[str, object] | None) -> str:
+    differences = _mapping(scores.get("answer_differences")) if scores else None
+    scored = differences is not None and differences.get("status") == "scored"
+    recall = _mapping(differences.get("key_recall")) if scored else None
+    rows: list[list[object]] = []
+    for parser in _PARSERS:
+        overall = _overall(_parser_payload(scores, parser))
+        parser_recall = _mapping(recall.get(parser)) if recall else None
+        row: list[object] = [
+            parser,
+            _field(
+                _mapping(overall.get("all_targets")) if overall else None,
+                "notation_variants",
+            ),
+        ]
+        for denominator in ("all_targets", "ok_only"):
+            if scored:
+                metrics = (
+                    _mapping(parser_recall.get(denominator)) if parser_recall else None
+                )
+                adjusted = _decimal(_field(metrics, "key_recall_mean_adjusted"))
+            else:
+                metrics = _mapping(overall.get(denominator)) if overall else None
+                adjusted = "-"
+            row.extend([_decimal(_field(metrics, "key_recall_mean")), adjusted])
+        rows.append(row)
+
+    if scored:
+        note = (
+            f"분모: 조 구조 표와 같다. 정답 차이 키는 문서별로 status=ok인 비교 파서가 2개 이상이고 "
+            f"그 파서가 모두 놓친 법제처 조문 키이며 총 {_display(differences.get('total_keys'))}개다. "
+            "보정 재현율은 그 키를 분모에서 뺀 값이다. 원본 표기 변형은 원본의 '의' 누락 오타(제N조M(제목))를 제N조의M으로 인식한 조 머리 수다. "
+            "고정 조건: 동일한 분할기·채점기, 비교 파서는 "
+            f"{', '.join(str(parser) for parser in differences.get('parsers') or [])}."
+        )
+    elif (
+        differences is not None and differences.get("status") == "insufficient_parsers"
+    ):
+        parsers = ", ".join(str(parser) for parser in differences.get("parsers") or [])
+        note = (
+            f"분모: 조 구조 표와 같다. 채점된 비교 파서가 2개 미만({parsers})이라 정답 차이(원본≠법제처 추정)를 집계하지 않았다. "
+            "원본 표기 변형은 원본의 '의' 누락 오타(제N조M(제목))를 제N조의M으로 인식한 조 머리 수다."
+        )
+    else:
+        note = "분모: 조 구조 표와 같다. `answer_differences`가 없는 채점 결과다."
+    sections = [
+        _table(
+            "원본 표기 변형·정답 차이",
+            note,
+            [
+                "파서",
+                "원본 표기 변형",
+                "키 재현율(전체)",
+                "정답 차이 제외 키 재현율(전체)",
+                "키 재현율(ok만)",
+                "정답 차이 제외 키 재현율(ok만)",
+            ],
+            rows,
+        )
+    ]
+    if scored:
+        target_rows: list[list[object]] = []
+        values = differences.get("targets")
+        for value in values if isinstance(values, list) else []:
+            item = _mapping(value)
+            if item is None:
+                continue
+            keys = item.get("law_keys")
+            target_rows.append(
+                [
+                    item.get("law_rule_id"),
+                    item.get("law_serial"),
+                    item.get("role"),
+                    ", ".join(str(parser) for parser in item.get("ok_parsers") or []),
+                    ", ".join(
+                        _article_label(key) for key in keys if isinstance(key, list)
+                    )
+                    if isinstance(keys, list)
+                    else None,
+                ]
+            )
+        if not target_rows:
+            target_rows.append(["없음", "-", "-", "-", "-"])
+        sections.append(
+            _table(
+                "정답 차이 대상",
+                "분모: 정답 차이 키가 1개 이상인 대상. 고정 조건: 원문 대조로 원인(원본 오타·원본 누락·번호 체계 차이)을 사람이 확인해 대표 실패 사례에 적는다.",
+                ["rule_id", "serial", "role", "ok 파서", "법제처에만 있는 조"],
+                target_rows,
+            )
+        )
+    return "\n\n".join(sections)
+
+
+def _article_label(key: Sequence[object]) -> str:
+    number, branch = key
+    return f"제{number}조의{branch}" if branch else f"제{number}조"
 
 
 def _text_table(scores: Mapping[str, object] | None) -> str:

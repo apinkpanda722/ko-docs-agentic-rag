@@ -326,3 +326,62 @@ def test_title_over_eighty_characters_is_not_an_article_head() -> None:
     result = split_text([(1, "제1조(목적) 본문"), (1, f"제2조({'가' * 81}) 본문")])
 
     assert [a.number for a in result.articles] == [1]
+
+
+@pytest.mark.parametrize(
+    ("line", "title"),
+    [
+        ("제6조4(겸직 제한) ① 본문", "겸직 제한"),
+        ("제6조4【겸직 제한】 본문", "겸직 제한"),
+        ("제6조4 (겸직 제한) 본문", "겸직 제한"),
+    ],
+)
+def test_branch_missing_ui_with_title_is_counted_as_notation_variant(
+    line: str, title: str
+) -> None:
+    # 원본 한글 파일의 '의' 누락 오타("제6조4(…)")는 법제처가 제6조의4로 교정 등록한다.
+    result = split_text([(1, "제6조(겸직) 본문"), (1, line), (1, "제7조(보칙) 본문")])
+
+    assert [(a.number, a.branch) for a in result.articles] == [(6, 0), (6, 4), (7, 0)]
+    assert [a.notation_variant for a in result.articles] == [False, True, False]
+    assert result.articles[1].title == title
+    assert result.articles[1].text == line
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "제6조4항에 따라 처리한다.",
+        "제6조4 삭제",
+        "제6조4 본문",
+        "문장 속 제6조4(겸직 제한)은 조 머리가 아니다.",
+    ],
+)
+def test_branch_missing_ui_without_line_head_title_is_not_an_article(
+    line: str,
+) -> None:
+    result = split_text([(1, "제6조(겸직) 본문"), (1, line)])
+
+    assert [(a.number, a.branch) for a in result.articles] == [(6, 0)]
+    assert result.articles[0].text == f"제6조(겸직) 본문\n{line}"
+
+
+def test_regular_branch_article_is_not_a_notation_variant() -> None:
+    result = split_text([(1, "제6조의4(겸직 제한) 본문")])
+
+    assert [(a.number, a.branch, a.notation_variant) for a in result.articles] == [
+        (6, 4, False)
+    ]
+
+
+def test_split_document_keeps_notation_variant_head_labeled_as_noise() -> None:
+    result = split_document(
+        _document(
+            [
+                Block(page=1, kind="text", text="제6조(겸직) 본문"),
+                Block(page=1, kind="header", text="제6조4(겸직 제한) 본문"),
+            ]
+        )
+    )
+
+    assert [(a.number, a.branch) for a in result.articles] == [(6, 0), (6, 4)]

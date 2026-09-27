@@ -5,6 +5,11 @@ article, including a separate ``제N조의M`` and a deleted article (삭제 조)
 section headings, articles inside 부칙, and text after 별표 markers are not main
 articles. Duplicate or decreasing article numbers remain in input order so
 structural errors stay visible to evaluation.
+
+A line-head ``제N조M(제목)`` or ``제N조M【제목】`` is read as ``제N조의M``: source HWP
+files sometimes drop '의' where the Law Open API registers the corrected number.
+The title is mandatory so references such as ``제6조4항`` stay in the body, and
+each such head is flagged as ``notation_variant`` for evaluation.
 """
 
 import re
@@ -16,7 +21,7 @@ from kodocs.parsing.schema import BlockKind, ParsedDocument
 
 ARTICLE_RE = re.compile(
     r"^\s*제\s*(?P<number>\d+)\s*조"
-    r"(?:\s*의\s*(?P<branch>\d+))?"
+    r"(?:\s*의\s*(?P<branch>\d+)|(?P<typo_branch>\d+)(?=\s*[(（【]))?"
     r"(?:"
     r"\s*[(（]\s*(?P<paren_title>[^)）]{1,80}?)\s*[)）]"
     r"|\s*【\s*(?P<bracket_title>[^】]{1,80}?)\s*】"
@@ -56,6 +61,7 @@ class Article:
     deleted: bool
     text: str
     first_page: int | None
+    notation_variant: bool = False
 
 
 @dataclass(frozen=True)
@@ -97,6 +103,7 @@ class _ArticleBuilder:
     title: str | None
     deleted: bool
     first_page: int | None
+    notation_variant: bool
     lines: list[str]
 
     def freeze(self) -> Article:
@@ -107,6 +114,7 @@ class _ArticleBuilder:
             deleted=self.deleted,
             text="\n".join(self.lines),
             first_page=self.first_page,
+            notation_variant=self.notation_variant,
         )
 
 
@@ -227,10 +235,11 @@ def split_text(lines: Sequence[tuple[int | None, str]]) -> SplitResult:
             current_target = "addendum" if active_addendum is not None else "main"
             current_article = _ArticleBuilder(
                 number=int(article_match.group("number")),
-                branch=int(article_match.group("branch") or 0),
+                branch=article_branch(article_match),
                 title=title.strip() if title is not None else None,
                 deleted=deleted,
                 first_page=page,
+                notation_variant=article_match.group("typo_branch") is not None,
                 lines=[line],
             )
             if active_addendum is not None:
@@ -264,6 +273,11 @@ def split_text(lines: Sequence[tuple[int | None, str]]) -> SplitResult:
         preamble="\n".join(preamble_lines),
         dropped_noise=0,
     )
+
+
+def article_branch(match: re.Match[str]) -> int:
+    """Return the ``의M`` branch of an ``ARTICLE_RE`` match, including '의' typos."""
+    return int(match.group("branch") or match.group("typo_branch") or 0)
 
 
 def law_to_lines(law: Mapping[object, object]) -> list[tuple[None, str]]:
