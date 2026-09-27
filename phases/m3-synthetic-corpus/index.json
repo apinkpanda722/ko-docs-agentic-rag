@@ -47,7 +47,16 @@
     {
       "step": 3,
       "name": "doc-plan",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-27T20:31:48+0900",
+      "summary": "결정론적 문서 계획 200건·카나리아 30건·인젝션 12건을 생성했으며 정상 사실 커버리지 100%와 make verify 533 passed를 확인했습니다.",
+      "completed_at": "2026-09-27T20:41:03+0900",
+      "usage": {
+        "input_tokens": 1898712,
+        "cached_input_tokens": 1775744,
+        "output_tokens": 27164,
+        "attempts": 1
+      }
     },
     {
       "step": 4,
