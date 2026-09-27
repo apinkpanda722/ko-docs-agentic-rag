@@ -4,6 +4,7 @@ import hashlib
 import io
 import json
 from collections.abc import Callable, Mapping
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -25,6 +26,7 @@ from kodocs.parsing.schema import (
 )
 from kodocs.parsing.tables import cells_to_grid
 from kodocs.parsing.upstage_adapter import (
+    ADAPTER_REVISION,
     MAX_FILE_BYTES,
     MAX_PAGES_PER_REQUEST,
     PARSER_NAME,
@@ -127,7 +129,9 @@ def _adapter(
 def test_constants_cache_path_and_fixed_settings(tmp_path: Path) -> None:
     adapter = _adapter(
         tmp_path,
-        lambda: SimpleNamespace(parse=lambda path: (_response(), 0.1)),
+        lambda: SimpleNamespace(
+            parse=lambda path: (_response(), 0.1), last_attempts=[]
+        ),
     )
 
     assert PARSER_NAME == "upstage"
@@ -144,6 +148,7 @@ def test_constants_cache_path_and_fixed_settings(tmp_path: Path) -> None:
     assert adapter.settings() == {
         "input": "pdf",
         "request_options": REQUEST_OPTIONS,
+        "adapter_revision": ADAPTER_REVISION,
     }
     assert cache_path(tmp_path, "hwp5", "a" * 64) == (
         tmp_path / f"data/raw/upstage/hwp5/{'a' * 64}.json"
@@ -436,6 +441,8 @@ def test_ledger_is_recorded_before_cache_write(
     item = _input(tmp_path)
 
     class FakeClient:
+        last_attempts: tuple[dict[str, object], ...] = ()
+
         def parse(self, path: Path) -> tuple[dict[str, object], float]:
             return _response(), 0.4
 
@@ -484,7 +491,10 @@ def test_success_records_once_then_cache_prevents_rebilling_and_hides_key(
     second = adapter.parse(item, root=tmp_path)
 
     assert calls == 1
-    assert first == second
+    # 캐시 적중은 HTTP 요청이 없어 attempts만 다르다.
+    assert [a["status"] for a in first.settings["attempts"]] == [200]
+    assert second.settings["attempts"] == []
+    assert replace(first, settings={**first.settings, "attempts": []}) == second
     ledger_text = (tmp_path / "data/manifest/costs.jsonl").read_text(encoding="utf-8")
     cache_text = cache_path(tmp_path, item.input_kind, item.input_sha256).read_text(
         encoding="utf-8"
@@ -624,6 +634,8 @@ def test_enhanced_usage_warns_and_is_saved_in_settings_and_run_record(
     item = _input(tmp_path)
 
     class FakeClient:
+        last_attempts: tuple[dict[str, object], ...] = ()
+
         def parse(self, path: Path) -> tuple[dict[str, object], float]:
             return _response(enhanced=1), 0.2
 
@@ -664,13 +676,15 @@ def test_plan_excludes_every_existing_cache_and_totals_tax_inclusive_cost(
 
     result = plan(tmp_path, [first, second])
 
+    # 10쪽 × $0.01 × 부가세 1.1 × 청구 여유 1.05
     assert result == DryRunPlan(
         uncached_count=1,
         page_count=10,
-        estimated_usd=pytest.approx(0.11),
+        estimated_usd=pytest.approx(0.1155),
         month_total_usd=0.0,
         monthly_budget_usd=45.0,
-        remaining_after_usd=pytest.approx(44.89),
+        remaining_after_usd=pytest.approx(44.8845),
+        billing_margin=1.05,
     )
 
 
@@ -684,7 +698,7 @@ def test_cli_dry_run_needs_no_key_and_over_budget_returns_one(
     monkeypatch.setattr(
         run_module,
         "plan",
-        lambda root, inputs: DryRunPlan(1, 2, 1.0, 44.5, 45.0, -0.5),
+        lambda root, inputs: DryRunPlan(1, 2, 1.0, 44.5, 45.0, -0.5, 1.05),
         raising=False,
     )
     monkeypatch.setattr(
@@ -700,7 +714,7 @@ def test_cli_dry_run_needs_no_key_and_over_budget_returns_one(
 
     assert exit_code == 1
     output = capsys.readouterr().out
-    assert "캐시 없음 1건 / 2쪽 / 예상 $1.00" in output
+    assert "캐시 없음 1건 / 2쪽 / 예상 $1.00 (세금 10%·여유 5% 포함)" in output
     assert "예산 초과" in output
 
 
@@ -973,3 +987,188 @@ def test_default_timeout_is_600_seconds_for_long_documents() -> None:
         assert client._client.timeout.read == 600.0
     finally:
         client._client.close()
+
+
+def test_client_records_status_and_time_of_every_attempt(tmp_path: Path) -> None:
+    item = _input(tmp_path)
+    clock = FakeClock()
+    calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise httpx.ConnectError("offline", request=request)
+        if calls == 2:
+            return httpx.Response(503, text="unavailable", request=request)
+        return httpx.Response(200, json=_response(), request=request)
+
+    client = UpstageClient(
+        SECRET,
+        transport=httpx.MockTransport(handler),
+        min_interval_s=0,
+        max_retries=2,
+        clock=clock,
+        sleep=clock.sleep,
+    )
+
+    client.parse(item.input_path)
+
+    assert [(a["status"], a["error"]) for a in client.last_attempts] == [
+        (None, "ConnectError"),
+        (503, None),
+        (200, None),
+    ]
+    assert all(isinstance(a["ts"], str) and a["ts"] for a in client.last_attempts)
+
+
+def test_failed_request_carries_its_attempts_into_the_run_record(
+    tmp_path: Path,
+) -> None:
+    item = _input(tmp_path)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(503, text="unavailable", request=request)
+
+    clock = FakeClock()
+    adapter = _adapter(
+        tmp_path,
+        lambda: UpstageClient(
+            SECRET,
+            transport=httpx.MockTransport(handler),
+            min_interval_s=0,
+            max_retries=2,
+            clock=clock,
+            sleep=clock.sleep,
+        ),
+    )
+
+    run(tmp_path, adapter, [item], out=io.StringIO())
+
+    record = json.loads(
+        (tmp_path / "data/manifest/parse_runs.jsonl").read_text().splitlines()[-1]
+    )
+    assert record["status"] == "failed"
+    assert [a["status"] for a in record["attempts"]] == [503, 503, 503]
+
+
+def test_run_record_has_request_attempts_then_none_on_cache_and_skip(
+    tmp_path: Path,
+) -> None:
+    item = _input(tmp_path)
+
+    class FakeClient:
+        last_attempts = (
+            {"status": 503, "error": None, "ts": "t1"},
+            {"status": 200, "error": None, "ts": "t2"},
+        )
+
+        def parse(self, path: Path) -> tuple[dict[str, object], float]:
+            return _response(), 0.2
+
+    run(tmp_path, _adapter(tmp_path, FakeClient), [item], out=io.StringIO())
+    run(tmp_path, _adapter(tmp_path, FakeClient), [item], out=io.StringIO())
+    run(
+        tmp_path,
+        _adapter(tmp_path, FakeClient),
+        [item],
+        force=True,
+        out=io.StringIO(),
+    )
+
+    fresh, skipped, cached = [
+        json.loads(line)
+        for line in (tmp_path / "data/manifest/parse_runs.jsonl")
+        .read_text()
+        .splitlines()
+    ]
+    assert [a["status"] for a in fresh["attempts"]] == [503, 200]
+    assert skipped["status"] == "skipped"
+    assert skipped["attempts"] is None
+    # 캐시 적중은 HTTP 요청이 없으므로 빈 목록이다.
+    assert cached["attempts"] == []
+
+
+def test_budget_check_uses_billing_margin_but_ledger_keeps_usage_pages(
+    tmp_path: Path,
+) -> None:
+    item = _input(tmp_path, page_count=100)
+
+    class FakeClient:
+        last_attempts: tuple[dict[str, object], ...] = ()
+
+        def parse(self, path: Path) -> tuple[dict[str, object], float]:
+            return _response(pages=100), 0.2
+
+    # 100쪽: 세금 포함 $1.10, 여유 5% 포함 $1.155
+    with pytest.raises(BudgetExceededError):
+        _adapter(tmp_path, FakeClient, budget=1.12).parse(item, root=tmp_path)
+
+    _adapter(tmp_path, FakeClient, budget=1.16).parse(item, root=tmp_path)
+
+    record = json.loads(
+        (tmp_path / "data/manifest/costs.jsonl").read_text(encoding="utf-8")
+    )
+    assert record["quantity"] == 100
+    assert record["amount_usd"] == pytest.approx(1.10)
+
+
+def test_nested_table_is_flattened_into_outer_cell_and_marked(tmp_path: Path) -> None:
+    item = _input(tmp_path)
+    html = """
+        <table>
+          <tr><th>구분</th><th>내용</th></tr>
+          <tr><td>항목</td><td>바깥<table><tr><td>안1</td><td>안2</td></tr>
+            <tr><td>안3</td></tr></table>끝</td></tr>
+        </table>
+    """
+    response = _response(
+        elements=[
+            {
+                "id": 1,
+                "category": "table",
+                "page": 1,
+                "content": {"text": "표", "html": html},
+            }
+        ]
+    )
+
+    parsed = response_to_parsed(
+        response,
+        item=item,
+        root=tmp_path,
+        settings={"input": "pdf", "request_options": REQUEST_OPTIONS},
+        elapsed_s=0.1,
+    )
+
+    (table,) = parsed.tables
+    assert table.invalid_reason is None
+    assert table.nested is True
+    assert cells_to_grid(table.cells) == [
+        ["구분", "내용"],
+        ["항목", "바깥 안1 안2 안3 끝"],
+    ]
+
+
+def test_flat_table_is_not_marked_nested(tmp_path: Path) -> None:
+    item = _input(tmp_path)
+    response = _response(
+        elements=[
+            {
+                "id": 1,
+                "category": "table",
+                "page": 1,
+                "content": {"text": "표", "html": "<table><tr><td>a</td></tr></table>"},
+            }
+        ]
+    )
+
+    parsed = response_to_parsed(
+        response,
+        item=item,
+        root=tmp_path,
+        settings={"input": "pdf", "request_options": REQUEST_OPTIONS},
+        elapsed_s=0.1,
+    )
+
+    assert parsed.tables[0].nested is False

@@ -147,6 +147,12 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **출처**: M2 step 3 이후 (42777a9)
 - **M2 사례(집계 분모·분자의 대상 집합 불일치)**: `parse-docling` 요약의 sec/page가 1차에는 실패 문서 시간을 분자에 넣어 0.884, 2차에는 건너뛴 문서 쪽수를 분모에 넣어 0.223이었다(문서별 elapsed_s 합 기준 실측 0.384). 결과 보고서도 쪽당 시간에 init_s를 더했다. 비율 지표는 **분자와 분모를 같은 대상 집합**(이번 실행에서 파싱한 ok 문서)에서 구하고, 초기화 시간은 별도 열로 둔다. 강제 수단: `test_seconds_per_page_uses_only_documents_parsed_ok_in_this_run`, `test_cost_table_excludes_model_loading_from_seconds_per_page`.
 
+### FP-037 과금 원장을 공급자 청구와 대조하지 않아 과소 기록을 모름
+- **증상**: 업스테이지 원장은 응답 `usage.pages` 합 1887쪽(115건)인데 콘솔 청구는 1947쪽(+60쪽, +3.2%)이었다. 응답 쪽수·캐시·원장 건수가 모두 맞아 코드만으로는 차이를 알 수 없었다. 콘솔 CSV는 일 합계 한 줄뿐이라 요청 단위 대조도 불가능했고, 원인(미기록 5xx 재시도 과금 또는 청구 쪽수 계산 차이 추정)은 확인하지 못했다.
+- **규칙**: 과금 API의 첫 실행 뒤 공급자 콘솔 청구와 원장을 대조하고, 차이는 예산 검사 여유(`billing_margin`)로 반영한다. 원장은 응답 값 그대로 두고 여유는 사전 검사·dry-run에만 쓴다. 요청마다 HTTP 시도별 상태를 남겨(`attempts`) 다음 대조에서 재시도 과금을 가려낼 수 있게 한다. 과금 실행 절차에 실행 전후 콘솔 Usage 기록을 넣는다.
+- **강제 수단**: `tests/parsing/test_upstage_adapter.py`(`test_budget_check_uses_billing_margin_but_ledger_keeps_usage_pages`, `test_client_records_status_and_time_of_every_attempt`, `test_failed_request_carries_its_attempts_into_the_run_record`), 결과 문서 틀 2절 9번·7절
+- **출처**: M2 업스테이지 실측 대조
+
 ## E. 프로세스
 
 ### FP-040 지시에 없는 네트워크 요청·다운로드

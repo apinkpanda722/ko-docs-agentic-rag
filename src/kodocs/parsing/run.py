@@ -71,6 +71,7 @@ PARSE_RUN_REQUIRED_FIELDS = frozenset(
         "possibly_truncated",
         "skipped_items",
         "table_dropped_warnings",
+        "attempts",
         "init_s",
         "billing_uncertain",
         "error_type",
@@ -475,6 +476,7 @@ def run(
                 init_s=init_s,
                 document_settings=None,
                 billing_uncertain=isinstance(exc, BillingUncertainError),
+                attempts=getattr(exc, "attempts", None),  # set by UpstageClient
             )
             _append_run(manifest_path, record)
             latest_by_key[key] = record
@@ -507,6 +509,7 @@ def run(
             error=None,
             init_s=init_s,
             document_settings=document.settings,
+            attempts=document.settings.get("attempts"),
         )
         _append_run(manifest_path, record)
         latest_by_key[key] = record
@@ -708,7 +711,8 @@ def _print_upstage_plan(dry_run_plan: DryRunPlan) -> None:
     print(
         f"캐시 없음 {dry_run_plan.uncached_count}건 / "
         f"{dry_run_plan.page_count}쪽 / "
-        f"예상 ${dry_run_plan.estimated_usd:.2f} (세금 10% 포함) / "
+        f"예상 ${dry_run_plan.estimated_usd:.2f} "
+        f"(세금 10%·여유 {round((dry_run_plan.billing_margin - 1) * 100):g}% 포함) / "
         f"이번 달 누적 ${dry_run_plan.month_total_usd:.2f} / "
         f"상한 ${dry_run_plan.monthly_budget_usd:.2f} / "
         f"실행 후 남은 예산 ${dry_run_plan.remaining_after_usd:.2f}"
@@ -836,6 +840,7 @@ def _record(
     init_s: float | None,
     document_settings: Mapping[str, object] | None,
     billing_uncertain: bool = False,
+    attempts: object = None,
 ) -> dict[str, object]:
     return {
         "run_id": run_id,
@@ -878,6 +883,9 @@ def _record(
             if document_settings is not None
             else None
         ),
+        # Paid-API HTTP attempts made in this run; None when no request was made
+        # by this record (skipped, local parsers).
+        "attempts": attempts,
         "init_s": init_s,
         "billing_uncertain": billing_uncertain,
         "error_type": error_type,

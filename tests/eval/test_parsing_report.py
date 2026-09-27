@@ -423,3 +423,29 @@ def test_cost_table_excludes_model_loading_from_seconds_per_page(
         "30.000(최초), 10.000 | 0.0000 | 0.0000 |"
     ) in rendered
     assert "모델 로딩(초)" in rendered
+
+
+def test_table_score_table_adds_rows_excluding_nested_tables(tmp_path: Path) -> None:
+    _write_manifests(tmp_path)
+    score_path = tmp_path / "data/manifest/table_scores.json"
+    scores = json.loads(score_path.read_text(encoding="utf-8"))
+    scores["parsers_excluding_nested"] = {
+        "docling": {
+            "applicable": True,
+            "measured": 1,
+            "cell_exact_rate_mean": 0.75,
+            "cell_sim_mean": 0.9,
+        },
+        "upstage": {"applicable": True, "measured": 0},
+    }
+    scores["scores"][1]["nested"] = True
+    _write_json(score_path, scores)
+
+    rendered = render_tables(tmp_path)
+
+    assert "| upstage | 채점됨 | 1 | 1.0000 | 1.0000 | 1 |" in rendered
+    assert (
+        "| upstage (중첩 제외) | 채점됨 | 0 | (실행 후 기록) | (실행 후 기록) | 0 |"
+        in rendered
+    )
+    assert "| docling (중첩 제외) | 채점됨 | 1 | 0.7500 | 0.9000 | 0 |" in rendered

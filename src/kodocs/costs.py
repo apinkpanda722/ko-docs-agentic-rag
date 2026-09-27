@@ -25,6 +25,9 @@ class Price:
     unit_price_usd: float
     source_url: str
     checked_on: str
+    # Budget-check multiplier for provider billing above recorded usage. It is
+    # applied only to pre-call estimates (BudgetGuard, dry-run), never to the ledger.
+    billing_margin: float = 1.0
 
 
 _UPSTAGE_DOCUMENT_PARSE_STANDARD = Price(
@@ -33,6 +36,9 @@ _UPSTAGE_DOCUMENT_PARSE_STANDARD = Price(
     unit_price_usd=0.01,
     source_url="https://console.upstage.ai/docs/models/compare/document-intelligence",
     checked_on="2026-09-26",
+    # M2 measurement: ledger 1887 pages (response usage.pages) vs console 1947
+    # pages (+60, +3.2%) for the same 115 requests; cause unconfirmed. 5% margin.
+    billing_margin=1.05,
 )
 
 PRICES: Mapping[str, Price] = MappingProxyType(
@@ -57,6 +63,11 @@ def estimate_usd(
     _require_non_negative_finite(quantity, name="quantity")
     _require_non_negative_finite(tax_rate, name="tax_rate")
     return quantity * price.unit_price_usd * (1 + tax_rate)
+
+
+def budget_estimate_usd(service: str, quantity: float) -> float:
+    """Tax-inclusive estimate times the service billing margin, for budget checks."""
+    return estimate_usd(service, quantity) * PRICES[service].billing_margin
 
 
 @dataclass(frozen=True)

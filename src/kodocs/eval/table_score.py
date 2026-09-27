@@ -41,6 +41,8 @@ class TableScore:
     cell_sim_mean: float | None
     invalid_candidates: int
     reason: str | None
+    # Golden marked nested, or the selected parser table flattened inner tables.
+    nested: bool = False
 
 
 def score_table(golden_grid: list[list[str]], parsed: ParsedDocument) -> TableScore:
@@ -96,6 +98,7 @@ def score_table(golden_grid: list[list[str]], parsed: ParsedDocument) -> TableSc
         cell_sim_mean=similarity,
         invalid_candidates=invalid_count,
         reason=reason,
+        nested=parsed.tables[best_index].nested,
     )
 
 
@@ -129,7 +132,10 @@ def run(root: Path, *, out: TextIO = sys.stdout) -> dict[str, object]:
             )
             continue
 
-        _, markdown = parse_markdown_document(golden_path.read_text(encoding="utf-8"))
+        metadata, markdown = parse_markdown_document(
+            golden_path.read_text(encoding="utf-8")
+        )
+        golden_nested = metadata.get("nested") is True
         golden_grid = markdown_to_grid(markdown)
         _validate_grid(golden_grid, golden_id)
         pdf_sha256 = value.get("pdf_sha256")
@@ -147,16 +153,30 @@ def run(root: Path, *, out: TextIO = sys.stdout) -> dict[str, object]:
                     if parsed is None
                     else score_table(golden_grid, parsed)
                 )
-            scores.append(replace(score, golden_id=golden_id))
+            scores.append(
+                replace(
+                    score,
+                    golden_id=golden_id,
+                    nested=score.nested or golden_nested,
+                )
+            )
 
     summaries = {
         parser: _aggregate([score for score in scores if score.parser == parser])
+        for parser in DEFAULT_PARSERS
+    }
+    summaries_excluding_nested = {
+        parser: _aggregate(
+            [score for score in scores if score.parser == parser and not score.nested]
+        )
         for parser in DEFAULT_PARSERS
     }
     result: dict[str, object] = {
         "generated_at": now_iso(),
         "table_golden_sha256": sha256_file(manifest_path),
         "parsers": summaries,
+        # Same aggregate without goldens or selected tables involving nested tables.
+        "parsers_excluding_nested": summaries_excluding_nested,
         "scores": [asdict(score) for score in scores],
     }
     _write_json_atomic(root / "data/manifest/table_scores.json", result)

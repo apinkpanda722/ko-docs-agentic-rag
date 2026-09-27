@@ -145,3 +145,13 @@ def test_from_json_defaults_missing_invalid_reason_to_none() -> None:
     restored = from_json(json.dumps(payload))
 
     assert restored.tables[0].invalid_reason is None
+
+
+def test_nested_table_flag_round_trips_and_defaults_to_false() -> None:
+    document = _document()
+    nested = replace(document, tables=(replace(document.tables[0], nested=True),))
+
+    assert from_json(to_json(nested)).tables[0].nested is True
+    payload = json.loads(to_json(document))
+    del payload["tables"][0]["nested"]
+    assert from_json(json.dumps(payload)).tables[0].nested is False

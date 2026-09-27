@@ -469,26 +469,38 @@ def _table_score_table(
     golden_values = table_golden.get("tables") if table_golden else None
     golden_count = len(golden_values) if isinstance(golden_values, list) else None
     summaries = _mapping(table_scores.get("parsers")) if table_scores else None
+    excluding = (
+        _mapping(table_scores.get("parsers_excluding_nested")) if table_scores else None
+    )
     score_rows = table_scores.get("scores") if table_scores else None
     rows: list[list[object]] = []
     for parser in _PARSERS:
         if parser == "pypdf":
             rows.append([parser, "해당 없음(표 추출 기능 없음)", "-", "-", "-", "-"])
             continue
-        summary = _mapping(summaries.get(parser)) if summaries else None
-        rows.append(
-            [
-                parser,
-                "채점됨" if summary and summary.get("applicable") else None,
-                _field(summary, "measured"),
-                _decimal(_field(summary, "cell_exact_rate_mean")),
-                _decimal(_field(summary, "cell_sim_mean")),
-                _shape_match_count(score_rows, parser),
-            ]
-        )
+        variants: list[tuple[str, Mapping[str, object] | None, bool]] = [
+            (parser, _mapping(summaries.get(parser)) if summaries else None, True)
+        ]
+        if excluding is not None:
+            variants.append(
+                (f"{parser} (중첩 제외)", _mapping(excluding.get(parser)), False)
+            )
+        for label, summary, include_nested in variants:
+            rows.append(
+                [
+                    label,
+                    "채점됨" if summary and summary.get("applicable") else None,
+                    _field(summary, "measured"),
+                    _decimal(_field(summary, "cell_exact_rate_mean")),
+                    _decimal(_field(summary, "cell_sim_mean")),
+                    _shape_match_count(
+                        score_rows, parser, include_nested=include_nested
+                    ),
+                ]
+            )
     return _table(
         "표 셀 일치",
-        f"분모: 사람 검수 표 정답 {_display(golden_count)}개 중 파서별 채점 가능 정답. 고정 조건: 병합 셀은 덮는 모든 칸에 복제하고 여러 쪽 표도 엄격하게 채점한다.",
+        f"분모: 사람 검수 표 정답 {_display(golden_count)}개 중 파서별 채점 가능 정답. '중첩 제외' 행은 정답이 중첩 표이거나 선택된 파서 표가 중첩 표를 평탄화한 경우를 뺀다. 고정 조건: 병합 셀은 덮는 모든 칸에 복제하고, 중첩 표 셀 텍스트는 바깥 셀에 문서 순서대로 이어 붙이며(HWPX 정답과 같은 규칙), 여러 쪽 표도 엄격하게 채점한다.",
         [
             "파서",
             "적용",
@@ -837,7 +849,9 @@ def _addenda_match_rate(
     ) / len(selected)
 
 
-def _shape_match_count(values: object, parser: str) -> int | None:
+def _shape_match_count(
+    values: object, parser: str, *, include_nested: bool = True
+) -> int | None:
     if not isinstance(values, list):
         return None
     measured = [
@@ -846,6 +860,7 @@ def _shape_match_count(values: object, parser: str) -> int | None:
         if (item := _mapping(value)) is not None
         and item.get("parser") == parser
         and _is_number(item.get("cell_exact_rate"))
+        and (include_nested or item.get("nested") is not True)
     ]
     return sum(item.get("shape_match") is True for item in measured)
 

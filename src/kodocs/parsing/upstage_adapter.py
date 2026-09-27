@@ -19,9 +19,10 @@ import httpx
 from kodocs.config import load_settings
 from kodocs.costs import (
     DEFAULT_LEDGER_PATH,
+    PRICES,
     BudgetGuard,
     CostLedger,
-    estimate_usd,
+    budget_estimate_usd,
 )
 from kodocs.ingest.manifest import now_iso, repo_relative
 from kodocs.parsing.schema import (
@@ -37,7 +38,7 @@ from kodocs.parsing.schema import (
     build_table,
     settings_hash,
 )
-from kodocs.parsing.tables import cells_to_grid, place_html_rows
+from kodocs.parsing.tables import cells_to_grid, join_cell_text, place_html_rows
 
 if TYPE_CHECKING:
     from kodocs.parsing.run import ParseInput
@@ -46,6 +47,9 @@ PARSER_NAME = "upstage"
 PARSER_NAME_DIRECT = "upstage-direct"
 SERVICE = "upstage.document-parse.standard"
 ESTIMATE_PAGE_FACTOR_DIRECT = 1.5
+# Bump when blocks/tables built from the same cached response change, so stored
+# outputs are rebuilt from the cache (no API call). 2: nested tables flattened.
+ADAPTER_REVISION = 2
 REQUEST_OPTIONS: Mapping[str, str] = {
     "model": "document-parse",
     "mode": "standard",
@@ -129,9 +133,23 @@ class UpstageClient:
         self._clock = clock
         self._sleep = sleep
         self._last_request_started: float | None = None
+        # HTTP attempts of the latest parse(): [{"status", "error", "ts"}].
+        self.last_attempts: list[dict[str, object]] = []
 
     def parse(self, path: Path) -> tuple[dict[str, object], float]:
-        """Post one document and return a validated, secret-free JSON response."""
+        """Post one document and return a validated, secret-free JSON response.
+
+        Every HTTP attempt is kept in ``last_attempts``; a raised ``ParseError``
+        carries the same list as ``attempts`` for the run record.
+        """
+        self.last_attempts = []
+        try:
+            return self._parse(path)
+        except ParseError as exc:
+            exc.attempts = list(self.last_attempts)  # type: ignore[attr-defined]
+            raise
+
+    def _parse(self, path: Path) -> tuple[dict[str, object], float]:
         started = self._clock()
         response: httpx.Response | None = None
 
@@ -147,6 +165,7 @@ class UpstageClient:
             # The connection never opened, so the request was not sent and
             # cannot have been billed: safe to retry.
             except (httpx.ConnectError, httpx.ConnectTimeout) as exc:
+                self._record_attempt(None, exc)
                 if attempt < self._max_retries:
                     self._sleep(self._backoff_s * 2**attempt)
                     continue
@@ -158,11 +177,13 @@ class UpstageClient:
             # and billed it before the response was lost; resending could bill
             # twice, and the ledger only records successes. Do not retry.
             except httpx.TransportError as exc:
+                self._record_attempt(None, exc)
                 raise BillingUncertainError(
                     f"{_BILLING_UNCERTAIN_MESSAGE} ({type(exc).__name__})"
                 ) from exc
 
             status = response.status_code
+            self._record_attempt(status, None)
             if status in _FATAL_STATUSES:
                 raise FatalParseError(
                     f"Upstage HTTP {status}: 인증·결제·권한 문제로 실행을 멈춥니다: "
@@ -202,6 +223,15 @@ class UpstageClient:
         payload = _secret_free_payload(raw_payload, self._api_key)
         validated = _validated_response(payload, body=self._safe_body(response))
         return validated, self._clock() - started
+
+    def _record_attempt(self, status: int | None, exc: Exception | None) -> None:
+        self.last_attempts.append(
+            {
+                "status": status,
+                "error": type(exc).__name__ if exc is not None else None,
+                "ts": now_iso(),
+            }
+        )
 
     def _wait_for_request_slot(self) -> None:
         now = self._clock()
@@ -257,7 +287,11 @@ class UpstageAdapter:
 
     def settings(self) -> Mapping[str, object]:
         """Return only output-determining input and request settings."""
-        return {"input": "pdf", "request_options": dict(REQUEST_OPTIONS)}
+        return {
+            "input": "pdf",
+            "request_options": dict(REQUEST_OPTIONS),
+            "adapter_revision": ADAPTER_REVISION,
+        }
 
     def parse(self, item: ParseInput, *, root: Path) -> ParsedDocument:
         """Use an existing cache or make one guarded, billed API call."""
@@ -283,6 +317,7 @@ class UpstageAdapter:
                 root=root,
                 settings=current_settings,
                 elapsed_s=elapsed_s,
+                attempts=[],  # cache hit: no HTTP request in this run
             )
 
         estimated_pages = self._estimated_pages(item)
@@ -291,7 +326,8 @@ class UpstageAdapter:
                 "업스테이지 호출 전 파일 크기 검사가 실패했습니다: "
                 f"최대 {MAX_FILE_BYTES} bytes"
             )
-        self._guard.check(estimate_usd(SERVICE, estimated_pages))
+        # Budget check only: includes the provider billing margin (see costs.PRICES).
+        self._guard.check(budget_estimate_usd(SERVICE, estimated_pages))
 
         if self._client is None:
             self._client = self._client_factory()
@@ -325,6 +361,7 @@ class UpstageAdapter:
             root=root,
             settings=current_settings,
             elapsed_s=elapsed_s,
+            attempts=self._client.last_attempts,
         )
 
     def _estimated_pages(self, item: ParseInput) -> int:
@@ -344,6 +381,7 @@ class UpstageAdapter:
         root: Path,
         settings: Mapping[str, object],
         elapsed_s: float,
+        attempts: Sequence[Mapping[str, object]],
     ) -> ParsedDocument:
         return response_to_parsed(
             response,
@@ -352,6 +390,7 @@ class UpstageAdapter:
             settings=settings,
             elapsed_s=elapsed_s,
             parser_name=self.name,
+            extra_settings={"attempts": list(attempts)},
         )
 
     def _warn_response(self, response: Mapping[str, object], item: ParseInput) -> None:
@@ -379,6 +418,7 @@ class UpstageDirectAdapter(UpstageAdapter):
             "input": "original",
             "request_options": dict(REQUEST_OPTIONS),
             "estimate_page_factor": ESTIMATE_PAGE_FACTOR_DIRECT,
+            "adapter_revision": ADAPTER_REVISION,
         }
 
     def _estimated_pages(self, item: ParseInput) -> int:
@@ -396,6 +436,7 @@ class UpstageDirectAdapter(UpstageAdapter):
         root: Path,
         settings: Mapping[str, object],
         elapsed_s: float,
+        attempts: Sequence[Mapping[str, object]],
     ) -> ParsedDocument:
         usage = response["usage"]
         assert isinstance(usage, Mapping)
@@ -409,7 +450,10 @@ class UpstageDirectAdapter(UpstageAdapter):
             elapsed_s=elapsed_s,
             parser_name=self.name,
             page_count=pages,
-            extra_settings={"possibly_truncated": pages >= MAX_PAGES_PER_REQUEST},
+            extra_settings={
+                "possibly_truncated": pages >= MAX_PAGES_PER_REQUEST,
+                "attempts": list(attempts),
+            },
         )
 
     def _warn_response(self, response: Mapping[str, object], item: ParseInput) -> None:
@@ -503,6 +547,7 @@ class DryRunPlan:
     month_total_usd: float
     monthly_budget_usd: float
     remaining_after_usd: float
+    billing_margin: float = 1.0
 
     @property
     def exceeds_budget(self) -> bool:
@@ -528,7 +573,7 @@ def plan(
         for item in uncached
         if item.page_count is not None and item.page_count > 0
     )
-    estimated = estimate_usd(SERVICE, page_count)
+    estimated = budget_estimate_usd(SERVICE, page_count)
     settings = load_settings()
     ledger = CostLedger(root / DEFAULT_LEDGER_PATH)
     month_total = ledger.month_total_usd()
@@ -539,6 +584,7 @@ def plan(
         month_total_usd=month_total,
         monthly_budget_usd=settings.monthly_budget_usd,
         remaining_after_usd=(settings.monthly_budget_usd - month_total - estimated),
+        billing_margin=PRICES[SERVICE].billing_margin,
     )
 
 
@@ -639,18 +685,20 @@ def _build_upstage_table(
     block_position: int,
 ) -> tuple[ParsedTable, str]:
     cells: list[TableCell] = []
+    nested = False
     try:
-        rows = _html_rows(html)
+        rows, nested = _html_table(html)
         cells = place_html_rows(rows)
         # Validate with the shared grid implementation before serialization.
         cells_to_grid(cells)
         _reject_row_overflow(rows, cells)
-        return build_table(page, block_position, cells)
+        table, text = build_table(page, block_position, cells)
+        return replace(table, nested=nested), text
     except Exception as exc:  # noqa: BLE001 - isolate one malformed paid table
         reason = _first_line(f"table_parse: {type(exc).__name__}: {exc}")
         if cells:
             table, text = build_table(page, block_position, cells)
-            return replace(table, invalid_reason=reason), text
+            return replace(table, invalid_reason=reason, nested=nested), text
         empty_table, _empty_text = build_table(page, block_position, ())
         return replace(empty_table, invalid_reason=reason), fallback_text
 
@@ -668,13 +716,20 @@ def _reject_row_overflow(
 
 
 class _TableHTMLParser(HTMLParser):
+    """Parse one HTML table; inner tables inside a cell are flattened into it.
+
+    An inner table's cell texts join the containing outer cell in document
+    order (``join_cell_text``), the same rule as the HWPX golden drafts.
+    """
+
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.rows: list[list[tuple[str, int, int]]] = []
-        self._in_table = False
+        self.nested = False
+        self._depth = 0  # 1 = outer table, >1 = inside a flattened inner table
         self._table_count = 0
         self._row: list[tuple[str, int, int]] | None = None
-        self._cell_text: list[str] | None = None
+        self._cell_parts: list[str] | None = None
         self._cell_span: tuple[int, int] | None = None
 
     def handle_starttag(
@@ -684,24 +739,34 @@ class _TableHTMLParser(HTMLParser):
     ) -> None:
         tag = tag.casefold()
         if tag == "table":
-            if self._in_table:
-                raise ValueError("nested <table> is not supported")
-            self._in_table = True
-            self._table_count += 1
-        elif tag == "tr" and self._in_table:
+            if self._depth == 0:
+                self._depth = 1
+                self._table_count += 1
+            elif self._cell_parts is not None:
+                self._depth += 1
+                self.nested = True
+                self._cell_parts.append("")
+            else:
+                raise ValueError("nested <table> outside a cell is not supported")
+        elif self._depth > 1:
+            if tag in {"td", "th"} and self._cell_parts is not None:
+                self._cell_parts.append("")
+            elif tag == "br" and self._cell_parts is not None:
+                self._cell_parts[-1] += " "
+        elif tag == "tr" and self._depth == 1:
             if self._row is not None:
                 raise ValueError("nested or unclosed <tr>")
             self._row = []
-        elif tag in {"td", "th"} and self._in_table:
-            if self._row is None or self._cell_text is not None:
+        elif tag in {"td", "th"} and self._depth == 1:
+            if self._row is None or self._cell_parts is not None:
                 raise ValueError(f"misplaced <{tag}>")
             attributes = {name.casefold(): value for name, value in attrs}
             row_span = _span(attributes.get("rowspan"), "rowspan")
             col_span = _span(attributes.get("colspan"), "colspan")
-            self._cell_text = []
+            self._cell_parts = [""]
             self._cell_span = (row_span, col_span)
-        elif tag == "br" and self._cell_text is not None:
-            self._cell_text.append(" ")
+        elif tag == "br" and self._cell_parts is not None:
+            self._cell_parts[-1] += " "
 
     def handle_startendtag(
         self,
@@ -716,51 +781,58 @@ class _TableHTMLParser(HTMLParser):
 
     def handle_endtag(self, tag: str) -> None:
         tag = tag.casefold()
-        if tag in {"td", "th"} and self._in_table:
-            if self._row is None or self._cell_text is None or self._cell_span is None:
+        if self._depth > 1:
+            if tag == "table":
+                self._depth -= 1
+                if self._cell_parts is not None:
+                    self._cell_parts.append("")
+            return
+        if tag in {"td", "th"} and self._depth == 1:
+            if self._row is None or self._cell_parts is None or self._cell_span is None:
                 raise ValueError(f"unexpected </{tag}>")
             self._row.append(
                 (
-                    "".join(self._cell_text).strip(),
+                    join_cell_text(self._cell_parts),
                     self._cell_span[0],
                     self._cell_span[1],
                 )
             )
-            self._cell_text = None
+            self._cell_parts = None
             self._cell_span = None
-        elif tag == "tr" and self._in_table:
-            if self._row is None or self._cell_text is not None:
+        elif tag == "tr" and self._depth == 1:
+            if self._row is None or self._cell_parts is not None:
                 raise ValueError("unexpected or incomplete </tr>")
             self.rows.append(self._row)
             self._row = None
         elif tag == "table":
             if (
-                not self._in_table
+                self._depth != 1
                 or self._row is not None
-                or self._cell_text is not None
+                or self._cell_parts is not None
             ):
                 raise ValueError("unexpected or incomplete </table>")
-            self._in_table = False
+            self._depth = 0
 
     def handle_data(self, data: str) -> None:
-        if self._cell_text is not None:
-            self._cell_text.append(data)
+        if self._cell_parts is not None:
+            self._cell_parts[-1] += data
 
     def finish(self) -> list[list[tuple[str, int, int]]]:
         if self._table_count == 0:
             raise ValueError("<table> not found")
         if self._table_count != 1:
             raise ValueError("exactly one <table> is required")
-        if self._in_table or self._row is not None or self._cell_text is not None:
+        if self._depth or self._row is not None or self._cell_parts is not None:
             raise ValueError("unclosed table markup")
         return self.rows
 
 
-def _html_rows(html: str) -> list[list[tuple[str, int, int]]]:
+def _html_table(html: str) -> tuple[list[list[tuple[str, int, int]]], bool]:
+    """Return outer-table rows and whether inner tables were flattened."""
     parser = _TableHTMLParser()
     parser.feed(html)
     parser.close()
-    return parser.finish()
+    return parser.finish(), parser.nested
 
 
 def _span(value: str | None, name: str) -> int:

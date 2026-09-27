@@ -16,7 +16,7 @@ from kodocs.ingest.filetype import FileKind, sniff
 from kodocs.ingest.manifest import repo_relative, sha256_file
 from kodocs.parsing.articles import ANNEX_RE
 from kodocs.parsing.schema import TableCell
-from kodocs.parsing.tables import cells_to_grid, grid_to_markdown
+from kodocs.parsing.tables import cells_to_grid, grid_to_markdown, join_cell_text
 
 _SECTION_RE = re.compile(r"^Contents/section(?P<number>\d+)\.xml$")
 _ANNEX_KIND_RANK = {"별표": 0, "별지": 1, "서식": 2, "부록": 3, None: 4}
@@ -229,7 +229,7 @@ def _cell_text(cell: ET.Element, parents: Mapping[ET.Element, ET.Element]) -> st
                     if _local_name(node.tag) == "t"
                 )
             )
-    return " ".join(paragraphs).strip()
+    return join_cell_text(paragraphs)
 
 
 def _generate_drafts(root: Path, *, out: TextIO) -> int:
