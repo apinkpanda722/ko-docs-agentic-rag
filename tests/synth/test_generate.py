@@ -491,7 +491,7 @@ def test_ended_batch_collects_by_custom_id_and_marks_collected(
     result = BatchResult(
         custom_id=request.custom_id,
         result_type="succeeded",
-        text="# 생성 결과\n⟦F:test⟧그대로⟦/F⟧",
+        text='# 생성 결과\n<fact id="test">그대로</fact>',
         model="claude-sonnet-5-20260901",
         stop_reason="end_turn",
         usage={"input_tokens": 10, "output_tokens": 20},
@@ -940,3 +940,136 @@ def test_dry_run_with_limit_lists_selected_doc_ids(
     ]
     line = next(line for line in printed if line.startswith("선택 문서"))
     assert all(doc_id in line for doc_id in expected)
+
+
+def test_prompts_for_all_plans_carry_no_person_ids_or_helper_wording(
+    corpus: tuple[Seed, list[DocPlan]], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    seed, plans = corpus
+    monkeypatch.setattr(
+        generate,
+        "_default_canary_values",
+        lambda: {
+            plan.canary_fact_id: "청록고래-1000"
+            for plan in plans
+            if plan.canary_fact_id
+        },
+    )
+    person_id = re.compile(r"(?<![A-Za-z0-9-])p-\d{3}(?!\d)")
+    for plan in plans:
+        request, _ = build_request(plan, seed, config=_config(), attempt=1)
+        assert person_id.search(request.user) is None, plan.doc_id
+        assert "문서 날짜 기준" not in request.user, plan.doc_id
+        assert "⟦" not in request.user and "⟧" not in request.user
+    assert '<fact id="f-example-restored">2026-06-25 15:18</fact>' in request.system
+    assert "⟦" not in request.system
+
+
+def _store_attempt(
+    root: Path,
+    plan: DocPlan,
+    seed: Seed,
+    *,
+    attempt: int,
+    template: str | None = None,
+    passed: bool = False,
+) -> None:
+    record = _cache_record(root, plan, seed, result_type="succeeded", attempt=attempt)
+    request, _ = generate._build_request(
+        plan, seed, config=_config(), attempt=attempt, canary_values={}
+    )
+    record["cache_key"] = request.cache_key
+    if template is not None:
+        record["template_hash"] = template
+    (root / GENERATIONS_DIR / f"{request.cache_key}.json").write_text(
+        json.dumps(record, ensure_ascii=False, sort_keys=True), encoding="utf-8"
+    )
+    if passed:
+        document = root / "data/synthetic/docs" / f"{plan.doc_id}.json"
+        document.parent.mkdir(parents=True, exist_ok=True)
+        document.write_text(
+            json.dumps({"generation": {"cache_key": request.cache_key}}),
+            encoding="utf-8",
+        )
+
+
+def test_document_from_older_prompt_revision_is_regenerated_even_if_it_passed(
+    corpus: tuple[Seed, list[DocPlan]], tmp_path: Path
+) -> None:
+    seed, plans = corpus
+    plan = plans[0]
+    _store_attempt(tmp_path, plan, seed, attempt=1, template="0" * 64, passed=True)
+
+    assert pending_docs(tmp_path, [plan], config=_config()) == [(plan, 2)]
+
+
+def test_document_from_current_revision_that_passed_is_not_regenerated(
+    corpus: tuple[Seed, list[DocPlan]], tmp_path: Path
+) -> None:
+    seed, plans = corpus
+    plan = plans[0]
+    _store_attempt(tmp_path, plan, seed, attempt=1, passed=True)
+
+    assert pending_docs(tmp_path, [plan], config=_config()) == []
+
+
+def test_attempt_cap_counts_only_the_current_prompt_revision(
+    corpus: tuple[Seed, list[DocPlan]], tmp_path: Path
+) -> None:
+    seed, plans = corpus
+    old_revision, current_revision = plans[0], plans[1]
+    failures = tmp_path / "data/synthetic/validation_failures.jsonl"
+    failures.parent.mkdir(parents=True, exist_ok=True)
+    lines = []
+    for attempt in (1, 2, 3):
+        _store_attempt(tmp_path, old_revision, seed, attempt=attempt, template="0" * 64)
+        _store_attempt(tmp_path, current_revision, seed, attempt=attempt)
+        for plan in (old_revision, current_revision):
+            lines.append(
+                json.dumps(
+                    {
+                        "doc_id": plan.doc_id,
+                        "attempt": attempt,
+                        "issues": [{"code": "marker_malformed", "detail": "x"}],
+                    }
+                )
+            )
+    failures.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    pending = pending_docs(
+        tmp_path, [old_revision, current_revision], config=_config(max_attempts=3)
+    )
+
+    assert pending == [(old_revision, 4)]
+    assert generate._exhausted_docs(
+        tmp_path, [old_revision, current_revision], config=_config(max_attempts=3)
+    ) == [current_revision.doc_id]
+
+
+def test_only_attempted_limits_scope_to_documents_with_history(
+    corpus: tuple[Seed, list[DocPlan]],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seed, plans = corpus
+    _prepare_root(tmp_path, plans, monkeypatch, seed)
+    attempted = plans[:3]
+    for plan in attempted:
+        _store_attempt(tmp_path, plan, seed, attempt=1, template="0" * 64, passed=True)
+    client = FakeClient()
+
+    assert (
+        run(
+            tmp_path,
+            client=client,  # type: ignore[arg-type]
+            config=_config(),
+            dry_run=False,
+            limit=None,
+            assume_yes=True,
+            only_attempted=True,
+        )
+        == 0
+    )
+    assert [request.custom_id for request in client.submit_calls[0]] == [
+        f"{plan.doc_id}-a2" for plan in attempted
+    ]

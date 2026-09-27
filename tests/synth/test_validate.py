@@ -11,7 +11,7 @@ import pytest
 
 from kodocs.llm.settings import load_generation_config
 from kodocs.synth import validate
-from kodocs.synth.generate import pending_docs
+from kodocs.synth.generate import pending_docs, template_hash
 from kodocs.synth.plan import DocPlan
 from kodocs.synth.seed import Access, Fact, Person, Seed, surface_forms
 from kodocs.synth.validate import (
@@ -157,7 +157,7 @@ def _codes(issues: list[validate.Issue]) -> set[str]:
 
 
 def test_strip_markers_returns_offsets_in_stripped_body() -> None:
-    source = "앞 ⟦F:f-topic⟧표시된 사실⟦/F⟧ 뒤"
+    source = '앞 <fact id="f-topic">표시된 사실</fact> 뒤'
     body, spans, issues = strip_markers(source)
 
     assert issues == []
@@ -187,24 +187,24 @@ def test_each_document_failure_code_has_a_fixture(case: str, expected: str) -> N
     topic = _fact()
     plan = _plan(topic.fact_id)
     seed = _seed(topic)
-    text = _markdown("⟦F:f-topic⟧검증 대상 사실⟦/F⟧")
+    text = _markdown('<fact id="f-topic">검증 대상 사실</fact>')
     canaries: tuple[dict[str, object], ...] = ()
     stop_reason = "end_turn"
 
     if case == "empty":
-        text = "# 짧음\n⟦F:f-topic⟧검증 대상 사실⟦/F⟧"
+        text = '# 짧음\n<fact id="f-topic">검증 대상 사실</fact>'
     elif case == "missing":
         text = _markdown("검증 대상 사실")
     elif case == "mismatch":
         topic = _fact(kind="id", value="PAY-1234")
         plan, seed = _plan(topic.fact_id), _seed(topic)
-        text = _markdown("⟦F:f-topic⟧다른 값⟦/F⟧")
+        text = _markdown('<fact id="f-topic">다른 값</fact>')
     elif case == "identifier":
         text += "\n배정되지 않은 PAY-9999"
     elif case == "amount":
         amount = _fact(kind="amount", value=1_250_000)
         plan, seed = _plan(amount.fact_id), _seed(amount)
-        text = _markdown("⟦F:f-topic⟧125만 원⟦/F⟧", extra=" 추가 2만 원")
+        text = _markdown('<fact id="f-topic">125만 원</fact>', extra=" 추가 2만 원")
     elif case == "date":
         text += "\n2026-02-30 및 2027년 1월 1일"
     elif case == "banned":
@@ -228,14 +228,14 @@ def test_each_document_failure_code_has_a_fixture(case: str, expected: str) -> N
             },
         )
         text = _markdown(
-            "⟦F:f-topic⟧검증 대상 사실⟦/F⟧ ⟦F:f-canary-001⟧다른 내부 코드⟦/F⟧"
+            '<fact id="f-topic">검증 대상 사실</fact> <fact id="f-canary-001">다른 내부 코드</fact>'
         )
     elif case == "truncated":
         stop_reason = "max_tokens"
     elif case == "malformed":
-        text = _markdown("⟦F:f-topic⟧검증 대상 사실")
+        text = _markdown('<fact id="f-topic">검증 대상 사실')
     elif case == "unknown_fact":
-        text += "\n⟦F:f-other⟧계획 밖 사실⟦/F⟧"
+        text += '\n<fact id="f-other">계획 밖 사실</fact>'
 
     document, issues = _validate(
         plan,
@@ -252,7 +252,7 @@ def test_valid_fixture_produces_document_and_preserves_every_fact_span() -> None
     identifier = _fact(kind="id", value="PAY-1234")
     plan = _plan(identifier.fact_id, regulation_refs=("출장규칙 제8조",))
     text = _markdown(
-        "⟦F:f-topic⟧PAY-1234⟦/F⟧",
+        '<fact id="f-topic">PAY-1234</fact>',
         extra="\n출장규칙 제8조",
     )
 
@@ -275,7 +275,7 @@ def test_length_off_target_is_only_a_warning() -> None:
 
     document, issues = _validate(
         plan,
-        _generation(_markdown("⟦F:f-topic⟧검증 대상 사실⟦/F⟧")),
+        _generation(_markdown('<fact id="f-topic">검증 대상 사실</fact>')),
         _seed(topic),
     )
 
@@ -290,7 +290,7 @@ def test_length_off_target_is_only_a_warning() -> None:
 def test_all_five_date_surface_forms_match_the_fact(rendered: str) -> None:
     date_fact = _fact(kind="date", value="2026-01-05")
     plan = _plan(date_fact.fact_id)
-    text = _markdown(f"⟦F:f-topic⟧{rendered}⟦/F⟧")
+    text = _markdown(f'<fact id="f-topic">{rendered}</fact>')
 
     document, issues = _validate(plan, _generation(text), _seed(date_fact))
 
@@ -301,7 +301,7 @@ def test_all_five_date_surface_forms_match_the_fact(rendered: str) -> None:
 def test_man_won_is_parsed_as_a_won_integer() -> None:
     amount = _fact(kind="amount", value=1_250_000)
     plan = _plan(amount.fact_id)
-    text = _markdown("⟦F:f-topic⟧125만 원⟦/F⟧")
+    text = _markdown('<fact id="f-topic">125만 원</fact>')
 
     document, issues = _validate(plan, _generation(text), _seed(amount))
 
@@ -313,7 +313,7 @@ def test_man_won_is_parsed_as_a_won_integer() -> None:
 def test_exp_identifier_is_only_an_approval_identifier() -> None:
     approval = _fact(kind="id", value="EXP-2026-0412")
     plan = _plan(approval.fact_id)
-    text = _markdown("⟦F:f-topic⟧EXP-2026-0412⟦/F⟧")
+    text = _markdown('<fact id="f-topic">EXP-2026-0412</fact>')
 
     document, issues = _validate(plan, _generation(text), _seed(approval))
 
@@ -334,7 +334,7 @@ def test_injection_insertion_shifts_later_fact_span_and_records_exact_text() -> 
     filler = "정상 업무 내용을 충분하고 명확하게 설명합니다. " * 16
     text = (
         f"# 시험 문서\n\n{filler}\n\n## 앞 절\n{filler}"
-        "\n\n## 마지막 절\n⟦F:f-topic⟧검증 대상 사실⟦/F⟧"
+        '\n\n## 마지막 절\n<fact id="f-topic">검증 대상 사실</fact>'
     )
     original_body, original_spans, _ = strip_markers(text)
     inserted_body, start, end = insert_injection(
@@ -408,6 +408,8 @@ def _write_cache(
         "doc_id": plan.doc_id,
         "custom_id": f"{plan.doc_id}-a1",
         "cache_key": cache_key,
+        # Same prompt revision as the current templates.
+        "template_hash": template_hash(plan.doc_type),
     }
     cache_path = root / "data/synthetic/generations" / f"{cache_key}.json"
     cache_path.parent.mkdir(parents=True, exist_ok=True)
@@ -458,7 +460,7 @@ def test_same_run_twice_keeps_docs_summary_and_failure_log_byte_identical(
     _write_cache(
         tmp_path,
         good,
-        _markdown("⟦F:f-topic⟧검증 대상 사실⟦/F⟧"),
+        _markdown('<fact id="f-topic">검증 대상 사실</fact>'),
         cache_key="good",
     )
     _write_cache(
@@ -491,7 +493,7 @@ def test_broken_cache_does_not_stop_two_valid_documents(
         _plan(topic.fact_id, doc_id=f"syn-guide-{index:03d}") for index in range(1, 4)
     ]
     _prepare_run(tmp_path, monkeypatch, plans, seed)
-    valid_text = _markdown("⟦F:f-topic⟧검증 대상 사실⟦/F⟧")
+    valid_text = _markdown('<fact id="f-topic">검증 대상 사실</fact>')
     _write_cache(tmp_path, plans[0], valid_text, cache_key="broken", broken=True)
     _write_cache(tmp_path, plans[1], valid_text, cache_key="good-2")
     _write_cache(tmp_path, plans[2], valid_text, cache_key="good-3")
@@ -540,7 +542,7 @@ def test_previously_passing_document_that_now_fails_is_kept_and_marked_regressed
     stable = _plan(topic.fact_id, doc_id="syn-guide-001")
     regressing = replace(stable, doc_id="syn-guide-002")
     _prepare_run(tmp_path, monkeypatch, [stable, regressing], seed)
-    valid_text = _markdown("⟦F:f-topic⟧검증 대상 사실⟦/F⟧")
+    valid_text = _markdown('<fact id="f-topic">검증 대상 사실</fact>')
     _write_cache(tmp_path, stable, valid_text, cache_key="stable")
     _write_cache(tmp_path, regressing, valid_text, cache_key="regressing")
     assert validate.run(tmp_path, print_fn=lambda *_args, **_kwargs: None) == 0
@@ -565,3 +567,157 @@ def test_previously_passing_document_that_now_fails_is_kept_and_marked_regressed
     assert summary["passed"] == 1
     assert summary["failed"] == 1
     assert any("회귀 1건" in message for message in messages)
+
+
+@pytest.mark.parametrize(
+    "marked",
+    [
+        # Pilot 1 shapes: closing written as ⟧/F⟧ or ⟧, old-format markers.
+        '<fact id="f-topic">검증 대상 사실⟧/F⟧',
+        "⟦F:f-topic⟧검증 대상 사실⟦/F⟧",
+        '<fact id="f-topic">검증 대상 사실</fact></fact>',
+        "<fact id='f-topic'>검증 대상 사실</fact>",
+        '<fact id="f-topic">검증 대상 <fact id="f-topic">사실</fact></fact>',
+        '<fact  id="f-topic">검증 대상 사실</fact>',
+    ],
+)
+def test_malformed_or_leftover_markers_fail_without_lenient_repair(
+    marked: str,
+) -> None:
+    topic = _fact()
+    document, issues = _validate(
+        _plan(topic.fact_id), _generation(_markdown(marked)), _seed(topic)
+    )
+
+    assert "marker_malformed" in _codes(issues)
+    assert document is None
+
+
+@pytest.mark.parametrize(
+    "leak",
+    ["작성자: 가상인 수석 (p-010)", "사실 A(문서 날짜 기준 3일 전)", "담당 p-001 확인"],
+)
+def test_prompt_artifacts_in_body_fail(leak: str) -> None:
+    topic = _fact()
+    text = _markdown('<fact id="f-topic">검증 대상 사실</fact>', extra=f"\n{leak}")
+    document, issues = _validate(_plan(topic.fact_id), _generation(text), _seed(topic))
+
+    assert "prompt_artifact" in _codes(issues)
+    assert document is None
+
+
+def test_ids_that_merely_look_like_person_ids_are_not_prompt_artifacts() -> None:
+    topic = _fact()
+    text = _markdown(
+        '<fact id="f-topic">검증 대상 사실</fact>', extra="\napp-100 cp-0012"
+    )
+    _, issues = _validate(_plan(topic.fact_id), _generation(text), _seed(topic))
+
+    assert "prompt_artifact" not in _codes(issues)
+
+
+def test_identifier_given_by_title_hint_counts_as_assigned() -> None:
+    topic = _fact()
+    plan = replace(_plan(topic.fact_id), title_hint="[장애보고] INC-2025-001 청구 지연")
+    text = _markdown(
+        '<fact id="f-topic">검증 대상 사실</fact>', extra="\nINC-2025-001 영향 범위"
+    )
+    _, issues = _validate(plan, _generation(text), _seed(topic))
+
+    assert "unassigned_identifier" not in _codes(issues)
+
+
+def test_assigned_regulation_fact_counts_as_planned_regulation() -> None:
+    regulation = _fact(kind="regulation", value="출장규칙 제8조")
+    text = _markdown('<fact id="f-topic">출장규칙 제8조</fact>에 따라 정산한다.')
+    _, issues = _validate(
+        _plan(regulation.fact_id), _generation(text), _seed(regulation)
+    )
+
+    assert "regulation_unplanned" not in _codes(issues)
+
+
+def _faithful_body(plan: DocPlan, seed: Seed, canary_values: dict[str, str]) -> str:
+    """A body that uses exactly what the plan gives the model, nothing else."""
+    people = {person.person_id: person for person in seed.people}
+    filler = "업무 진행 상황을 정리하고 후속 조치를 공유합니다. " * 30
+    marked: list[str] = []
+    for fact_id in plan.fact_ids:
+        fact = seed.facts.get(fact_id)
+        if fact is None:
+            value = canary_values[fact_id]
+        elif fact.kind == "text":
+            value = str(fact.value)
+        else:
+            value = surface_forms(fact, people=people)[0]
+        marked.append(f'<fact id="{fact_id}">{value}</fact>')
+    references = "".join(
+        f"\n{reference}를 참조한다." for reference in plan.regulation_refs
+    )
+    return (
+        f"# {plan.title_hint}\n\n{filler}\n\n"
+        + "\n".join(marked)
+        + references
+        + f"\n\n## 마무리\n{filler}"
+    )
+
+
+def test_committed_plan_alone_produces_no_validation_failures() -> None:
+    repo = Path(__file__).parents[2]
+    from kodocs.synth.generate import _load_plan
+    from kodocs.synth.regulations import load_index
+    from kodocs.synth.seed import load_seed
+
+    seed = load_seed(repo)
+    plans = _load_plan(repo)
+    index = load_index(repo)
+    canaries = json.loads(
+        (repo / "data/synthetic/canaries.json").read_text(encoding="utf-8")
+    )["canaries"]
+    injections = {
+        row["doc_id"]: row
+        for row in json.loads(
+            (repo / "data/synthetic/injections.json").read_text(encoding="utf-8")
+        )["injections"]
+    }
+    canary_values = {row["fact_id"]: row["value"] for row in canaries}
+
+    failures: dict[str, set[str]] = {}
+    for plan in plans:
+        generation = {
+            **_generation(_faithful_body(plan, seed, canary_values)),
+            "doc_id": plan.doc_id,
+            "custom_id": f"{plan.doc_id}-a1",
+        }
+        document, issues = validate_document(
+            plan,
+            generation,
+            seed=seed,
+            index=index,
+            banned_names=seed.banned_names,
+            canaries=canaries,
+            injection=injections.get(plan.doc_id),
+        )
+        failing = _codes(issues) - {"length_off_target"}
+        if document is None or failing:
+            failures[plan.doc_id] = failing
+
+    assert len(plans) == 200
+    assert failures == {}
+
+
+def test_number_inside_identifier_followed_by_won_word_is_not_an_amount() -> None:
+    topic = _fact()
+    text = _markdown(
+        '<fact id="f-topic">검증 대상 사실</fact>', extra="\nINC-2025-007 원장 집계"
+    )
+    plan = replace(
+        _plan(topic.fact_id), title_hint="[장애보고] INC-2025-007 원장 집계 지연"
+    )
+    _, issues = _validate(plan, _generation(text), _seed(topic))
+
+    assert "unassigned_amount" not in _codes(issues)
+    _, still_checked = _validate(
+        plan, _generation(text + "\n추가 비용 3만 원"), _seed(topic)
+    )
+    assert "unassigned_amount" in _codes(still_checked)

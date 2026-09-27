@@ -192,9 +192,10 @@ def _build_request(
 
     values = {
         "title_hint": doc.title_hint,
+        # person_id stays in the plan/document JSON (author_id); the prompt shows
+        # only what may appear in the body (pilot 1 leaked p-010 into 9 of 10).
         "author": (
-            f"{author.name} {GRADES[author.grade]} "
-            f"({TEAMS[author.team].name_ko}팀, {doc.author_id})"
+            f"{author.name} {GRADES[author.grade]} ({TEAMS[author.team].name_ko}팀)"
         ),
         "date": doc.date,
         "team": f"{TEAMS[doc.team].name_ko}팀 ({doc.team})",
@@ -205,7 +206,7 @@ def _build_request(
         or "- 없음",
         "canary_block": (
             f"- {doc.canary_fact_id} | 내부 코드명 | {canary_value} | "
-            f"`⟦F:{doc.canary_fact_id}⟧…⟦/F⟧`로 표시"
+            f'`<fact id="{doc.canary_fact_id}">…</fact>`로 표시'
             if doc.canary_fact_id is not None
             else "- 없음. 카나리아 문자열을 만들거나 추측하지 않는다."
         ),
@@ -253,30 +254,54 @@ def pending_docs(
     *,
     config: GenerationConfig,
 ) -> list[tuple[DocPlan, int]]:
-    """Return retryable documents and their next monotonically increasing attempt."""
+    """Return retryable documents and their next monotonically increasing attempt.
+
+    A document whose latest attempt used other prompt templates (a template
+    revision) is regenerated even if it passed. ``max_attempts`` counts only
+    attempts made with the current templates, so an earlier revision's failures
+    do not use up the new revision's budget; attempt numbers keep increasing.
+    """
     history = _generation_history(root)
     failures = _validation_failures(root)
+    current_hashes: dict[str, str] = {}
     pending: list[tuple[DocPlan, int]] = []
     for doc in plan:
         attempts = history.get(doc.doc_id, {})
         if not attempts:
             pending.append((doc, 1))
             continue
+        current = current_hashes.setdefault(doc.doc_type, template_hash(doc.doc_type))
         latest_attempt = max(attempts)
         latest = attempts[latest_attempt]
-        if _validated_doc_matches(root, doc.doc_id, latest):
-            continue
-        failed_validation = failures.get((doc.doc_id, latest_attempt), False)
-        if (
-            latest.get("_from_cache")
-            and latest.get("result_type") == "succeeded"
-            and not failed_validation
-        ):
-            continue
-        if len(attempts) >= config.max_attempts:
+        if not _is_other_revision(latest, current):
+            if _validated_doc_matches(root, doc.doc_id, latest):
+                continue
+            failed_validation = failures.get((doc.doc_id, latest_attempt), False)
+            if (
+                latest.get("_from_cache")
+                and latest.get("result_type") == "succeeded"
+                and not failed_validation
+            ):
+                continue
+        if _revision_attempts(attempts, current) >= config.max_attempts:
             continue
         pending.append((doc, latest_attempt + 1))
     return pending
+
+
+def _is_other_revision(record: Mapping[str, object], current_hash: str) -> bool:
+    recorded = record.get("template_hash")
+    return isinstance(recorded, str) and recorded != current_hash
+
+
+def _revision_attempts(
+    attempts: Mapping[int, Mapping[str, object]], current_hash: str
+) -> int:
+    return sum(
+        1
+        for record in attempts.values()
+        if not _is_other_revision(record, current_hash)
+    )
 
 
 def run(
@@ -292,6 +317,7 @@ def run(
     only: Sequence[str] | None = None,
     monthly_budget_usd: float = DEFAULT_MONTHLY_BUDGET_USD,
     after_collection: PostCollectionFn | None = None,
+    only_attempted: bool = False,
 ) -> int:
     """Advance generation by exactly one safe state-machine transition."""
     root = Path(root)
@@ -368,6 +394,9 @@ def run(
     seed = load_seed(root)
     canary_values = _load_canary_values(root)
     selected_scope = _only_plans(plans, only)
+    if only_attempted:
+        attempted = _generation_history(root)
+        selected_scope = [plan for plan in selected_scope if plan.doc_id in attempted]
     targets = pending_docs(root, selected_scope, config=config)
     exhausted = _exhausted_docs(root, selected_scope, config=config)
     if limit is not None:
@@ -474,6 +503,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="수거 완료 후 검증, 품질 지표, 결과 문서를 차례로 생성",
     )
     parser.add_argument("--only", nargs="+", metavar="DOC_ID")
+    parser.add_argument(
+        "--only-attempted",
+        action="store_true",
+        help="이미 생성을 시도한 문서만 대상으로 한다(파일럿 재실행)",
+    )
     parser.add_argument("--status", action="store_true")
     parser.add_argument(
         "--adopt-batch",
@@ -519,6 +553,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 assume_yes=args.yes,
                 only=args.only,
                 monthly_budget_usd=settings.monthly_budget_usd,
+                only_attempted=args.only_attempted,
             )
         except (OSError, TypeError, ValueError) as exc:
             print(f"생성 계획 실패: {_first_line(str(exc))}")
@@ -560,6 +595,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             only=args.only,
             monthly_budget_usd=settings.monthly_budget_usd,
             after_collection=_run_post_collection if args.then_validate else None,
+            only_attempted=args.only_attempted,
         )
     except (OSError, TypeError, ValueError, RuntimeError) as exc:
         print(f"생성 실행 실패: {_first_line(str(exc))}")
@@ -613,9 +649,10 @@ def _facts_block(
         allowed = " / ".join(forms) if forms else "서술 요지를 자연스럽게"
         age = doc.fact_age_days.get(fact.fact_id)
         phrase = doc.fact_time_phrases.get(fact.fact_id)
+        # Only the decided phrase and the date; helper wording such as the day
+        # count was copied into bodies in pilot 1.
         age_text = (
-            f" | 사실 날짜 {fact.date.isoformat()} | 시점 표현: {phrase} "
-            f"(문서 날짜 기준 {age}일 전)"
+            f" | 사실 날짜 {fact.date.isoformat()} | 시점 표현: {phrase}"
             if age is not None and phrase is not None and fact.date is not None
             else ""
         )
@@ -811,10 +848,13 @@ def _exhausted_docs(
     exhausted: list[str] = []
     for doc in plans:
         attempts = history.get(doc.doc_id, {})
-        if len(attempts) < config.max_attempts:
+        current = template_hash(doc.doc_type)
+        if _revision_attempts(attempts, current) < config.max_attempts:
             continue
         latest_attempt = max(attempts)
         latest = attempts[latest_attempt]
+        if _is_other_revision(latest, current):
+            continue
         succeeded = (
             latest.get("_from_cache") and latest.get("result_type") == "succeeded"
         )

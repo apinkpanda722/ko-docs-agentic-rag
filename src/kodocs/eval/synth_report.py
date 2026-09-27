@@ -201,7 +201,7 @@ def _fixed_conditions_section(
         )
     rows = [
         ["문서 계획", plan_summary],
-        ["인라인 사실 표시", "`⟦F:fact_id⟧…⟦/F⟧` 후 검증기가 span으로 변환"],
+        ["인라인 사실 표시", '`<fact id="fact_id">…</fact>` 후 검증기가 span으로 변환'],
         ["검증 규칙 버전", validator_versions],
         ["재생성 상한", "최대 시도 3회"],
         ["생성 방식", "Anthropic Message Batch 사용"],

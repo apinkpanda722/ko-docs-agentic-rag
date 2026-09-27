@@ -40,16 +40,22 @@ DOCS_DIR = Path("data/synthetic/docs")
 FAILURES_PATH = Path("data/synthetic/validation_failures.jsonl")
 SUMMARY_PATH = Path("data/manifest/synth_validation.json")
 MARKER_RE = re.compile(
-    r"⟦F:(?P<fid>f-[a-z0-9]+(?:-[a-z0-9]+)*)⟧(?P<body>.*?)⟦/F⟧",
+    r'<fact id="(?P<fid>f-[a-z0-9]+(?:-[a-z0-9]+)*)">(?P<body>.*?)</fact>',
     re.DOTALL,
 )
-VALIDATOR_VERSION = 1
+# 2: 사실 표시를 ⟦F:…⟧…⟦/F⟧에서 <fact id="…">…</fact>로 교체(파일럿 1차 4/10 깨짐),
+#    계획이 준 식별자·규정 사실 인정, prompt_artifact 추가.
+VALIDATOR_VERSION = 2
 
 _MARKER_TOKEN_RE = re.compile(
-    r"⟦F:(?P<fid>f-[a-z0-9]+(?:-[a-z0-9]+)*)⟧|(?P<close>⟦/F⟧)"
+    r'<fact id="(?P<fid>f-[a-z0-9]+(?:-[a-z0-9]+)*)">|(?P<close></fact>)'
 )
-_MARKER_PREFIX_RE = re.compile(r"⟦F:|⟦/F")
-_AMOUNT_RE = re.compile(r"(?<!\d)(?P<number>\d[\d,]*)\s*(?P<unit>억|만)?\s*원")
+# Anything marker-like left after stripping valid tokens is malformed. No lenient
+# repair: a guessed fix would silently move fact spans.
+_MARKER_LEFTOVER_RE = re.compile(r"<fact|</fact>|⟦|⟧")
+_PROMPT_ARTIFACT_RE = re.compile(r"(?<![A-Za-z0-9-])p-\d{3}(?!\d)|문서 날짜 기준")
+# A number inside an identifier (INC-2025-007 원장) is not an amount.
+_AMOUNT_RE = re.compile(r"(?<![\dA-Za-z-])(?P<number>\d[\d,]*)\s*(?P<unit>억|만)?\s*원")
 _DATE_RE = re.compile(
     r"(?<!\d)(?:"
     r"(?P<iso_y>\d{4})-(?P<iso_m>\d{1,2})-(?P<iso_d>\d{1,2})"
@@ -75,6 +81,7 @@ _FAILURE_CODES = frozenset(
         "truncated",
         "marker_malformed",
         "marker_unknown_fact",
+        "prompt_artifact",
         "internal_error",
     }
 )
@@ -100,10 +107,8 @@ def strip_markers(text: str) -> tuple[str, list[Span], list[Issue]]:
     source_at = 0
     output_length = 0
     opened: tuple[str, int, int] | None = None
-    token_starts: set[int] = set()
 
     for token in _MARKER_TOKEN_RE.finditer(text):
-        token_starts.add(token.start())
         between = text[source_at : token.start()]
         pieces.append(between)
         output_length += len(between)
@@ -149,17 +154,17 @@ def strip_markers(text: str) -> tuple[str, list[Span], list[Issue]]:
                 None,
             )
         )
-    for prefix in _MARKER_PREFIX_RE.finditer(text):
-        if prefix.start() not in token_starts:
-            issues.append(
-                Issue(
-                    "marker_malformed",
-                    "형식이 잘못된 사실 표시가 있습니다.",
-                    prefix.start(),
-                    prefix.end(),
-                )
+    stripped = "".join(pieces)
+    for leftover in _MARKER_LEFTOVER_RE.finditer(stripped):
+        issues.append(
+            Issue(
+                "marker_malformed",
+                f"형식이 잘못된 사실 표시가 남아 있습니다: {leftover.group()}",
+                leftover.start(),
+                leftover.end(),
             )
-    return "".join(pieces), spans, _unique_issues(issues)
+        )
+    return stripped, spans, _unique_issues(issues)
 
 
 def insert_injection(body: str, text: str, rule: str) -> tuple[str, int, int]:
@@ -315,10 +320,18 @@ def _validate_document_candidate(
                 )
             )
 
+    # Identifiers the plan itself hands to the model (assigned id facts and the
+    # title hint, e.g. an incident report's own INC number) count as assigned.
     assigned_ids = {
         str(seed.facts[fact_id].value)
         for fact_id in doc.fact_ids
         if fact_id in seed.facts and seed.facts[fact_id].kind == "id"
+    }
+    title_identifiers = extract_identifiers(doc.title_hint)
+    assigned_ids |= {
+        value
+        for kind in ("ticket", "approval", "incident")
+        for value, _, _ in title_identifiers[kind]
     }
     identifiers = extract_identifiers(body)
     for kind in ("ticket", "approval", "incident"):
@@ -382,7 +395,24 @@ def _validate_document_candidate(
             )
         )
 
-    issues.extend(_regulation_issues(body, doc.regulation_refs, index))
+    planned_regulations = [
+        *doc.regulation_refs,
+        *(
+            str(seed.facts[fact_id].value)
+            for fact_id in doc.fact_ids
+            if fact_id in seed.facts and seed.facts[fact_id].kind == "regulation"
+        ),
+    ]
+    issues.extend(_regulation_issues(body, planned_regulations, index))
+    for artifact in _PROMPT_ARTIFACT_RE.finditer(body):
+        issues.append(
+            Issue(
+                "prompt_artifact",
+                f"프롬프트 내부 표기가 본문에 남았습니다: {artifact.group()}",
+                artifact.start(),
+                artifact.end(),
+            )
+        )
 
     canary = _find_canary(doc, canaries)
     canary_record: dict[str, object] | None = None
