@@ -131,7 +131,16 @@
     {
       "step": 9,
       "name": "upstage-hwp-direct",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-27T10:19:35+0900",
+      "summary": "업스테이지 HWP/HWPX 직접 입력 선정·비용/캐시 가드·원본 SHA 채점·PDF 대비 짝 비교 보고 및 문서/Make 타깃을 추가했으며 모든 AC와 make verify(386 passed)를 통과했습니다.",
+      "completed_at": "2026-09-27T10:33:44+0900",
+      "usage": {
+        "input_tokens": 6899076,
+        "cached_input_tokens": 6714112,
+        "output_tokens": 37963,
+        "attempts": 1
+      }
     }
   ],
   "created_at": "2026-09-26T21:16:28+0900"
