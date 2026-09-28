@@ -15,17 +15,17 @@
       "planned": 30
     },
     "team": {
-      "failed": 1,
+      "failed": 0,
       "generated": 4,
       "not_generated": 76,
-      "passed": 3,
+      "passed": 4,
       "planned": 80
     }
   },
   "by_code": {
-    "fact_missing": 4,
-    "marker_malformed": 4,
-    "regulation_unplanned": 1,
+    "fact_missing": 1,
+    "fact_value_mismatch": 3,
+    "marker_malformed": 1,
     "unassigned_identifier": 1
   },
   "by_type": {
@@ -37,17 +37,17 @@
       "planned": 30
     },
     "incident": {
-      "failed": 1,
+      "failed": 0,
       "generated": 1,
       "not_generated": 24,
-      "passed": 0,
+      "passed": 1,
       "planned": 25
     },
     "meeting": {
-      "failed": 3,
+      "failed": 2,
       "generated": 4,
       "not_generated": 46,
-      "passed": 1,
+      "passed": 2,
       "planned": 50
     },
     "notice": {
@@ -58,10 +58,10 @@
       "planned": 25
     },
     "runbook": {
-      "failed": 0,
+      "failed": 1,
       "generated": 1,
       "not_generated": 29,
-      "passed": 1,
+      "passed": 0,
       "planned": 30
     },
     "weekly": {
@@ -78,14 +78,14 @@
     "present": 2
   },
   "exhausted": 0,
-  "failed": 5,
+  "failed": 4,
   "generated": 10,
   "injections": {
     "expected": 12,
     "inserted": 7
   },
   "not_generated": 190,
-  "passed": 5,
+  "passed": 6,
   "planned": 200,
   "regressed": 0,
   "warnings": {}
