@@ -19,7 +19,16 @@
     {
       "step": 1,
       "name": "golden-schema",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-28T20:16:06+0900",
+      "summary": "공통 golden 문항·qrels 스키마와 결정론적 JSONL I/O, 권한·정답 검증기, 할당 상수 및 16개 오류·비커밋 가드 테스트를 구현했으며 make verify(748 passed)와 AC를 통과했습니다.",
+      "completed_at": "2026-09-28T20:25:40+0900",
+      "usage": {
+        "input_tokens": 1866005,
+        "cached_input_tokens": 1767808,
+        "output_tokens": 24726,
+        "attempts": 1
+      }
     },
     {
       "step": 2,
