@@ -1,0 +1,7 @@
+regulation_refs:
+  - name: 출장규칙
+    article: 제8조
+    context: 출장비 정산 시 해당 조항을 참조한다.
+    teams:
+      - finance
+

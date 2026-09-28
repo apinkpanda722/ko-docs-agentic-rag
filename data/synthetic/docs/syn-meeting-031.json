@@ -1,0 +1,180 @@
+{
+  "access": {
+    "level": "public",
+    "min_grade": 1,
+    "teams": []
+  },
+  "author_id": "p-183",
+  "body": "# [회의록] 재무팀 2026-04-18 월 경계 검사 결정\n\n- 작성자: 서수온 사원 (재무팀)\n- 문서 날짜: 2026-04-18\n- 담당 팀: 재무팀\n\n## 1. 목적\n\n본 회의는 finance-ledger에서 발생한 장애 건인 INC-2026-006의 원인 분석 결과를 공유하고, 재발 방지를 위한 원장 색인 개선 방안을 논의하기 위해 소집되었다. 아울러 과거 개선 사례를 함께 검토하여 이번 결정이 갖는 실무적 의미를 재확인하고, 후속 조치를 위한 담당자를 명확히 지정하는 것을 목적으로 한다.\n\n## 2. 논의사항\n\n### 2.1 월 경계 검사 도입 배경\n\n재무팀 실무자들은 최근 원장 마감 작업 중 월 경계 처리와 관련된 이슈가 반복적으로 보고되고 있다는 점을 지적했다. 이번 회의의 계기가 된 사건인 INC-2026-006은 finance-ledger 원장 데이터의 색인 처리 과정에서 발생한 것으로 확인되었으며, 참석자들은 이를 계기로 원장 색인 로직 자체에 구조적인 보완이 필요하다는 점에 공감했다.\n\n담당자는 문제의 재발을 막기 위해서는 단순한 예외 처리가 아니라 색인 단계에서 월 경계를 명시적으로 검증하는 절차가 필요하다는 의견을 제시했고, 이에 대한 구체적인 적용 범위와 시점을 논의했다.\n\n### 2.2 과거 개선 사례 검토\n\n논의 과정에서 지난해 6월 진행되었던 finance-ledger 개편 사례가 참고 사례로 언급되었다. 당시 팀별 비용 현황 화면을 배포했다. 이 개편 이후 월별 비용 확인 시간이 단축되었다. 는 점이 실무자들 사이에서 긍정적으로 평가되었으며, 이번 색인 개선 작업 역시 유사한 방식으로 실무 편의성과 처리 안정성을 동시에 높일 수 있을 것이라는 기대가 제기되었다.\n\n참석자들은 지난 사례가 보여주듯 구조적인 개선이 실제 업무 효율에 긍정적인 영향을 미쳤다는 점을 근거로, 이번 월 경계 검사 도입 역시 단기적인 개발 부담보다 장기적인 안정성 확보 측면에서 접근해야 한다는 데 의견을 같이했다.\n\n### 2.3 규정 검토\n\n문서 관리 및 변경 이력 기록과 관련하여 문서관리규칙 제21조를 참조하여 이번 결정 사항과 후속 조치 내역을 문서화하기로 했다. 또한 외부 솔루션 도입이 필요할 경우를 대비해 구매계약업무규칙 제56조에 따른 절차를 사전에 확인해두기로 했다. 다만 이번 개선 작업은 내부 개발로 진행할 예정이므로 구매계약 관련 절차가 실제로 적용될지는 추가 검토가 필요하다는 점이 함께 언급되었다.\n\n## 3. 결론\n\n회의 결과 원장 색인에 월 경계 검사를 추가하기로 결정했다. 이번 결정은 INC-2026-006 재발 방지를 최우선 목표로 하며, finance-ledger 시스템의 안정성을 높이는 데 초점을 둔다. 지난해 6월 개편 사례에서 확인된 긍정적 효과를 고려할 때, 이번 개선 역시 원장 마감 업무의 신뢰도를 높이는 데 기여할 것으로 예상된다.\n\n다만 세부 구현 일정과 테스트 범위는 이번 회의에서 확정되지 않았으며, 추가 실무 회의를 통해 구체화할 예정이다. 문서화 작업은 문서관리규칙 제21조에 따라 진행하며, 결정 사항의 변경이 발생할 경우 즉시 갱신하기로 했다.\n\n## 4. 담당자 및 후속 조치\n\n이번 개선 작업의 총괄 책임은 재무팀의 안현빈 팀장이 맡기로 했다. 지난해 9월 이후 재무팀 내 시스템 개선 관련 사안을 지속적으로 조율해온 경험을 바탕으로, 이번 월 경계 검사 도입 작업 역시 팀장이 직접 진행 경과를 점검할 예정이다.\n\n후속 조치로는 다음과 같은 사항이 논의되었다.\n\n1. 원장 색인 로직에 대한 상세 설계안 작성 및 검토\n2. INC-2026-006 관련 재발 방지 점검 항목 정리\n3. 문서관리규칙 제21조에 따른 변경 이력 기록 및 보관\n4. 필요 시 구매계약업무규칙 제56조에 따른 외부 도입 절차 확인\n5. 작성자인 서수온 사원이 회의록을 정리하여 팀 내 공유\n\n다음 회의는 세부 일정이 확정되는 대로 별도 공지될 예정이며, 진행 경과는 재무팀 내부 공유 채널을 통해 지속적으로 업데이트하기로 했다.",
+  "canary": null,
+  "date": "2026-04-18",
+  "doc_id": "syn-meeting-031",
+  "doc_type": "meeting",
+  "fact_spans": [
+    {
+      "end": 118,
+      "fact_id": "f-evt-049-service",
+      "start": 104
+    },
+    {
+      "end": 143,
+      "fact_id": "f-evt-049-incident",
+      "start": 131
+    },
+    {
+      "end": 412,
+      "fact_id": "f-evt-049-incident",
+      "start": 400
+    },
+    {
+      "end": 428,
+      "fact_id": "f-evt-049-service",
+      "start": 414
+    },
+    {
+      "end": 681,
+      "fact_id": "f-evt-050-service",
+      "start": 667
+    },
+    {
+      "end": 724,
+      "fact_id": "f-evt-050-version",
+      "start": 706
+    },
+    {
+      "end": 752,
+      "fact_id": "f-evt-050-result",
+      "start": 733
+    },
+    {
+      "end": 1251,
+      "fact_id": "f-evt-049-decision",
+      "start": 1224
+    },
+    {
+      "end": 1271,
+      "fact_id": "f-evt-049-incident",
+      "start": 1259
+    },
+    {
+      "end": 1305,
+      "fact_id": "f-evt-049-service",
+      "start": 1291
+    },
+    {
+      "end": 1582,
+      "fact_id": "f-evt-051-owner",
+      "start": 1576
+    },
+    {
+      "end": 1761,
+      "fact_id": "f-evt-049-incident",
+      "start": 1749
+    }
+  ],
+  "generation": {
+    "attempt": 1,
+    "batch_id": "msgbatch_01SHc7eNEULByVhCSyVD4GFp",
+    "cache_key": "88ae43974dddf6b34c94db4039971570",
+    "custom_id": "syn-meeting-031-a1",
+    "doc_seed": 3407479639,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "13728ff7f3aa42d772e3eec5c2d76b29a9e32b4ea530428e71e754a7c4ccde96",
+    "template_hash": "8196fa38d17b04a7f4dbe3edb649a4606ce1b7d49914a4b866df71b4b7748772",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 2251,
+      "output_tokens": 2123
+    }
+  },
+  "injection": null,
+  "regulation_refs": [
+    "구매계약업무규칙 제56조",
+    "문서관리규칙 제21조"
+  ],
+  "related_doc_ids": [
+    "syn-meeting-023",
+    "syn-meeting-039",
+    "syn-runbook-001",
+    "syn-runbook-009",
+    "syn-runbook-017",
+    "syn-weekly-011",
+    "syn-weekly-019",
+    "syn-weekly-027"
+  ],
+  "source_fact_ids": [
+    "f-evt-049-decision",
+    "f-evt-049-incident",
+    "f-evt-049-service",
+    "f-evt-050-result",
+    "f-evt-050-service",
+    "f-evt-050-version",
+    "f-evt-051-owner"
+  ],
+  "team": "finance",
+  "title": "[회의록] 재무팀 2026-04-18 월 경계 검사 결정",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}

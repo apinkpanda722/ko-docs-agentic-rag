@@ -1,0 +1,74 @@
+events:
+  - id: evt-2025-017
+    title: 스키마 호환 검사 결정
+    date: "2025-04-17"
+    owner_team: data-ai
+    type: decision
+    facts:
+      - {fact_id: f-evt-017-incident, kind: id, value: INC-2025-003, date: "2025-04-17"}
+      - {fact_id: f-evt-017-decision, kind: text, value: 적재 전에 원천 스키마 호환 검사를 수행하기로 결정했다., date: "2025-04-17"}
+      - {fact_id: f-evt-017-service, kind: service, value: analytics-hub, date: "2025-04-17"}
+  - id: evt-2026-018
+    title: 특성 캐시 개선 프로젝트
+    date: "2026-01-19"
+    owner_team: data-ai
+    type: project
+    facts:
+      - {fact_id: f-evt-018-incident, kind: id, value: INC-2026-001, date: "2026-01-19"}
+      - {fact_id: f-evt-018-plan, kind: text, value: 특성 캐시의 만료 시점을 분산하는 프로젝트를 시작했다., date: "2026-01-19"}
+      - {fact_id: f-evt-018-service, kind: service, value: feature-store, date: "2026-01-19"}
+  - id: evt-2025-019
+    title: 데이터 품질 화면 배포
+    date: "2025-06-26"
+    owner_team: data-ai
+    type: release
+    facts:
+      - {fact_id: f-evt-019-version, kind: text, value: 적재 지연과 누락을 확인하는 품질 화면을 배포했다., date: "2025-06-26"}
+      - {fact_id: f-evt-019-service, kind: service, value: analytics-hub, date: "2025-06-26"}
+      - {fact_id: f-evt-019-result, kind: text, value: 일간 점검 시간이 단축되었다., date: "2025-06-26"}
+  - id: evt-2025-020
+    title: 데이터 변경 사전 통지 정책
+    date: "2025-08-12"
+    owner_team: data-ai
+    type: policy
+    facts:
+      - {fact_id: f-evt-020-policy, kind: text, value: 원천 스키마 변경을 사전에 통지하도록 정했다., date: "2025-08-12"}
+      - {fact_id: f-evt-020-window, kind: text, value: 검토 기간은 영업일 기준 사흘로 정했다., date: "2025-08-12"}
+      - {fact_id: f-evt-020-service, kind: service, value: analytics-hub, date: "2025-08-12"}
+  - id: evt-2025-021
+    title: 데이터 품질 담당 구성
+    date: "2025-10-27"
+    owner_team: data-ai
+    type: org
+    facts:
+      - {fact_id: f-evt-021-org, kind: text, value: 데이터 품질 담당 역할을 팀 안에 구성했다., date: "2025-10-27"}
+      - {fact_id: f-evt-021-owner, kind: person, value: p-077, date: "2025-10-27"}
+      - {fact_id: f-evt-021-focus, kind: text, value: 적재 기준점 감사를 우선 과제로 정했다., date: "2025-10-27"}
+  - id: evt-2026-022
+    title: 미공개 모델 교체 검토
+    date: "2026-03-11"
+    owner_team: data-ai
+    type: sensitive
+    sensitivity: restricted
+    facts:
+      - {fact_id: f-evt-022-plan, kind: text, value: 공개 전인 모델 교체 후보를 내부 검토했다., date: "2026-03-11"}
+      - {fact_id: f-evt-022-owner, kind: person, value: p-077, date: "2026-03-11"}
+      - {fact_id: f-evt-022-service, kind: service, value: feature-store, date: "2026-03-11"}
+  - id: evt-2026-023
+    title: 기준점 저장 방식 결정
+    date: "2026-04-10"
+    owner_team: data-ai
+    type: decision
+    facts:
+      - {fact_id: f-evt-023-incident, kind: id, value: INC-2026-005, date: "2026-04-10"}
+      - {fact_id: f-evt-023-decision, kind: text, value: 적재 기준점 저장을 원자 단위로 처리하기로 결정했다., date: "2026-04-10"}
+      - {fact_id: f-evt-023-service, kind: service, value: analytics-hub, date: "2026-04-10"}
+  - id: evt-2026-024
+    title: 특성 사전 적재 배포
+    date: "2026-05-30"
+    owner_team: data-ai
+    type: release
+    facts:
+      - {fact_id: f-evt-024-version, kind: text, value: 인기 특성 사전 적재 기능을 배포했다., date: "2026-05-30"}
+      - {fact_id: f-evt-024-service, kind: service, value: feature-store, date: "2026-05-30"}
+      - {fact_id: f-evt-024-result, kind: text, value: 캐시 만료 시 조회 지연이 줄어든 것을 확인했다., date: "2026-05-30"}

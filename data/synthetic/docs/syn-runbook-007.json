@@ -1,0 +1,150 @@
+{
+  "access": {
+    "level": "public",
+    "min_grade": 1,
+    "teams": []
+  },
+  "author_id": "p-144",
+  "body": "# [런북] 정보보안팀 경보 분류 화면 배포 운영 절차\n\n- 문서 번호: SEC-RUNBOOK-2026-04\n- 작성자: 박시빈 선임 (정보보안팀)\n- 작성일: 2026-04-20\n- 담당 팀: 정보보안팀\n\n## 1. 목적 및 적용 범위\n\n본 런북은 security-center 서비스에 포함된 보안 경보 분류 화면의 배포 및 운영 절차를 정의한다. 해당 화면은 지난해 9월 보안 경보 분류 화면을 배포했다.는 이력이 있으며, 이후 운영 중 발생하는 장애 상황에 대응하기 위해 배포 전후 점검, 실행, 검증, 복구 및 에스컬레이션 절차를 표준화하는 것을 목적으로 한다. 본 문서는 정보보안팀 담당자가 배포 작업을 수행하거나 관련 장애를 대응할 때 참고하는 운영 기준으로 활용된다.\n\n적용 범위는 security-center 서비스의 프런트엔드 경보 분류 화면과, 이 화면이 의존하는 인증·인가 체계를 포함한다. security-center는 identity-api 서비스에 의존하고 있으므로, 배포 절차 수행 시 해당 의존 서비스의 상태도 함께 점검해야 한다.\n\n## 2. 사전 점검\n\n배포 작업 착수 전 다음 항목을 확인한다.\n\n1. security-center 서비스의 현재 배포 버전과 변경 이력을 확인하여 지난해 9월 배포 이후 추가된 변경 사항이 있는지 검토한다.\n2. identity-api의 가용 상태와 응답 정상 여부를 확인한다. 경보 분류 화면은 인증·인가를 identity-api에 위임하므로, 해당 서비스에 이상이 있는 상태에서 배포를 진행하면 화면 접근 자체가 불가능해질 수 있다.\n3. 배포 대상 환경에 대한 접근 권한과 변경 승인 여부를 담당자 간 재확인한다.\n4. 롤백 대상이 될 이전 배포 버전의 아티팩트가 정상적으로 보관되어 있는지 확인한다.\n\n## 3. 실행 절차\n\n1. 배포 공지 채널에 작업 시작을 알린다.\n2. security-center 배포 파이프라인을 실행하여 신규 버전의 경보 분류 화면을 적용한다.\n3. 배포 직후 identity-api와의 연동 구간에서 인증 흐름이 정상적으로 동작하는지 순차적으로 확인한다.\n4. 이상 징후가 관측되지 않으면 배포 완료를 공지하고 모니터링 체계로 전환한다.\n\n## 4. 검증\n\n배포 완료 후에도 지속적인 모니터링이 필요하다. 이번 배포와 직접 관련은 없으나, 참고할 사례로 SEC-1002 티켓이 있다. 해당 티켓은 2026-04-20 10시 42분에 접수되었으며, security-center 서비스에서 발생한 사안으로 심각도 1로 분류되었다. 이처럼 경보 분류 화면 관련 장애는 심각도가 높게 책정될 수 있으므로, 배포 후 검증 단계에서는 화면의 정상 렌더링 여부, 경보 목록 조회 정확성, identity-api 연동 응답 시간대의 이상 유무를 중점적으로 확인해야 한다.\n\n검증 항목은 다음을 포함한다.\n\n- 경보 분류 화면 접속 및 로그인 정상 여부\n- 경보 목록 데이터의 누락·중복 여부\n- identity-api 응답 지연 또는 오류 발생 여부\n- 모니터링 대시보드 상의 이상 지표 발생 여부\n\n## 5. 실패 시 복구 및 에스컬레이션\n\n검증 단계에서 이상이 발견되거나 SEC-1002와 유사한 수준의 장애가 재현될 경우 다음 순서로 대응한다.\n\n1. 즉시 이전 정상 버전으로 롤백을 시도한다.\n2. 롤백 후에도 문제가 지속되면 identity-api 의존성 문제인지 여부를 우선 판단한다. security-center의 장애 원인이 자체 배포 버전이 아니라 의존 서비스인 identity-api에 있을 가능성을 배제하지 않는다.\n3. 심각도 1 수준의 장애로 판단되는 경우, SEC-1002 사례에서와 같이 정보보안팀 내부 에스컬레이션 절차에 따라 관련 담당자에게 즉시 상황을 공유한다.\n4. 장애 원인이 명확히 파악되기 전까지는 배포를 재시도하지 않으며, 근본 원인 분석이 완료된 이후 재배포 여부를 결정한다.\n5. 사후 처리로 장애 경위와 조치 내용을 기록하여 향후 배포 절차 개선에 반영한다.\n\n## 6. 문서 관리\n\n본 런북은 정보보안팀에서 관리하며, security-center 서비스 및 identity-api 연동 구조에 변경이 발생할 경우 내용을 갱신한다. 작성 및 갱신 책임자는 박시빈 선임이다.",
+  "canary": null,
+  "date": "2026-04-20",
+  "doc_id": "syn-runbook-007",
+  "doc_type": "runbook",
+  "fact_spans": [
+    {
+      "end": 155,
+      "fact_id": "f-inc-2026-007-service",
+      "start": 140
+    },
+    {
+      "end": 228,
+      "fact_id": "f-evt-036-version",
+      "start": 210
+    },
+    {
+      "end": 483,
+      "fact_id": "f-service-security-center-dependency",
+      "start": 471
+    },
+    {
+      "end": 1159,
+      "fact_id": "f-inc-2026-007-ticket",
+      "start": 1151
+    },
+    {
+      "end": 1193,
+      "fact_id": "f-inc-2026-007-start",
+      "start": 1175
+    },
+    {
+      "end": 1247,
+      "fact_id": "f-inc-2026-007-severity",
+      "start": 1234
+    }
+  ],
+  "generation": {
+    "attempt": 1,
+    "batch_id": "msgbatch_01SHc7eNEULByVhCSyVD4GFp",
+    "cache_key": "ad70721c6b5ed9c647aba60c1824ce49",
+    "custom_id": "syn-runbook-007-a1",
+    "doc_seed": 1611001867,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "9163fb442749f126a4c3b7e3f955823110c83f3c4540bc7bbe114066c4e99db4",
+    "template_hash": "f2a856cb7f36eb28a2626539fe2c262546ab9a85bc9ce686e195db7cbf30478f",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 2175,
+      "output_tokens": 2006
+    }
+  },
+  "injection": null,
+  "regulation_refs": [],
+  "related_doc_ids": [
+    "syn-guide-007",
+    "syn-guide-023",
+    "syn-incident-017",
+    "syn-meeting-029",
+    "syn-notice-015",
+    "syn-runbook-015",
+    "syn-runbook-025",
+    "syn-weekly-001",
+    "syn-weekly-017",
+    "syn-weekly-025",
+    "syn-weekly-033",
+    "syn-weekly-037"
+  ],
+  "source_fact_ids": [
+    "f-evt-036-version",
+    "f-inc-2026-007-service",
+    "f-inc-2026-007-severity",
+    "f-inc-2026-007-start",
+    "f-inc-2026-007-ticket",
+    "f-service-security-center-dependency"
+  ],
+  "team": "security",
+  "title": "[런북] 정보보안팀 경보 분류 화면 배포 운영 절차",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}

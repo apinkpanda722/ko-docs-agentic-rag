@@ -1,0 +1,15 @@
+id: INC-2026-005
+title: 지표 중복 적재
+date: "2026-04-02"
+owner_team: data-ai
+assignee_id: p-077
+service: analytics-hub
+facts:
+  - {fact_id: f-inc-2026-005-start, kind: datetime, value: "2026-04-02T06:15", date: "2026-04-02"}
+  - {fact_id: f-inc-2026-005-restored, kind: datetime, value: "2026-04-02T07:32", date: "2026-04-02"}
+  - {fact_id: f-inc-2026-005-service, kind: service, value: analytics-hub, date: "2026-04-02"}
+  - {fact_id: f-inc-2026-005-severity, kind: text, value: 심각도 2로 분류되었다., date: "2026-04-02"}
+  - {fact_id: f-inc-2026-005-cause, kind: text, value: 작업 재시작 시 처리 기준점이 이전 값으로 돌아갔다., date: "2026-04-02"}
+  - {fact_id: f-inc-2026-005-action, kind: text, value: 기준점 저장을 원자화하고 중복 데이터를 정리했다., date: "2026-04-02"}
+  - {fact_id: f-inc-2026-005-owner, kind: person, value: p-077, date: "2026-04-02"}
+  - {fact_id: f-inc-2026-005-ticket, kind: id, value: DAI-1003, date: "2026-04-02"}

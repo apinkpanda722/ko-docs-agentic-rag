@@ -1,0 +1,15 @@
+id: INC-2026-007
+title: 취약점 현황 동기화 실패
+date: "2026-04-20"
+owner_team: security
+assignee_id: p-133
+service: security-center
+facts:
+  - {fact_id: f-inc-2026-007-start, kind: datetime, value: "2026-04-20T10:42", date: "2026-04-20"}
+  - {fact_id: f-inc-2026-007-restored, kind: datetime, value: "2026-04-20T12:25", date: "2026-04-20"}
+  - {fact_id: f-inc-2026-007-service, kind: service, value: security-center, date: "2026-04-20"}
+  - {fact_id: f-inc-2026-007-severity, kind: text, value: 심각도 1로 분류되었다., date: "2026-04-20"}
+  - {fact_id: f-inc-2026-007-cause, kind: text, value: 비공개 조치 목록의 형식 변경을 변환기가 처리하지 못했다., date: "2026-04-20"}
+  - {fact_id: f-inc-2026-007-action, kind: text, value: 변환 규칙을 수정하고 누락 항목을 다시 동기화했다., date: "2026-04-20"}
+  - {fact_id: f-inc-2026-007-owner, kind: person, value: p-133, date: "2026-04-20"}
+  - {fact_id: f-inc-2026-007-ticket, kind: id, value: SEC-1002, date: "2026-04-20"}

@@ -1,0 +1,816 @@
+{
+  "distribution": {
+    "by_access": {
+      "public": {
+        "passed": 89,
+        "planned": 90
+      },
+      "restricted": {
+        "passed": 30,
+        "planned": 30
+      },
+      "team": {
+        "passed": 80,
+        "planned": 80
+      }
+    },
+    "by_team": {
+      "data-ai": {
+        "passed": 23,
+        "planned": 23
+      },
+      "finance": {
+        "passed": 24,
+        "planned": 25
+      },
+      "hr": {
+        "passed": 25,
+        "planned": 25
+      },
+      "legal": {
+        "passed": 25,
+        "planned": 25
+      },
+      "payments": {
+        "passed": 27,
+        "planned": 27
+      },
+      "platform": {
+        "passed": 26,
+        "planned": 26
+      },
+      "security": {
+        "passed": 25,
+        "planned": 25
+      },
+      "sre": {
+        "passed": 24,
+        "planned": 24
+      }
+    },
+    "by_type": {
+      "guide": {
+        "passed": 30,
+        "planned": 30
+      },
+      "incident": {
+        "passed": 24,
+        "planned": 25
+      },
+      "meeting": {
+        "passed": 50,
+        "planned": 50
+      },
+      "notice": {
+        "passed": 25,
+        "planned": 25
+      },
+      "runbook": {
+        "passed": 30,
+        "planned": 30
+      },
+      "weekly": {
+        "passed": 40,
+        "planned": 40
+      }
+    },
+    "canary_documents": 30,
+    "injection_documents": 12
+  },
+  "duplicate": {
+    "between_type": {
+      "max": 0.1157,
+      "mean": 0.0263,
+      "p95": 0.0466
+    },
+    "near_duplicates": [],
+    "overall": {
+      "max": 0.21,
+      "mean": 0.0319,
+      "p95": 0.0683
+    },
+    "pair_count": 19701,
+    "shingle_n": 5,
+    "threshold": 0.5,
+    "within_type": {
+      "max": 0.21,
+      "mean": 0.0584,
+      "p95": 0.0901
+    }
+  },
+  "fact_coverage": {
+    "coverage_rate": 0.9974,
+    "covered_facts": 391,
+    "documents_per_fact_distribution": {
+      "0": 1,
+      "1": 102,
+      "2": 97,
+      "3": 93,
+      "4": 53,
+      "5": 32,
+      "6": 12,
+      "7": 2
+    },
+    "facts_in_2_plus_documents": 289,
+    "normal_facts_total": 392
+  },
+  "length": {
+    "by_type": {
+      "guide": {
+        "coefficient_of_variation": 0.1606,
+        "documents": 30,
+        "max_chars": 2134,
+        "mean_chars": 1612.7667,
+        "min_chars": 1235,
+        "stddev_chars": 258.9571,
+        "target_mean_chars": 1773.3333,
+        "target_ratio": 0.9095
+      },
+      "incident": {
+        "coefficient_of_variation": 0.2218,
+        "documents": 24,
+        "max_chars": 2639,
+        "mean_chars": 1893.5417,
+        "min_chars": 864,
+        "stddev_chars": 419.8945,
+        "target_mean_chars": 2925.0,
+        "target_ratio": 0.6474
+      },
+      "meeting": {
+        "coefficient_of_variation": 0.1486,
+        "documents": 50,
+        "max_chars": 2174,
+        "mean_chars": 1760.6,
+        "min_chars": 1166,
+        "stddev_chars": 261.5775,
+        "target_mean_chars": 2216.0,
+        "target_ratio": 0.7945
+      },
+      "notice": {
+        "coefficient_of_variation": 0.2177,
+        "documents": 25,
+        "max_chars": 1324,
+        "mean_chars": 927.88,
+        "min_chars": 595,
+        "stddev_chars": 201.983,
+        "target_mean_chars": 1184.0,
+        "target_ratio": 0.7837
+      },
+      "runbook": {
+        "coefficient_of_variation": 0.1426,
+        "documents": 30,
+        "max_chars": 2481,
+        "mean_chars": 1994.3667,
+        "min_chars": 1540,
+        "stddev_chars": 284.3168,
+        "target_mean_chars": 2360.0,
+        "target_ratio": 0.8451
+      },
+      "weekly": {
+        "coefficient_of_variation": 0.2241,
+        "documents": 40,
+        "max_chars": 2370,
+        "mean_chars": 1541.375,
+        "min_chars": 905,
+        "stddev_chars": 345.374,
+        "target_mean_chars": 1880.0,
+        "target_ratio": 0.8199
+      }
+    }
+  },
+  "lexical_diversity": {
+    "by_type": {
+      "guide": {
+        "distinct_2": 0.0811,
+        "total_bigrams": 46853,
+        "unique_bigrams": 3798
+      },
+      "incident": {
+        "distinct_2": 0.0768,
+        "total_bigrams": 44156,
+        "unique_bigrams": 3390
+      },
+      "meeting": {
+        "distinct_2": 0.0506,
+        "total_bigrams": 85111,
+        "unique_bigrams": 4307
+      },
+      "notice": {
+        "distinct_2": 0.1202,
+        "total_bigrams": 22169,
+        "unique_bigrams": 2664
+      },
+      "runbook": {
+        "distinct_2": 0.0647,
+        "total_bigrams": 58188,
+        "unique_bigrams": 3762
+      },
+      "weekly": {
+        "distinct_2": 0.0683,
+        "total_bigrams": 59786,
+        "unique_bigrams": 4081
+      }
+    }
+  },
+  "provenance": {
+    "generation_records": [
+      {
+        "effort": null,
+        "max_tokens": 6000,
+        "model": "claude-sonnet-5",
+        "sampling": "unsupported_by_model",
+        "temperature": null,
+        "thinking": "disabled"
+      }
+    ],
+    "models": [
+      "claude-sonnet-5"
+    ],
+    "regulation_index_sha256": [
+      "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac"
+    ],
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "template_hash_counts": {
+      "guide": {
+        "208e83bc44a971e490a4c96cc8648d7ff71ce18bf17ea97080c069862095ee07": 1,
+        "6d6499ecfc15e0355caba0a70fac1f1a5d7f041fd2cb8c8522b70fbc1c51a67e": 29
+      },
+      "incident": {
+        "ea60cea81c224af1be7e699121b98779a236895d21b8d0548c666a49fbc46210": 24
+      },
+      "meeting": {
+        "0e4a2386f8efccee8a5214861b45d7811efb4c00979270144191d472316630c5": 4,
+        "8196fa38d17b04a7f4dbe3edb649a4606ce1b7d49914a4b866df71b4b7748772": 46
+      },
+      "notice": {
+        "b077ed0739e21b98cea6c8667b9bc24338ec1932f42c15fb6c4c51297fe2af79": 24,
+        "f127f79ae5ffee73d31c5c470bb3454927b5242e2020e1441b4ee4b481a95883": 1
+      },
+      "runbook": {
+        "f2a856cb7f36eb28a2626539fe2c262546ab9a85bc9ce686e195db7cbf30478f": 30
+      },
+      "weekly": {
+        "e896c8ba882f6742896ed9215323a4f82d624aa23c1314065198acd941611d54": 40
+      }
+    },
+    "template_hashes": [
+      "0e4a2386f8efccee8a5214861b45d7811efb4c00979270144191d472316630c5",
+      "208e83bc44a971e490a4c96cc8648d7ff71ce18bf17ea97080c069862095ee07",
+      "6d6499ecfc15e0355caba0a70fac1f1a5d7f041fd2cb8c8522b70fbc1c51a67e",
+      "8196fa38d17b04a7f4dbe3edb649a4606ce1b7d49914a4b866df71b4b7748772",
+      "b077ed0739e21b98cea6c8667b9bc24338ec1932f42c15fb6c4c51297fe2af79",
+      "e896c8ba882f6742896ed9215323a4f82d624aa23c1314065198acd941611d54",
+      "ea60cea81c224af1be7e699121b98779a236895d21b8d0548c666a49fbc46210",
+      "f127f79ae5ffee73d31c5c470bb3454927b5242e2020e1441b4ee4b481a95883",
+      "f2a856cb7f36eb28a2626539fe2c262546ab9a85bc9ce686e195db7cbf30478f"
+    ],
+    "validator_versions": [
+      5
+    ]
+  },
+  "repeated_sentences": {
+    "sentences_in_3_plus_docs": 37,
+    "top": [
+      {
+        "document_count": 11,
+        "sentence_prefix": "담당 팀: 법무컴플라이언스팀"
+      },
+      {
+        "document_count": 10,
+        "sentence_prefix": "담당 팀: 결제서비스팀 (payments)"
+      },
+      {
+        "document_count": 10,
+        "sentence_prefix": "담당 팀: 데이터AI팀 (data-ai)"
+      },
+      {
+        "document_count": 10,
+        "sentence_prefix": "담당 팀: 정보보안팀"
+      },
+      {
+        "document_count": 8,
+        "sentence_prefix": "담당 팀: SRE인프라팀"
+      },
+      {
+        "document_count": 6,
+        "sentence_prefix": "감사합니다."
+      },
+      {
+        "document_count": 6,
+        "sentence_prefix": "담당 팀: 인사팀"
+      },
+      {
+        "document_count": 6,
+        "sentence_prefix": "담당 팀: 재무팀"
+      },
+      {
+        "document_count": 5,
+        "sentence_prefix": "9%다."
+      },
+      {
+        "document_count": 5,
+        "sentence_prefix": "|---|---|---|"
+      }
+    ]
+  },
+  "schema_version": 1,
+  "scope": {
+    "passed_documents": 199
+  },
+  "style": {
+    "by_type": {
+      "guide": {
+        "counts": {
+          "formal": 344,
+          "nominal": 35,
+          "other": 489,
+          "plain": 380
+        },
+        "ratios": {
+          "formal": 0.2756,
+          "nominal": 0.028,
+          "other": 0.3918,
+          "plain": 0.3045
+        },
+        "sentences": 1248
+      },
+      "incident": {
+        "counts": {
+          "formal": 53,
+          "nominal": 1,
+          "other": 278,
+          "plain": 532
+        },
+        "ratios": {
+          "formal": 0.0613,
+          "nominal": 0.0012,
+          "other": 0.3218,
+          "plain": 0.6157
+        },
+        "sentences": 864
+      },
+      "meeting": {
+        "counts": {
+          "formal": 1,
+          "nominal": 38,
+          "other": 929,
+          "plain": 1027
+        },
+        "ratios": {
+          "formal": 0.0005,
+          "nominal": 0.019,
+          "other": 0.4657,
+          "plain": 0.5148
+        },
+        "sentences": 1995
+      },
+      "notice": {
+        "counts": {
+          "formal": 177,
+          "nominal": 0,
+          "other": 138,
+          "plain": 179
+        },
+        "ratios": {
+          "formal": 0.3583,
+          "nominal": 0.0,
+          "other": 0.2794,
+          "plain": 0.3623
+        },
+        "sentences": 494
+      },
+      "runbook": {
+        "counts": {
+          "formal": 1,
+          "nominal": 7,
+          "other": 731,
+          "plain": 924
+        },
+        "ratios": {
+          "formal": 0.0006,
+          "nominal": 0.0042,
+          "other": 0.4396,
+          "plain": 0.5556
+        },
+        "sentences": 1663
+      },
+      "weekly": {
+        "counts": {
+          "formal": 269,
+          "nominal": 44,
+          "other": 332,
+          "plain": 571
+        },
+        "ratios": {
+          "formal": 0.2212,
+          "nominal": 0.0362,
+          "other": 0.273,
+          "plain": 0.4696
+        },
+        "sentences": 1216
+      }
+    },
+    "overall": {
+      "counts": {
+        "formal": 845,
+        "nominal": 125,
+        "other": 2897,
+        "plain": 3613
+      },
+      "ratios": {
+        "formal": 0.113,
+        "nominal": 0.0167,
+        "other": 0.3873,
+        "plain": 0.483
+      },
+      "sentences": 7480
+    }
+  },
+  "style_warnings": {
+    "bullet_request_endings": {
+      "by_type": {
+        "guide": {
+          "documents": 0,
+          "population": 30
+        },
+        "incident": {
+          "documents": 0,
+          "population": 24
+        },
+        "meeting": {
+          "documents": 0,
+          "population": 50
+        },
+        "notice": {
+          "documents": 2,
+          "population": 25
+        },
+        "runbook": {
+          "documents": 0,
+          "population": 30
+        },
+        "weekly": {
+          "documents": 0,
+          "population": 40
+        }
+      },
+      "documents": 2,
+      "occurrences": 4,
+      "population": 199,
+      "rate": 0.0101
+    },
+    "incident_ticket_as_doc_number": {
+      "by_type": {
+        "incident": {
+          "documents": 5,
+          "population": 24
+        }
+      },
+      "documents": 5,
+      "occurrences": 5,
+      "population": 24,
+      "rate": 0.2083
+    },
+    "narrative_request_phrases": {
+      "by_type": {
+        "guide": {
+          "documents": 23,
+          "population": 30
+        },
+        "incident": {
+          "documents": 2,
+          "population": 24
+        },
+        "meeting": {
+          "documents": 0,
+          "population": 50
+        },
+        "notice": {
+          "documents": 25,
+          "population": 25
+        },
+        "runbook": {
+          "documents": 1,
+          "population": 30
+        },
+        "weekly": {
+          "documents": 9,
+          "population": 40
+        }
+      },
+      "documents": 60,
+      "occurrences": 169,
+      "population": 199,
+      "rate": 0.3015
+    },
+    "sentence_seam": {
+      "by_type": {
+        "guide": {
+          "documents": 1,
+          "population": 30
+        },
+        "incident": {
+          "documents": 1,
+          "population": 24
+        },
+        "meeting": {
+          "documents": 13,
+          "population": 50
+        },
+        "notice": {
+          "documents": 3,
+          "population": 25
+        },
+        "runbook": {
+          "documents": 7,
+          "population": 30
+        },
+        "weekly": {
+          "documents": 7,
+          "population": 40
+        }
+      },
+      "documents": 32,
+      "occurrences": 50,
+      "population": 199,
+      "rate": 0.1608
+    },
+    "surface_form_list_leak": {
+      "by_type": {
+        "guide": {
+          "documents": 0,
+          "population": 30
+        },
+        "incident": {
+          "documents": 0,
+          "population": 24
+        },
+        "meeting": {
+          "documents": 1,
+          "population": 50
+        },
+        "notice": {
+          "documents": 0,
+          "population": 25
+        },
+        "runbook": {
+          "documents": 0,
+          "population": 30
+        },
+        "weekly": {
+          "documents": 0,
+          "population": 40
+        }
+      },
+      "documents": 1,
+      "occurrences": 3,
+      "population": 199,
+      "rate": 0.005
+    }
+  },
+  "unprompted_relative_time": {
+    "by_doc": {
+      "syn-guide-004": {
+        "최근": 1
+      },
+      "syn-guide-005": {
+        "최근": 1
+      },
+      "syn-guide-009": {
+        "최근": 1
+      },
+      "syn-guide-010": {
+        "최근": 1
+      },
+      "syn-guide-011": {
+        "최근": 1
+      },
+      "syn-guide-013": {
+        "최근": 1
+      },
+      "syn-guide-016": {
+        "최근": 1
+      },
+      "syn-guide-017": {
+        "최근": 1
+      },
+      "syn-guide-021": {
+        "최근": 1
+      },
+      "syn-guide-022": {
+        "최근": 3
+      },
+      "syn-guide-023": {
+        "최근": 1
+      },
+      "syn-incident-021": {
+        "최근": 1
+      },
+      "syn-incident-025": {
+        "최근": 2
+      },
+      "syn-meeting-001": {
+        "최근": 3
+      },
+      "syn-meeting-002": {
+        "최근": 3
+      },
+      "syn-meeting-003": {
+        "최근": 1
+      },
+      "syn-meeting-004": {
+        "최근": 3
+      },
+      "syn-meeting-005": {
+        "최근": 5
+      },
+      "syn-meeting-006": {
+        "최근": 1
+      },
+      "syn-meeting-008": {
+        "최근": 3
+      },
+      "syn-meeting-009": {
+        "최근": 1
+      },
+      "syn-meeting-010": {
+        "최근": 1
+      },
+      "syn-meeting-012": {
+        "최근": 1
+      },
+      "syn-meeting-020": {
+        "최근": 1
+      },
+      "syn-meeting-021": {
+        "최근": 1
+      },
+      "syn-meeting-023": {
+        "최근": 1
+      },
+      "syn-meeting-024": {
+        "최근": 1
+      },
+      "syn-meeting-028": {
+        "최근": 1
+      },
+      "syn-meeting-029": {
+        "최근": 2
+      },
+      "syn-meeting-030": {
+        "최근": 1
+      },
+      "syn-meeting-031": {
+        "최근": 1
+      },
+      "syn-meeting-035": {
+        "최근": 1
+      },
+      "syn-meeting-036": {
+        "최근": 1
+      },
+      "syn-meeting-047": {
+        "최근": 1
+      },
+      "syn-notice-006": {
+        "최근": 1
+      },
+      "syn-notice-011": {
+        "최근": 1
+      },
+      "syn-notice-016": {
+        "최근": 1
+      },
+      "syn-notice-020": {
+        "최근": 2
+      },
+      "syn-notice-021": {
+        "최근": 1
+      },
+      "syn-runbook-005": {
+        "최근": 1
+      },
+      "syn-runbook-009": {
+        "최근": 1
+      },
+      "syn-runbook-010": {
+        "최근": 1
+      },
+      "syn-runbook-011": {
+        "최근": 2
+      },
+      "syn-runbook-012": {
+        "최근": 1
+      },
+      "syn-runbook-016": {
+        "최근": 1
+      },
+      "syn-runbook-022": {
+        "최근": 1
+      },
+      "syn-runbook-024": {
+        "최근": 1
+      },
+      "syn-runbook-026": {
+        "최근": 1
+      },
+      "syn-runbook-027": {
+        "최근": 1
+      },
+      "syn-runbook-029": {
+        "최근": 1
+      },
+      "syn-runbook-030": {
+        "최근": 1
+      },
+      "syn-weekly-001": {
+        "최근": 1
+      },
+      "syn-weekly-012": {
+        "최근": 1
+      },
+      "syn-weekly-013": {
+        "최근": 1
+      },
+      "syn-weekly-032": {
+        "최근": 1
+      },
+      "syn-weekly-033": {
+        "최근": 1
+      }
+    },
+    "documents_with_warning": 56,
+    "terms": [
+      "최근",
+      "얼마 전",
+      "지난달",
+      "요즘",
+      "요새",
+      "근래"
+    ],
+    "total": 74
+  },
+  "validation": {
+    "exhausted": 0,
+    "failed": 1,
+    "failure_codes": {
+      "fact_missing": 1,
+      "marker_malformed": 1
+    },
+    "generated": 200,
+    "not_generated": 0,
+    "pass_rate": 0.995,
+    "passed": 199,
+    "planned": 200
+  }
+}

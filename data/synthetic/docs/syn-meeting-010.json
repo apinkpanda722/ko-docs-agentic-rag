@@ -1,0 +1,130 @@
+{
+  "access": {
+    "level": "public",
+    "min_grade": 1,
+    "teams": []
+  },
+  "author_id": "p-043",
+  "body": "# [회의록] 결제서비스팀 2026-06-15 할인 캐시 개선 프로젝트\n\n## 회의 개요\n\n- 일시: 2026-06-15\n- 작성자: 정태현 팀장 (결제서비스팀)\n- 참석 맥락: 할인 규칙 캐시와 관련된 과거 장애들을 되돌아보고, 현재 진행 중인 개선 프로젝트의 진행 상황을 점검하기 위해 소집됨\n\n이번 회의는 과거 장애 이력을 되짚어보며 현재 추진 중인 캐시 갱신 절차 개선 프로젝트의 진행 상황을 평가하고, 남은 과제를 정리하기 위한 자리로 마련되었다.\n\n## 안건 1: 프로젝트 배경 재확인\n\n결제서비스팀은 할인 규칙 캐시 갱신을 단일 절차로 만드는 프로젝트를 시작했다. 이 프로젝트가 시작된 배경에는 캐시 갱신 로직이 여러 경로로 분산되어 있어 일관성이 깨지기 쉬웠다는 문제가 있었다. 회의 참석자들은 당시 왜 이런 프로젝트가 필요했는지를 다시 짚어보며, 근본 원인이 되었던 과거 장애들을 순서대로 검토했다.\n\n## 안건 2: 과거 장애 원인 회고\n\n첫 번째로 검토한 장애는 할인 규칙 캐시 관련 초기 사례였다. 당시 할인 규칙 캐시의 갱신 순서가 어긋났다는 점이 원인으로 지적되었고, 이는 프로젝트 착수의 직접적인 계기가 되었다는 점이 재확인되었다.\n\n두 번째로는 비교적 최근 사례를 다뤘다. 이달 초 발생한 장애에서는 우회 경로 상태 정보가 오래된 값으로 남았다는 점이 문제로 드러났다. 참석자들은 이 두 장애가 시간차는 있지만 본질적으로 캐시 일관성 관리의 구조적 한계에서 비롯되었다는 공통점을 지적했다. 단일 절차로 통합하려는 프로젝트 방향이 두 장애 모두를 방지할 수 있는 근본 대책이 될 수 있는지에 대한 논의가 이어졌다.\n\n## 안건 3: 서비스 목표와의 연계\n\n결제 라우터 서비스의 월간 가용성 목표는 99.99%다는 점을 다시 확인하며, 캐시 관련 장애가 이 목표 달성에 어떤 영향을 미쳤는지 정량적으로 검토할 필요가 있다는 의견이 제시되었다. 특히 우회 경로의 상태 정보 관리 방식이 가용성 목표와 직결된다는 점에서, 단순히 갱신 절차를 통합하는 것만으로는 부족하고 상태 정보의 신선도를 검증하는 절차도 함께 마련해야 한다는 지적이 나왔다.\n\n## 결정 사항\n\n- 캐시 갱신 절차 단일화 프로젝트는 기존 방향대로 계속 추진한다.\n- 우회 경로의 상태 정보 갱신 방식에 대해서는 별도의 심층 검토가 필요하다는 데 참석자들이 동의했다.\n- 이번 회의에서는 구체적인 기술적 해결 방안까지 확정하지는 않았으며, 추가 분석 이후 다시 논의하기로 했다.\n\n## 후속 조치\n\n- 정태현 팀장: 캐시 갱신 절차 단일화 프로젝트의 현재 진행률과 남은 작업 범위를 정리하여 팀 내 공유\n- 담당자 미정: 우회 경로 상태 정보의 신선도 검증 방안에 대한 기술 검토 착수 여부를 다음 회의에서 결정\n- 전체 팀원: 과거 장애 두 건의 재발 방지 관점에서 현재 진행 중인 개선 작업이 충분한지 각자 점검 후 의견 취합\n\n이번 회고를 통해 서로 다른 시점에 발생한 두 장애가 결국 같은 구조적 문제에서 기인했다는 점이 다시 확인되었으며, 이는 현재 진행 중인 프로젝트의 필요성을 뒷받침하는 근거로 정리되었다. 다음 회의에서는 우회 경로 상태 정보 검증 방안에 대한 구체적인 논의를 이어갈 예정이다.",
+  "canary": null,
+  "date": "2026-06-15",
+  "doc_id": "syn-meeting-010",
+  "doc_type": "meeting",
+  "fact_spans": [
+    {
+      "end": 321,
+      "fact_id": "f-evt-009-plan",
+      "start": 287
+    },
+    {
+      "end": 539,
+      "fact_id": "f-inc-2025-002-cause",
+      "start": 518
+    },
+    {
+      "end": 656,
+      "fact_id": "f-inc-2026-013-cause",
+      "start": 632
+    },
+    {
+      "end": 860,
+      "fact_id": "f-service-payment-router-slo",
+      "start": 842
+    }
+  ],
+  "generation": {
+    "attempt": 1,
+    "batch_id": "msgbatch_01SHc7eNEULByVhCSyVD4GFp",
+    "cache_key": "7c49cb4bc9e10b949a97abeb0bee0a5c",
+    "custom_id": "syn-meeting-010-a1",
+    "doc_seed": 2177863654,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "864ed6e31b752fa690012982ce9b8f5a069ffe6c0edc0a0c7c10455b8507c187",
+    "template_hash": "8196fa38d17b04a7f4dbe3edb649a4606ce1b7d49914a4b866df71b4b7748772",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 2034,
+      "output_tokens": 1685
+    }
+  },
+  "injection": null,
+  "regulation_refs": [],
+  "related_doc_ids": [
+    "syn-incident-002",
+    "syn-incident-023",
+    "syn-meeting-002",
+    "syn-weekly-014"
+  ],
+  "source_fact_ids": [
+    "f-evt-009-plan",
+    "f-inc-2025-002-cause",
+    "f-inc-2026-013-cause",
+    "f-service-payment-router-slo"
+  ],
+  "team": "payments",
+  "title": "[회의록] 결제서비스팀 2026-06-15 할인 캐시 개선 프로젝트",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}

@@ -1,0 +1,15 @@
+id: INC-2025-006
+title: 인사 요청 알림 지연
+date: "2025-09-22"
+owner_team: hr
+assignee_id: p-151
+service: people-portal
+facts:
+  - {fact_id: f-inc-2025-006-start, kind: datetime, value: "2025-09-22T09:25", date: "2025-09-22"}
+  - {fact_id: f-inc-2025-006-restored, kind: datetime, value: "2025-09-22T10:15", date: "2025-09-22"}
+  - {fact_id: f-inc-2025-006-service, kind: service, value: people-portal, date: "2025-09-22"}
+  - {fact_id: f-inc-2025-006-severity, kind: text, value: 심각도 3으로 분류되었다., date: "2025-09-22"}
+  - {fact_id: f-inc-2025-006-cause, kind: text, value: 알림 대기열의 재시도 간격이 과도하게 늘어났다., date: "2025-09-22"}
+  - {fact_id: f-inc-2025-006-action, kind: text, value: 재시도 상한을 조정하고 지연 지표를 추가했다., date: "2025-09-22"}
+  - {fact_id: f-inc-2025-006-owner, kind: person, value: p-151, date: "2025-09-22"}
+  - {fact_id: f-inc-2025-006-ticket, kind: id, value: HRM-1001, date: "2025-09-22"}

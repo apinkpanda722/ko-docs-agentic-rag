@@ -1,0 +1,15 @@
+id: INC-2025-001
+title: API 관문 연결 지연
+date: "2025-01-15"
+owner_team: platform
+assignee_id: p-002
+service: core-gateway
+facts:
+  - {fact_id: f-inc-2025-001-start, kind: datetime, value: "2025-01-15T09:10", date: "2025-01-15"}
+  - {fact_id: f-inc-2025-001-restored, kind: datetime, value: "2025-01-15T10:05", date: "2025-01-15"}
+  - {fact_id: f-inc-2025-001-service, kind: service, value: core-gateway, date: "2025-01-15"}
+  - {fact_id: f-inc-2025-001-severity, kind: text, value: 심각도 2로 분류되었다., date: "2025-01-15"}
+  - {fact_id: f-inc-2025-001-cause, kind: text, value: 연결 풀 상한이 트래픽 증가를 따라가지 못했다., date: "2025-01-15"}
+  - {fact_id: f-inc-2025-001-action, kind: text, value: 연결 풀 상한을 조정하고 경보를 추가했다., date: "2025-01-15"}
+  - {fact_id: f-inc-2025-001-owner, kind: person, value: p-002, date: "2025-01-15"}
+  - {fact_id: f-inc-2025-001-ticket, kind: id, value: PLT-1001, date: "2025-01-15"}

@@ -21,7 +21,7 @@
 - CRITICAL: 모든 검색은 `retrieval`의 `authorized_*` 함수를 거친다. 권한 필터는 검색 **전에** 적용한다(pre-filter). LangGraph 도구와 MCP 서버는 이 함수를 호출하는 얇은 래퍼일 뿐, 권한 로직을 따로 두지 않는다.
 - CRITICAL: 사용자 컨텍스트(팀·직급)는 도구 인자로 받지 않는다. LangGraph는 `ToolRuntime` context로, MCP 서버는 bearer 토큰으로 서버가 결정해 주입한다. 모델이 권한 값을 보거나 만들 수 없어야 한다.
 - CRITICAL: `run_sql`은 SELECT만 허용하고, 허용 테이블 목록과 LIMIT을 강제하며, 읽기 전용 연결을 쓴다.
-- CRITICAL: 외부 LLM 호출은 `src/kodocs/llm/` 래퍼를 통해서만 한다. 모델명·temperature는 설정에서 읽고 호출 결과에 함께 기록한다.
+- CRITICAL: 외부 LLM 호출은 `src/kodocs/llm/` 래퍼를 통해서만 한다. 모델명과 생성 설정은 설정에서 읽고 호출 결과에 함께 기록한다. 샘플링 파라미터(temperature 등)는 모델이 지원할 때만 설정·기록하고, 지원하지 않는 모델은 `null`로 기록한 뒤 thinking·effort 설정을 기록한다.
 - CRITICAL: `data/golden/`(질의셋·qrels·사람 채점)은 사람이 검수해 확정한 기준이다. 에이전트는 수정하지 않는다. 수치를 맞추려고 golden을 바꾸지 않는다.
 - CRITICAL: `data/raw/`(다운로드한 원문)는 커밋하지 않는다. 출처·해시·라이선스는 `data/manifest/`에 기록한다.
 - CRITICAL: `data/interim/`(정제 산출물)도 원문을 담으므로 커밋하지 않는다. 법제처 응답의 담당자명·전화번호는 정제 산출물과 manifest에 넣지 않는다. 법제처 인증키(`OC`)는 로그·manifest·예외 메시지에 남기지 않는다.
@@ -64,6 +64,18 @@ make table-drafts  # HWPX 원본 표(hp:tbl)에서 파서 중립 표 정답 초�
 make table-golden  # 사람이 확정한 data/golden/tables/*.md의 선정 정보·해시를 data/manifest/table_golden.json에 기록
 make table-score   # 파서별 표 셀 일치율 채점
 make parse-report    # M2 파싱 결과표를 docs/results/{실행일}-m2-parsing.md에 생성·갱신 — 네트워크 없음
-make generate    # 합성 코퍼스 생성 — 실제 API 호출, 사용자 실행
+make reg-index   # 법제처 현행 규정의 규정명·조 번호·조 제목 색인 → data/manifest/regulation_refs.json (조문 본문 없음, 네트워크 없음)
+make seed-names  # 시드 인물 명단을 팀별로 출력(사람이 훑어보고 널리 알려진 인물과 겹치는 이름을 찾는 용도, 네트워크 없음)
+make build-db     # 시드 → 티켓·결재 SQLite(data/synthetic/ledger.sqlite, 비커밋) 결정론 빌드, 해시·행 수는 data/manifest/synth_db.json (네트워크 없음)
+make plan-docs    # 시드 → 문서 200건 생성 계획·카나리아·인젝션 레지스트리(data/synthetic/, 커밋) (네트워크 없음)
+make generate-dry   # 합성 문서 생성 예상 토큰·비용(Batch)만 출력 — 네트워크 없음
+make generate-pilot # 파일럿 10건 Batch 제출/수거 — 실제 API 호출·과금, 확인 후 실행, 사용자 실행
+make generate-pilot-rerun # 이미 시도한 문서(파일럿)만 바뀐 프롬프트로 새 시도 제출/수거 — 실제 API 호출·과금, 사용자 실행
+make generate       # 합성 문서 Batch 생성(재실행 시 조회·수거) → 수거 후 검증·지표·결과 문서 — 실제 API 호출·과금, 사용자 실행. 템플릿이 바뀐 유형의 통과본까지 다시 만들 때 REGENERATE_TYPES=incident (generate-dry도 같음)
+make synth-validate # 생성 결과 결정론 검증 → data/synthetic/docs/·validation_failures.jsonl·data/manifest/synth_validation.json (네트워크 없음)
+make synth-metrics  # 합성 문서 중복·다양성·분포·사실 커버리지 → data/manifest/synth_metrics.json (네트워크 없음)
+make synth-report   # M3 결과 문서 docs/results/2026-09-27-m3-synthetic.md(실행일과 관계없이 고정) 갱신 (네트워크 없음)
+make review-sample  # 검증 통과 문서에서 유형·권한 층화 표본 20건 + 검수 양식 → data/synthetic/review/ (네트워크 없음)
+make review-score   # data/golden/synthetic_review/*.csv 사람 검수 결과 집계 → data/manifest/synth_review.json·결과 문서 7절 (네트워크 없음)
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)

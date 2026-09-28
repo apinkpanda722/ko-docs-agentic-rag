@@ -103,6 +103,9 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **강제 수단**: `tests/eval/test_parsing_score.py`(`test_law_without_article_text_is_excluded_from_parser_and_ceiling_denominators`, `test_keys_missed_by_every_ok_parser_are_reported_as_answer_differences`, `test_answer_differences_need_two_scored_comparison_parsers`)
 - **출처**: M2 실측 (383cc1d, bf37332)
 
+### FP-022 조합 생성한 가상 이름이 실존 공인과 겹칠 수 있음
+- 음절 조합으로 만든 가상 인물 이름이 전직 대통령 이름과 같았다(M3 step 1) → 열린 목록(실존 인물 명단) 대조가 아니라 **이름 풀 설계(요즘식·순우리말 이름) + 사람 검토(`make seed-names` 후 `--rename PERSON_ID`)**로 막고, 인물은 이름이 아니라 `person_id`로 참조한다. 강제 수단: `data/seed/README.md` 인물 명단 검토 절차, `tests/synth/test_bootstrap_people.py`.
+
 ## D. 배치 수집·기록
 
 ### FP-030 항목 하나의 실패가 배치 전체를 멈춤

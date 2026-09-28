@@ -1,0 +1,66 @@
+events:
+  - id: evt-2025-040
+    title: 인사 평가 조정
+    date: "2025-01-30"
+    owner_team: hr
+    type: sensitive
+    sensitivity: restricted
+    facts:
+      - {fact_id: f-evt-040-plan, kind: text, value: 공개 전인 평가 조정 후보를 제한 회의에서 검토했다., date: "2025-01-30"}
+      - {fact_id: f-evt-040-owner, kind: person, value: p-151, date: "2025-01-30"}
+      - {fact_id: f-evt-040-rule, kind: regulation, value: 근무성적평정규칙 제10조, date: "2025-01-30"}
+  - id: evt-2025-041
+    title: 알림 재시도 개선 프로젝트
+    date: "2025-10-01"
+    owner_team: hr
+    type: project
+    facts:
+      - {fact_id: f-evt-041-incident, kind: id, value: INC-2025-006, date: "2025-10-01"}
+      - {fact_id: f-evt-041-plan, kind: text, value: 인사 요청 알림의 재시도를 개선하는 프로젝트를 시작했다., date: "2025-10-01"}
+      - {fact_id: f-evt-041-service, kind: service, value: people-portal, date: "2025-10-01"}
+  - id: evt-2026-042
+    title: 시간대 처리 통일 결정
+    date: "2026-05-19"
+    owner_team: hr
+    type: decision
+    facts:
+      - {fact_id: f-evt-042-incident, kind: id, value: INC-2026-010, date: "2026-05-19"}
+      - {fact_id: f-evt-042-decision, kind: text, value: 교육 신청 시각을 하나의 시간대로 처리하기로 결정했다., date: "2026-05-19"}
+      - {fact_id: f-evt-042-service, kind: service, value: people-portal, date: "2026-05-19"}
+  - id: evt-2025-043
+    title: 교육 일정 화면 배포
+    date: "2025-05-09"
+    owner_team: hr
+    type: release
+    facts:
+      - {fact_id: f-evt-043-version, kind: text, value: 팀별 교육 일정을 확인하는 화면을 배포했다., date: "2025-05-09"}
+      - {fact_id: f-evt-043-service, kind: service, value: people-portal, date: "2025-05-09"}
+      - {fact_id: f-evt-043-result, kind: text, value: 교육 일정 문의가 줄어든 것을 확인했다., date: "2025-05-09"}
+  - id: evt-2025-044
+    title: 교육 신청 정책
+    date: "2025-08-06"
+    owner_team: hr
+    type: policy
+    facts:
+      - {fact_id: f-evt-044-policy, kind: text, value: 교육 신청 시 비용과 목적을 함께 기록하도록 정했다., date: "2025-08-06"}
+      - {fact_id: f-evt-044-rule, kind: regulation, value: 교육훈련규칙 제19조, date: "2025-08-06"}
+      - {fact_id: f-evt-044-owner, kind: person, value: p-151, date: "2025-08-06"}
+  - id: evt-2025-045
+    title: 조직문화 담당 구성
+    date: "2025-12-15"
+    owner_team: hr
+    type: org
+    facts:
+      - {fact_id: f-evt-045-org, kind: text, value: 조직문화 프로그램 담당 역할을 팀 안에 구성했다., date: "2025-12-15"}
+      - {fact_id: f-evt-045-owner, kind: person, value: p-151, date: "2025-12-15"}
+      - {fact_id: f-evt-045-focus, kind: text, value: 온보딩 경험 개선을 우선 과제로 정했다., date: "2025-12-15"}
+  - id: evt-2026-046
+    title: 미공개 조직 개편 검토
+    date: "2026-03-30"
+    owner_team: hr
+    type: sensitive
+    sensitivity: restricted
+    facts:
+      - {fact_id: f-evt-046-plan, kind: text, value: 공개 전인 조직 개편 후보안을 제한 회의에서 검토했다., date: "2026-03-30"}
+      - {fact_id: f-evt-046-owner, kind: person, value: p-151, date: "2026-03-30"}
+      - {fact_id: f-evt-046-service, kind: service, value: people-portal, date: "2026-03-30"}

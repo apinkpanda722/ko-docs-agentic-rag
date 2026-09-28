@@ -1,0 +1,94 @@
+{
+  "by_access": {
+    "public": {
+      "failed": 1,
+      "generated": 90,
+      "not_generated": 0,
+      "passed": 89,
+      "planned": 90
+    },
+    "restricted": {
+      "failed": 0,
+      "generated": 30,
+      "not_generated": 0,
+      "passed": 30,
+      "planned": 30
+    },
+    "team": {
+      "failed": 0,
+      "generated": 80,
+      "not_generated": 0,
+      "passed": 80,
+      "planned": 80
+    }
+  },
+  "by_code": {
+    "fact_missing": 1,
+    "marker_malformed": 1
+  },
+  "by_type": {
+    "guide": {
+      "failed": 0,
+      "generated": 30,
+      "not_generated": 0,
+      "passed": 30,
+      "planned": 30
+    },
+    "incident": {
+      "failed": 1,
+      "generated": 25,
+      "not_generated": 0,
+      "passed": 24,
+      "planned": 25
+    },
+    "meeting": {
+      "failed": 0,
+      "generated": 50,
+      "not_generated": 0,
+      "passed": 50,
+      "planned": 50
+    },
+    "notice": {
+      "failed": 0,
+      "generated": 25,
+      "not_generated": 0,
+      "passed": 25,
+      "planned": 25
+    },
+    "runbook": {
+      "failed": 0,
+      "generated": 30,
+      "not_generated": 0,
+      "passed": 30,
+      "planned": 30
+    },
+    "weekly": {
+      "failed": 0,
+      "generated": 40,
+      "not_generated": 0,
+      "passed": 40,
+      "planned": 40
+    }
+  },
+  "canary": {
+    "expected": 30,
+    "leaks": 0,
+    "present": 30
+  },
+  "exhausted": 0,
+  "exhausted_docs": [],
+  "failed": 1,
+  "generated": 200,
+  "injections": {
+    "expected": 12,
+    "inserted": 12
+  },
+  "invalidated": 0,
+  "not_generated": 0,
+  "passed": 199,
+  "planned": 200,
+  "regressed": 0,
+  "warnings": {
+    "length_off_target": 3
+  }
+}

@@ -1,0 +1,15 @@
+id: INC-2025-008
+title: 계약 기한 알림 누락
+date: "2025-11-11"
+owner_team: legal
+assignee_id: p-189
+service: contract-vault
+facts:
+  - {fact_id: f-inc-2025-008-start, kind: datetime, value: "2025-11-11T08:40", date: "2025-11-11"}
+  - {fact_id: f-inc-2025-008-restored, kind: datetime, value: "2025-11-11T10:00", date: "2025-11-11"}
+  - {fact_id: f-inc-2025-008-service, kind: service, value: contract-vault, date: "2025-11-11"}
+  - {fact_id: f-inc-2025-008-severity, kind: text, value: 심각도 3으로 분류되었다., date: "2025-11-11"}
+  - {fact_id: f-inc-2025-008-cause, kind: text, value: 휴일 계산 설정에 새 일정이 반영되지 않았다., date: "2025-11-11"}
+  - {fact_id: f-inc-2025-008-action, kind: text, value: 일정 동기화 검사와 누락 알림 재발송을 수행했다., date: "2025-11-11"}
+  - {fact_id: f-inc-2025-008-owner, kind: person, value: p-189, date: "2025-11-11"}
+  - {fact_id: f-inc-2025-008-ticket, kind: id, value: LGL-1001, date: "2025-11-11"}

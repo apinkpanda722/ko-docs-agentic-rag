@@ -1,0 +1,128 @@
+{
+  "access": {
+    "level": "public",
+    "min_grade": 1,
+    "teams": []
+  },
+  "author_id": "p-102",
+  "body": "# [가이드] 데이터AI팀 데이터 품질 담당 구성 안내\n\n작성자: 남세아 사원 (데이터AI팀)\n작성일: 2026-01-10\n담당 팀: 데이터AI팀\n\n## 목적\n\n이 가이드는 데이터AI팀 내 데이터 품질 담당 역할의 구성 배경과 운영 방식을 안내하기 위해 작성되었습니다. 지난해 10월 데이터 품질 담당 역할을 팀 안에 구성했다는 사실을 바탕으로, 신규 구성원과 협업 팀 모두가 해당 역할의 운영 취지를 이해하고 필요할 때 적절히 소통할 수 있도록 하는 것이 이 문서의 목적입니다. 데이터 파이프라인의 안정성과 데이터 신뢰도가 회사 전반의 의사결정과 서비스 품질에 직결되는 만큼, 이를 전담하는 담당자를 명확히 지정해 두는 것이 필요합니다.\n\n## 대상\n\n- 데이터AI팀 내 신규 및 기존 구성원\n- 데이터AI팀과 데이터를 주고받는 타 팀 담당자 (플랫폼개발팀, 결제서비스팀, SRE인프라팀 등)\n- 데이터 품질 이슈를 보고하거나 확인이 필요한 모든 구성원\n\n데이터 품질 담당은 팀 내부의 데이터 파이프라인 상태를 점검하고, 이상 징후가 발견되었을 때 우선적으로 파악해 대응을 조율하는 역할을 맡습니다. 특정 서비스나 시스템에 국한되지 않고, 팀이 다루는 데이터 전반의 품질을 살피는 것을 목표로 합니다.\n\n## 준비 사항\n\n데이터 품질 담당과 협업하려는 구성원은 아래 사항을 미리 확인해 두는 것이 좋습니다.\n\n1. **관련 서비스 확인**: 데이터 품질과 연관된 서비스 중 하나로 analytics-hub가 있습니다. 해당 서비스와 관련된 데이터 흐름에 이슈가 있는 경우, 사전에 어떤 지표나 로그에서 이상이 감지되었는지 정리해 두면 소통이 원활합니다.\n2. **문제 상황 요약**: 데이터 품질 이슈를 보고할 때는 발생 시점, 영향 범위, 관련 서비스명을 간단히 정리해 전달합니다.\n3. **최근 대응 사례 참고**: 데이터 품질 담당은 파이프라인 성능 문제에도 관여합니다. 예를 들어 캐시 관련 지연 이슈가 있었을 때, 캐시 만료 시점을 분산하고 사전 적재를 추가했다는 조치를 통해 문제를 완화한 사례가 있습니다. 이러한 대응 방식을 참고하면 향후 유사한 문제를 조기에 인지하는 데 도움이 됩니다.\n\n## 사용 절차\n\n1. **이슈 인지**: 데이터 지연, 결측, 이상값 등 품질 관련 문제를 발견하면 가장 먼저 데이터 품질 담당에게 알립니다.\n2. **초기 확인 요청**: 문제가 발생한 서비스와 대략적인 시점을 전달하면, 데이터 품질 담당이 관련 로그와 파이프라인 상태를 확인합니다.\n3. **원인 파악 및 조치**: 담당자는 원인을 분석하고 필요한 경우 팀 내 다른 구성원 또는 관련 팀과 협의해 조치를 진행합니다. 캐시나 적재 주기와 관련된 문제라면, 앞서 소개한 사례처럼 구조적인 개선을 검토할 수 있습니다.\n4. **결과 공유**: 조치가 완료되면 원인과 대응 내용을 요청자에게 공유합니다. 필요 시 팀 내부에 공유해 유사 사례 재발을 방지합니다.\n\n## 주의 사항\n\n- 데이터 품질 담당은 특정 개인의 고정 업무가 아니라 팀 내 구성된 역할이므로, 담당자 확인이 필요한 경우 팀 채널을 통해 문의하는 것을 권장합니다.\n- 이 문서는 역할 구성과 협업 방식에 대한 안내이며, 세부 처리 기준이나 우선순위 정책을 규정하지는 않습니다. 구체적인 처리 기준은 별도로 확인이 필요할 수 있습니다.\n- 보고 시 서비스명과 시점을 명확히 전달할수록 대응 속도가 빨라집니다.\n\n## 문의\n\n데이터 품질 담당 구성 및 운영과 관련해 궁금한 사항은 데이터AI팀 채널로 문의해 주시기 바랍니다. 개별 이슈 보고는 위 사용 절차에 따라 진행해 주시면 됩니다.",
+  "canary": null,
+  "date": "2026-01-10",
+  "doc_id": "syn-guide-013",
+  "doc_type": "guide",
+  "fact_spans": [
+    {
+      "end": 182,
+      "fact_id": "f-evt-021-org",
+      "start": 159
+    },
+    {
+      "end": 731,
+      "fact_id": "f-service-feature-store-dependency",
+      "start": 718
+    },
+    {
+      "end": 992,
+      "fact_id": "f-inc-2026-001-action",
+      "start": 966
+    }
+  ],
+  "generation": {
+    "attempt": 1,
+    "batch_id": "msgbatch_01SHc7eNEULByVhCSyVD4GFp",
+    "cache_key": "cb444285c8f1a456643a5433d4476fc5",
+    "custom_id": "syn-guide-013-a1",
+    "doc_seed": 3378234551,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "6c0a1c389c009cba24942fd153683a824b5f1bdf05d4213e01f0694642b2aa35",
+    "template_hash": "6d6499ecfc15e0355caba0a70fac1f1a5d7f041fd2cb8c8522b70fbc1c51a67e",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 1858,
+      "output_tokens": 1820
+    }
+  },
+  "injection": null,
+  "regulation_refs": [],
+  "related_doc_ids": [
+    "syn-guide-005",
+    "syn-guide-021",
+    "syn-incident-011",
+    "syn-meeting-019",
+    "syn-runbook-021",
+    "syn-weekly-007",
+    "syn-weekly-015",
+    "syn-weekly-035"
+  ],
+  "source_fact_ids": [
+    "f-evt-021-org",
+    "f-inc-2026-001-action",
+    "f-service-feature-store-dependency"
+  ],
+  "team": "data-ai",
+  "title": "[가이드] 데이터AI팀 데이터 품질 담당 구성 안내",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}

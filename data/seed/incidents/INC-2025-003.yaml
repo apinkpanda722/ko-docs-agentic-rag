@@ -1,0 +1,15 @@
+id: INC-2025-003
+title: 분석 적재 지연
+date: "2025-04-10"
+owner_team: data-ai
+assignee_id: p-077
+service: analytics-hub
+facts:
+  - {fact_id: f-inc-2025-003-start, kind: datetime, value: "2025-04-10T05:35", date: "2025-04-10"}
+  - {fact_id: f-inc-2025-003-restored, kind: datetime, value: "2025-04-10T07:10", date: "2025-04-10"}
+  - {fact_id: f-inc-2025-003-service, kind: service, value: analytics-hub, date: "2025-04-10"}
+  - {fact_id: f-inc-2025-003-severity, kind: text, value: 심각도 3으로 분류되었다., date: "2025-04-10"}
+  - {fact_id: f-inc-2025-003-cause, kind: text, value: 원천 데이터 스키마 변경을 적재 작업이 반영하지 못했다., date: "2025-04-10"}
+  - {fact_id: f-inc-2025-003-action, kind: text, value: 스키마 호환 검사를 추가하고 적재를 재실행했다., date: "2025-04-10"}
+  - {fact_id: f-inc-2025-003-owner, kind: person, value: p-077, date: "2025-04-10"}
+  - {fact_id: f-inc-2025-003-ticket, kind: id, value: DAI-1001, date: "2025-04-10"}

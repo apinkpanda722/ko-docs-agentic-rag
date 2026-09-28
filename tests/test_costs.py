@@ -18,6 +18,7 @@ from kodocs.costs import (
 )
 
 SERVICE = "upstage.document-parse.standard"
+ANTHROPIC_PRICE_URL = "https://platform.claude.com/docs/en/about-claude/pricing"
 
 
 def _entry(*, call_id: str, ts: str, amount_usd: float) -> dict[str, object]:
@@ -61,6 +62,48 @@ def test_budget_estimate_applies_billing_margin_only_to_the_estimate() -> None:
     # 원장 금액(estimate_usd)은 그대로, 예산 검사용만 여유 5%를 곱한다.
     assert budget_estimate_usd(SERVICE, 1887) == pytest.approx(
         estimate_usd(SERVICE, 1887) * 1.05
+    )
+
+
+@pytest.mark.parametrize(
+    ("service", "unit_price_usd"),
+    [
+        ("anthropic.claude-sonnet-5.batch.input", 1e-6),
+        ("anthropic.claude-sonnet-5.batch.output", 5e-6),
+        ("anthropic.claude-sonnet-5.batch.cache-write-5m", 1.25e-6),
+        ("anthropic.claude-sonnet-5.batch.cache-write-1h", 2e-6),
+        ("anthropic.claude-sonnet-5.batch.cache-read", 0.1e-6),
+        ("anthropic.claude-sonnet-5.input", 2e-6),
+        ("anthropic.claude-sonnet-5.output", 10e-6),
+    ],
+)
+def test_anthropic_sonnet_5_prices(
+    service: str,
+    unit_price_usd: float,
+) -> None:
+    assert PRICES[service] == Price(
+        service=service,
+        unit="token",
+        unit_price_usd=unit_price_usd,
+        source_url=ANTHROPIC_PRICE_URL,
+        checked_on="2026-09-27",
+        billing_margin=1.05,
+    )
+    assert estimate_usd(service, 1_000_000) == pytest.approx(
+        1_000_000 * unit_price_usd * 1.1
+    )
+
+
+def test_adding_anthropic_prices_does_not_change_upstage_price() -> None:
+    assert PRICES[SERVICE] == Price(
+        service=SERVICE,
+        unit="page",
+        unit_price_usd=0.01,
+        source_url=(
+            "https://console.upstage.ai/docs/models/compare/document-intelligence"
+        ),
+        checked_on="2026-09-26",
+        billing_margin=1.05,
     )
 
 

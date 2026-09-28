@@ -1,0 +1,29 @@
+tickets:
+  total: 10
+  access:
+    public: 6
+    team: 3
+    restricted: 1
+  team_weights: {payments: 1.0}
+  status_weights: {open: 0.2, in_progress: 0.2, resolved: 0.5, closed: 0.1}
+  priority_weights: {low: 0.2, medium: 0.4, high: 0.3, critical: 0.1}
+  type_weights: {incident: 0.2, task: 0.4, improvement: 0.3, request: 0.1}
+  monthly_volume_weights: [0.04, 0.05, 0.05, 0.05, 0.06, 0.05, 0.05, 0.06, 0.05, 0.06, 0.06, 0.07, 0.06, 0.06, 0.06, 0.06, 0.06, 0.05]
+approvals:
+  total: 5
+  access:
+    public: 1
+    team: 3
+    restricted: 1
+  category_amount_ranges:
+    travel: {min: 50000, max: 3000000}
+    equipment: {min: 100000, max: 20000000}
+    education: {min: 100000, max: 5000000}
+    contract: {min: 1000000, max: 100000000}
+    welfare: {min: 50000, max: 3000000}
+  category_weights: {travel: 0.25, equipment: 0.20, education: 0.15, contract: 0.25, welfare: 0.15}
+  status_weights: {submitted: 0.15, reviewing: 0.15, approved: 0.60, rejected: 0.10}
+  monthly_volume_weights: [0.04, 0.05, 0.05, 0.05, 0.06, 0.05, 0.05, 0.06, 0.05, 0.06, 0.06, 0.07, 0.06, 0.06, 0.06, 0.06, 0.06, 0.05]
+restricted_defaults:
+  min_grade: 4
+  teams: owner_team_only

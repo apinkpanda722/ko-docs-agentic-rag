@@ -28,3 +28,4 @@ data/raw/
 data/interim/
 data/golden/tables/*
 !data/golden/tables/README.md
+data/synthetic/ledger.sqlite

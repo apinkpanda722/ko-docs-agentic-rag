@@ -1,0 +1,139 @@
+{
+  "access": {
+    "level": "public",
+    "min_grade": 1,
+    "teams": []
+  },
+  "author_id": "p-168",
+  "body": "# [주간보고] 인사팀 2025년 12월 3주차\n\n작성자: 배지경 사원 (인사팀)\n문서 날짜: 2025-12-15\n담당 팀: 인사팀\n\n## 요약\n\n인사팀은 2025년 12월 3주차 동안 교육 신청 프로세스 개선 이후의 운영 현황을 점검하고, 신규 입사자 온보딩 경험 개선을 다음 단계 과제로 확정했다. 올해 상반기부터 진행해온 교육 관련 문의 응대 체계 정비의 효과가 지속되고 있음을 재확인했으며, 온보딩 경험 개선을 우선 과제로 정했다. 아래에서 세부 진행 상황과 위험 요인, 다음 주 계획을 정리한다.\n\n## 진행 상황\n\n올해 5월, 교육 신청과 관련한 문의 처리 방식을 점검하는 과정에서 교육 일정 문의가 줄어든 것을 확인했다. 이는 당시 교육 안내 체계를 개편한 결과로 판단되며, 구성원들이 별도 문의 없이도 필요한 정보를 스스로 확인할 수 있게 된 것으로 보인다. 이 흐름은 하반기에도 이어져, 담당 인력의 반복 문의 대응 부담이 줄어드는 효과로 연결되었다.\n\n이후 올해 8월에는 교육 신청 절차를 한 단계 더 정비하는 작업이 진행되었다. 최가윤 팀장의 주도로 교육 신청 관련 규정을 재정비하였고, 그 결과 교육 신청 시 비용과 목적을 함께 기록하도록 정했다. 이번 개편은 교육훈련규칙 제19조를 참조하여 진행되었으며, 신청서 작성 단계에서 목적과 예산 정보를 함께 남기도록 함으로써 사후 확인과 예산 집행 관리를 더 수월하게 하려는 취지였다. 12월 3주차 현재까지 이 절차는 별다른 혼선 없이 안착한 상태이며, 신청 건별로 비용과 목적이 함께 기록되고 있어 추후 교육 예산 분석에도 활용할 수 있는 기초 자료가 쌓이고 있다.\n\n한편 금주에는 신규 입사자들의 초기 적응 과정에 대한 내부 의견 수렴이 있었고, 그 결과를 바탕으로 온보딩 경험 개선을 팀의 우선 과제로 새롭게 설정하였다. 기존에는 교육 신청과 관련한 프로세스 정비에 초점을 맞췄으나, 이제는 입사 초기 단계에서 구성원이 겪는 경험 전반을 살펴보는 방향으로 관심 범위를 넓히고 있다.\n\n## 이슈 및 위험\n\n현재까지 파악된 위험 요인은 크게 두 가지다.\n\n첫째, 교육 신청 시 비용과 목적을 함께 기록하도록 한 방침이 정착 단계에 있으나, 신청자별로 기록의 상세도에 차이가 있을 수 있어 데이터 품질 관리가 필요하다. 목적 기재가 형식적으로 이루어질 경우 애초 개편 취지인 예산 집행 투명성 확보 효과가 줄어들 수 있으므로, 정기적인 표본 점검이 요구된다.\n\n둘째, 온보딩 경험 개선을 신규 과제로 착수하는 단계이다 보니, 아직 구체적인 실행 계획이나 담당 범위가 확정되지 않은 상태다. 과제의 범위를 명확히 하지 않으면 관련 부서 간 역할 분담에서 혼선이 발생할 가능성이 있다. 또한 연말 업무 일정과 겹쳐 실질적인 착수가 지연될 위험도 존재하므로, 우선순위 조정이 필요하다.\n\n교육 문의 감소 추세는 긍정적이나, 이것이 실제 절차 개선 효과인지 계절적 요인(연말 교육 신청 비수기)에 따른 일시적 현상인지는 추가 관찰이 필요하다는 점도 함께 고려해야 한다.\n\n## 다음 주 계획\n\n- 온보딩 경험 개선 과제의 세부 범위와 추진 일정을 구체화하고, 관련 부서와의 협업 방안을 논의한다.\n- 교육 신청 기록(비용·목적 항목)의 표본을 점검하여 기재 품질을 확인하고, 필요 시 작성 가이드를 보완한다.\n- 교육훈련규칙 제19조에 근거한 현행 절차의 운영 현황을 재점검하고, 최가윤 팀장과 함께 개선 필요 사항을 논의한다.\n- 연말까지의 남은 일정을 감안하여 신규 과제 착수 시점을 조정하고, 우선순위에 따른 자원 배분 계획을 수립한다.\n\n이상으로 2025년 12월 3주차 인사팀 주간보고를 마친다.",
+  "canary": null,
+  "date": "2025-12-15",
+  "doc_id": "syn-weekly-034",
+  "doc_type": "weekly",
+  "fact_spans": [
+    {
+      "end": 244,
+      "fact_id": "f-evt-045-focus",
+      "start": 223
+    },
+    {
+      "end": 353,
+      "fact_id": "f-evt-043-result",
+      "start": 332
+    },
+    {
+      "end": 537,
+      "fact_id": "f-evt-044-owner",
+      "start": 531
+    },
+    {
+      "end": 597,
+      "fact_id": "f-evt-044-policy",
+      "start": 569
+    },
+    {
+      "end": 617,
+      "fact_id": "f-evt-044-rule",
+      "start": 606
+    }
+  ],
+  "generation": {
+    "attempt": 1,
+    "batch_id": "msgbatch_01SHc7eNEULByVhCSyVD4GFp",
+    "cache_key": "00a008fd0b47208be731f103b81bdc9a",
+    "custom_id": "syn-weekly-034-a1",
+    "doc_seed": 2092966164,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "f22da4ad1b695c84625e60b0f6c433edf7ad64bfba39d46d1118e5d33746c41b",
+    "template_hash": "e896c8ba882f6742896ed9215323a4f82d624aa23c1314065198acd941611d54",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 2080,
+      "output_tokens": 1877
+    }
+  },
+  "injection": null,
+  "regulation_refs": [],
+  "related_doc_ids": [
+    "syn-guide-008",
+    "syn-guide-016",
+    "syn-guide-024",
+    "syn-meeting-014",
+    "syn-meeting-038",
+    "syn-runbook-024",
+    "syn-weekly-026"
+  ],
+  "source_fact_ids": [
+    "f-evt-043-result",
+    "f-evt-044-owner",
+    "f-evt-044-policy",
+    "f-evt-044-rule",
+    "f-evt-045-focus"
+  ],
+  "team": "hr",
+  "title": "[주간보고] 인사팀 2025년 12월 3주차",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}

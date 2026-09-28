@@ -1,0 +1,15 @@
+id: INC-2026-012
+title: 요청 제한 오판
+date: "2026-05-28"
+owner_team: platform
+assignee_id: p-002
+service: core-gateway
+facts:
+  - {fact_id: f-inc-2026-012-start, kind: datetime, value: "2026-05-28T17:25", date: "2026-05-28"}
+  - {fact_id: f-inc-2026-012-restored, kind: datetime, value: "2026-05-28T18:10", date: "2026-05-28"}
+  - {fact_id: f-inc-2026-012-service, kind: service, value: core-gateway, date: "2026-05-28"}
+  - {fact_id: f-inc-2026-012-severity, kind: text, value: 심각도 2로 분류되었다., date: "2026-05-28"}
+  - {fact_id: f-inc-2026-012-cause, kind: text, value: 고객별 제한 키에 환경 구분 값이 빠졌다., date: "2026-05-28"}
+  - {fact_id: f-inc-2026-012-action, kind: text, value: 제한 키에 환경 값을 넣고 충돌 검사를 추가했다., date: "2026-05-28"}
+  - {fact_id: f-inc-2026-012-owner, kind: person, value: p-002, date: "2026-05-28"}
+  - {fact_id: f-inc-2026-012-ticket, kind: id, value: PLT-1004, date: "2026-05-28"}

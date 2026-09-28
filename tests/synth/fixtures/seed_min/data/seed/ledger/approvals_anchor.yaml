@@ -1,0 +1,20 @@
+approvals:
+  - id: EXP-2026-0412
+    title: 출장비 정산
+    date: "2026-04-12"
+    owner_team: finance
+    requester_id: p-003
+    approver_id: p-004
+    category: travel
+    amount: 1250000
+    status: approved
+    regulation_ref: 출장규칙 제8조
+    access_level: public
+    teams: []
+    min_grade: 1
+    sensitivity: normal
+    facts:
+      - fact_id: f-approval-exp-2026-0412-amount
+        kind: amount
+        value: 1250000
+        date: "2026-04-12"

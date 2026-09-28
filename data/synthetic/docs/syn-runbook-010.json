@@ -1,0 +1,144 @@
+{
+  "access": {
+    "level": "team",
+    "min_grade": 1,
+    "teams": [
+      "legal"
+    ]
+  },
+  "author_id": "p-197",
+  "body": "# [런북] 법무컴플라이언스팀 계약서 검토 정책 운영 절차\n\n작성자: 송태인 선임 (법무컴플라이언스팀)\n문서 날짜: 2026-05-20\n담당 팀: 법무컴플라이언스팀\n\n## 1. 목적과 적용 범위\n\n이 문서는 법무컴플라이언스팀이 운영하는 계약서 검토 정책의 절차를 정리한 런북이다. 고액 계약서에 법무 검토 기록을 남기도록 정했다는 방침이 지난해 8월에 수립된 이후, 관련 시스템 장애 대응 경험과 최근 발생한 이슈를 반영하여 검토 기록 관리 및 검색 색인 정상화 절차를 함께 다루고자 이 문서를 작성한다.\n\n적용 범위는 법무컴플라이언스팀이 관리하는 계약서 검토 기록 시스템 전체이며, 계약서 검토 기록의 생성·보관·검색과 관련된 장애 대응 시 담당자가 참고해야 하는 절차를 포함한다. 다른 팀에서 계약서 검토 관련 문의나 장애를 접수한 경우에도 이 런북의 절차를 우선 참고하도록 안내한다.\n\n## 2. 사전 점검\n\n절차를 실행하기 전에 다음 사항을 확인한다.\n\n- 계약서 검토 기록 정책이 적용된 시점(지난해 8월 정책 수립)을 기준으로, 대상 계약서가 고액 계약서 기준에 해당하는지 먼저 확인한다.\n- 검토 기록이 정상적으로 남아 있는지, 즉 검토 이력이 조회 화면에서 확인되는지를 점검한다.\n- 과거 발생했던 장애 이력을 참고하여 유사한 증상이 재발했는지 여부를 확인한다. 특히 검토 기록의 보관 상태 변경 이후 검색이 되지 않는 증상은 과거에도 접수된 바 있으므로, 이번 확인 대상이 해당 유형과 일치하는지 살펴본다.\n- 담당자는 관련 티켓 시스템에 접근 권한이 있는지 확인하고, 필요한 경우 정보보안팀 또는 SRE인프라팀과의 연계 채널을 미리 확인해 둔다.\n\n## 3. 실행 절차\n\n1. 계약서 검토 기록이 조회되지 않거나 누락되었다는 신고가 접수되면, 우선 해당 계약서가 검토 기록 남기기 정책 대상인지 확인한다.\n2. 검토 기록 데이터베이스에서 직접 조회했을 때는 데이터가 존재하지만, 검색 화면에서는 조회되지 않는 경우 색인 문제로 판단한다.\n3. 색인 문제로 판단되면, 해당 기록의 보관 상태 변경 이력을 확인한다. 과거 사례에서는 보관 상태 변경 후 검색 색인이 갱신되지 않았다는 원인이 확인된 바 있으므로, 동일한 흐름으로 원인을 좁혀 나간다.\n4. 원인이 확인되면 색인 갱신 이벤트를 재처리하고 감사를 추가했다는 조치를 기준으로, 동일한 방식의 재처리 작업을 진행하고 재처리 결과를 감사 로그에 남긴다.\n5. 조치 이후에도 문제가 해소되지 않으면 관련 시스템 담당 부서(플랫폼개발팀 또는 SRE인프라팀)에 협조를 요청한다.\n\n## 4. 검증\n\n- 재처리 후에는 대상 계약서 검토 기록이 검색 화면에서 정상적으로 조회되는지 확인한다.\n- 감사 로그에 재처리 이벤트가 정확히 기록되었는지, 처리 시각과 처리자 정보가 누락 없이 남아 있는지 검토한다.\n- 검토 기록 누락 신고가 재발하지 않는지 일정 기간 모니터링한다.\n- 과거 장애 접수 이력과 비교하여 동일 원인으로 재발한 것인지, 새로운 원인인지 구분해 기록한다.\n\n## 5. 실패 시 복구와 에스컬레이션\n\n재처리 작업 이후에도 검토 기록이 정상적으로 검색되지 않는 경우, 다음 순서로 대응한다.\n\n1. 담당자는 재처리 작업 로그와 감사 기록을 재확인하여 누락된 단계가 있는지 점검한다.\n2. 문제가 계속되면 시스템 담당 부서에 에스컬레이션하고, 필요 시 데이터AI팀에 색인 시스템 상태 점검을 요청한다.\n3. 과거 유사 장애 이력을 참고 자료로 첨부하여 대응 속도를 높인다. 과거 사례는 LGL-1001 티켓으로 접수되었으며, 지난해 11월 2025-11-11 08:40에 최초 인지된 사안이다. 이 티켓의 처리 경과를 참고하여 현재 상황과 원인이 동일한지 비교한다.\n4. 최종적으로 문제가 해소되지 않으면 법무컴플라이언스팀 책임자와 관련 부서 책임자가 함께 원인을 재검토하고, 재발 방지를 위한 정책 보완 여부를 논의한다.\n\n## 6. 문서 관리\n\n이 런북은 법무컴플라이언스팀이 관리하며, 계약서 검토 정책이나 관련 시스템 구조가 변경될 경우 내용을 갱신한다. 담당자는 새로운 장애 사례가 발생할 때마다 원인과 조치 내용을 이 문서에 반영하여 향후 유사 사례 대응 시 참고할 수 있도록 한다.",
+  "canary": null,
+  "date": "2026-05-20",
+  "doc_id": "syn-runbook-010",
+  "doc_type": "runbook",
+  "fact_spans": [
+    {
+      "end": 183,
+      "fact_id": "f-evt-058-policy",
+      "start": 157
+    },
+    {
+      "end": 1060,
+      "fact_id": "f-inc-2026-011-cause",
+      "start": 1034
+    },
+    {
+      "end": 1136,
+      "fact_id": "f-inc-2026-011-action",
+      "start": 1111
+    },
+    {
+      "end": 1721,
+      "fact_id": "f-inc-2025-008-ticket",
+      "start": 1713
+    },
+    {
+      "end": 1759,
+      "fact_id": "f-inc-2025-008-start",
+      "start": 1743
+    }
+  ],
+  "generation": {
+    "attempt": 1,
+    "batch_id": "msgbatch_01SHc7eNEULByVhCSyVD4GFp",
+    "cache_key": "0fc04459917aed20f499a9b9bc05b2c9",
+    "custom_id": "syn-runbook-010-a1",
+    "doc_seed": 3951767106,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "a391410bc5e9a897f980771fdaa26b3ef6296e85fd9c52b97e15c5f98088a2bd",
+    "template_hash": "f2a856cb7f36eb28a2626539fe2c262546ab9a85bc9ce686e195db7cbf30478f",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 2239,
+      "output_tokens": 2167
+    }
+  },
+  "injection": null,
+  "regulation_refs": [],
+  "related_doc_ids": [
+    "syn-guide-018",
+    "syn-guide-030",
+    "syn-incident-008",
+    "syn-incident-021",
+    "syn-meeting-008",
+    "syn-meeting-048",
+    "syn-notice-023",
+    "syn-runbook-028",
+    "syn-weekly-004",
+    "syn-weekly-040"
+  ],
+  "source_fact_ids": [
+    "f-evt-058-policy",
+    "f-inc-2025-008-start",
+    "f-inc-2025-008-ticket",
+    "f-inc-2026-011-action",
+    "f-inc-2026-011-cause"
+  ],
+  "team": "legal",
+  "title": "[런북] 법무컴플라이언스팀 계약서 검토 정책 운영 절차",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}

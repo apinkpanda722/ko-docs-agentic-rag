@@ -1,0 +1,134 @@
+{
+  "project": "ko-docs-agentic-rag",
+  "phase": "m3-synthetic-corpus",
+  "steps": [
+    {
+      "step": 0,
+      "name": "seed-schema",
+      "status": "completed",
+      "started_at": "2026-09-27T17:52:18+0900",
+      "summary": "식별자·시드 스키마/누적 검증기·규정 색인 계약과 fixture 테스트를 구현하고, 현행 규정 94건 색인 생성 및 make verify(502 passed)를 완료했습니다.",
+      "completed_at": "2026-09-27T18:08:10+0900",
+      "usage": {
+        "input_tokens": 4082019,
+        "cached_input_tokens": 3954176,
+        "output_tokens": 41508,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 1,
+      "name": "seed-data",
+      "status": "completed",
+      "started_at": "2026-09-27T18:08:10+0900",
+      "summary": "결정론적 200명 인물 부트스트랩과 전체 시드 데이터를 작성하고 수량·권한·규정·금지 이름 검증 및 make verify(510 passed)를 완료했습니다.",
+      "completed_at": "2026-09-27T18:25:46+0900",
+      "usage": {
+        "input_tokens": 2353692,
+        "cached_input_tokens": 2232192,
+        "output_tokens": 52674,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 2,
+      "name": "ledger-db",
+      "status": "completed",
+      "started_at": "2026-09-27T20:19:35+0900",
+      "summary": "결정론적 티켓 500행·결재 150행 SQLite 생성기와 내용 해시 manifest, 원자적 DB 쓰기, 권한·앵커·FK 검증 테스트 및 build-db 연결을 구현했고 make verify(524 passed)와 모든 AC를 통과했습니다.",
+      "completed_at": "2026-09-27T20:31:48+0900",
+      "usage": {
+        "input_tokens": 3282057,
+        "cached_input_tokens": 3143936,
+        "output_tokens": 30239,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 3,
+      "name": "doc-plan",
+      "status": "completed",
+      "started_at": "2026-09-27T20:31:48+0900",
+      "summary": "결정론적 문서 계획 200건·카나리아 30건·인젝션 12건을 생성했으며 정상 사실 커버리지 100%와 make verify 533 passed를 확인했습니다.",
+      "completed_at": "2026-09-27T20:41:03+0900",
+      "usage": {
+        "input_tokens": 1898712,
+        "cached_input_tokens": 1775744,
+        "output_tokens": 27164,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 4,
+      "name": "llm-batch",
+      "status": "completed",
+      "started_at": "2026-09-27T20:46:57+0900",
+      "summary": "Sonnet 5 가격·생성 설정과 무재시도 Anthropic Batch 래퍼, append-only 상태 관리·멱등 비용 원장을 구현했으며 make verify 568 passed 및 모든 AC를 통과했습니다.",
+      "completed_at": "2026-09-27T21:01:32+0900",
+      "usage": {
+        "input_tokens": 2862036,
+        "cached_input_tokens": 2747392,
+        "output_tokens": 37558,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 5,
+      "name": "doc-generate",
+      "status": "completed",
+      "started_at": "2026-09-27T21:01:32+0900",
+      "summary": "6종 프롬프트와 멱등 생성 캐시·재시도형 Anthropic Batch 상태 머신을 구현하고, make verify 585 passed 및 200건 generate-dry AC를 통과했습니다.",
+      "completed_at": "2026-09-27T21:16:12+0900",
+      "usage": {
+        "input_tokens": 2554207,
+        "cached_input_tokens": 2435200,
+        "output_tokens": 37505,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 6,
+      "name": "doc-validate",
+      "status": "completed",
+      "started_at": "2026-09-27T22:31:52+0900",
+      "summary": "결정론적 합성 문서 검증기·fact span/카나리아/인젝션 검증·실패 재시도 연동·요약 manifest·Make 명령과 28개 테스트를 구현했으며, make verify 626 passed 및 무캐시 CLI exit=1 AC를 통과했습니다.",
+      "completed_at": "2026-09-27T23:10:26+0900",
+      "usage": {
+        "input_tokens": 4173490,
+        "cached_input_tokens": 3854592,
+        "output_tokens": 40866,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 7,
+      "name": "quality-metrics",
+      "status": "completed",
+      "started_at": "2026-09-27T23:10:55+0900",
+      "summary": "결정론적 합성 문서 품질 지표·M3 보고서 생성기와 테스트·Make 명령을 구현하고, 자리표시자 보고서 생성 및 make verify 638 passed를 완료했습니다.",
+      "completed_at": "2026-09-27T23:26:07+0900",
+      "usage": {
+        "input_tokens": 4303846,
+        "cached_input_tokens": 4174208,
+        "output_tokens": 42470,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 8,
+      "name": "review-tools",
+      "status": "completed",
+      "started_at": "2026-09-27T23:26:47+0900",
+      "summary": "층화 검수 표본·CSV/안내·사람 결과 집계·M3 7절 렌더링과 Batch 수거 후 검증 파이프라인을 구현했으며, make verify(648 passed)와 생성 전 표본 부족 exit=1을 포함한 모든 AC를 통과했습니다.",
+      "completed_at": "2026-09-27T23:40:14+0900",
+      "usage": {
+        "input_tokens": 4443997,
+        "cached_input_tokens": 4305664,
+        "output_tokens": 36036,
+        "attempts": 1
+      }
+    }
+  ],
+  "created_at": "2026-09-27T17:52:18+0900",
+  "completed_at": "2026-09-27T23:40:14+0900"
+}

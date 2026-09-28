@@ -1,0 +1,160 @@
+{
+  "access": {
+    "level": "team",
+    "min_grade": 1,
+    "teams": [
+      "sre"
+    ]
+  },
+  "author_id": "p-120",
+  "body": "# [런북] SRE인프라팀 운영 변경 시간 정책 운영 절차\n\n작성자: 허수진 선임 (SRE인프라팀)\n문서 날짜: 2026-06-22\n담당 팀: SRE인프라팀\n\n## 1. 목적 및 적용 범위\n\n본 런북은 SRE인프라팀이 관리하는 서비스에 대한 운영 변경(배포, 설정 변경, 긴급 조치 등)을 수행할 때 준수해야 할 시간 정책과 절차를 정의한다. 운영 변경은 서비스 안정성에 직접적인 영향을 미치므로, 변경 착수 전 점검부터 실행, 검증, 장애 발생 시 에스컬레이션까지의 전 과정을 표준화한다.\n\n본 절차는 SRE인프라팀이 운영을 책임지는 모니터링 허브 서비스(monitoring-hub)와 관련 배포 제어 체계를 우선 적용 대상으로 하며, SRE인프라 팀이 운영을 맡는다. 해당 서비스는 core-gateway에 의존하므로, 변경 작업 시 이 의존 관계를 반드시 고려해야 한다.\n\n담당 온콜은 서재서 팀장이며, 온콜 지정과 관련한 책임 소재는 아래 3절과 5절에서 상세히 다룬다.\n\n## 2. 사전 점검\n\n운영 변경을 실행하기 전 다음 항목을 점검한다.\n\n1. **변경 대상 서비스 상태 확인**: 대상 서비스가 정상 상태인지 확인하고, 진행 중인 다른 변경 작업이 없는지 확인한다.\n2. **의존 서비스 확인**: 모니터링 허브의 경우 core-gateway와의 연동 상태를 점검하여 변경으로 인한 연쇄 영향이 없는지 확인한다.\n3. **SLO 여유 확인**: 배포 요청 처리와 경보 전달 관련 목표치에 여유가 있는지 확인한다. 배포 요청 처리 목표는 5분 이하다. 또한 경보 전달 목표는 2분 이하다. 두 목표 모두 변경 작업 중 일시적으로 저하될 수 있으므로, 사전에 여유 구간을 확인해야 한다.\n4. **온콜 담당자 확인**: 변경 시점의 온콜 담당자를 확인하고 사전 공지한다.\n5. **롤백 계획 준비**: 변경이 실패할 경우의 롤백 절차를 사전에 문서화하고 담당자와 공유한다.\n\n## 3. 실행 절차\n\n1. 변경 작업자는 변경 내용과 예상 영향 범위를 팀 채널에 공지한다.\n2. 변경 시작 시각을 기록하고, 사전 점검에서 확인한 SLO 여유 구간 내에서 작업을 진행한다.\n3. 변경은 단계적으로 적용하며, 각 단계마다 서비스 상태를 관찰한다.\n4. 변경 중 이상 징후가 발견되면 즉시 작업을 중단하고 4절의 검증 절차 및 5절의 에스컬레이션 절차를 따른다.\n\n참고로, 메모리 사용을 제한하는 지표 압축기를 배포했다. 이는 운영 변경 실행 절차가 실제로 적용된 사례이며, 향후 유사한 변경 작업 시 참고할 수 있다.\n\n## 4. 검증\n\n변경 완료 후 다음을 검증한다.\n\n1. **기능 검증**: 변경된 구성 요소가 의도한 대로 동작하는지 확인한다.\n2. **SLO 검증**: 배포 요청 처리 목표(5분 이하)와 경보 전달 목표(2분 이하)가 정상적으로 충족되는지 확인한다.\n3. **의존 서비스 영향 검증**: core-gateway 등 의존 관계에 있는 서비스에 부정적 영향이 없는지 확인한다.\n4. **모니터링 지표 확인**: 변경 후 일정 시간 동안 관련 지표를 관찰하여 안정성을 확인한다.\n\n검증이 모두 완료되면 변경 완료를 공지하고 변경 이력을 기록한다.\n\n## 5. 실패 시 복구와 에스컬레이션\n\n1. **즉시 복구**: 검증 단계에서 이상이 발견되면 사전에 준비한 롤백 절차를 즉시 실행한다.\n2. **1차 에스컬레이션**: 롤백 후에도 문제가 지속되면 모니터링 허브 담당 온콜인 서재서에게 즉시 보고한다.\n3. **책임자 보고**: 사안이 중대하다고 판단되는 경우 SRE인프라팀 서재서 팀장에게 보고한다. 해당 담당자는 지난해 8월 유사한 운영 이슈를 처리한 경험이 있어 판단에 참고할 수 있다.\n4. **사후 분석**: 복구 완료 후에는 원인 분석과 재발 방지 대책을 문서화하여 팀 내 공유한다.\n5. **재변경 승인**: 동일한 변경을 재시도할 경우, 원인 분석 결과를 반영한 후 본 런북의 2절 사전 점검 절차부터 다시 수행한다.\n\n## 6. 문서 관리\n\n본 런북은 운영 환경 변화 및 조직 변경에 따라 주기적으로 갱신되어야 하며, 변경 시 담당자와 검토자를 명시하여 이력을 관리한다.",
+  "canary": null,
+  "date": "2026-06-22",
+  "doc_id": "syn-runbook-006",
+  "doc_type": "runbook",
+  "fact_spans": [
+    {
+      "end": 375,
+      "fact_id": "f-service-monitoring-hub-owner",
+      "start": 357
+    },
+    {
+      "end": 396,
+      "fact_id": "f-service-monitoring-hub-dependency",
+      "start": 384
+    },
+    {
+      "end": 449,
+      "fact_id": "f-service-monitoring-hub-oncall",
+      "start": 443
+    },
+    {
+      "end": 764,
+      "fact_id": "f-service-deploy-control-slo",
+      "start": 744
+    },
+    {
+      "end": 785,
+      "fact_id": "f-service-monitoring-hub-slo",
+      "start": 768
+    },
+    {
+      "end": 1189,
+      "fact_id": "f-evt-032-version",
+      "start": 1163
+    },
+    {
+      "end": 1683,
+      "fact_id": "f-service-monitoring-hub-oncall",
+      "start": 1680
+    },
+    {
+      "end": 1742,
+      "fact_id": "f-evt-028-owner",
+      "start": 1736
+    }
+  ],
+  "generation": {
+    "attempt": 1,
+    "batch_id": "msgbatch_01SHc7eNEULByVhCSyVD4GFp",
+    "cache_key": "7d66ecfc7c382f5be6fe9dc6a16f5ac4",
+    "custom_id": "syn-runbook-006-a1",
+    "doc_seed": 1254721683,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "3df96ebd3cbeb77b0459374a767fd2c1e3e725f0ac8d7c3d59566aee22da80c1",
+    "template_hash": "f2a856cb7f36eb28a2626539fe2c262546ab9a85bc9ce686e195db7cbf30478f",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 2125,
+      "output_tokens": 2139
+    }
+  },
+  "injection": null,
+  "regulation_refs": [],
+  "related_doc_ids": [
+    "syn-guide-014",
+    "syn-guide-022",
+    "syn-guide-026",
+    "syn-meeting-004",
+    "syn-meeting-036",
+    "syn-notice-006",
+    "syn-notice-014",
+    "syn-runbook-022",
+    "syn-weekly-032"
+  ],
+  "source_fact_ids": [
+    "f-evt-028-owner",
+    "f-evt-032-version",
+    "f-service-deploy-control-slo",
+    "f-service-monitoring-hub-dependency",
+    "f-service-monitoring-hub-oncall",
+    "f-service-monitoring-hub-owner",
+    "f-service-monitoring-hub-slo"
+  ],
+  "team": "sre",
+  "title": "[런북] SRE인프라팀 운영 변경 시간 정책 운영 절차",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}

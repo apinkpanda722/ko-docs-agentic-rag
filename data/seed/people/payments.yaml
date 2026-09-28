@@ -1,0 +1,205 @@
+people:
+- person_id: p-043
+  name: 정태현
+  team: payments
+  grade: 5
+  role: 청구 운영
+  joined: '2025-06-07'
+- person_id: p-044
+  name: 정민진
+  team: payments
+  grade: 4
+  role: 결제 품질
+  joined: '2016-06-29'
+- person_id: p-045
+  name: 조재원
+  team: payments
+  grade: 4
+  role: 결제 품질
+  joined: '2022-06-29'
+- person_id: p-046
+  name: 유다준
+  team: payments
+  grade: 4
+  role: 결제 개발
+  joined: '2014-01-15'
+- person_id: p-047
+  name: 문연온
+  team: payments
+  grade: 4
+  role: 정산 개발
+  joined: '2015-06-11'
+- person_id: p-048
+  name: 임태원
+  team: payments
+  grade: 4
+  role: 결제 개발
+  joined: '2013-11-07'
+- person_id: p-049
+  name: 홍연영
+  team: payments
+  grade: 4
+  role: 정산 개발
+  joined: '2023-06-10'
+- person_id: p-050
+  name: 오연경
+  team: payments
+  grade: 4
+  role: 결제 개발
+  joined: '2016-08-25'
+- person_id: p-051
+  name: 안서우
+  team: payments
+  grade: 3
+  role: 청구 운영
+  joined: '2018-09-05'
+- person_id: p-052
+  name: 송건서
+  team: payments
+  grade: 3
+  role: 정산 개발
+  joined: '2019-12-14'
+- person_id: p-053
+  name: 안시온
+  team: payments
+  grade: 3
+  role: 결제 개발
+  joined: '2015-07-20'
+- person_id: p-054
+  name: 장재영
+  team: payments
+  grade: 3
+  role: 정산 개발
+  joined: '2017-06-30'
+- person_id: p-055
+  name: 이아담
+  team: payments
+  grade: 3
+  role: 청구 운영
+  joined: '2018-06-04'
+- person_id: p-056
+  name: 양현민
+  team: payments
+  grade: 2
+  role: 청구 운영
+  joined: '2012-12-27'
+- person_id: p-057
+  name: 배시아
+  team: payments
+  grade: 2
+  role: 결제 개발
+  joined: '2024-07-23'
+- person_id: p-058
+  name: 노소린
+  team: payments
+  grade: 2
+  role: 결제 품질
+  joined: '2015-07-10'
+- person_id: p-059
+  name: 전현담
+  team: payments
+  grade: 2
+  role: 청구 운영
+  joined: '2023-01-14'
+- person_id: p-060
+  name: 곽가우
+  team: payments
+  grade: 2
+  role: 결제 개발
+  joined: '2017-10-13'
+- person_id: p-061
+  name: 이현진
+  team: payments
+  grade: 2
+  role: 청구 운영
+  joined: '2020-07-22'
+- person_id: p-062
+  name: 김가서
+  team: payments
+  grade: 2
+  role: 정산 개발
+  joined: '2022-08-09'
+- person_id: p-063
+  name: 배경람
+  team: payments
+  grade: 1
+  role: 청구 운영
+  joined: '2025-03-14'
+- person_id: p-064
+  name: 전시연
+  team: payments
+  grade: 1
+  role: 결제 개발
+  joined: '2012-09-30'
+- person_id: p-065
+  name: 전라인
+  team: payments
+  grade: 1
+  role: 청구 운영
+  joined: '2025-03-12'
+- person_id: p-066
+  name: 양서아
+  team: payments
+  grade: 1
+  role: 정산 개발
+  joined: '2025-06-24'
+- person_id: p-067
+  name: 양시준
+  team: payments
+  grade: 1
+  role: 결제 품질
+  joined: '2015-08-31'
+- person_id: p-068
+  name: 박지아
+  team: payments
+  grade: 1
+  role: 청구 운영
+  joined: '2025-09-03'
+- person_id: p-069
+  name: 전수준
+  team: payments
+  grade: 1
+  role: 청구 운영
+  joined: '2022-09-16'
+- person_id: p-070
+  name: 정한결
+  team: payments
+  grade: 1
+  role: 정산 개발
+  joined: '2014-10-10'
+- person_id: p-071
+  name: 이경린
+  team: payments
+  grade: 1
+  role: 결제 품질
+  joined: '2012-09-12'
+- person_id: p-072
+  name: 남예인
+  team: payments
+  grade: 1
+  role: 정산 개발
+  joined: '2025-03-04'
+- person_id: p-073
+  name: 허태영
+  team: payments
+  grade: 1
+  role: 결제 품질
+  joined: '2020-08-29'
+- person_id: p-074
+  name: 김하나
+  team: payments
+  grade: 1
+  role: 결제 품질
+  joined: '2025-12-12'
+- person_id: p-075
+  name: 전서빈
+  team: payments
+  grade: 1
+  role: 정산 개발
+  joined: '2015-12-13'
+- person_id: p-076
+  name: 유도윤
+  team: payments
+  grade: 1
+  role: 결제 품질
+  joined: '2022-09-16'

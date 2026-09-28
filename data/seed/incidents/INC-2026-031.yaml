@@ -1,0 +1,15 @@
+id: INC-2026-031
+title: 청구 처리 지연
+date: "2026-06-25"
+owner_team: payments
+assignee_id: p-043
+service: billing-api
+facts:
+  - {fact_id: f-inc-2026-031-start, kind: datetime, value: "2026-06-25T14:05", date: "2026-06-25"}
+  - {fact_id: f-inc-2026-031-restored, kind: datetime, value: "2026-06-25T15:18", date: "2026-06-25"}
+  - {fact_id: f-inc-2026-031-service, kind: service, value: billing-api, date: "2026-06-25"}
+  - {fact_id: f-inc-2026-031-severity, kind: text, value: 심각도 1로 분류되었다., date: "2026-06-25"}
+  - {fact_id: f-inc-2026-031-cause, kind: text, value: 배포 설정의 불일치로 요청 처리가 지연되었다., date: "2026-06-25"}
+  - {fact_id: f-inc-2026-031-action, kind: text, value: 설정 검증을 추가하고 대기 요청을 다시 처리했다., date: "2026-06-25"}
+  - {fact_id: f-inc-2026-031-owner, kind: person, value: p-043, date: "2026-06-25"}
+  - {fact_id: f-inc-2026-031-ticket, kind: id, value: PAY-1234, date: "2026-06-25"}

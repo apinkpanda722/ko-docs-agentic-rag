@@ -1,0 +1,167 @@
+{
+  "access": {
+    "level": "restricted",
+    "min_grade": 4,
+    "teams": [
+      "security"
+    ]
+  },
+  "author_id": "p-136",
+  "body": "# [런북] 정보보안팀 미공개 취약점 조치 운영 절차\n\n문서 작성자: 남수서 수석 (정보보안팀)\n문서 날짜: 2026-04-20\n담당 팀: 정보보안팀\n\n## 1. 목적 및 적용 범위\n\n본 런북은 아직 외부에 공개되지 않은 취약점(이른바 미공개 취약점)이 사내 시스템 또는 서비스에서 발견되었을 때, 정보보안팀이 신속하고 일관되게 대응할 수 있도록 조치 절차를 표준화하는 것을 목적으로 한다.\n\n지난해 2월 권도온 팀장의 주도로 공개 전인 취약점의 긴급 조치 순서를 내부에서 정했다. 당시 논의된 절차는 security-center 서비스를 포함한 정보보안팀 관리 대상 시스템 전반에 적용되며, 본 런북은 해당 절차를 실제 운영 상황에서 담당자가 따를 수 있도록 구체화한 문서이다. 내부 코드명 고운판다-4272 프로젝트와 관련된 점검 활동 역시 본 절차의 적용 범위에 포함된다.\n\n적용 대상은 미공개 취약점으로 인해 서비스 가용성, 데이터 기밀성 또는 무결성에 영향을 줄 수 있는 모든 사내 시스템이며, 특히 외부 이용자에게 직접 노출되는 서비스는 우선 조치 대상으로 관리한다.\n\n## 2. 사전 점검\n\n절차를 실행하기 전 담당자는 다음 사항을 확인해야 한다.\n\n- 취약점 신고 또는 탐지 경로(내부 점검, 외부 제보, 모니터링 알림 등)를 확인하고 관련 정보를 기록한다.\n- 영향을 받는 서비스와 시스템 범위를 파악한다.\n- 정보보안팀 내 담당자 배정 여부와 에스컬레이션 대상을 사전에 확인한다.\n- 조치 대상 서비스의 현재 운영 상태(정상/장애 여부)를 점검하여 조치 시작 전 기준선을 확보한다.\n\n사전 점검 단계에서 확인된 정보는 이후 실행 절차와 검증 단계에서 비교 기준으로 활용된다.\n\n## 3. 실행 절차\n\n1. **초기 접수 및 심각도 분류**: 취약점 또는 관련 이상 징후 신고를 접수하면 담당자는 즉시 영향 범위와 심각도를 평가한다.\n2. **격리 및 임시 조치**: 영향을 받는 서비스에 대해 확산을 막기 위한 임시 조치를 시행한다. 임시 조치의 구체적 방식은 사안별로 다르므로 담당자 판단과 팀 내 협의를 거쳐 결정한다.\n3. **원인 분석**: 취약점의 근본 원인을 분석하고, 공개 여부와 악용 가능성을 함께 검토한다.\n4. **정식 조치 적용**: 원인 분석 결과에 따라 패치, 설정 변경 등 정식 조치를 적용한다.\n5. **기록 및 보고**: 조치 진행 상황과 결과를 내부 기록 체계에 남기고, 필요 시 관련 팀에 공유한다.\n\n## 4. 사건 사례 및 확인\n\n본 절차의 실효성을 점검하는 사례로, 심각도 1로 분류된 사건이 있었다. 해당 사건은 2026-04-20 10:42경 시작되었으며, 영향을 받은 서비스는 security-center였다. 사건은 접수 즉시 심각도 1로 분류되었다. 담당자는 본 런북의 실행 절차에 따라 초기 접수, 격리 조치, 원인 분석, 정식 조치를 순차적으로 진행하였다.\n\n검증 단계에서는 다음을 확인해야 한다.\n\n- 조치 적용 후 대상 서비스의 정상 동작 여부\n- 취약점 재현 시도를 통한 조치 유효성 확인\n- 관련 로그 및 모니터링 지표에서 이상 징후 재발 여부\n- 사전 점검 단계에서 확보한 기준선과의 비교\n\n해당 사건의 경우 위 검증 절차를 거친 후 서비스가 2026-04-20 12:25에 정상 복구된 것으로 확인되었다.\n\n## 5. 실패 시 복구 및 에스컬레이션\n\n조치가 예상대로 진행되지 않거나 검증 단계에서 이상이 재확인될 경우, 담당자는 다음 순서로 대응한다.\n\n1. **즉시 재검토**: 적용한 조치를 롤백하거나 추가 격리 조치를 검토하여 서비스 영향을 최소화한다.\n2. **팀 내 에스컬레이션**: 상황이 담당자 단독으로 해결하기 어렵다고 판단되면 정보보안팀 내 상급자에게 즉시 보고하고 의사결정을 요청한다.\n3. **관련 팀 협조 요청**: 영향을 받는 서비스의 운영 팀 또는 관련 부서와 협력하여 추가 조치를 진행한다.\n4. **사후 보고**: 사건이 종료된 이후에는 전체 경과를 정리하여 내부 기록으로 남기고, 재발 방지를 위한 후속 조치 필요성을 검토한다.\n\n에스컬레이션이 필요한 상황인지 여부는 서비스 영향 범위, 심각도, 조치 소요 시간 등을 종합적으로 고려하여 판단하며, 판단이 어려운 경우에는 보수적으로 상급자에게 보고하는 것을 원칙으로 한다.\n\n## 6. 문서 관리\n\n본 런북은 정보보안팀에서 관리하며, 절차 변경이 필요한 경우 팀 내 검토를 거쳐 갱신한다. 문서 이력 및 변경 사항은 별도로 기록하여 추후 조회가 가능하도록 관리한다.",
+  "canary": {
+    "canary_id": "cn-013",
+    "end": 397,
+    "fact_id": "f-canary-013",
+    "start": 388,
+    "value": "고운판다-4272"
+  },
+  "date": "2026-04-20",
+  "doc_id": "syn-runbook-025",
+  "doc_type": "runbook",
+  "fact_spans": [
+    {
+      "end": 233,
+      "fact_id": "f-evt-033-owner",
+      "start": 227
+    },
+    {
+      "end": 268,
+      "fact_id": "f-evt-033-plan",
+      "start": 239
+    },
+    {
+      "end": 296,
+      "fact_id": "f-evt-033-service",
+      "start": 281
+    },
+    {
+      "end": 397,
+      "fact_id": "f-canary-013",
+      "start": 388
+    },
+    {
+      "end": 1287,
+      "fact_id": "f-inc-2026-007-start",
+      "start": 1271
+    },
+    {
+      "end": 1324,
+      "fact_id": "f-inc-2026-007-service",
+      "start": 1309
+    },
+    {
+      "end": 1350,
+      "fact_id": "f-inc-2026-007-severity",
+      "start": 1338
+    },
+    {
+      "end": 1595,
+      "fact_id": "f-inc-2026-007-restored",
+      "start": 1579
+    }
+  ],
+  "generation": {
+    "attempt": 1,
+    "batch_id": "msgbatch_01SHc7eNEULByVhCSyVD4GFp",
+    "cache_key": "3951f8c59149e0f502099bdecb402597",
+    "custom_id": "syn-runbook-025-a1",
+    "doc_seed": 1334005531,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "825ec96bf9dc063e4a1a50921f99c56c5d9e1c15d93b147cc776a407344732bb",
+    "template_hash": "f2a856cb7f36eb28a2626539fe2c262546ab9a85bc9ce686e195db7cbf30478f",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 2480,
+      "output_tokens": 2297
+    }
+  },
+  "injection": null,
+  "regulation_refs": [],
+  "related_doc_ids": [
+    "syn-incident-017",
+    "syn-meeting-037",
+    "syn-meeting-045",
+    "syn-notice-020",
+    "syn-runbook-007",
+    "syn-runbook-015",
+    "syn-weekly-001",
+    "syn-weekly-017",
+    "syn-weekly-037"
+  ],
+  "source_fact_ids": [
+    "f-canary-013",
+    "f-evt-033-owner",
+    "f-evt-033-plan",
+    "f-evt-033-service",
+    "f-inc-2026-007-restored",
+    "f-inc-2026-007-service",
+    "f-inc-2026-007-severity",
+    "f-inc-2026-007-start"
+  ],
+  "team": "security",
+  "title": "[런북] 정보보안팀 미공개 취약점 조치 운영 절차",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}

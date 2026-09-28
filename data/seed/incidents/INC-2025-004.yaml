@@ -1,0 +1,15 @@
+id: INC-2025-004
+title: 배포 승인 대기 증가
+date: "2025-06-18"
+owner_team: sre
+assignee_id: p-107
+service: deploy-control
+facts:
+  - {fact_id: f-inc-2025-004-start, kind: datetime, value: "2025-06-18T16:00", date: "2025-06-18"}
+  - {fact_id: f-inc-2025-004-restored, kind: datetime, value: "2025-06-18T16:48", date: "2025-06-18"}
+  - {fact_id: f-inc-2025-004-service, kind: service, value: deploy-control, date: "2025-06-18"}
+  - {fact_id: f-inc-2025-004-severity, kind: text, value: 심각도 3으로 분류되었다., date: "2025-06-18"}
+  - {fact_id: f-inc-2025-004-cause, kind: text, value: 승인 작업자가 중복 메시지를 처리했다., date: "2025-06-18"}
+  - {fact_id: f-inc-2025-004-action, kind: text, value: 승인 메시지에 중복 방지 키를 적용했다., date: "2025-06-18"}
+  - {fact_id: f-inc-2025-004-owner, kind: person, value: p-107, date: "2025-06-18"}
+  - {fact_id: f-inc-2025-004-ticket, kind: id, value: SRE-1001, date: "2025-06-18"}

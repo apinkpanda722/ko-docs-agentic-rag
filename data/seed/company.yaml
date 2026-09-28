@@ -1,0 +1,11 @@
+name_ko: 해온클라우드
+name_en: Haeon Cloud
+random_seed: 20250101
+period:
+  start: "2025-01-01"
+  end: "2026-06-30"
+headcount_target: 200
+business_overview: |
+  결제와 데이터 플랫폼을 운영하는 가상 B2B SaaS 회사다.
+  고객사의 업무 시스템을 위한 API와 운영 도구를 제공한다.
+  안정적인 서비스 운영과 권한 있는 사내 지식 활용을 중요하게 다룬다.

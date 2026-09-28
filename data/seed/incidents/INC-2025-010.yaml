@@ -1,0 +1,15 @@
+id: INC-2025-010
+title: 결제 재시도 급증
+date: "2025-12-27"
+owner_team: payments
+assignee_id: p-043
+service: billing-api
+facts:
+  - {fact_id: f-inc-2025-010-start, kind: datetime, value: "2025-12-27T20:05", date: "2025-12-27"}
+  - {fact_id: f-inc-2025-010-restored, kind: datetime, value: "2025-12-27T21:12", date: "2025-12-27"}
+  - {fact_id: f-inc-2025-010-service, kind: service, value: billing-api, date: "2025-12-27"}
+  - {fact_id: f-inc-2025-010-severity, kind: text, value: 심각도 2로 분류되었다., date: "2025-12-27"}
+  - {fact_id: f-inc-2025-010-cause, kind: text, value: 응답 지연을 실패로 판단하는 기준이 지나치게 짧았다., date: "2025-12-27"}
+  - {fact_id: f-inc-2025-010-action, kind: text, value: 재시도 기준을 조정하고 회로 차단기를 적용했다., date: "2025-12-27"}
+  - {fact_id: f-inc-2025-010-owner, kind: person, value: p-043, date: "2025-12-27"}
+  - {fact_id: f-inc-2025-010-ticket, kind: id, value: PAY-1002, date: "2025-12-27"}

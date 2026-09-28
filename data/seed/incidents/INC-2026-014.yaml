@@ -1,0 +1,15 @@
+id: INC-2026-014
+title: 관측 지표 손실
+date: "2026-06-14"
+owner_team: sre
+assignee_id: p-107
+service: monitoring-hub
+facts:
+  - {fact_id: f-inc-2026-014-start, kind: datetime, value: "2026-06-14T04:12", date: "2026-06-14"}
+  - {fact_id: f-inc-2026-014-restored, kind: datetime, value: "2026-06-14T05:35", date: "2026-06-14"}
+  - {fact_id: f-inc-2026-014-service, kind: service, value: monitoring-hub, date: "2026-06-14"}
+  - {fact_id: f-inc-2026-014-severity, kind: text, value: 심각도 2로 분류되었다., date: "2026-06-14"}
+  - {fact_id: f-inc-2026-014-cause, kind: text, value: 지표 압축 작업의 메모리 상한이 낮게 설정되었다., date: "2026-06-14"}
+  - {fact_id: f-inc-2026-014-action, kind: text, value: 메모리 상한을 조정하고 부하 시험을 추가했다., date: "2026-06-14"}
+  - {fact_id: f-inc-2026-014-owner, kind: person, value: p-107, date: "2026-06-14"}
+  - {fact_id: f-inc-2026-014-ticket, kind: id, value: SRE-1004, date: "2026-06-14"}

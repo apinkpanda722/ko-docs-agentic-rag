@@ -1,0 +1,15 @@
+id: INC-2026-006
+title: 비용 결재 조회 오류
+date: "2026-04-12"
+owner_team: finance
+assignee_id: p-170
+service: finance-ledger
+facts:
+  - {fact_id: f-inc-2026-006-start, kind: datetime, value: "2026-04-12T09:08", date: "2026-04-12"}
+  - {fact_id: f-inc-2026-006-restored, kind: datetime, value: "2026-04-12T09:46", date: "2026-04-12"}
+  - {fact_id: f-inc-2026-006-service, kind: service, value: finance-ledger, date: "2026-04-12"}
+  - {fact_id: f-inc-2026-006-severity, kind: text, value: 심각도 3으로 분류되었다., date: "2026-04-12"}
+  - {fact_id: f-inc-2026-006-cause, kind: text, value: 조회 색인의 월 구분 값이 잘못 생성되었다., date: "2026-04-12"}
+  - {fact_id: f-inc-2026-006-action, kind: text, value: 해당 색인을 재생성하고 월 경계 테스트를 보강했다., date: "2026-04-12"}
+  - {fact_id: f-inc-2026-006-owner, kind: person, value: p-170, date: "2026-04-12"}
+  - {fact_id: f-inc-2026-006-ticket, kind: id, value: FIN-1002, date: "2026-04-12"}

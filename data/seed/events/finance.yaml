@@ -1,0 +1,66 @@
+events:
+  - id: evt-2025-047
+    title: 재무 인수 검토
+    date: "2025-02-20"
+    owner_team: finance
+    type: sensitive
+    sensitivity: restricted
+    facts:
+      - {fact_id: f-evt-047-plan, kind: text, value: 공개 전인 가상 사업 인수 후보의 재무 시나리오를 검토했다., date: "2025-02-20"}
+      - {fact_id: f-evt-047-owner, kind: person, value: p-170, date: "2025-02-20"}
+      - {fact_id: f-evt-047-service, kind: service, value: finance-ledger, date: "2025-02-20"}
+  - id: evt-2025-048
+    title: 월말 집계 개선 프로젝트
+    date: "2025-10-13"
+    owner_team: finance
+    type: project
+    facts:
+      - {fact_id: f-evt-048-incident, kind: id, value: INC-2025-007, date: "2025-10-13"}
+      - {fact_id: f-evt-048-plan, kind: text, value: 월말 집계를 단계별로 나누는 프로젝트를 시작했다., date: "2025-10-13"}
+      - {fact_id: f-evt-048-service, kind: service, value: finance-ledger, date: "2025-10-13"}
+  - id: evt-2026-049
+    title: 월 경계 검사 결정
+    date: "2026-04-18"
+    owner_team: finance
+    type: decision
+    facts:
+      - {fact_id: f-evt-049-incident, kind: id, value: INC-2026-006, date: "2026-04-18"}
+      - {fact_id: f-evt-049-decision, kind: text, value: 원장 색인에 월 경계 검사를 추가하기로 결정했다., date: "2026-04-18"}
+      - {fact_id: f-evt-049-service, kind: service, value: finance-ledger, date: "2026-04-18"}
+  - id: evt-2025-050
+    title: 비용 현황 화면 배포
+    date: "2025-06-11"
+    owner_team: finance
+    type: release
+    facts:
+      - {fact_id: f-evt-050-version, kind: text, value: 팀별 비용 현황 화면을 배포했다., date: "2025-06-11"}
+      - {fact_id: f-evt-050-service, kind: service, value: finance-ledger, date: "2025-06-11"}
+      - {fact_id: f-evt-050-result, kind: text, value: 월별 비용 확인 시간이 단축되었다., date: "2025-06-11"}
+  - id: evt-2025-051
+    title: 증빙 점검 정책
+    date: "2025-09-17"
+    owner_team: finance
+    type: policy
+    facts:
+      - {fact_id: f-evt-051-policy, kind: text, value: 비용 결재 전에 증빙 누락 여부를 점검하도록 정했다., date: "2025-09-17"}
+      - {fact_id: f-evt-051-rule, kind: regulation, value: 회계규정 제25조, date: "2025-09-17"}
+      - {fact_id: f-evt-051-owner, kind: person, value: p-170, date: "2025-09-17"}
+  - id: evt-2025-052
+    title: 구매 정산 담당 구성
+    date: "2025-12-22"
+    owner_team: finance
+    type: org
+    facts:
+      - {fact_id: f-evt-052-org, kind: text, value: 구매 정산 점검 담당 역할을 팀 안에 구성했다., date: "2025-12-22"}
+      - {fact_id: f-evt-052-owner, kind: person, value: p-170, date: "2025-12-22"}
+      - {fact_id: f-evt-052-focus, kind: text, value: 반복 구매 검토를 우선 과제로 정했다., date: "2025-12-22"}
+  - id: evt-2026-053
+    title: 미공개 자금 계획 검토
+    date: "2026-05-26"
+    owner_team: finance
+    type: sensitive
+    sensitivity: restricted
+    facts:
+      - {fact_id: f-evt-053-plan, kind: text, value: 공개 전인 다음 분기 자금 계획을 제한 회의에서 검토했다., date: "2026-05-26"}
+      - {fact_id: f-evt-053-owner, kind: person, value: p-170, date: "2026-05-26"}
+      - {fact_id: f-evt-053-service, kind: service, value: finance-ledger, date: "2026-05-26"}

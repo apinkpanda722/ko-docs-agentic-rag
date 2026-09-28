@@ -1,0 +1,480 @@
+"""Manifest-only M3 synthetic-corpus report generation."""
+
+from __future__ import annotations
+
+import json
+from datetime import date
+from pathlib import Path
+
+import pytest
+
+from kodocs.eval import synth_report
+from kodocs.eval.synth_report import BEGIN, END, render_tables, write_report
+
+
+def _write_json(path: Path, value: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _write_jsonl(path: Path, values: list[dict[str, object]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "".join(json.dumps(value, ensure_ascii=False) + "\n" for value in values),
+        encoding="utf-8",
+    )
+
+
+def _write_inputs(root: Path) -> None:
+    plans = [
+        {
+            "doc_id": "doc-a",
+            "doc_type": "guide",
+            "team": "platform",
+            "access": {"level": "public"},
+        },
+        {
+            "doc_id": "doc-b",
+            "doc_type": "meeting",
+            "team": "payments",
+            "access": {"level": "team"},
+        },
+    ]
+    _write_jsonl(root / "data/synthetic/plan.jsonl", plans)
+    _write_json(root / "data/synthetic/canaries.json", {"count": 30, "canaries": []})
+    _write_json(
+        root / "data/synthetic/injections.json", {"count": 12, "injections": []}
+    )
+    _write_json(
+        root / "data/manifest/synth_validation.json",
+        {
+            "planned": 2,
+            "generated": 2,
+            "passed": 2,
+            "failed": 0,
+            "not_generated": 0,
+            "exhausted": 0,
+            "by_code": {},
+            "canary": {"expected": 30, "present": 2, "leaks": 0},
+            "injections": {"expected": 12, "inserted": 1},
+        },
+    )
+    _write_json(
+        root / "data/manifest/synth_db.json",
+        {
+            "content_hash": "db-content-hash",
+            "row_counts": {"tickets": 500, "approvals": 150},
+            "access_counts": {
+                "tickets": {"public": 300, "team": 175, "restricted": 25},
+                "approvals": {"public": 30, "team": 90, "restricted": 30},
+            },
+            "seed_files_sha256": {"data/seed/company.yaml": "seed-hash"},
+        },
+    )
+    _write_json(
+        root / "data/manifest/synth_metrics.json",
+        {
+            "schema_version": 1,
+            "scope": {"passed_documents": 2},
+            "duplicate": {
+                "shingle_n": 5,
+                "threshold": 0.5,
+                "pair_count": 1,
+                "overall": {"max": 0.25, "p95": 0.25, "mean": 0.25},
+                "within_type": {"max": None, "p95": None, "mean": None},
+                "between_type": {"max": 0.25, "p95": 0.25, "mean": 0.25},
+                "near_duplicates": [],
+            },
+            "repeated_sentences": {
+                "sentences_in_3_plus_docs": 1,
+                "top": [{"sentence_prefix": "반복 문장 앞 40자", "document_count": 3}],
+            },
+            "length": {
+                "by_type": {
+                    "guide": {
+                        "documents": 1,
+                        "mean_chars": 100.0,
+                        "stddev_chars": 0.0,
+                        "coefficient_of_variation": 0.0,
+                        "min_chars": 100,
+                        "max_chars": 100,
+                        "target_mean_chars": 100.0,
+                        "target_ratio": 1.0,
+                    }
+                }
+            },
+            "lexical_diversity": {
+                "by_type": {
+                    "guide": {
+                        "distinct_2": 0.75,
+                        "unique_bigrams": 75,
+                        "total_bigrams": 100,
+                    }
+                }
+            },
+            "style": {
+                "overall": {
+                    "sentences": 2,
+                    "counts": {"formal": 1, "plain": 1, "nominal": 0, "other": 0},
+                    "ratios": {
+                        "formal": 0.5,
+                        "plain": 0.5,
+                        "nominal": 0.0,
+                        "other": 0.0,
+                    },
+                },
+                "by_type": {},
+            },
+            "distribution": {
+                "by_type": {"guide": {"planned": 1, "passed": 1}},
+                "by_access": {"public": {"planned": 1, "passed": 1}},
+                "by_team": {"platform": {"planned": 1, "passed": 1}},
+                "canary_documents": 2,
+                "injection_documents": 1,
+            },
+            "fact_coverage": {
+                "normal_facts_total": 4,
+                "covered_facts": 3,
+                "coverage_rate": 0.75,
+                "documents_per_fact_distribution": {"0": 1, "1": 2, "2": 1},
+                "facts_in_2_plus_documents": 1,
+            },
+            "validation": {"pass_rate": 1.0, "failure_codes": {}},
+            "provenance": {
+                "models": ["claude-sonnet-5-20260901"],
+                "template_hashes": ["template-guide"],
+                "seed_files_sha256": {"data/seed/company.yaml": "seed-hash"},
+                "regulation_index_sha256": ["reg-hash"],
+                "validator_versions": [1],
+            },
+        },
+    )
+    generation = {
+        "model": "claude-sonnet-5",
+        "max_tokens": 6000,
+        "thinking": "disabled",
+        "effort": None,
+        "temperature": None,
+        "sampling": "unsupported_by_model",
+    }
+    _write_jsonl(
+        root / "data/manifest/anthropic_batches.jsonl",
+        [
+            {
+                "submission_id": "sub-1",
+                "batch_id": "batch-1",
+                "state": "collected",
+                "n_requests": 2,
+                "custom_ids": ["doc-a-a1", "doc-b-a1"],
+                "request_set_hash": "requests-hash",
+                "settings_hash": "settings-hash",
+                "generation": generation,
+                "result_counts": {
+                    "succeeded": 2,
+                    "errored": 0,
+                    "canceled": 0,
+                    "expired": 0,
+                    "missing": 0,
+                },
+                "usage_totals": {
+                    "input_tokens": 100,
+                    "output_tokens": 200,
+                    "cache_creation_input_tokens": 0,
+                    "cache_read_input_tokens": 0,
+                },
+                "estimated_input_tokens": 80,
+                "ts": "2026-09-27T00:00:00+00:00",
+            }
+        ],
+    )
+    _write_jsonl(
+        root / "data/manifest/costs.jsonl",
+        [
+            {"service": "anthropic.claude-sonnet-5.batch.input", "amount_usd": 0.11},
+            {"service": "anthropic.claude-sonnet-5.batch.output", "amount_usd": 0.22},
+            {"service": "upstage.document-parse.standard", "amount_usd": 99.0},
+        ],
+    )
+
+
+def test_render_tables_uses_placeholders_when_inputs_do_not_exist(
+    tmp_path: Path,
+) -> None:
+    rendered = render_tables(tmp_path)
+
+    assert rendered.count("(실행 후 기록)") >= 8
+    for heading in (
+        "실행 정보",
+        "고정 조건",
+        "생성·비용",
+        "검증",
+        "품질 지표",
+        "티켓·결재 DB",
+    ):
+        assert heading in rendered
+
+
+def test_render_tables_keeps_generation_results_placeholder_before_generation(
+    tmp_path: Path,
+) -> None:
+    _write_json(
+        tmp_path / "data/manifest/synth_validation.json",
+        {
+            "planned": 200,
+            "generated": 0,
+            "passed": 0,
+            "failed": 0,
+            "not_generated": 200,
+            "exhausted": 0,
+            "by_code": {},
+            "canary": {"expected": 30, "present": 0, "leaks": 0},
+            "injections": {"expected": 12, "inserted": 0},
+        },
+    )
+
+    rendered = render_tables(tmp_path)
+
+    assert "| 계획 | 200 |" in rendered
+    assert "| 통과 | (실행 후 기록) |" in rendered
+    assert "| 미생성 | (실행 후 기록) |" in rendered
+    assert "| 카나리아 | 30 | (실행 후 기록) | (실행 후 기록) |" in rendered
+
+
+def test_render_tables_includes_metrics_provenance_and_anthropic_cost_only(
+    tmp_path: Path,
+) -> None:
+    _write_inputs(tmp_path)
+
+    rendered = render_tables(tmp_path)
+
+    assert "claude-sonnet-5-20260901" in rendered
+    assert "temperature" in rendered
+    assert "null (모델 미지원: unsupported_by_model)" in rendered
+    assert "thinking=disabled" in rendered
+    assert "template-guide" in rendered
+    assert "seed-hash" in rendered
+    assert "reg-hash" in rendered
+    assert "db-content-hash" in rendered
+    assert "0.3300" in rendered
+    assert "99.0000" not in rendered
+    assert "125.0%" in rendered
+    assert "반복 문장 앞 40자" in rendered
+    assert "계획 2건" in rendered
+    assert "최대 시도 3회" in rendered
+    assert "Batch 사용" in rendered
+
+
+def test_write_report_keeps_one_fixed_m3_report_across_run_dates(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Pilot 3: a new run date created a second, dated M3 report.
+    _write_inputs(tmp_path)
+    monkeypatch.setattr(synth_report, "_git_commit", lambda _root: "abc1234")
+
+    first = write_report(tmp_path, run_date=date(2026, 9, 27))
+    first.write_text(
+        first.read_text(encoding="utf-8").replace("(사용자 기록)", "콘솔 값", 1),
+        encoding="utf-8",
+    )
+    second = write_report(tmp_path, run_date=date(2026, 9, 28))
+
+    assert first == second == tmp_path / "docs/results/2026-09-27-m3-synthetic.md"
+    assert sorted(p.name for p in (tmp_path / "docs/results").iterdir()) == [
+        "2026-09-27-m3-synthetic.md"
+    ]
+    updated = second.read_text(encoding="utf-8")
+    assert "콘솔 값" in updated
+    assert "2026-09-28" in updated
+
+
+def test_unprompted_relative_time_warning_is_rendered(tmp_path: Path) -> None:
+    _write_inputs(tmp_path)
+    metrics_path = tmp_path / "data/manifest/synth_metrics.json"
+    metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+    metrics["unprompted_relative_time"] = {
+        "terms": ["최근", "얼마 전", "지난달", "요즘", "요새", "근래"],
+        "documents_with_warning": 2,
+        "total": 11,
+        "by_doc": {"syn-meeting-001": {"최근": 6}, "syn-meeting-004": {"최근": 5}},
+    }
+    _write_json(metrics_path, metrics)
+
+    rendered = render_tables(tmp_path)
+
+    assert "### 지시 없는 상대 시점(경고, 실패 아님)" in rendered
+    assert "| syn-meeting-001 | 최근 6 |" in rendered
+    assert "| syn-meeting-004 | 최근 5 |" in rendered
+    assert "경고 문서 2건, 합계 11회" in rendered
+
+
+def test_template_version_counts_are_rendered(tmp_path: Path) -> None:
+    _write_inputs(tmp_path)
+    metrics_path = tmp_path / "data/manifest/synth_metrics.json"
+    metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+    metrics["provenance"]["template_hash_counts"] = {
+        "incident": {"a" * 64: 3, "b" * 64: 22},
+        "meeting": {"c" * 64: 50},
+    }
+    _write_json(metrics_path, metrics)
+
+    rendered = render_tables(tmp_path)
+
+    assert "### 템플릿 버전별 통과 문서 수" in rendered
+    assert f"| incident | `{'a' * 12}` | 3 |" in rendered
+    assert f"| incident | `{'b' * 12}` | 22 |" in rendered
+    assert f"| meeting | `{'c' * 12}` | 50 |" in rendered
+
+
+def test_style_warnings_are_rendered(tmp_path: Path) -> None:
+    _write_inputs(tmp_path)
+    metrics_path = tmp_path / "data/manifest/synth_metrics.json"
+    metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+    metrics["style_warnings"] = {
+        "sentence_seam": {
+            "documents": 32,
+            "occurrences": 50,
+            "population": 199,
+            "rate": 0.1608,
+            "by_type": {},
+        }
+    }
+    _write_json(metrics_path, metrics)
+
+    rendered = render_tables(tmp_path)
+
+    assert "### 문체 경고(실패 아님)" in rendered
+    assert "| 마침표+조사 이음새 | 32/199 (16.1%) | 50 |" in rendered
+
+
+def test_dry_run_estimates_file_fills_estimate_ratio_and_calibration(
+    tmp_path: Path,
+) -> None:
+    _write_inputs(tmp_path)
+    batches_path = tmp_path / "data/manifest/anthropic_batches.jsonl"
+    rows = [json.loads(line) for line in batches_path.read_text().splitlines()]
+    del rows[0]["estimated_input_tokens"]
+    rows.append(
+        {
+            **rows[0],
+            "submission_id": "sub-2",
+            "batch_id": "batch-2",
+            "usage_totals": {**rows[0]["usage_totals"], "input_tokens": 50},
+        }
+    )
+    _write_jsonl(batches_path, rows)
+    _write_json(
+        tmp_path / "data/manifest/synth_dry_run_estimates.json",
+        {
+            "batches": {"batch-1": {"estimated_input_tokens": 125}},
+            "calibration_note": "파일럿 원장이 추정의 약 67%",
+        },
+    )
+
+    rendered = render_tables(tmp_path)
+
+    # Ratio only over batches that have an estimate (batch-1: 100 / 125).
+    assert "| dry-run 추정 입력 토큰 | 125 (추정 기록 1개 배치) |" in rendered
+    assert "| dry-run 추정 대비 실제 입력 토큰 비율 | 80.0% |" in rendered
+    assert "| 파일럿 보정 근거 | 파일럿 원장이 추정의 약 67% |" in rendered
+
+
+def test_uncollected_batch_is_noted_in_generation_and_validation(
+    tmp_path: Path,
+) -> None:
+    _write_inputs(tmp_path)
+    batches_path = tmp_path / "data/manifest/anthropic_batches.jsonl"
+    rows = [json.loads(line) for line in batches_path.read_text().splitlines()]
+    rows.append(
+        {
+            "submission_id": "sub-retry",
+            "batch_id": "batch-retry",
+            "state": "submitted",
+            "n_requests": 1,
+            "custom_ids": ["syn-incident-007-a3"],
+            "expires_at": "2026-09-29T06:16:08.5+00:00",
+            "ts": "2026-09-28T06:16:08+00:00",
+        }
+    )
+    _write_jsonl(batches_path, rows)
+
+    rendered = render_tables(tmp_path)
+
+    note = (
+        "미수거 배치 `batch-retry`(syn-incident-007-a3): 재시도 배치 제출됨·수거 대기"
+        "(만료 2026-09-29 15:16 KST). 코퍼스는 통과 2건 기준, 수거 결과는 후속 PR로 반영."
+    )
+    assert rendered.count(note) == 2
+
+
+def test_special_rows_use_registry_expected_and_validation_counts(
+    tmp_path: Path,
+) -> None:
+    _write_inputs(tmp_path)
+
+    rendered = render_tables(tmp_path)
+
+    assert "| 특수 | 카나리아 포함 | 30 | 2 |" in rendered
+    assert "| 특수 | 인젝션 포함 | 12 | 1 |" in rendered
+
+
+def test_review_section_labels_style_natural_as_naturalness(tmp_path: Path) -> None:
+    _write_inputs(tmp_path)
+
+    rendered = render_tables(tmp_path)
+
+    assert "| 문체 자연스러움 |" in rendered
+    assert "문체 다양성" not in rendered
+
+
+def test_write_report_preserves_outside_generated_region_and_omits_doc_body(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _write_inputs(tmp_path)
+    unique_body = "결과 문서에 들어가면 안 되는 합성 본문 전문 SECRET-BODY"
+    _write_json(
+        tmp_path / "data/synthetic/docs/doc-a.json",
+        {"doc_id": "doc-a", "body": unique_body},
+    )
+    monkeypatch.setattr(synth_report, "_git_commit", lambda _root: "abc1234")
+    out = tmp_path / "result.md"
+
+    created = write_report(tmp_path, run_date=date(2026, 9, 27), out_path=out)
+    first = created.read_text(encoding="utf-8")
+    assert first.count(BEGIN) == first.count(END) == 1
+    assert "2026-09-27" in first
+    assert "abc1234" in first
+    assert unique_body not in first
+    assert "(검수 후 기록)" in first
+    assert "① 제출 전 Anthropic 콘솔 Usage/Cost를 기록한다" in first
+    assert "billing_margin`(현재 1.05)" in first
+    assert "합성 문서는 실제보다 쉽다" in first
+    assert "문서 형식 다양성 없음" in first
+    assert "동일 요청 재현 불가" in first
+
+    edited = first.replace("(사용자 기록)", "사용자가 기록한 콘솔 값", 1)
+    out.write_text(edited, encoding="utf-8")
+    write_report(tmp_path, run_date=date(2026, 9, 27), out_path=out)
+    updated = out.read_text(encoding="utf-8")
+
+    assert "사용자가 기록한 콘솔 값" in updated
+    assert updated[: updated.index(BEGIN)] == edited[: edited.index(BEGIN)]
+    assert (
+        updated[updated.index(END) + len(END) :]
+        == edited[edited.index(END) + len(END) :]
+    )
+
+
+@pytest.mark.parametrize(
+    "contents", ["표지 없음", f"{BEGIN}\n짝 없음", f"{END}\n{BEGIN}"]
+)
+def test_write_report_refuses_malformed_markers(tmp_path: Path, contents: str) -> None:
+    out = tmp_path / "result.md"
+    out.write_text(contents, encoding="utf-8")
+
+    with pytest.raises(synth_report.SynthReportError, match="generated"):
+        write_report(tmp_path, run_date=date(2026, 9, 27), out_path=out)
+
+    assert out.read_text(encoding="utf-8") == contents

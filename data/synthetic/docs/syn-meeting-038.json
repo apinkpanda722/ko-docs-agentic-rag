@@ -1,0 +1,165 @@
+{
+  "access": {
+    "level": "public",
+    "min_grade": 1,
+    "teams": []
+  },
+  "author_id": "p-163",
+  "body": "# [회의록] 인사팀 2026-05-19 시간대 처리 통일 결정\n\n- 작성 부서: 인사팀\n- 작성자: 윤서영 사원\n- 문서 날짜: 2026-05-19\n\n## 1. 목적\n\n본 회의는 교육 신청 프로세스 전반에서 반복적으로 제기되어 온 시각 처리 방식의 불일치 문제를 정리하고, 향후 운영 기준을 명확히 하기 위해 마련되었다. 인사팀 내부적으로 교육 신청 관련 데이터를 다룰 때마다 시간대 해석 차이로 인한 혼선이 있었던 만큼, 이번 자리를 통해 담당자 간 공통된 처리 기준을 확정하고 관련 배경을 기록으로 남기고자 한다.\n\n## 2. 논의사항\n\n### 2-1. 시간대 처리 불일치 문제\n\n교육 신청 시각을 기록하고 조회하는 과정에서 시스템별로 시간대 해석이 달라 신청 이력 확인 시 오차가 발생하는 사례가 반복적으로 보고되었다. 이에 따라 담당자들은 교육 신청과 관련된 모든 시각 데이터를 어떤 기준으로 통일할지에 대한 논의를 진행하였다.\n\n### 2-2. 관련 시스템 이력 검토\n\n논의 과정에서 people-portal 서비스의 개편 이력을 함께 검토하였다. 지난해 5월 해당 서비스를 통해 팀별 교육 일정을 확인하는 화면을 배포했다는 점이 확인되었으며, 이 화면이 현재까지 각 팀의 교육 일정 조회에 활용되고 있어 시간대 처리 방식 변경 시 해당 화면의 표시 로직에도 영향이 있을 수 있다는 의견이 나왔다.\n\n### 2-3. 교육 신청 기록 방식 관련 배경\n\n지난해 8월 최가윤 팀장의 주도로 교육 신청 시 비용과 목적을 함께 기록하도록 정했다는 결정이 있었던 사실을 다시 확인하였다. 이는 교육훈련규칙 제19조와 관련된 운영 기준으로, 당시 마련된 기록 방식이 현재의 신청 이력 데이터 구조에도 반영되어 있어 이번 시간대 통일 작업 시 함께 고려해야 할 항목으로 정리되었다.\n\n### 2-4. 온보딩 및 조직문화 관련 진행 상황 공유\n\n안건과 직접 관련되지는 않으나, 지난해 12월 있었던 결정 사항도 참고 차원에서 함께 공유되었다. 당시 온보딩 경험 개선을 우선 과제로 정했다는 방향이 수립되었고, 이와 함께 조직문화 프로그램 담당 역할을 팀 안에 구성했다는 점이 언급되었다. 온보딩 과정에서도 교육 신청 관련 화면을 사용하게 되는 만큼, 이번 시간대 처리 통일이 온보딩 경험 개선 과제와도 연결될 수 있다는 점에 참석자들이 공감하였다.\n\n## 3. 결론\n\n논의를 종합하여, 교육 신청 시각을 하나의 시간대로 처리하기로 결정했다. 이는 people-portal 상에서 발생하는 모든 교육 신청 관련 시각 데이터에 동일하게 적용되며, 기존에 배포된 팀별 교육 일정 확인 화면의 표시 방식도 이번 결정에 맞추어 순차적으로 점검할 예정이다. 아울러 교육훈련규칙 제19조에 따른 비용·목적 기록 항목은 이번 시간대 통일 작업과 별개로 기존 방식을 유지하되, 데이터 정합성 점검 시 함께 검토하기로 하였다.\n\n## 4. 담당자 및 후속 조치\n\n- 시간대 처리 통일 적용 및 검증: 인사팀 담당자가 people-portal 화면 표시 로직 점검을 진행한다.\n- 교육 신청 기록 항목 정합성 확인: 최가윤 팀장과 협의하여 기존 기록 방식과의 연계 여부를 확인한다.\n- 온보딩 경험 개선 과제 연계 검토: 조직문화 프로그램 담당자와 협의하여 온보딩 화면에서의 시각 표시 일관성을 확인한다.\n- 진행 경과는 인사팀 내부 회의를 통해 지속적으로 공유할 예정이다.\n\n이상으로 2026-05-19 회의 내용을 정리하며, 작성자는 윤서영 사원임을 밝힌다.",
+  "canary": null,
+  "date": "2026-05-19",
+  "doc_id": "syn-meeting-038",
+  "doc_type": "meeting",
+  "fact_spans": [
+    {
+      "end": 514,
+      "fact_id": "f-evt-043-service",
+      "start": 501
+    },
+    {
+      "end": 578,
+      "fact_id": "f-evt-043-version",
+      "start": 555
+    },
+    {
+      "end": 719,
+      "fact_id": "f-evt-044-owner",
+      "start": 713
+    },
+    {
+      "end": 753,
+      "fact_id": "f-evt-044-policy",
+      "start": 725
+    },
+    {
+      "end": 791,
+      "fact_id": "f-evt-044-rule",
+      "start": 780
+    },
+    {
+      "end": 997,
+      "fact_id": "f-evt-045-focus",
+      "start": 976
+    },
+    {
+      "end": 1042,
+      "fact_id": "f-evt-045-org",
+      "start": 1016
+    },
+    {
+      "end": 1194,
+      "fact_id": "f-evt-042-decision",
+      "start": 1165
+    }
+  ],
+  "generation": {
+    "attempt": 1,
+    "batch_id": "msgbatch_01SHc7eNEULByVhCSyVD4GFp",
+    "cache_key": "544e0924cbb5419bce3a8eabcc053905",
+    "custom_id": "syn-meeting-038-a1",
+    "doc_seed": 3298695267,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "1f3fa67cf268eaa08a21d39da2b4b1131034adbc949a2d3092a73ec1055a3476",
+    "template_hash": "8196fa38d17b04a7f4dbe3edb649a4606ce1b7d49914a4b866df71b4b7748772",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 2444,
+      "output_tokens": 1813
+    }
+  },
+  "injection": null,
+  "regulation_refs": [
+    "보안업무규칙 제56조",
+    "인사규정 제21조"
+  ],
+  "related_doc_ids": [
+    "syn-guide-008",
+    "syn-guide-016",
+    "syn-guide-024",
+    "syn-meeting-014",
+    "syn-notice-008",
+    "syn-runbook-008",
+    "syn-runbook-016",
+    "syn-runbook-024",
+    "syn-runbook-026",
+    "syn-weekly-018",
+    "syn-weekly-026",
+    "syn-weekly-034"
+  ],
+  "source_fact_ids": [
+    "f-evt-042-decision",
+    "f-evt-043-service",
+    "f-evt-043-version",
+    "f-evt-044-owner",
+    "f-evt-044-policy",
+    "f-evt-044-rule",
+    "f-evt-045-focus",
+    "f-evt-045-org"
+  ],
+  "team": "hr",
+  "title": "[회의록] 인사팀 2026-05-19 시간대 처리 통일 결정",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}

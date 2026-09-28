@@ -1,0 +1,121 @@
+people:
+- person_id: p-169
+  name: 홍유겸
+  team: finance
+  grade: 6
+  role: 경영 관리
+  joined: '2016-08-20'
+- person_id: p-170
+  name: 안현빈
+  team: finance
+  grade: 5
+  role: 재무 회계
+  joined: '2013-03-31'
+- person_id: p-171
+  name: 강민은
+  team: finance
+  grade: 4
+  role: 구매 정산
+  joined: '2024-02-01'
+- person_id: p-172
+  name: 조은겸
+  team: finance
+  grade: 4
+  role: 경영 관리
+  joined: '2021-02-06'
+- person_id: p-173
+  name: 남가연
+  team: finance
+  grade: 4
+  role: 구매 정산
+  joined: '2020-09-14'
+- person_id: p-174
+  name: 조경인
+  team: finance
+  grade: 3
+  role: 구매 정산
+  joined: '2020-07-14'
+- person_id: p-175
+  name: 송나우
+  team: finance
+  grade: 3
+  role: 자금 운영
+  joined: '2024-07-21'
+- person_id: p-176
+  name: 노다은
+  team: finance
+  grade: 3
+  role: 자금 운영
+  joined: '2013-12-30'
+- person_id: p-177
+  name: 강아별
+  team: finance
+  grade: 3
+  role: 재무 회계
+  joined: '2025-12-09'
+- person_id: p-178
+  name: 한예별
+  team: finance
+  grade: 2
+  role: 재무 회계
+  joined: '2013-08-08'
+- person_id: p-179
+  name: 허가솔
+  team: finance
+  grade: 2
+  role: 경영 관리
+  joined: '2021-10-07'
+- person_id: p-180
+  name: 권시아
+  team: finance
+  grade: 2
+  role: 자금 운영
+  joined: '2019-09-28'
+- person_id: p-181
+  name: 곽하준
+  team: finance
+  grade: 2
+  role: 경영 관리
+  joined: '2024-06-14'
+- person_id: p-182
+  name: 송해은
+  team: finance
+  grade: 1
+  role: 경영 관리
+  joined: '2018-12-03'
+- person_id: p-183
+  name: 서수온
+  team: finance
+  grade: 1
+  role: 재무 회계
+  joined: '2019-05-31'
+- person_id: p-184
+  name: 윤재진
+  team: finance
+  grade: 1
+  role: 경영 관리
+  joined: '2022-03-19'
+- person_id: p-185
+  name: 장시우
+  team: finance
+  grade: 1
+  role: 재무 회계
+  joined: '2018-10-22'
+- person_id: p-186
+  name: 안해수
+  team: finance
+  grade: 1
+  role: 자금 운영
+  joined: '2016-02-09'
+- person_id: p-187
+  name: 정도안
+  team: finance
+  grade: 1
+  role: 경영 관리
+  joined: '2022-12-14'
+- person_id: p-188
+  name: 남민별
+  team: finance
+  grade: 1
+  role: 구매 정산
+  joined: '2017-10-23'

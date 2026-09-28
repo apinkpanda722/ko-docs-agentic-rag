@@ -1,0 +1,15 @@
+id: INC-2026-004
+title: 인증 토큰 검증 지연
+date: "2026-03-28"
+owner_team: platform
+assignee_id: p-002
+service: identity-api
+facts:
+  - {fact_id: f-inc-2026-004-start, kind: datetime, value: "2026-03-28T15:10", date: "2026-03-28"}
+  - {fact_id: f-inc-2026-004-restored, kind: datetime, value: "2026-03-28T16:00", date: "2026-03-28"}
+  - {fact_id: f-inc-2026-004-service, kind: service, value: identity-api, date: "2026-03-28"}
+  - {fact_id: f-inc-2026-004-severity, kind: text, value: 심각도 2로 분류되었다., date: "2026-03-28"}
+  - {fact_id: f-inc-2026-004-cause, kind: text, value: 키 목록 갱신 중 잠금 범위가 넓게 유지되었다., date: "2026-03-28"}
+  - {fact_id: f-inc-2026-004-action, kind: text, value: 키 갱신을 이중 버퍼 방식으로 변경했다., date: "2026-03-28"}
+  - {fact_id: f-inc-2026-004-owner, kind: person, value: p-002, date: "2026-03-28"}
+  - {fact_id: f-inc-2026-004-ticket, kind: id, value: PLT-1003, date: "2026-03-28"}

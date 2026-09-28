@@ -1,0 +1,14 @@
+people:
+  - person_id: p-001
+    name: 김서연
+    team: platform
+    grade: 3
+    role: 백엔드 개발
+    joined: "2024-03-04"
+  - person_id: p-002
+    name: 박도윤
+    team: platform
+    grade: 5
+    role: 팀 운영
+    joined: "2025-02-03"
+
