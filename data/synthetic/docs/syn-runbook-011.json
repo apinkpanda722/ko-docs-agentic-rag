@@ -1,0 +1,199 @@
+{
+  "access": {
+    "level": "public",
+    "min_grade": 1,
+    "teams": []
+  },
+  "author_id": "p-015",
+  "body": "# [런북] 플랫폼개발팀 연결 풀 자동 조정 결정 운영 절차\n\n## 목적과 적용 범위\n\n본 런북은 core-gateway 서비스의 연결 풀 상한을 부하 상황에 맞추어 자동으로 조정하는 운영 절차를 정의한다. 작성 배경은 다음과 같다. INC-2025-001 장애 대응 이후, 연결 풀 상한을 부하에 맞춰 자동 조정하기로 결정했다. 이 결정에 따라 플랫폼개발팀은 관련 자동 조정 로직의 배포, 운영, 점검 책임을 지며, 본 문서는 담당자 관점에서 실행 시 참고할 표준 절차를 제공한다.\n\n적용 대상은 core-gateway와 그 의존 서비스인 identity-api다. identity-api는 월간 가용성 목표는 99.99%다.라는 목표를 가지고 있으므로, 연결 풀 조정 작업이 해당 서비스의 가용성 목표에 영향을 주지 않도록 항상 함께 고려해야 한다. 본 절차는 정기 점검 및 부하 급증 상황 발생 시 모두 적용된다.\n\n## 사전 점검\n\n1. 담당자는 작업 착수 전 core-gateway의 현재 연결 풀 사용 현황과 최근 트래픽 추이를 확인한다.\n2. identity-api의 현재 응답 지연 및 오류율 지표를 함께 확인하여, 의존 서비스 측에 이상 징후가 없는지 사전에 검토한다.\n3. 자동 조정 로직이 참조하는 설정값과 최근 변경 이력을 점검하고, 이전 조정 시점의 로그를 검토하여 이상 동작 여부를 확인한다.\n4. INC-2025-001와 유사한 패턴의 부하 급증 징후가 있는지 모니터링 대시보드를 통해 사전 확인한다.\n\n## 실행 절차\n\n1. 사전 점검에서 이상이 없음을 확인한 담당자는 연결 풀 자동 조정 로직을 활성화 상태로 유지하거나, 필요 시 수동 개입을 통해 조정 범위를 재설정한다.\n2. 조정 작업 중에는 core-gateway와 identity-api 간 연동 트래픽을 지속적으로 관찰하며, 급격한 변화가 감지되면 즉시 조정 속도를 완화한다.\n3. 자동 조정이 적용된 이후에는 변경 내용을 운영 기록에 남기고, 팀 내 공유 채널에 조정 결과를 게시하여 관련 담당자가 인지할 수 있도록 한다.\n4. 조정 작업은 단계적으로 진행하며, 한 번에 전체 트래픽에 영향을 주지 않도록 순차적으로 반영한다.\n\n## 검증\n\n1. 조정 적용 후 core-gateway의 응답 시간과 오류율이 안정적인 범위에서 유지되는지 확인한다.\n2. identity-api의 가용성 지표가 목표 수준을 유지하고 있는지 점검하며, 특히 월간 가용성 목표 달성에 부정적 영향이 없는지를 확인한다.\n3. 조정 이후 일정 시간 동안 모니터링을 지속하여, 부하 패턴 변화에 따른 재조정 필요 여부를 판단한다.\n4. 검증 결과는 담당자가 기록하여 이후 유사 상황 발생 시 참고 자료로 활용한다.\n\n## 실패 시 복구와 에스컬레이션\n\n1. 자동 조정 적용 후 core-gateway 또는 identity-api에서 이상 징후가 발견되면, 담당자는 즉시 조정 로직을 이전 설정으로 되돌린다.\n2. 복구 조치 이후에도 지표가 정상화되지 않을 경우, INC-2025-001 대응 경험을 참고하여 팀 내 선임 담당자에게 상황을 보고하고 판단을 요청한다.\n3. 문제가 지속되거나 원인이 명확하지 않은 경우, 플랫폼개발팀 책임자에게 즉시 에스컬레이션하며, 필요 시 관련 팀과 협의하여 공동 대응 체계를 가동한다.\n4. 모든 복구 및 에스컬레이션 과정은 사후 기록으로 남겨 향후 유사 사례의 재발 방지와 절차 개선에 활용한다.\n\n이상의 절차는 플랫폼개발팀 담당자가 연결 풀 자동 조정과 관련한 운영 업무를 수행할 때 기본 지침으로 준수해야 하며, 상황 변화에 따라 지속적으로 갱신될 수 있다.",
+  "canary": null,
+  "date": "2025-12-10",
+  "doc_id": "syn-runbook-011",
+  "doc_type": "runbook",
+  "fact_spans": [
+    {
+      "end": 67,
+      "fact_id": "f-evt-003-service",
+      "start": 55
+    },
+    {
+      "end": 143,
+      "fact_id": "f-evt-001-incident",
+      "start": 131
+    },
+    {
+      "end": 184,
+      "fact_id": "f-evt-001-decision",
+      "start": 154
+    },
+    {
+      "end": 291,
+      "fact_id": "f-evt-003-service",
+      "start": 279
+    },
+    {
+      "end": 315,
+      "fact_id": "f-service-core-gateway-dependency",
+      "start": 303
+    },
+    {
+      "end": 330,
+      "fact_id": "f-service-core-gateway-dependency",
+      "start": 318
+    },
+    {
+      "end": 351,
+      "fact_id": "f-service-identity-api-slo",
+      "start": 332
+    },
+    {
+      "end": 498,
+      "fact_id": "f-evt-003-service",
+      "start": 486
+    },
+    {
+      "end": 547,
+      "fact_id": "f-service-core-gateway-dependency",
+      "start": 535
+    },
+    {
+      "end": 697,
+      "fact_id": "f-evt-001-incident",
+      "start": 685
+    },
+    {
+      "end": 867,
+      "fact_id": "f-evt-003-service",
+      "start": 855
+    },
+    {
+      "end": 881,
+      "fact_id": "f-service-core-gateway-dependency",
+      "start": 869
+    },
+    {
+      "end": 1105,
+      "fact_id": "f-evt-003-service",
+      "start": 1093
+    },
+    {
+      "end": 1156,
+      "fact_id": "f-service-core-gateway-dependency",
+      "start": 1144
+    },
+    {
+      "end": 1378,
+      "fact_id": "f-evt-003-service",
+      "start": 1366
+    },
+    {
+      "end": 1394,
+      "fact_id": "f-service-core-gateway-dependency",
+      "start": 1382
+    },
+    {
+      "end": 1482,
+      "fact_id": "f-evt-001-incident",
+      "start": 1470
+    }
+  ],
+  "generation": {
+    "attempt": 1,
+    "batch_id": "msgbatch_01SHc7eNEULByVhCSyVD4GFp",
+    "cache_key": "33fa453382a503cc8af85d23491977dc",
+    "custom_id": "syn-runbook-011-a1",
+    "doc_seed": 1904829980,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "c913996447d41fcadd6001dcbfe91e41399a893d06419c7c6aac7b8250a6694d",
+    "template_hash": "f2a856cb7f36eb28a2626539fe2c262546ab9a85bc9ce686e195db7cbf30478f",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 1986,
+      "output_tokens": 2022
+    }
+  },
+  "injection": null,
+  "regulation_refs": [],
+  "related_doc_ids": [
+    "syn-guide-019",
+    "syn-meeting-001",
+    "syn-meeting-009",
+    "syn-notice-019",
+    "syn-runbook-003",
+    "syn-weekly-013",
+    "syn-weekly-029"
+  ],
+  "source_fact_ids": [
+    "f-evt-001-decision",
+    "f-evt-001-incident",
+    "f-evt-003-service",
+    "f-service-core-gateway-dependency",
+    "f-service-identity-api-slo"
+  ],
+  "team": "platform",
+  "title": "[런북] 플랫폼개발팀 연결 풀 자동 조정 결정 운영 절차",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}

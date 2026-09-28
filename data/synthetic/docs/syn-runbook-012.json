@@ -1,0 +1,143 @@
+{
+  "access": {
+    "level": "team",
+    "min_grade": 1,
+    "teams": [
+      "payments"
+    ]
+  },
+  "author_id": "p-064",
+  "body": "# [런북] 결제서비스팀 결제 변경 승인 정책 운영 절차\n\n작성자: 전시연 사원 (결제서비스팀)\n문서 날짜: 2026-05-18\n담당 팀: 결제서비스팀 (payments)\n\n## 1. 목적과 적용 범위\n\n본 런북은 결제서비스팀이 운영하는 결제 변경 승인 정책의 일상 운영 절차를 정의한다. 결제 변경 승인 정책은 결제 시스템 내 변경 요청이 발생했을 때 승인 흐름을 통제하고, 이상 상황 발생 시 신속하게 대응할 수 있도록 담당자의 확인 절차를 표준화하는 것을 목적으로 한다. 본 문서는 결제서비스팀 담당자가 정책 운영, 장애 대응, 승인 처리 중 발생할 수 있는 상황을 다루며, 신규 담당자도 절차를 그대로 따라 대응할 수 있도록 작성되었다.\n\n본 정책의 운영 책임은 정태현 팀장이 지난해 7월부터 맡아왔으며, 현재도 정책 변경 및 예외 승인에 대한 최종 확인을 담당하고 있다. 담당자는 절차 수행 중 판단이 애매한 사안이 발생하면 반드시 팀장에게 사전 확인을 받아야 한다.\n\n## 2. 사전 점검\n\n절차를 시작하기 전 아래 항목을 점검한다.\n\n- 결제 변경 승인 정책과 관련된 최근 배포 이력을 확인한다. 대량 청구 전용 대기열을 배포했다. 이 변경 사항이 승인 절차나 큐 처리 흐름에 영향을 줄 수 있으므로, 담당자는 배포 노트와 관련 티켓을 함께 검토해야 한다.\n- 과거 발생한 장애 이력을 재확인하여 유사 패턴이 반복되고 있는지 점검한다. 지난해 3월 발생한 장애 사례를 참고 자료로 활용한다.\n- 담당자는 현재 대기 중인 승인 요청 건수와 처리 상태를 점검하고, 비정상적으로 지연된 건이 있는지 확인한다.\n- 결제서비스팀 내부 알림 채널이 정상 작동하는지 확인하여, 승인 정책 관련 이상 발생 시 알림이 누락되지 않도록 한다.\n\n## 3. 실행 절차\n\n1. 승인 요청이 접수되면 담당자는 요청 내용을 검토하고 정책상 자동 승인 대상인지, 수동 확인이 필요한 건인지 구분한다.\n2. 수동 확인이 필요한 건은 정태현 팀장 또는 지정된 대리 승인자에게 전달하여 검토를 요청한다.\n3. 승인 처리 중 시스템 응답 지연이나 오류가 감지되면, 담당자는 즉시 처리를 중단하고 관련 로그를 수집한다.\n4. 반복적인 재시도로 인해 시스템 부하가 발생하는 경우를 방지하기 위해, 과거 장애 대응 사례에서 적용된 조치를 참고한다. 지난해 12월 발생한 장애 대응 시 재시도 기준을 조정하고 회로 차단기를 적용했다. 이러한 조치가 재발 방지에 효과가 있었으므로, 동일한 유형의 장애 조짐이 보이면 같은 접근을 우선 검토한다.\n5. 정책 변경이 필요하다고 판단되면 담당자는 변경 요청서를 작성하고 팀장 승인을 받은 후 반영한다.\n\n## 4. 검증\n\n- 승인 처리가 완료된 건에 대해 처리 결과가 시스템에 정확히 반영되었는지 확인한다.\n- 대량 청구 전용 대기열 배포 이후에는 해당 대기열을 통과하는 요청이 정상적으로 승인 흐름을 따르는지 별도로 확인한다.\n- 승인 처리 지연이나 오류 발생 여부를 모니터링 대시보드를 통해 재확인하고, 이상 징후가 없는지 점검한다.\n- 확인 결과를 담당자 간 공유하여 동일한 이슈가 반복되지 않도록 기록을 남긴다.\n\n## 5. 실패 시 복구와 에스컬레이션\n\n절차 수행 중 문제가 발생하면 아래 순서로 대응한다.\n\n1. 담당자는 우선 처리를 중단하고 영향 범위를 파악한다. 과거 지난해 3월 발생한 장애를 참고하면, 해당 장애는 심각도 2로 분류되었다. 장애는 2025-03-20 13:20에 시작되었으며, 당시 접수된 티켓 번호는 PAY-1001이었다. 이 사례는 승인 처리 지연이 얼마나 빠르게 확대될 수 있는지 보여주는 참고 자료로, 유사 증상이 재현될 경우 초기 대응 속도를 높여야 한다.\n2. 문제가 정책 설정 자체에 있다고 판단되면 즉시 이전 정상 설정으로 되돌리고, 변경 이력을 기록한다.\n3. 자동 복구가 불가능한 경우 정태현 팀장에게 즉시 보고하고, 필요 시 SRE인프라팀에 협조를 요청한다.\n4. 장애 영향이 결제 데이터 정합성에 미쳤을 가능성이 있으면 데이터AI팀과 함께 데이터 검증을 진행한다.\n5. 사고 종료 후에는 원인과 조치 내용을 정리하여 팀 내 공유하고, 필요 시 본 런북을 갱신한다.\n\n## 6. 문서 관리\n\n본 문서는 결제서비스팀이 관리하며, 정책 변경이나 절차 개선이 있을 경우 즉시 갱신한다. 문서 갱신 시에는 변경 사유와 적용 일자를 명시하여 팀원 전체가 최신 절차를 따를 수 있도록 한다.",
+  "canary": null,
+  "date": "2026-05-18",
+  "doc_id": "syn-runbook-012",
+  "doc_type": "runbook",
+  "fact_spans": [
+    {
+      "end": 381,
+      "fact_id": "f-evt-012-owner",
+      "start": 375
+    },
+    {
+      "end": 584,
+      "fact_id": "f-evt-016-version",
+      "start": 565
+    },
+    {
+      "end": 1178,
+      "fact_id": "f-inc-2025-010-action",
+      "start": 1152
+    },
+    {
+      "end": 1663,
+      "fact_id": "f-inc-2025-002-severity",
+      "start": 1650
+    },
+    {
+      "end": 1684,
+      "fact_id": "f-inc-2025-002-start",
+      "start": 1668
+    },
+    {
+      "end": 1716,
+      "fact_id": "f-inc-2025-002-ticket",
+      "start": 1708
+    }
+  ],
+  "generation": {
+    "attempt": 1,
+    "batch_id": "msgbatch_01SHc7eNEULByVhCSyVD4GFp",
+    "cache_key": "897d76d369efe303d797145bc844e117",
+    "custom_id": "syn-runbook-012-a1",
+    "doc_seed": 867717492,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "7fa2ab889dac6a07ed5b26945df6cd95c78442da15c1cdec1940b3ca54d1254e",
+    "template_hash": "f2a856cb7f36eb28a2626539fe2c262546ab9a85bc9ce686e195db7cbf30478f",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 2315,
+      "output_tokens": 2281
+    }
+  },
+  "injection": null,
+  "regulation_refs": [],
+  "related_doc_ids": [
+    "syn-incident-002",
+    "syn-incident-010",
+    "syn-meeting-018"
+  ],
+  "source_fact_ids": [
+    "f-evt-012-owner",
+    "f-evt-016-version",
+    "f-inc-2025-002-severity",
+    "f-inc-2025-002-start",
+    "f-inc-2025-002-ticket",
+    "f-inc-2025-010-action"
+  ],
+  "team": "payments",
+  "title": "[런북] 결제서비스팀 결제 변경 승인 정책 운영 절차",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}

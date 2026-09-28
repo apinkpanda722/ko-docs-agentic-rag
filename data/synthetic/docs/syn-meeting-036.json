@@ -1,0 +1,156 @@
+{
+  "access": {
+    "level": "public",
+    "min_grade": 1,
+    "teams": []
+  },
+  "author_id": "p-127",
+  "body": "# [회의록] SRE인프라팀 2026-06-22 경보 대기열 개선 프로젝트\n\n**작성자**: 허재솔 사원 (SRE인프라팀)\n**작성일**: 2026-06-22\n**담당 팀**: SRE인프라팀\n\n---\n\n## 1. 안건\n\n본 회의는 경보 대기열 개선 프로젝트의 진행 현황을 점검하고, monitoring-hub 서비스와 연계된 core-gateway 의존성 및 배포 제어 체계의 운영 안정성을 재확인하기 위해 소집되었다. 아울러 올해 2월 발생한 경보 지연 관련 장애의 후속 조치가 실제로 효과를 냈는지 지표를 통해 검증하는 것도 이번 회의의 주요 목적이었다.\n\n참석자는 허재솔 사원을 비롯한 SRE인프라팀 실무자들이며, 서재서 팀장이 배포 제어 서비스와 모니터링 허브 서비스 양쪽의 온콜 담당으로서 논의에 함께 참여하였다.\n\n## 2. 논의\n\n### 2.1 장애 재발 여부 점검\n\nINC-2026-002로 식별된 경보 지연 장애가 올해 2월 접수된 이후, 재발 방지를 위한 대기열 처리 로직 개선 작업이 순차적으로 적용되어 왔다는 사실이 다시 언급되었다. 이번 회의에서는 개선 작업 적용 이후 실제 운영 환경에서 처리량 지표가 어떻게 변화했는지를 중점적으로 점검하였다.\n\n담당자들은 최근 수집된 모니터링 데이터를 함께 검토하였으며, 그 결과 지표 처리량이 안정된 것을 확인했다.는 데 참석자 전원이 동의하였다. 다만 이 결과가 단발성 관측인지, 아니면 지속적인 개선 효과인지는 추가 관찰 기간을 두고 판단할 필요가 있다는 의견이 제기되었다.\n\n### 2.2 monitoring-hub 서비스 의존성 검토\n\n모니터링 허브 서비스의 안정적인 운영을 위해서는 연계된 하위 시스템의 상태를 함께 확인해야 한다는 지적이 있었다. 이에 따라 담당자들은 해당 서비스가 core-gateway에 의존하고 있다는 점을 재확인하였고, 이 의존 관계에서 지연이 발생할 경우 경보 대기열 처리 전반에 영향을 줄 수 있다는 점을 다시 짚었다. 이번 장애 원인 분석 과정에서도 이 의존성이 주요 검토 대상이었던 것으로 확인되었다.\n\n모니터링 허브 서비스의 온콜 담당에 대한 질의도 있었으며, 서재서 팀장이 해당 역할을 맡고 있음이 다시 확인되었다.\n\n### 2.3 배포 제어 서비스 운영 체계 재확인\n\n경보 대기열 개선과 맞물려 배포 제어 서비스의 처리 절차 전반도 함께 점검되었다. 참석자들은 SRE인프라 팀이 운영을 맡는다.는 기존 운영 체계를 재확인하였고, 해당 서비스의 온콜 담당 역시 서재서 팀장임을 다시 확인하였다.\n\n이와 함께 배포 제어 서비스의 처리 목표에 대한 논의도 이어졌다. 참석자들은 배포 요청 처리 목표는 5분 이하다.는 기존 기준이 현재까지도 유효하게 적용되고 있음을 확인하였으며, 경보 대기열 개선 작업이 이 처리 목표 준수에도 긍정적인 영향을 줄 수 있는지 함께 살펴볼 필요가 있다는 의견이 제시되었다.\n\n### 2.4 자산 및 보안 관리 측면 언급\n\n일부 참석자는 모니터링 허브 및 배포 제어 관련 장비·자산의 관리 방식에 대해 자산관리규칙 제15조를 참조할 필요가 있다는 의견을 제시하였다. 또한 경보 데이터 접근 권한과 관련하여 정보보안 기본지침 제54조를 함께 참고하여 향후 접근 통제 방안을 점검하자는 제안이 있었다. 다만 두 규정의 구체적 적용 방식에 대해서는 이번 회의에서 결론을 내리지 않았다.\n\n## 3. 결정 사항\n\n- 경보 대기열 개선 작업 이후 처리량 지표가 안정된 상태임을 회의에서 확인하였다.\n- monitoring-hub 서비스의 core-gateway 의존 관계와 온콜 체계를 현재대로 유지하기로 하였다.\n- 배포 제어 서비스의 운영 주체와 처리 목표 기준을 변경 없이 유지하기로 하였다.\n\n## 4. 후속 조치\n\n| 항목 | 담당자 | 내용 |\n|---|---|---|\n| 지표 추가 관찰 | 허재솔 사원 | 처리량 안정화가 지속되는지 추가 기간 동안 모니터링 |\n| 의존성 영향도 재점검 | 서재서 팀장 | core-gateway 지연 발생 시 monitoring-hub 대응 절차 재검토 |\n| 규정 검토 | SRE인프라팀 실무자 | 자산관리규칙 제15조 및 정보보안 기본지침 제54조 적용 방안 검토 후 공유 |\n\n이상으로 회의를 마쳤으며, 다음 점검 시점은 추가 지표 관찰 결과를 바탕으로 별도 공지하기로 하였다.",
+  "canary": null,
+  "date": "2026-06-22",
+  "doc_id": "syn-meeting-036",
+  "doc_type": "meeting",
+  "fact_spans": [
+    {
+      "end": 449,
+      "fact_id": "f-evt-026-incident",
+      "start": 437
+    },
+    {
+      "end": 659,
+      "fact_id": "f-evt-032-result",
+      "start": 639
+    },
+    {
+      "end": 883,
+      "fact_id": "f-service-monitoring-hub-dependency",
+      "start": 871
+    },
+    {
+      "end": 1051,
+      "fact_id": "f-service-monitoring-hub-oncall",
+      "start": 1045
+    },
+    {
+      "end": 1177,
+      "fact_id": "f-service-deploy-control-owner",
+      "start": 1159
+    },
+    {
+      "end": 1220,
+      "fact_id": "f-service-deploy-control-oncall",
+      "start": 1214
+    },
+    {
+      "end": 1297,
+      "fact_id": "f-service-deploy-control-slo",
+      "start": 1277
+    }
+  ],
+  "generation": {
+    "attempt": 1,
+    "batch_id": "msgbatch_01SHc7eNEULByVhCSyVD4GFp",
+    "cache_key": "28087d86b141c5331c557e55f39bbf65",
+    "custom_id": "syn-meeting-036-a1",
+    "doc_seed": 2157585975,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "b1f01f43e7c5e9e87ca70c38a4edc3f3a9a043cbeb506d8c7e41d5015414f4ff",
+    "template_hash": "8196fa38d17b04a7f4dbe3edb649a4606ce1b7d49914a4b866df71b4b7748772",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 2144,
+      "output_tokens": 2173
+    }
+  },
+  "injection": null,
+  "regulation_refs": [
+    "자산관리규칙 제15조",
+    "정보보안 기본지침 제54조"
+  ],
+  "related_doc_ids": [
+    "syn-guide-006",
+    "syn-guide-014",
+    "syn-guide-022",
+    "syn-guide-026",
+    "syn-meeting-020",
+    "syn-meeting-044",
+    "syn-notice-006",
+    "syn-runbook-006",
+    "syn-runbook-022"
+  ],
+  "source_fact_ids": [
+    "f-evt-026-incident",
+    "f-evt-032-result",
+    "f-service-deploy-control-oncall",
+    "f-service-deploy-control-owner",
+    "f-service-deploy-control-slo",
+    "f-service-monitoring-hub-dependency",
+    "f-service-monitoring-hub-oncall"
+  ],
+  "team": "sre",
+  "title": "[회의록] SRE인프라팀 2026-06-22 경보 대기열 개선 프로젝트",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}

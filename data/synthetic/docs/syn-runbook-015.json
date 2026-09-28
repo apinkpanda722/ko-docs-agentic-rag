@@ -1,0 +1,206 @@
+{
+  "access": {
+    "level": "public",
+    "min_grade": 1,
+    "teams": []
+  },
+  "author_id": "p-146",
+  "body": "# [런북] 정보보안팀 계정 점검 정책 운영 절차\n\n작성자: 한태온 사원 (정보보안팀)\n문서 날짜: 2026-04-20\n담당 팀: 정보보안팀 (security)\n\n## 1. 목적과 적용 범위\n\n본 런북은 정보보안팀이 운영하는 계정 점검 정책의 실행 절차와 이상 발생 시 대응 방식을 정의한다. 계정 점검 정책은 identity-api와 연계되어 동작하는 security-center 서비스를 기반으로 수행되며, 본 문서는 해당 서비스를 담당하는 업무 조정자 및 실무자가 정책 점검을 실행하고 이상 징후를 판단·에스컬레이션하는 기준을 제시하는 것을 목적으로 한다.\n\n적용 범위는 계정 점검 정책의 정기 실행, 실행 결과 검증, 실행 실패 또는 장애 발생 시의 복구 및 보고 절차에 한정된다. 본 절차는 정보보안팀 내부 담당자를 대상으로 하며, 필요 시 관련 서비스 담당자와의 협의를 전제로 한다.\n\n## 2. 사전 점검\n\n절차 실행 전 다음 사항을 확인한다.\n\n- security-center 서비스의 현재 상태가 정상인지 확인한다. 해당 서비스는 identity-api에 의존하고 있으므로, 의존 서비스의 상태도 함께 점검 대상에 포함해야 한다.\n- 계정 점검 정책 실행 담당자는 사전에 온콜 담당자와 연락 가능 여부를 확인한다. 해당 서비스의 온콜 담당은 권도온 팀장이 맡고 있으며, 실행 전후 이상 발생 시 신속한 협의가 가능하도록 연락 경로를 사전에 확보해야 한다.\n- 과거 유사 실행 이력과 그로 인한 조치 사항을 확인한다. 권도온 팀장이 지난해 11월 계정 점검 정책 관련 조치를 담당한 사례가 있으므로, 해당 이력을 참고하여 이번 실행 시 유의점을 점검한다.\n- 실행 전 관련 티켓 시스템에 사전 등록이 필요한 경우 이를 확인하고, 실행 담당자와 검증 담당자를 사전에 지정한다.\n\n사전 점검 단계에서 위 항목 중 하나라도 확인되지 않을 경우, 실행을 보류하고 담당 조정자에게 보고한다.\n\n## 3. 실행 절차\n\n1. 계정 점검 정책 실행 담당자는 정책 실행 전 서비스 상태와 의존 서비스 상태를 재확인한다.\n2. 정책을 실행하고, 실행 로그 및 결과를 기록한다.\n3. 실행 중 이상 징후(응답 지연, 오류 반복 등)가 관찰되는 경우 즉시 실행을 중단하고 다음 절차인 검증 및 에스컬레이션 단계로 전환한다.\n4. 정상 완료된 경우에도 결과를 즉시 검증 단계로 넘겨 최종 확인을 받는다.\n\n본 절차 실행 중 실제로 이상이 발생한 사례가 있다. 실행 담당자는 이를 실패 유형의 참고 사례로 활용해야 한다. 해당 사례에서는 2026-04-20 10:42경 security-center에서 이상이 감지되었으며, 심각도 1로 분류되었다. 이 건은 SEC-1002 티켓으로 등록되어 관리되었다.\n\n## 4. 검증\n\n- 정책 실행 결과가 의도한 대로 반영되었는지 확인한다. 단순 실행 완료 여부만이 아니라, security-center가 정상 응답을 반환하는지, 의존 서비스인 identity-api와의 연동에 문제가 없는지 함께 확인한다.\n- 검증 담당자는 실행 로그와 결과를 대조하여 누락이나 오류가 없는지 재검토한다.\n- 검증 과정에서 심각도가 높은 이상이 발견될 경우, 즉시 사고 대응 절차로 전환하고 관련 티켓을 통해 진행 상황을 기록한다. 실제 사례에서는 이상 감지 직후 SEC-1002 티켓을 통해 진행 상황이 공유되었다.\n\n## 5. 실패 시 복구와 에스컬레이션\n\n정책 실행이 실패하거나 실행 중 장애가 감지된 경우 다음 순서로 대응한다.\n\n1. 실행을 즉시 중단하고 영향 범위를 파악한다. 특히 security-center와 identity-api 간 연동 이상 여부를 우선 확인한다.\n2. 사고의 심각도를 판단하여 등록한다. 유사 사례에서는 이상 발생 직후 심각도가 높게 평가되어 신속한 대응이 요구되었다.\n3. 온콜 담당자에게 즉시 연락하여 상황을 공유한다. 해당 서비스의 온콜 담당은 권도온 팀장이며, 과거에도 유사 상황에서 조치를 담당한 이력이 있어 우선 연락 대상으로 지정한다.\n4. 복구 조치를 수행한 뒤 재검증 절차를 다시 수행하여 정상화 여부를 확인한다.\n5. 사고 종료 후에는 관련 티켓에 처리 결과를 기록하고, 재발 방지를 위한 후속 조치 필요성을 검토한다. 등록된 사례는 SEC-1002 티켓을 통해 추적 관리한다.\n\n## 6. 문서 관리\n\n본 런북은 정보보안팀이 담당하며, 계정 점검 정책 운영 중 발생하는 절차 변경이나 이상 사례는 본 문서에 반영하여 지속적으로 갱신되어야 한다. 실행 담당자와 검증 담당자, 온콜 담당자 간의 역할 구분을 명확히 유지하는 것이 안정적인 정책 운영의 핵심이다.",
+  "canary": null,
+  "date": "2026-04-20",
+  "doc_id": "syn-runbook-015",
+  "doc_type": "runbook",
+  "fact_spans": [
+    {
+      "end": 186,
+      "fact_id": "f-service-security-center-dependency",
+      "start": 174
+    },
+    {
+      "end": 213,
+      "fact_id": "f-inc-2026-007-service",
+      "start": 198
+    },
+    {
+      "end": 498,
+      "fact_id": "f-inc-2026-007-service",
+      "start": 483
+    },
+    {
+      "end": 542,
+      "fact_id": "f-service-security-center-dependency",
+      "start": 530
+    },
+    {
+      "end": 654,
+      "fact_id": "f-service-security-center-oncall",
+      "start": 648
+    },
+    {
+      "end": 752,
+      "fact_id": "f-evt-037-owner",
+      "start": 746
+    },
+    {
+      "end": 1263,
+      "fact_id": "f-inc-2026-007-start",
+      "start": 1247
+    },
+    {
+      "end": 1280,
+      "fact_id": "f-inc-2026-007-service",
+      "start": 1265
+    },
+    {
+      "end": 1308,
+      "fact_id": "f-inc-2026-007-severity",
+      "start": 1295
+    },
+    {
+      "end": 1322,
+      "fact_id": "f-inc-2026-007-ticket",
+      "start": 1314
+    },
+    {
+      "end": 1417,
+      "fact_id": "f-inc-2026-007-service",
+      "start": 1402
+    },
+    {
+      "end": 1453,
+      "fact_id": "f-service-security-center-dependency",
+      "start": 1441
+    },
+    {
+      "end": 1620,
+      "fact_id": "f-inc-2026-007-ticket",
+      "start": 1612
+    },
+    {
+      "end": 1755,
+      "fact_id": "f-inc-2026-007-service",
+      "start": 1740
+    },
+    {
+      "end": 1769,
+      "fact_id": "f-service-security-center-dependency",
+      "start": 1757
+    },
+    {
+      "end": 1911,
+      "fact_id": "f-service-security-center-oncall",
+      "start": 1905
+    },
+    {
+      "end": 2082,
+      "fact_id": "f-inc-2026-007-ticket",
+      "start": 2074
+    }
+  ],
+  "generation": {
+    "attempt": 1,
+    "batch_id": "msgbatch_01SHc7eNEULByVhCSyVD4GFp",
+    "cache_key": "8538510de5cd363f66a22b0d275e549c",
+    "custom_id": "syn-runbook-015-a1",
+    "doc_seed": 1390111827,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "5f85e6d7ea7b44818960e517a01322405705678d5fa823630378de12f863e46d",
+    "template_hash": "f2a856cb7f36eb28a2626539fe2c262546ab9a85bc9ce686e195db7cbf30478f",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 2233,
+      "output_tokens": 2512
+    }
+  },
+  "injection": null,
+  "regulation_refs": [],
+  "related_doc_ids": [
+    "syn-guide-007",
+    "syn-guide-023",
+    "syn-incident-017",
+    "syn-meeting-005",
+    "syn-notice-015",
+    "syn-runbook-007",
+    "syn-runbook-025",
+    "syn-weekly-001",
+    "syn-weekly-017",
+    "syn-weekly-025",
+    "syn-weekly-033",
+    "syn-weekly-037"
+  ],
+  "source_fact_ids": [
+    "f-evt-037-owner",
+    "f-inc-2026-007-service",
+    "f-inc-2026-007-severity",
+    "f-inc-2026-007-start",
+    "f-inc-2026-007-ticket",
+    "f-service-security-center-dependency",
+    "f-service-security-center-oncall"
+  ],
+  "team": "security",
+  "title": "[런북] 정보보안팀 계정 점검 정책 운영 절차",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}

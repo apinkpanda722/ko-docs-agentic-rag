@@ -1,0 +1,159 @@
+{
+  "access": {
+    "level": "team",
+    "min_grade": 1,
+    "teams": [
+      "finance"
+    ]
+  },
+  "author_id": "p-170",
+  "body": "# [장애보고] INC-2026-006 비용 결재 조회 오류\n\n## 1. 요약\n\n2026-04-12, 재무팀이 운영하는 finance-ledger 서비스에서 비용 결재 조회 기능에 오류가 발생하였다. 이번 장애는 FIN-1002 티켓으로 접수 및 추적되었으며, 심각도 3으로 분류되었다. 담당 운영 리드는 안현빈 팀장이며, 본 보고서는 장애의 탐지부터 복구, 원인 분석, 재발 방지 조치까지의 전 과정을 정리한 것이다.\n\n장애의 본질은 조회 기능의 색인 처리 로직 오류에서 기인한 것으로, 결제 데이터 자체의 손실이나 훼손은 발생하지 않았다는 점에서 데이터 정합성 측면의 리스크는 제한적이었다. 다만 조회 기능이 정상적으로 동작하지 않음에 따라 업무 처리 흐름에 직접적인 지연이 발생하였다.\n\n## 2. 영향\n\n이번 장애로 인해 비용 결재 내역을 조회하는 기능 전반이 영향을 받았다. 재무팀 내부에서 비용 결재 현황을 확인하고 승인 처리를 진행하는 실무자들이 조회 화면에서 정상적인 결과를 받지 못하는 상황을 경험하였으며, 이는 결재 승인 지연으로 이어질 수 있는 요인이었다. 또한 타 부서에서 자신의 비용 결재 건 진행 상태를 확인하려는 사용자들 역시 조회 결과가 일부 누락되거나 잘못 표시되는 현상을 겪었다. 특정 월 경계에 해당하는 결재 건들이 조회 대상에서 제외되거나 다른 월로 잘못 분류되어 나타나는 방식으로 문제가 드러났기 때문에, 월말·월초 시점에 등록된 결재 건을 조회하려는 사용자일수록 영향을 크게 인지하였다. 결재 처리 자체의 트랜잭션이나 원장 데이터 저장 로직에는 문제가 없었으므로, 조회 화면을 벗어난 백엔드 처리(결재 승인, 지급 처리 등)의 무결성은 유지되었다.\n\n## 3. 탐지와 복구 타임라인\n\n장애는 2026-04-12 09:08에 최초로 감지되었다. 비용 결재 조회 화면에서 특정 기간의 결재 내역이 조회되지 않거나 다른 월의 데이터와 혼재되어 표시되는 현상이 보고되며 이상 징후가 확인되었다. 재무팀은 즉시 해당 현상을 재현하고 영향 범위를 파악하는 작업에 착수하였다.\n\n초기 대응 과정에서 조회 쿼리가 참조하는 색인 구조에 이상이 있다는 정황이 포착되었고, 이에 따라 색인 데이터의 재생성 여부를 검토하였다. 원인 조사와 병행하여 임시 우회 조치를 통해 조회 기능의 안정성을 확보하는 방향으로 대응이 진행되었으며, 이후 근본 조치가 적용되면서 서비스는 2026-04-12 09:46에 정상 상태로 복구되었다. 복구 시점 이후 재무팀은 일정 기간 동안 조회 결과의 정확성을 지속적으로 모니터링하며 재발 여부를 확인하였다.\n\n전체 장애 지속 시간은 탐지 시점부터 복구 완료 시점까지로, 비교적 단시간 내에 문제 인지, 원인 파악, 조치 적용이 순차적으로 이루어진 사례로 평가된다. 다만 장애 지속 시간이 짧았다고 해서 영향의 중대성이 낮았다고 단정할 수는 없으며, 결재 조회 기능이 재무 업무의 핵심 경로에 해당한다는 점에서 심각도 평가는 신중하게 이루어졌다.\n\n## 4. 원인\n\n근본 원인을 분석한 결과, 조회 색인의 월 구분 값이 잘못 생성되었다. 비용 결재 데이터를 월 단위로 구분하여 조회 성능을 높이기 위해 별도의 색인 체계를 운영하고 있었는데, 해당 색인을 생성하는 로직에서 월 경계 부근의 날짜 데이터를 처리하는 과정에 결함이 있었던 것으로 확인되었다. 이로 인해 특정 시점에 생성된 결재 건들이 실제 발생 월과 다른 월 구분 값을 부여받게 되었고, 그 결과 조회 시점에 데이터가 누락되거나 잘못된 월로 노출되는 현상이 발생하였다.\n\n이러한 결함은 평상시에는 잘 드러나지 않다가 월 경계 부근의 데이터가 누적되는 특정 조건에서 표면화되는 특성을 가지고 있어, 사전에 유사 패턴을 충분히 검증하지 못했던 부분이 있었다. 조회 로직 자체는 정상적으로 동작하였으나, 그 입력이 되는 색인 데이터의 생성 단계에서 문제가 발생한 것이 이번 장애의 핵심 원인으로 판단된다.\n\n## 5. 즉시 조치와 재발 방지\n\n장애 인지 직후 재무팀은 조회 기능에 영향을 받는 범위를 식별하고, 잘못된 월 구분 값을 가진 색인 데이터를 정정하는 작업을 최우선으로 수행하였다. 이 과정에서 해당 색인을 재생성하고 월 경계 테스트를 보강했다. 색인 재생성 작업은 기존 데이터의 월 구분 값을 올바른 기준에 따라 다시 산출하는 방식으로 이루어졌으며, 재생성 완료 후 조회 결과의 정확성을 표본 검증하여 문제가 해소되었음을 확인하였다.\n\n재발 방지를 위하여 월 경계에 해당하는 날짜 데이터를 처리하는 로직에 대한 테스트 케이스를 보강하였다. 이는 향후 유사한 형태의 결함이 배포 전 검증 단계에서 조기에 발견될 수 있도록 하기 위한 조치이며, 월말과 월초 경계에 위치한 데이터를 포함한 다양한 시나리오를 검증 항목에 포함시켰다. 아울러 조회 색인의 생성 로직 전반에 대한 코드 리뷰를 통해 유사한 날짜 처리 결함이 다른 영역에도 존재하는지 점검하는 작업도 함께 진행되었다.\n\n재무팀은 이번 장애를 계기로 조회 성능 최적화를 위한 색인 구조를 운영할 때 발생할 수 있는 데이터 정합성 리스크를 재점검하였으며, 향후 유사한 색인 기반 기능을 신규로 도입하거나 변경할 때에는 월 경계와 같은 특수 조건에 대한 검증을 표준 절차에 포함시키는 방향으로 개선을 추진할 예정이다. 이번 장애 대응 과정에서 확인된 조치 사항은 관련 팀과 공유되어 유사 시스템을 운영하는 다른 조직에서도 참고할 수 있도록 할 계획이다.",
+  "canary": null,
+  "date": "2026-04-12",
+  "doc_id": "syn-incident-016",
+  "doc_type": "incident",
+  "fact_spans": [
+    {
+      "end": 81,
+      "fact_id": "f-inc-2026-006-service",
+      "start": 67
+    },
+    {
+      "end": 127,
+      "fact_id": "f-inc-2026-006-ticket",
+      "start": 119
+    },
+    {
+      "end": 160,
+      "fact_id": "f-inc-2026-006-severity",
+      "start": 146
+    },
+    {
+      "end": 177,
+      "fact_id": "f-inc-2026-006-owner",
+      "start": 171
+    },
+    {
+      "end": 873,
+      "fact_id": "f-inc-2026-006-start",
+      "start": 857
+    },
+    {
+      "end": 1185,
+      "fact_id": "f-inc-2026-006-restored",
+      "start": 1169
+    },
+    {
+      "end": 1502,
+      "fact_id": "f-inc-2026-006-cause",
+      "start": 1478
+    },
+    {
+      "end": 2047,
+      "fact_id": "f-inc-2026-006-action",
+      "start": 2019
+    }
+  ],
+  "generation": {
+    "attempt": 2,
+    "batch_id": "msgbatch_01D4aUrs24E51Gaa9bdEYxyG",
+    "cache_key": "8e7ca446abcd6bd1e0d0fba1024aa522",
+    "custom_id": "syn-incident-016-a2",
+    "doc_seed": 3924734892,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "c267acdb147d9f1d5162d9898788a238ab10fcd071a293d40abe4339e79efe41",
+    "template_hash": "ea60cea81c224af1be7e699121b98779a236895d21b8d0548c666a49fbc46210",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 2759,
+      "output_tokens": 2803
+    }
+  },
+  "injection": null,
+  "regulation_refs": [],
+  "related_doc_ids": [
+    "syn-meeting-007",
+    "syn-meeting-047",
+    "syn-notice-017",
+    "syn-runbook-001",
+    "syn-runbook-009",
+    "syn-weekly-003",
+    "syn-weekly-019"
+  ],
+  "source_fact_ids": [
+    "f-inc-2026-006-action",
+    "f-inc-2026-006-cause",
+    "f-inc-2026-006-owner",
+    "f-inc-2026-006-restored",
+    "f-inc-2026-006-service",
+    "f-inc-2026-006-severity",
+    "f-inc-2026-006-start",
+    "f-inc-2026-006-ticket"
+  ],
+  "team": "finance",
+  "title": "[장애보고] INC-2026-006 비용 결재 조회 오류",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}

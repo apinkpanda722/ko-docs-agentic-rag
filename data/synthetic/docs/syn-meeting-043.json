@@ -1,0 +1,148 @@
+{
+  "access": {
+    "level": "team",
+    "min_grade": 1,
+    "teams": [
+      "data-ai"
+    ]
+  },
+  "author_id": "p-085",
+  "body": "# [회의록] 데이터AI팀 2026-05-30 스키마 호환 검사 결정\n\n- 작성자: 장해솔 책임 (데이터AI팀)\n- 문서 날짜: 2026-05-30\n- 담당 팀: 데이터AI팀 (data-ai)\n\n## 목적\n\n본 회의는 feature-store 서비스의 스키마 변경 시 발생 가능한 호환성 문제를 사전에 점검하기 위한 검사 절차를 논의하고, 관련 배경이 되는 과거 이슈와 진행 중인 개선 작업의 연계 여부를 정리하기 위해 마련되었다. 운영 리드 관점에서 반복되는 스키마 관련 장애를 줄이기 위한 실효성 있는 조치를 도출하는 데 초점을 두었다.\n\n## 참석 맥락\n\n데이터AI팀은 analytics-hub 서비스를 운영하며 다운스트림 시스템과의 데이터 연동을 담당하고 있다. 지난해 4월 해당 서비스가 안정화 단계에 접어든 이후, 여러 파생 서비스와의 스키마 의존성이 누적되어 왔다는 점이 이번 논의의 배경으로 공유되었다. 회의는 장해솔 책임이 주재했으며, 관련 인시던트 대응 이력과 현재 진행 중인 캐시 구조 개선 프로젝트 담당자가 함께 참석해 현황을 공유했다.\n\n## 논의사항\n\n### 1. 과거 인시던트 재검토\n\n올해 1월 발생한 인시던트 INC-2026-001가 다시 언급되었다. 해당 인시던트는 feature-store 서비스에서 발생했으며, 당시 원인 분석 결과 캐시 만료 시점이 특정 구간에 집중되면서 부하가 몰린 것이 문제로 지목되었다. 이를 계기로 데이터AI팀은 특성 캐시의 만료 시점을 분산하는 프로젝트를 시작했다. 이 프로젝트는 현재도 진행 중이며, 오늘 회의에서는 해당 프로젝트의 진행 상황이 스키마 호환 검사 절차 설계에 어떤 시사점을 주는지 함께 검토했다.\n\n참석자들은 캐시 만료 분산 작업이 인시던트 재발 방지에는 기여하고 있으나, 스키마 자체의 하위 호환성 문제와는 별개의 축이라는 점을 확인했다. 즉 캐시 구조 개선이 진행 중이더라도, feature-store의 스키마가 변경될 경우 이를 소비하는 다른 서비스에서 별도의 검증이 필요하다는 데 의견이 모였다.\n\n### 2. 점검 프로세스 효율화 사례 참고\n\n지난해 6월 진행된 점검 프로세스 개편 이후 일간 점검 시간이 단축되었다.는 사례가 참고 자료로 공유되었다. 이 사례는 정기 점검 항목을 자동화하고 우선순위를 재정렬한 결과로, 오늘 논의된 스키마 호환 검사에도 유사한 접근을 적용할 수 있는지에 대한 의견이 제시되었다. 다만 스키마 검사는 점검과 달리 변경 이벤트 기반으로 트리거되어야 하므로, 단순히 기존 점검 스케줄에 포함시키기보다는 별도의 검증 단계로 설계하는 것이 적절하다는 의견이 우세했다.\n\n### 3. feature-store 스키마 호환 검사 범위\n\nfeature-store를 소비하는 서비스가 늘어나면서, 스키마 변경 시 영향 범위를 사전에 파악할 수 있는 자동 검사 절차의 필요성이 다시 제기되었다. 특히 올해 1월 인시던트 이후 캐시 개선 작업이 별도로 진행되고 있는 만큼, 스키마 검사 절차는 이 작업과 중복되지 않도록 범위를 명확히 구분해야 한다는 점이 강조되었다.\n\n## 결론\n\n- feature-store의 스키마 변경 시 하위 호환성을 검증하는 절차를 신설하는 방향에 대해 참석자 전원이 필요성에 공감했다. 다만 구체적인 검사 도구와 트리거 방식은 이번 회의에서 확정하지 않았으며, 별도 검토 후 다음 회의에서 논의를 이어가기로 했다.\n- 캐시 만료 분산 프로젝트는 스키마 호환 검사와 별개 과제로 유지하며, 두 작업 간 일정 조율은 필요 시점에 다시 협의한다.\n- 지난해 점검 시간 단축 사례에서 얻은 자동화 접근 방식은 참고하되, 그대로 적용하지는 않기로 했다.\n\n## 담당자 및 후속 조치\n\n- 장해솔 책임: 스키마 호환 검사 절차 초안 작성 및 다음 회의 안건 정리\n- 캐시 개선 프로젝트 담당자: 만료 분산 작업 진행 상황을 다음 회의 전까지 공유\n- 인시던트 대응 이력 정리 담당자: INC-2026-001 관련 후속 조치 완료 여부 확인 후 보고\n\n본 회의록은 데이터AI팀 내부 공유용으로 작성되었으며, 후속 회의 일정은 별도 공지될 예정이다.",
+  "canary": null,
+  "date": "2026-05-30",
+  "doc_id": "syn-meeting-043",
+  "doc_type": "meeting",
+  "fact_spans": [
+    {
+      "end": 135,
+      "fact_id": "f-evt-024-service",
+      "start": 122
+    },
+    {
+      "end": 335,
+      "fact_id": "f-evt-017-service",
+      "start": 322
+    },
+    {
+      "end": 594,
+      "fact_id": "f-evt-018-incident",
+      "start": 582
+    },
+    {
+      "end": 628,
+      "fact_id": "f-evt-018-service",
+      "start": 615
+    },
+    {
+      "end": 743,
+      "fact_id": "f-evt-018-plan",
+      "start": 713
+    },
+    {
+      "end": 1067,
+      "fact_id": "f-evt-019-result",
+      "start": 1051
+    }
+  ],
+  "generation": {
+    "attempt": 1,
+    "batch_id": "msgbatch_01SHc7eNEULByVhCSyVD4GFp",
+    "cache_key": "cf0808c6394415916ba491541dca003d",
+    "custom_id": "syn-meeting-043-a1",
+    "doc_seed": 1539394118,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "cd2da76820294e774f178c7bc3af4c2e65bcaab41826986fb53d2f1cce0603de",
+    "template_hash": "8196fa38d17b04a7f4dbe3edb649a4606ce1b7d49914a4b866df71b4b7748772",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 2138,
+      "output_tokens": 2033
+    }
+  },
+  "injection": null,
+  "regulation_refs": [],
+  "related_doc_ids": [
+    "syn-meeting-003",
+    "syn-meeting-011",
+    "syn-meeting-019",
+    "syn-meeting-027",
+    "syn-meeting-035",
+    "syn-notice-005",
+    "syn-runbook-005",
+    "syn-weekly-007"
+  ],
+  "source_fact_ids": [
+    "f-evt-017-service",
+    "f-evt-018-incident",
+    "f-evt-018-plan",
+    "f-evt-018-service",
+    "f-evt-019-result",
+    "f-evt-024-service"
+  ],
+  "team": "data-ai",
+  "title": "[회의록] 데이터AI팀 2026-05-30 스키마 호환 검사 결정",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}

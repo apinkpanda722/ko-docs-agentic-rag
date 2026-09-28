@@ -1,0 +1,158 @@
+{
+  "access": {
+    "level": "public",
+    "min_grade": 1,
+    "teams": []
+  },
+  "author_id": "p-190",
+  "body": "# [장애보고] INC-2026-011 계약 검색 결과 누락\n\n- 작성자: 노유담 수석 (법무컴플라이언스팀)\n- 문서 날짜: 2026-05-20\n- 담당 팀: 법무컴플라이언스팀\n- 관련 티켓: LGL-1002\n\n## 개요\n\n2026-05-20 contract-vault 서비스에서 계약 검색 결과가 일부 누락되는 장애가 발생하였다. 본 장애는 심각도 3으로 분류되었다. 담당자는 노소겸 팀장이며, 법무컴플라이언스팀 내부 계약 관리 체계에 영향을 미친 사안으로 확인되어 본 보고서를 작성한다.\n\n## 영향\n\n이번 장애로 인해 계약 검색 기능을 통해 특정 계약 문서를 조회하려는 사용자들이 검색 결과에서 해당 문서를 찾지 못하는 상황이 발생하였다. 계약서 원문이 삭제되거나 손실된 것은 아니었으나, 검색 화면상에서는 존재하지 않는 것처럼 표시되어 계약 검토 및 조회 업무를 수행하는 법무컴플라이언스팀 실무자들이 혼란을 겪었다. 특히 보관 상태가 최근에 변경된 계약 건들이 우선적으로 검색 누락의 대상이 되었으며, 이러한 건들에 대해 계약 갱신 검토, 조회 요청 대응, 타 부서의 계약 확인 요청 처리 업무에 지연이 발생하였다. 계약 원본 데이터 자체의 무결성에는 문제가 없었으나, 검색 인터페이스에 대한 신뢰도 측면에서 사용자 불편이 발생한 장애로 평가된다. 계약 관리 시스템을 이용하는 내부 직원 전반이 잠재적 영향 범위에 포함되었다.\n\n## 타임라인\n\n장애는 2026-05-20 13:11에 최초로 감지되었다. 법무컴플라이언스팀 실무자가 특정 계약 문서를 검색하였음에도 결과가 조회되지 않는 현상을 보고하며 장애 인지가 시작되었다. 이후 담당자는 해당 현상이 단발성 오류가 아니라 보관 상태가 변경된 계약 건들에서 반복적으로 나타나는 패턴임을 확인하였고, 이를 근거로 시스템 차원의 색인 문제로 범위를 좁혀 조사를 진행하였다.\n\n원인 조사와 병행하여 색인 재처리 작업이 수행되었으며, 서비스는 2026-05-20 14:06에 정상 복구되었다. 복구 시점 이후 실시된 검증 과정에서 이전에 누락되었던 계약 건들이 검색 결과에 정상적으로 노출되는 것을 확인하였다. 복구까지 소요된 전체 시간 동안 검색 기능 이용에 제약이 있었던 점을 고려하여, 이후 재발방지 대책 수립 논의가 이어졌다.\n\n## 원인\n\n조사 결과 보관 상태 변경 후 검색 색인이 갱신되지 않았다는 사실이 확인되었다. 계약 문서의 보관 상태가 변경될 때 연동되어야 할 검색 색인 갱신 이벤트가 정상적으로 처리되지 않아, 실제 데이터베이스상에는 존재하는 계약 건이 검색 인덱스에는 반영되지 않는 불일치가 발생한 것으로 파악되었다. 이는 데이터 자체의 손상이 아니라 색인 계층과 원본 데이터 계층 간의 동기화 문제로, 보관 상태 변경 이벤트를 색인 갱신 파이프라인이 누락하거나 처리 도중 실패한 것이 근본 원인으로 지목되었다. 해당 문제는 특정 조건에서 산발적으로 발생하는 성격을 가지고 있어, 초기 장애 인지 단계에서 원인 파악에 다소 시간이 소요되었다.\n\n## 즉시 조치 및 재발 방지\n\n장애 대응 과정에서 색인 갱신 이벤트를 재처리하고 감사를 추가했다. 우선 색인 갱신 이벤트를 수동으로 재처리하여 누락되었던 계약 건들을 즉시 검색 결과에 복원하였으며, 이후 재발 방지를 위해 보관 상태 변경 이벤트와 검색 색인 반영 여부를 상시 점검할 수 있는 감사 절차를 추가하였다. 이 감사 체계를 통해 향후 유사한 동기화 누락이 발생할 경우 조기에 탐지하여 장애로 확산되기 전에 선제적으로 대응할 수 있을 것으로 기대된다.\n\n담당팀은 이번 장애를 계기로 보관 상태 변경과 검색 색인 갱신 간의 연계 로직 전반에 대한 재검토가 필요하다고 판단하고 있다. 특히 이벤트 처리 실패 시 이를 자동으로 감지하고 알림을 발생시키는 모니터링 체계의 보완이 요구되며, 색인 갱신 이벤트의 처리 상태를 주기적으로 검증하는 절차를 정례화할 필요가 있다. 아울러 계약 검색 기능은 법무 업무의 핵심 도구인 만큼, 유사 장애가 재발할 경우 조기 탐지 및 신속한 복구가 가능하도록 관련 대응 절차를 문서화하고 팀 내 공유하는 작업을 후속 조치로 추진할 예정이다.\n\n본 사안은 계약 원본 데이터의 손실 없이 색인 계층의 동기화 문제로 국한되어 마무리되었으나, 향후 유사 사례의 재발을 방지하기 위한 구조적 개선이 지속적으로 검토되어야 할 것으로 판단된다.",
+  "canary": null,
+  "date": "2026-05-20",
+  "doc_id": "syn-incident-021",
+  "doc_type": "incident",
+  "fact_spans": [
+    {
+      "end": 116,
+      "fact_id": "f-inc-2026-011-ticket",
+      "start": 108
+    },
+    {
+      "end": 150,
+      "fact_id": "f-inc-2026-011-service",
+      "start": 136
+    },
+    {
+      "end": 205,
+      "fact_id": "f-inc-2026-011-severity",
+      "start": 192
+    },
+    {
+      "end": 218,
+      "fact_id": "f-inc-2026-011-owner",
+      "start": 212
+    },
+    {
+      "end": 721,
+      "fact_id": "f-inc-2026-011-start",
+      "start": 705
+    },
+    {
+      "end": 964,
+      "fact_id": "f-inc-2026-011-restored",
+      "start": 948
+    },
+    {
+      "end": 1151,
+      "fact_id": "f-inc-2026-011-cause",
+      "start": 1125
+    },
+    {
+      "end": 1519,
+      "fact_id": "f-inc-2026-011-action",
+      "start": 1494
+    }
+  ],
+  "generation": {
+    "attempt": 2,
+    "batch_id": "msgbatch_01D4aUrs24E51Gaa9bdEYxyG",
+    "cache_key": "d18db77f58d49b1836b7c80497c8dd6d",
+    "custom_id": "syn-incident-021-a2",
+    "doc_seed": 290814735,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "fa8b94c48483fcc1a6c8b3a67e18f8616de6d7452b8286ec558b8e56a844594d",
+    "template_hash": "ea60cea81c224af1be7e699121b98779a236895d21b8d0548c666a49fbc46210",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 2780,
+      "output_tokens": 2287
+    }
+  },
+  "injection": null,
+  "regulation_refs": [],
+  "related_doc_ids": [
+    "syn-meeting-008",
+    "syn-meeting-024",
+    "syn-meeting-032",
+    "syn-meeting-040",
+    "syn-runbook-010",
+    "syn-weekly-004",
+    "syn-weekly-020",
+    "syn-weekly-040"
+  ],
+  "source_fact_ids": [
+    "f-inc-2026-011-action",
+    "f-inc-2026-011-cause",
+    "f-inc-2026-011-owner",
+    "f-inc-2026-011-restored",
+    "f-inc-2026-011-service",
+    "f-inc-2026-011-severity",
+    "f-inc-2026-011-start",
+    "f-inc-2026-011-ticket"
+  ],
+  "team": "legal",
+  "title": "[장애보고] INC-2026-011 계약 검색 결과 누락",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}

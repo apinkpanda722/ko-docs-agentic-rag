@@ -1,0 +1,162 @@
+{
+  "access": {
+    "level": "team",
+    "min_grade": 1,
+    "teams": [
+      "platform"
+    ]
+  },
+  "author_id": "p-027",
+  "body": "# [장애보고] INC-2026-012 요청 제한 오판\n\n- 작성자: 문서경 선임 (플랫폼개발팀)\n- 문서 날짜: 2026-05-28\n- 관련 티켓: PLT-1004\n- 담당: 문다람 팀장 (플랫폼개발팀)\n\n## 개요\n\n2026-05-28 core-gateway에서 요청 제한(rate limit) 로직이 정상 요청을 초과 요청으로 오판하는 장애가 발생했다. 해당 장애는 심각도 2로 분류되었다. 장애는 당일 중 탐지되어 조치를 거쳐 복구되었으며, 본 문서는 장애의 영향, 탐지·복구 타임라인, 원인 및 재발 방지 조치를 정리한다.\n\n## 영향\n\n이번 장애로 core-gateway를 경유하는 요청 중 일부가 정상 트래픽임에도 제한 초과로 차단되는 현상이 나타났다. 이로 인해 core-gateway를 통해 서비스를 호출하는 외부 연동 클라이언트와 일부 내부 서비스 호출 구간에서 요청 실패 및 재시도가 발생했다. 특히 동일 고객 식별자를 사용하면서도 서로 다른 환경(운영/검증 등)에서 유입되는 요청이 하나의 제한 기준으로 합산 처리되면서, 정상적인 사용 패턴임에도 제한에 걸리는 사례가 확인되었다. 사용자 관점에서는 일시적인 응답 지연 또는 요청 거부(429류 응답)로 나타났으며, 별도의 데이터 손실이나 인증 정보 노출은 확인되지 않았다.\n\n## 타임라인\n\n- 2026-05-28 17:25 — core-gateway에서 요청 제한 초과로 인한 비정상 차단이 감지되어 장애 대응이 시작되었다.\n- 대응 초기, 제한 정책의 판단 기준이 되는 키 구성에 문제가 있다는 정황이 파악되어 원인 분석이 진행되었다.\n- 원인 확인 후 제한 판단 로직에 대한 수정 조치가 적용되었다.\n- 2026-05-28 18:10 — 조치 적용 후 정상 트래픽에 대한 오판 차단이 해소되어 서비스가 정상화되었다.\n\n## 원인\n\n장애의 근본 원인은 요청 제한 판단에 사용되는 키 설계의 결함이었다. 고객별 제한 키에 환경 구분 값이 빠졌다. 이로 인해 서로 다른 환경에서 발생한 동일 고객의 요청이 하나의 제한 카운터로 집계되었고, 실제 트래픽 총량이 정책 임계값을 초과한 것처럼 잘못 판단되어 정상 요청까지 차단되는 결과로 이어졌다. 해당 결함은 환경 간 트래픽 격리가 이루어지지 않는 구조적 문제에서 기인한 것으로, 특정 시점의 트래픽 급증이 아닌 키 설계상의 누락이 직접적인 원인이었다.\n\n## 즉시 조치와 재발 방지\n\n장애 대응 과정에서 제한 키에 환경 값을 넣고 충돌 검사를 추가했다. 이를 통해 서로 다른 환경에서 유입되는 동일 고객의 요청이 독립적으로 집계되도록 개선하였으며, 키 충돌 여부를 사전에 검증하는 절차를 도입하여 유사한 설계 누락이 재발하지 않도록 하였다.\n\n향후 재발 방지를 위해 플랫폼개발팀은 요청 제한 관련 키 설계 변경 시 환경 구분 값 포함 여부를 점검 항목으로 명문화하고, 배포 전 검증 단계에서 이를 확인하는 절차를 강화할 예정이다. 또한 유사 로직을 사용하는 다른 서비스에 대해서도 동일한 설계 결함이 존재하는지 점검을 진행할 계획이다. 본 장애는 문다람 팀장의 책임 하에 조치가 완료되었으며, 관련 후속 조치는 플랫폼개발팀 내부 점검을 통해 지속적으로 관리될 예정이다.",
+  "canary": null,
+  "date": "2026-05-28",
+  "doc_id": "syn-incident-022",
+  "doc_type": "incident",
+  "fact_spans": [
+    {
+      "end": 92,
+      "fact_id": "f-inc-2026-012-ticket",
+      "start": 84
+    },
+    {
+      "end": 105,
+      "fact_id": "f-inc-2026-012-owner",
+      "start": 99
+    },
+    {
+      "end": 146,
+      "fact_id": "f-inc-2026-012-service",
+      "start": 134
+    },
+    {
+      "end": 220,
+      "fact_id": "f-inc-2026-012-severity",
+      "start": 208
+    },
+    {
+      "end": 669,
+      "fact_id": "f-inc-2026-012-start",
+      "start": 653
+    },
+    {
+      "end": 845,
+      "fact_id": "f-inc-2026-012-restored",
+      "start": 829
+    },
+    {
+      "end": 961,
+      "fact_id": "f-inc-2026-012-cause",
+      "start": 939
+    },
+    {
+      "end": 1215,
+      "fact_id": "f-inc-2026-012-action",
+      "start": 1189
+    },
+    {
+      "end": 1499,
+      "fact_id": "f-inc-2026-012-owner",
+      "start": 1493
+    }
+  ],
+  "generation": {
+    "attempt": 2,
+    "batch_id": "msgbatch_01D4aUrs24E51Gaa9bdEYxyG",
+    "cache_key": "6dcef916b27372ccee6ec6e065b7383f",
+    "custom_id": "syn-incident-022-a2",
+    "doc_seed": 2206274837,
+    "generation": {
+      "effort": null,
+      "max_tokens": 6000,
+      "model": "claude-sonnet-5",
+      "sampling": "unsupported_by_model",
+      "temperature": null,
+      "thinking": "disabled"
+    },
+    "model": "claude-sonnet-5",
+    "prompt_sha256": "e70c560e80d7a5e30ee6d4a950b188fc8affc5fa8d17e342d9c349092b9a1ab5",
+    "template_hash": "ea60cea81c224af1be7e699121b98779a236895d21b8d0548c666a49fbc46210",
+    "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "input_tokens": 2767,
+      "output_tokens": 1705
+    }
+  },
+  "injection": null,
+  "regulation_refs": [],
+  "related_doc_ids": [
+    "syn-guide-019",
+    "syn-meeting-001",
+    "syn-notice-011",
+    "syn-runbook-029",
+    "syn-weekly-005"
+  ],
+  "source_fact_ids": [
+    "f-inc-2026-012-action",
+    "f-inc-2026-012-cause",
+    "f-inc-2026-012-owner",
+    "f-inc-2026-012-restored",
+    "f-inc-2026-012-service",
+    "f-inc-2026-012-severity",
+    "f-inc-2026-012-start",
+    "f-inc-2026-012-ticket"
+  ],
+  "team": "platform",
+  "title": "[장애보고] INC-2026-012 요청 제한 오판",
+  "validated_with": {
+    "regulation_index_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "validator_version": 5
+  }
+}
