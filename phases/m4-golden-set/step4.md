@@ -46,7 +46,17 @@ def summarize(rows: Sequence[dict]) -> dict: ...     # 유형별·전체 분포(
 - `query_draft`에 `--validate-only` 옵션: 네트워크·키 없이 이미 수거한 초안(`drafts/`)만 다시 검증하고 `validated.jsonl`·요약을 다시 쓴다(상한을 바꾼 뒤 재판정용).
 - Makefile `query-validate: uv run python -m kodocs.eval.query_draft --validate-only`, AGENTS.md: `make query-validate  # 수거한 질의 초안 결정론 재검증(답 누수·어휘 겹침 상한·태그) → data/manifest/golden_query_validation.json (네트워크 없음)`
 
-### 4. 테스트(필수)
+### 4. 분포 보고 명령(초안 수거 뒤 사용자가 봄)
+
+- `lexical.py`에 `main(argv=None)`(`python -m kodocs.eval.lexical report`): 네트워크·키 없이 `data/synthetic/queries/validated.jsonl`과 수거 캐시(`drafts/`, 실패 초안 포함)를 읽어 유형별 포함률·최장 공통 부분 문자열 분포(n, min, p25, p50, p75, p90, max), 현재 상한에서의 초과 수, 상한 후보별 초과 수(포함률 0.5·0.6·0.7, LCS 10·12·15)와 `lexical_mismatch` 비율을 **표준 출력에만** 표로 출력한다. 파일을 쓰지 않는다(상한 확정을 위한 관찰용).
+- 수거한 초안이 하나도 없으면 "수거한 초안 없음, `make queries` 먼저" 안내 후 종료 코드 1(FP-031).
+- Makefile `lexical-report: uv run python -m kodocs.eval.lexical report`, AGENTS.md: `make lexical-report  # 수거한 질의 초안의 어휘 겹침 분포·상한 후보별 초과 수 출력(파일 쓰지 않음, 상한 확정용, 네트워크 없음)`
+
+### 5. 결과 템플릿에 상한 상태 표시
+
+- `src/kodocs/eval/templates/m4_golden.md`의 생성 영역 밖 고정 절에 "어휘 겹침 상한" 소절을 추가한다: "바이그램 포함률 ≤ 0.6·최장 공통 부분 문자열 ≤ 12자는 **초기값**이다. `make queries` 뒤 `make lexical-report`의 실측 분포를 보고 사람이 확정하며, 확정값과 근거는 ADR-025 변경 기록에 적는다. 확정 전: (사람 기록 대기)". 생성 영역 마커는 건드리지 않는다.
+
+### 6. 테스트(필수)
 
 - 바이그램 포함률·최장 공통 부분 문자열의 경계값(빈 문자열, 한 글자, 완전 일치, 완전 불일치).
 - 주어 값·식별자·날짜를 제거하고 계산함(ID만 같은 질의는 포함률이 부풀지 않음).
@@ -54,13 +64,17 @@ def summarize(rows: Sequence[dict]) -> dict: ...     # 유형별·전체 분포(
 - `summarize`가 `containment=None` 문항을 분모에서 뺌.
 - 같은 초안으로 `--validate-only` 두 번 → 결과 파일 바이트 동일.
 - 수거한 초안이 하나도 없으면 안내 후 종료 코드 1(FP-031: 0건을 성공으로 끝내지 않는다).
+- `lexical report`가 파일을 쓰지 않음(실행 전후 `data/` 아래 파일 목록·내용 동일), 초안 fixture로 상한 후보별 초과 수를 출력함, 초안이 없으면 종료 코드 1.
+- 초안(`validated.jsonl`·`drafts/`)이 저장소에 아직 없어도 `make verify`가 통과한다(테스트는 `tmp_path` fixture만 쓴다).
 
 ## Acceptance Criteria
 
 ```bash
 make verify
 make query-validate; echo "exit=$?"   # 수거한 초안이 아직 없으므로 "수거한 초안 없음, `make queries` 먼저" 안내와 exit=1이 정상
-grep -n "query-validate" Makefile AGENTS.md
+make lexical-report; echo "exit=$?"    # 수거한 초안이 없으므로 안내와 exit=1이 정상
+grep -n "query-validate\|lexical-report" Makefile AGENTS.md
+grep -n "초기값" src/kodocs/eval/templates/m4_golden.md
 ```
 
 ## 검증 절차
