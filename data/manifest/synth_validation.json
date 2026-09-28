@@ -1,10 +1,10 @@
 {
   "by_access": {
     "public": {
-      "failed": 8,
+      "failed": 1,
       "generated": 90,
       "not_generated": 0,
-      "passed": 82,
+      "passed": 89,
       "planned": 90
     },
     "restricted": {
@@ -15,46 +15,44 @@
       "planned": 30
     },
     "team": {
-      "failed": 12,
+      "failed": 0,
       "generated": 80,
       "not_generated": 0,
-      "passed": 68,
+      "passed": 80,
       "planned": 80
     }
   },
   "by_code": {
     "fact_missing": 1,
-    "fact_value_mismatch": 14,
-    "marker_malformed": 2,
-    "prompt_artifact": 8
+    "marker_malformed": 1
   },
   "by_type": {
     "guide": {
-      "failed": 1,
+      "failed": 0,
       "generated": 30,
       "not_generated": 0,
-      "passed": 29,
+      "passed": 30,
       "planned": 30
     },
     "incident": {
-      "failed": 14,
-      "generated": 25,
-      "not_generated": 0,
-      "passed": 11,
-      "planned": 25
-    },
-    "meeting": {
-      "failed": 4,
-      "generated": 50,
-      "not_generated": 0,
-      "passed": 46,
-      "planned": 50
-    },
-    "notice": {
       "failed": 1,
       "generated": 25,
       "not_generated": 0,
       "passed": 24,
+      "planned": 25
+    },
+    "meeting": {
+      "failed": 0,
+      "generated": 50,
+      "not_generated": 0,
+      "passed": 50,
+      "planned": 50
+    },
+    "notice": {
+      "failed": 0,
+      "generated": 25,
+      "not_generated": 0,
+      "passed": 25,
       "planned": 25
     },
     "runbook": {
@@ -79,18 +77,18 @@
   },
   "exhausted": 0,
   "exhausted_docs": [],
-  "failed": 20,
+  "failed": 1,
   "generated": 200,
   "injections": {
     "expected": 12,
     "inserted": 12
   },
-  "invalidated": 3,
+  "invalidated": 0,
   "not_generated": 0,
-  "passed": 180,
+  "passed": 199,
   "planned": 200,
   "regressed": 0,
   "warnings": {
-    "length_off_target": 6
+    "length_off_target": 3
   }
 }
