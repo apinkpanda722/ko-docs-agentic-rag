@@ -496,14 +496,23 @@ def test_quota_report_supports_source_and_type_quotas() -> None:
     }
 
 
+SYNTHETIC_QUESTION_FILES = ("specs.jsonl", "validated.jsonl", "real_projection.jsonl")
+
+
 def test_committed_real_jsonl_never_contains_reference_text() -> None:
-    for directory in (ROOT / "data/golden/queries", ROOT / "data/synthetic/queries"):
-        for path in sorted(directory.rglob("*.jsonl")):
-            for question in load_questions(path):
-                if question.source == "real":
-                    assert question.reference_answer is None, path
-                    assert question.summary80 is not None, path
-                    assert len(question.summary80) <= 80, path
+    # Only question files: data/synthetic/queries also holds append-only logs
+    # (draft_log.jsonl, draft_failures.jsonl) whose rows are not questions.
+    paths = sorted((ROOT / "data/golden/queries").glob("*.jsonl")) + [
+        ROOT / "data/synthetic/queries" / name for name in SYNTHETIC_QUESTION_FILES
+    ]
+    for path in paths:
+        if not path.exists():
+            continue
+        for question in load_questions(path):
+            if question.source == "real":
+                assert question.reference_answer is None, path
+                assert question.summary80 is not None, path
+                assert len(question.summary80) <= 80, path
 
 
 def test_committed_query_files_never_contain_attention_check_ids() -> None:

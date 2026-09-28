@@ -118,6 +118,97 @@ def test_overlap_primitives_cover_empty_single_exact_and_disjoint_boundaries(
     assert longest_common_substring(query, target) == lcs
 
 
+ATOMIC_BODY = (
+    "# 회의록\n"
+    "- 참석: 결제서비스팀\n"
+    "- 장애 대응 책임은 문다람 팀장이 맡아 복구 절차를 지휘하기로 했다. 다음 안건.\n"
+)
+ATOMIC_SPAN = "문다람 팀장"
+
+
+def _atomic_spec(question: str) -> Question:
+    start = ATOMIC_BODY.index(ATOMIC_SPAN)
+    base = _question(
+        "atomic",
+        doc_id="doc-atomic",
+        target=ATOMIC_SPAN,
+        question=question,
+    )
+    return replace(
+        base,
+        qrels=(
+            Qrel(
+                doc_id="doc-atomic",
+                rel=2,
+                start=start,
+                end=start + len(ATOMIC_SPAN),
+            ),
+        ),
+        anchor_values=("billing-api",),
+    )
+
+
+def test_sentence_bounds_expand_span_to_its_sentence_without_list_marker() -> None:
+    start = ATOMIC_BODY.index(ATOMIC_SPAN)
+
+    s, e = lexical.sentence_bounds(ATOMIC_BODY, start, start + len(ATOMIC_SPAN))
+
+    expected = "장애 대응 책임은 문다람 팀장이 맡아 복구 절차를 지휘하기로 했다."
+    assert ATOMIC_BODY[s:e] == expected
+
+
+def test_atomic_answer_question_copying_its_sentence_hits_overlap_cap() -> None:
+    # Full run: atomic spans are a few characters ("문다람 팀장"), so a copied
+    # question slipped under the cap when compared with the span alone.
+    docs = {"doc-atomic": {"body": ATOMIC_BODY}}
+    copied = _atomic_spec("장애 대응 책임을 맡아 복구 절차를 지휘하기로 한 사람은?")
+
+    result = overlap(copied, copied.question, docs)
+
+    assert result["containment"] > lexical.CONTAINMENT_CAP
+    assert "overlap_cap" in query_draft.validate_draft(
+        copied,
+        copied.question,
+        seed=SimpleNamespace(facts={}),  # type: ignore[arg-type]
+        people=(),
+        docs=docs,
+    )
+
+
+def test_atomic_answer_question_in_own_words_passes() -> None:
+    docs = {"doc-atomic": {"body": ATOMIC_BODY}}
+    reworded = _atomic_spec("billing-api 장애가 나면 누가 총괄하나요?")
+
+    result = overlap(reworded, reworded.question, docs)
+
+    assert result["containment"] <= lexical.CONTAINMENT_CAP
+    assert result["lcs"] <= lexical.LCS_CAP
+
+
+def test_narrative_span_that_is_already_a_sentence_gives_the_same_target() -> None:
+    sentence = "지표 압축 작업의 메모리 상한이 낮게 설정되었다."
+    body = f"## 원인\n{sentence}\n## 조치\n상한을 올렸다."
+    start = body.index(sentence)
+    end = start + len(sentence)
+    base = _question(
+        "narrative",
+        doc_id="doc-n",
+        target=sentence,
+        question="원인은?",
+    )
+    spec = replace(base, qrels=(Qrel(doc_id="doc-n", rel=2, start=start, end=end),))
+    question = "지표 압축 작업에서 무엇이 문제였나요?"
+
+    expanded = overlap(spec, question, {"doc-n": {"body": body}})
+    span_spec = replace(
+        spec, qrels=(Qrel(doc_id="doc-n", rel=2, start=0, end=len(sentence)),)
+    )
+    span_only = overlap(span_spec, question, {"doc-n": {"body": sentence + "\n"}})
+
+    assert lexical.sentence_bounds(body, start, end) == (start, end)
+    assert expanded == span_only
+
+
 def test_overlap_removes_subject_identifiers_and_dates_from_both_sides() -> None:
     target = "INC-2025-001 core-gateway 2025년 1월 15일"
     spec = _question(

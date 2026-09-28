@@ -30,6 +30,7 @@ _DATE_RE = re.compile(
     r")(?!\d)"
 )
 _NON_COMPARABLE_TYPES = frozenset({"permission", "sql", "unanswerable"})
+_LIST_MARKER_RE = re.compile(r"[ \t]*(?:[-*+•]|\d+[.)])[ \t]+")
 _PERCENTILES = (("p25", 0.25), ("p50", 0.5), ("p75", 0.75), ("p90", 0.9))
 
 
@@ -94,6 +95,43 @@ def longest_common_substring(query: str, target: str) -> int:
     return longest
 
 
+def sentence_bounds(body: str, start: int, end: int) -> tuple[int, int]:
+    """Expand ``[start, end)`` to the sentence holding it.
+
+    Boundaries are a newline, or ``.``/``?``/``!`` followed by whitespace or the
+    end of the text (so ``99.99%`` and ``2025.3.1`` do not split). A leading
+    list marker (``-``, ``*``, ``+``, ``•``, ``1.``, ``1)``) is excluded. A span
+    that already ends a sentence keeps its own end.
+    """
+    left = start
+    while left > 0 and not _is_boundary(body, left - 1):
+        left -= 1
+    marker = _LIST_MARKER_RE.match(body, left, start)
+    if marker:
+        left = marker.end()
+    while left < start and body[left].isspace():
+        left += 1
+
+    stripped_end = end
+    while stripped_end > start and body[stripped_end - 1].isspace():
+        stripped_end -= 1
+    if stripped_end > start and _is_boundary(body, stripped_end - 1):
+        return left, stripped_end
+    right = end
+    while right < len(body) and not _is_boundary(body, right):
+        right += 1
+    if right < len(body) and body[right] != "\n":
+        right += 1  # keep the terminating punctuation
+    return left, right
+
+
+def _is_boundary(body: str, index: int) -> bool:
+    character = body[index]
+    if character == "\n":
+        return True
+    return character in ".?!" and (index + 1 == len(body) or body[index + 1].isspace())
+
+
 def overlap(
     spec: Question,
     question: str,
@@ -119,7 +157,10 @@ def overlap(
             or not 0 <= qrel.start < qrel.end <= len(body)
         ):
             return {"containment": None, "lcs": None, "target_chars": 0}
-        target_parts.append(body[qrel.start : qrel.end])
+        # An atomic span is a few characters ("문다람 팀장"); compare with the
+        # sentence that holds it so a copied question still hits the cap.
+        start, end = sentence_bounds(body, qrel.start, qrel.end)
+        target_parts.append(body[start:end])
 
     target = "\n".join(target_parts)
     clean_question = _strip_overlap_values(question, spec.anchor_values)
