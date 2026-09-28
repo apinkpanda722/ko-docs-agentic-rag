@@ -61,7 +61,16 @@
     {
       "step": 4,
       "name": "lexical-overlap",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-28T21:18:48+0900",
+      "summary": "결정론적 어휘 겹침 측정·상한/lexical_mismatch 검증, 오프라인 재검증·무쓰기 보고 명령과 문서·템플릿을 구현하고 make verify(816 passed) 및 AC를 통과했습니다.",
+      "completed_at": "2026-09-28T21:31:10+0900",
+      "usage": {
+        "input_tokens": 3085740,
+        "cached_input_tokens": 2977280,
+        "output_tokens": 29538,
+        "attempts": 1
+      }
     },
     {
       "step": 5,
