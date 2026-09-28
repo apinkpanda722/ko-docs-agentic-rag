@@ -79,23 +79,23 @@
   },
   "duplicate": {
     "between_type": {
-      "max": 0.0501,
-      "mean": 0.028,
-      "p95": 0.0462
+      "max": 0.0466,
+      "mean": 0.0263,
+      "p95": 0.0403
     },
     "near_duplicates": [],
     "overall": {
-      "max": 0.0888,
-      "mean": 0.0328,
-      "p95": 0.0628
+      "max": 0.0811,
+      "mean": 0.0306,
+      "p95": 0.0603
     },
     "pair_count": 45,
     "shingle_n": 5,
     "threshold": 0.5,
     "within_type": {
-      "max": 0.0888,
-      "mean": 0.059,
-      "p95": 0.0821
+      "max": 0.0811,
+      "mean": 0.0536,
+      "p95": 0.077
     }
   },
   "fact_coverage": {
@@ -114,96 +114,96 @@
       "guide": {
         "coefficient_of_variation": 0.0,
         "documents": 1,
-        "max_chars": 1776,
-        "mean_chars": 1776.0,
-        "min_chars": 1776,
+        "max_chars": 1806,
+        "mean_chars": 1806.0,
+        "min_chars": 1806,
         "stddev_chars": 0.0,
         "target_mean_chars": 1800.0,
-        "target_ratio": 0.9867
+        "target_ratio": 1.0033
       },
       "incident": {
         "coefficient_of_variation": 0.0,
         "documents": 1,
-        "max_chars": 2142,
-        "mean_chars": 2142.0,
-        "min_chars": 2142,
+        "max_chars": 2364,
+        "mean_chars": 2364.0,
+        "min_chars": 2364,
         "stddev_chars": 0.0,
         "target_mean_chars": 3400.0,
-        "target_ratio": 0.63
+        "target_ratio": 0.6953
       },
       "meeting": {
-        "coefficient_of_variation": 0.1106,
+        "coefficient_of_variation": 0.1734,
         "documents": 4,
-        "max_chars": 1908,
-        "mean_chars": 1743.5,
-        "min_chars": 1432,
-        "stddev_chars": 192.792,
+        "max_chars": 1836,
+        "mean_chars": 1666.5,
+        "min_chars": 1166,
+        "stddev_chars": 288.9719,
         "target_mean_chars": 2200.0,
-        "target_ratio": 0.7925
+        "target_ratio": 0.7575
       },
       "notice": {
         "coefficient_of_variation": 0.0,
         "documents": 1,
-        "max_chars": 1049,
-        "mean_chars": 1049.0,
-        "min_chars": 1049,
+        "max_chars": 1053,
+        "mean_chars": 1053.0,
+        "min_chars": 1053,
         "stddev_chars": 0.0,
         "target_mean_chars": 1100.0,
-        "target_ratio": 0.9536
+        "target_ratio": 0.9573
       },
       "runbook": {
         "coefficient_of_variation": 0.0,
         "documents": 1,
-        "max_chars": 2247,
-        "mean_chars": 2247.0,
-        "min_chars": 2247,
+        "max_chars": 2481,
+        "mean_chars": 2481.0,
+        "min_chars": 2481,
         "stddev_chars": 0.0,
         "target_mean_chars": 3000.0,
-        "target_ratio": 0.749
+        "target_ratio": 0.827
       },
       "weekly": {
-        "coefficient_of_variation": 0.022,
+        "coefficient_of_variation": 0.0042,
         "documents": 2,
-        "max_chars": 2300,
-        "mean_chars": 2250.5,
-        "min_chars": 2201,
-        "stddev_chars": 49.5,
+        "max_chars": 2012,
+        "mean_chars": 2003.5,
+        "min_chars": 1995,
+        "stddev_chars": 8.5,
         "target_mean_chars": 2200.0,
-        "target_ratio": 1.023
+        "target_ratio": 0.9107
       }
     }
   },
   "lexical_diversity": {
     "by_type": {
       "guide": {
-        "distinct_2": 0.4145,
-        "total_bigrams": 1655,
-        "unique_bigrams": 686
+        "distinct_2": 0.396,
+        "total_bigrams": 1687,
+        "unique_bigrams": 668
       },
       "incident": {
-        "distinct_2": 0.34,
-        "total_bigrams": 2015,
-        "unique_bigrams": 685
+        "distinct_2": 0.3306,
+        "total_bigrams": 2235,
+        "unique_bigrams": 739
       },
       "meeting": {
-        "distinct_2": 0.2171,
-        "total_bigrams": 6595,
-        "unique_bigrams": 1432
+        "distinct_2": 0.2206,
+        "total_bigrams": 6296,
+        "unique_bigrams": 1389
       },
       "notice": {
-        "distinct_2": 0.5244,
-        "total_bigrams": 942,
-        "unique_bigrams": 494
+        "distinct_2": 0.4852,
+        "total_bigrams": 946,
+        "unique_bigrams": 459
       },
       "runbook": {
-        "distinct_2": 0.3874,
-        "total_bigrams": 2122,
-        "unique_bigrams": 822
+        "distinct_2": 0.3488,
+        "total_bigrams": 2354,
+        "unique_bigrams": 821
       },
       "weekly": {
-        "distinct_2": 0.2832,
-        "total_bigrams": 4339,
-        "unique_bigrams": 1229
+        "distinct_2": 0.314,
+        "total_bigrams": 3850,
+        "unique_bigrams": 1209
       }
     }
   },
@@ -276,59 +276,23 @@
       "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
     },
     "template_hashes": [
-      "31a4dc7f6042869c5791b1c287a09a20af547ef50254fecd57deef0f0cb7f55b",
-      "7f100b645ac20ef63657dd01c92a383d7ad19adee8f933331bcf0b2598f94ecb",
-      "99c2831f448b6f0a7d662f87e912755bd4718ec14ba6d67236010abdf667a182",
-      "b722233bd898f0e5c37da60a673eb16ed2615dbb0da36ba7a4dbc56047aa0503",
-      "c8dc3141a047cd79db52deddad14b18e6197cada3e0229d8facdaca4803126ef",
-      "febf140711117f35b6e187ef369b77ad7e4cfa3e6dda6f14c081124d2aa52da0"
+      "08463271319edad61031a0ed34ba7cc326e83bb90329ddb33b43c44ad407cf43",
+      "6d6499ecfc15e0355caba0a70fac1f1a5d7f041fd2cb8c8522b70fbc1c51a67e",
+      "8196fa38d17b04a7f4dbe3edb649a4606ce1b7d49914a4b866df71b4b7748772",
+      "b077ed0739e21b98cea6c8667b9bc24338ec1932f42c15fb6c4c51297fe2af79",
+      "e896c8ba882f6742896ed9215323a4f82d624aa23c1314065198acd941611d54",
+      "f2a856cb7f36eb28a2626539fe2c262546ab9a85bc9ce686e195db7cbf30478f"
     ],
     "validator_versions": [
       3
     ]
   },
   "repeated_sentences": {
-    "sentences_in_3_plus_docs": 10,
+    "sentences_in_3_plus_docs": 1,
     "top": [
-      {
-        "document_count": 7,
-        "sentence_prefix": "1."
-      },
-      {
-        "document_count": 7,
-        "sentence_prefix": "2."
-      },
-      {
-        "document_count": 6,
-        "sentence_prefix": "3."
-      },
-      {
-        "document_count": 6,
-        "sentence_prefix": "4."
-      },
-      {
-        "document_count": 5,
-        "sentence_prefix": "5."
-      },
-      {
-        "document_count": 3,
-        "sentence_prefix": "6."
-      },
       {
         "document_count": 3,
         "sentence_prefix": "결정 사항"
-      },
-      {
-        "document_count": 3,
-        "sentence_prefix": "참석 맥락"
-      },
-      {
-        "document_count": 3,
-        "sentence_prefix": "회의 목적"
-      },
-      {
-        "document_count": 3,
-        "sentence_prefix": "후속 조치"
       }
     ]
   },
@@ -340,15 +304,15 @@
     "by_type": {
       "guide": {
         "counts": {
-          "formal": 28,
+          "formal": 30,
           "nominal": 1,
-          "other": 14,
+          "other": 12,
           "plain": 0
         },
         "ratios": {
-          "formal": 0.6512,
+          "formal": 0.6977,
           "nominal": 0.0233,
-          "other": 0.3256,
+          "other": 0.2791,
           "plain": 0.0
         },
         "sentences": 43
@@ -357,104 +321,110 @@
         "counts": {
           "formal": 0,
           "nominal": 0,
-          "other": 16,
-          "plain": 29
+          "other": 23,
+          "plain": 26
         },
         "ratios": {
           "formal": 0.0,
           "nominal": 0.0,
-          "other": 0.3556,
-          "plain": 0.6444
+          "other": 0.4694,
+          "plain": 0.5306
         },
-        "sentences": 45
+        "sentences": 49
       },
       "meeting": {
         "counts": {
           "formal": 0,
-          "nominal": 4,
-          "other": 98,
-          "plain": 82
+          "nominal": 5,
+          "other": 74,
+          "plain": 78
         },
         "ratios": {
           "formal": 0.0,
-          "nominal": 0.0217,
-          "other": 0.5326,
-          "plain": 0.4457
+          "nominal": 0.0318,
+          "other": 0.4713,
+          "plain": 0.4968
         },
-        "sentences": 184
+        "sentences": 157
       },
       "notice": {
         "counts": {
           "formal": 0,
           "nominal": 0,
-          "other": 4,
+          "other": 3,
           "plain": 14
         },
         "ratios": {
           "formal": 0.0,
           "nominal": 0.0,
-          "other": 0.2222,
-          "plain": 0.7778
+          "other": 0.1765,
+          "plain": 0.8235
         },
-        "sentences": 18
+        "sentences": 17
       },
       "runbook": {
         "counts": {
           "formal": 0,
           "nominal": 0,
-          "other": 18,
+          "other": 17,
           "plain": 34
         },
         "ratios": {
           "formal": 0.0,
           "nominal": 0.0,
-          "other": 0.3462,
-          "plain": 0.6538
+          "other": 0.3333,
+          "plain": 0.6667
         },
-        "sentences": 52
+        "sentences": 51
       },
       "weekly": {
         "counts": {
-          "formal": 22,
+          "formal": 23,
           "nominal": 2,
           "other": 12,
-          "plain": 29
+          "plain": 28
         },
         "ratios": {
-          "formal": 0.3385,
+          "formal": 0.3538,
           "nominal": 0.0308,
           "other": 0.1846,
-          "plain": 0.4462
+          "plain": 0.4308
         },
         "sentences": 65
       }
     },
     "overall": {
       "counts": {
-        "formal": 50,
-        "nominal": 7,
-        "other": 162,
-        "plain": 188
+        "formal": 53,
+        "nominal": 8,
+        "other": 141,
+        "plain": 180
       },
       "ratios": {
-        "formal": 0.1229,
-        "nominal": 0.0172,
-        "other": 0.398,
-        "plain": 0.4619
+        "formal": 0.1387,
+        "nominal": 0.0209,
+        "other": 0.3691,
+        "plain": 0.4712
       },
-      "sentences": 407
+      "sentences": 382
     }
   },
   "unprompted_relative_time": {
     "by_doc": {
       "syn-meeting-001": {
-        "최근": 6
+        "최근": 3
+      },
+      "syn-meeting-002": {
+        "최근": 3
       },
       "syn-meeting-004": {
-        "최근": 5
+        "최근": 3
+      },
+      "syn-weekly-001": {
+        "최근": 1
       }
     },
-    "documents_with_warning": 2,
+    "documents_with_warning": 4,
     "terms": [
       "최근",
       "얼마 전",
@@ -463,7 +433,7 @@
       "요새",
       "근래"
     ],
-    "total": 11
+    "total": 10
   },
   "validation": {
     "exhausted": 0,

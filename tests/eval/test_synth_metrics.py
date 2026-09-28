@@ -290,3 +290,19 @@ def test_run_takes_given_time_phrases_from_the_plan(
 
     metrics = json.loads((tmp_path / METRICS_PATH).read_text(encoding="utf-8"))
     assert metrics["unprompted_relative_time"]["by_doc"] == {"doc-a": {"최근": 1}}
+
+
+def test_repeated_sentences_skip_fragments_that_are_only_list_markers() -> None:
+    # Pilot 4: the top five "repeated sentences" were all "1.", "2.", ...
+    body = (
+        "# 회의\n1. 안건을 정리했다.\n2. 일정을 공유했다.\n10. 기타 논의했다.\n"
+        "가. 세부 항목이다.\n① 첫째 항목이다.\n결정 사항"
+    )
+    docs = [_doc(f"doc-{name}", body=body.replace("안건", name)) for name in "abc"]
+
+    repeated = compute(docs)["repeated_sentences"]
+
+    prefixes = [row["sentence_prefix"] for row in repeated["top"]]
+    assert not any(prefix in {"1.", "2.", "10.", "가.", "①"} for prefix in prefixes)
+    assert "결정 사항" in prefixes
+    assert "일정을 공유했다." in prefixes

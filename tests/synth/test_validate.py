@@ -595,7 +595,13 @@ def test_malformed_or_leftover_markers_fail_without_lenient_repair(
 
 @pytest.mark.parametrize(
     "leak",
-    ["작성자: 가상인 수석 (p-010)", "사실 A(문서 날짜 기준 3일 전)", "담당 p-001 확인"],
+    [
+        "작성자: 가상인 수석 (p-010)",
+        "사실 A(문서 날짜 기준 3일 전)",
+        "담당 p-001 확인",
+        # Pilot 4 (incident-001): the prompt's own wording leaked into the body.
+        "본 문서에서는 배정된 사실 범위 내에서 원인을 임의로 단정하지 않는다.",
+    ],
 )
 def test_prompt_artifacts_in_body_fail(leak: str) -> None:
     topic = _fact()
@@ -604,6 +610,19 @@ def test_prompt_artifacts_in_body_fail(leak: str) -> None:
 
     assert "prompt_artifact" in _codes(issues)
     assert document is None
+
+
+@pytest.mark.parametrize(
+    "ordinary", ["배정된 월말 집계 단계를 마쳤다.", "담당자 배정 예정이다."]
+)
+def test_ordinary_use_of_assignment_words_is_not_a_prompt_artifact(
+    ordinary: str,
+) -> None:
+    topic = _fact()
+    text = _markdown('<fact id="f-topic">검증 대상 사실</fact>', extra=f"\n{ordinary}")
+    _, issues = _validate(_plan(topic.fact_id), _generation(text), _seed(topic))
+
+    assert "prompt_artifact" not in _codes(issues)
 
 
 def test_ids_that_merely_look_like_person_ids_are_not_prompt_artifacts() -> None:

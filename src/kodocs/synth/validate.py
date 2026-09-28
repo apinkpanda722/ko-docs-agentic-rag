@@ -45,7 +45,9 @@ MARKER_RE = re.compile(
 )
 # 2: 사실 표시를 ⟦F:…⟧…⟦/F⟧에서 <fact id="…">…</fact>로 교체(파일럿 1차 4/10 깨짐),
 #    계획이 준 식별자·규정 사실 인정, prompt_artifact 추가.
-VALIDATOR_VERSION = 3
+# 3: 배정 사실이 속한 장애(INC-*) 번호를 배정 식별자로 인정(파일럿 2차).
+# 4: prompt_artifact에 프롬프트 지시문 문구 "배정된 사실" 추가(파일럿 4차).
+VALIDATOR_VERSION = 4
 
 _MARKER_TOKEN_RE = re.compile(
     r'<fact id="(?P<fid>f-[a-z0-9]+(?:-[a-z0-9]+)*)">|(?P<close></fact>)'
@@ -53,7 +55,9 @@ _MARKER_TOKEN_RE = re.compile(
 # Anything marker-like left after stripping valid tokens is malformed. No lenient
 # repair: a guessed fix would silently move fact spans.
 _MARKER_LEFTOVER_RE = re.compile(r"<fact|</fact>|⟦|⟧")
-_PROMPT_ARTIFACT_RE = re.compile(r"(?<![A-Za-z0-9-])p-\d{3}(?!\d)|문서 날짜 기준")
+_PROMPT_ARTIFACT_RE = re.compile(
+    r"(?<![A-Za-z0-9-])p-\d{3}(?!\d)|문서 날짜 기준|배정된 사실"
+)
 # A number inside an identifier (INC-2025-007 원장) is not an amount.
 _AMOUNT_RE = re.compile(r"(?<![\dA-Za-z-])(?P<number>\d[\d,]*)\s*(?P<unit>억|만)?\s*원")
 _DATE_RE = re.compile(

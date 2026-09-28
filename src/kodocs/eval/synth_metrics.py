@@ -32,6 +32,9 @@ _NOMINAL_RE = re.compile(
     r"(?:함|음|임|됨|완료|예정|필요|확인|대상|상태|결과|계획|진행|종료|발생|성공|실패)$"
 )
 _STYLE_CATEGORIES = ("formal", "plain", "nominal", "other")
+# A fragment that is only a list or number marker ("1.", "가.", "①") is not a
+# sentence; pilot 4's top repeated "sentences" were all such markers.
+_LIST_MARKER_RE = re.compile(r"^(?:\d+|[가-힣]|[①-⑳]|[-*+•])[.)]?$")
 # Vague relative time the prompt forbids unless given (rule 6); a warning only.
 RELATIVE_TIME_TERMS = ("최근", "얼마 전", "지난달", "요즘", "요새", "근래")
 
@@ -285,7 +288,11 @@ def _repeated_sentence_metrics(
 ) -> dict[str, object]:
     occurrences: Counter[str] = Counter()
     for doc in docs:
-        occurrences.update(set(_sentences(_required_string(doc, "body"))))
+        occurrences.update(
+            sentence
+            for sentence in set(_sentences(_required_string(doc, "body")))
+            if not _LIST_MARKER_RE.fullmatch(sentence)
+        )
     repeated = [
         (sentence, count) for sentence, count in occurrences.items() if count >= 3
     ]
