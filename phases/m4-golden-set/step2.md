@@ -46,11 +46,13 @@ def main(argv=None) -> int: ...   # python -m kodocs.eval.golden_specs
 - identifier: 주어 = `id` 사실 값(티켓·결재·장애 ID). 답 = 같은 subject의 다른 사실 1개. `anchor_values`에 ID, `answer_values`에 답 사실의 허용 표기 전부(서술 사실이면 사실 문장).
 - semantic: 주어 = 서비스명 또는 인물(ID 없이). 답 = 서술 사실(결정·정책·원인·계획 등). 주어만으로 답 사실이 하나로 정해지지 않으면(같은 서비스·같은 속성 사실이 2개 이상) 그 후보는 쓰지 않는다.
 - multi_doc: 같은 subject 또는 같은 서비스의 사실 2개 이상. **어느 한 문서도 모든 답 사실 span을 갖지 않아야** 한다(검사 필수). qrels는 답 사실별 규칙의 합집합.
-- temporal(`temporal:as_of_event`): 주어 = 서비스 + `as_of`(일 단위 날짜). 답 = 그 날짜로만 특정되는 사건의 사실. **기준일을 빼면 후보 사건(같은 서비스·같은 속성)이 2개 이상**이어야 채택(검사 필수). 실버 temporal 20 = 사건 19 + 값 교체 1. 값 교체 1은 identity-api 담당자(2026-03-28 p-002 → 2026-05-09 p-133)처럼 **같은 서비스의 같은 속성 값이 날짜에 따라 바뀐** 경우를 시드에서 찾아 as_of를 두 날짜 사이로 둔다(시드에서 정확히 찾고, 없으면 실패로 멈춰라 — 추측해 만들지 마라).
+- temporal(`temporal:as_of_event`): 주어 = 서비스 + `as_of`(일 단위 날짜). 답 = 그 날짜로만 특정되는 사건의 사실. **기준일을 빼면 후보 사건(같은 서비스·같은 속성)이 2개 이상**이어야 채택(검사 필수). 실버 temporal 20은 전부 기준일 사건 질의다(2026-09-28 정정: 처음 설계의 "값 교체 1"은 두 장애의 담당자를 서비스 단위로 묶어 센 오판이었고, 시드에 서비스 담당자 변경 기록이 없다).
 - permission: 답 사실의 모든 관련 문서가 질문자에게 보이지 않는 경우. `expected_response="indistinguishable_from_no_answer"`. qrels에는 숨겨진 관련 문서(관련도 2)를 **반드시** 넣는다(M7 누설 기준 (a) 판정용, `permission_empty_qrels`). 제한 문서의 카나리아 사실을 답으로 쓰면 태그 `canary`.
 - unanswerable: 존재하는 주어(서비스·장애)에 대해 시드에 없는 속성(예: 비용·영향 사용자 수처럼 시드 사실 종류에 없는 것)을 묻는 명세. `expected_response="no_answer"`, qrels 없음. 확인 ①(해당 subject에 그 속성 사실 없음)·②(통과 문서 전체 본문에서 속성 핵심어 + 주어 동시 등장 없음)을 수행하고 결과를 `Question.no_answer_checks = {"seed": bool, "docs": bool, "real": None}`로 남긴다(③ 실제 규정 검색은 step 5가 요약에 기록한다). ①② 중 하나라도 False인 후보는 채택하지 않는다.
 - sql(골드만 6): `db.build_rows(seed)`로 메모리 SQLite를 만들어 집계 SELECT(팀별·상태별·월별 건수, 결재 금액 합 등) 6개를 실행하고 기대 값을 기록. 쿼리는 코드에 템플릿으로 고정. `db_content_hash`는 `synth_db.json` 값.
 - 인젝션 문서가 관련도 2인 문항에는 태그 `injection`.
+
+**다양성(2026-09-28 추가)**: 후보를 정렬 순서로 자르지 않는다. `random.Random` 결정론 셔플 뒤 서비스 → 사건(subject) 순으로 돌아가며 뽑는다. 한 사건당 같은 유형 안에서 골드 1·실버 2, 세트 전체에서 골드 2·실버 4문항(multi_doc은 답 사실의 사건마다 1회). 실버는 골드가 쓴 사건을 먼저 피하고, 겹친 사건 수·문항 수를 요약 `gold_silver_overlap`에 기록한다. 요약 `diversity: {set: {type: {distinct_subjects, max_per_subject}}}`. 상한 때문에 할당을 못 채우면 상한을 풀지 말고 유형·가능한 최대 수를 출력하며 실패한다(FP-031).
 
 **할당**: 골드 합성은 `GOLD_QUOTA`의 synthetic 칸, 실버는 `SILVER_QUOTA`를 정확히 채운다. 골드와 실버가 **같은 답 사실을 공유하지 않게** 한다(골드 우선 배정). ID: 골드 `g-syn-NNN`, 실버 `s-syn-NNN`. 후보가 할당보다 적은 유형이 있으면 **실패로 멈추고** 유형·후보 수를 출력한다(FP-031). 조용히 다른 유형으로 채우지 마라.
 

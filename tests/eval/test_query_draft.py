@@ -53,7 +53,9 @@ def seed() -> Seed:
 
 @pytest.fixture(scope="module")
 def specs() -> list[Question]:
-    return load_questions(REPO_ROOT / "data/synthetic/queries/specs.jsonl")
+    # Frozen copies of five step-2 specs so regenerating specs.jsonl (e.g. with
+    # new diversity rules) does not break drafts written against these specs.
+    return load_questions(Path(__file__).parent / "fixtures/query_draft_specs.jsonl")
 
 
 def _by_id(specs: Sequence[Question], question_id: str) -> Question:
@@ -402,8 +404,8 @@ def test_dry_run_has_no_client_and_appends_estimate_manifest(
     tmp_path: Path, specs: Sequence[Question], monkeypatch: pytest.MonkeyPatch
 ) -> None:
     selected = [
-        replace(spec, id=f"s-syn-{index:03d}")
-        for index, spec in enumerate(specs[:21], 1)
+        replace(specs[(index - 1) % len(specs)], id=f"s-syn-{index:03d}")
+        for index in range(1, 22)
     ]
     _write_specs(tmp_path, selected)
     monkeypatch.setenv("MONTHLY_BUDGET_USD", "45")

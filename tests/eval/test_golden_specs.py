@@ -323,24 +323,19 @@ def test_fixture_candidate_generation_by_type(
     assert any(assertion(candidate) for candidate in candidates)  # type: ignore[operator]
 
 
-def test_temporal_fixture_includes_a_discovered_value_replacement(
+def test_temporal_candidates_are_all_as_of_event_questions(
     tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
 ) -> None:
+    # The seed has no service-level value change; "value replacement" was a
+    # miscount of two incidents' owners grouped by service (ADR-025 correction).
     pools, _ = golden_specs._candidate_pools(
         tiny_seed, tiny_docs, golden_specs.fact_index(tiny_docs)
     )
-    replacement = next(
-        candidate
-        for candidate in pools["temporal"]
-        if candidate.temporal_mode == "replacement"
-    )
 
-    assert (
-        date(2026, 2, 1)
-        < date.fromisoformat(replacement.as_of or "")
-        < date(2026, 4, 1)
-    )
-    assert replacement.answer_fact_ids == ("f-evt-old-owner",)
+    assert pools["temporal"]
+    assert all(c.temporal_mode == "event" for c in pools["temporal"])
+    assert all("temporal:as_of_event" in c.tags for c in pools["temporal"])
+    assert not any("temporal:revision" in c.tags for c in pools["temporal"])
 
 
 def test_multi_doc_rejects_a_pair_contained_by_one_document(
@@ -398,9 +393,89 @@ def test_sql_candidates_execute_six_fixed_aggregate_queries() -> None:
     assert candidates[0].sql.expected
 
 
-def test_allocation_shortage_fails_instead_of_substituting_types() -> None:
-    with pytest.raises(golden_specs.SpecBuildError, match="semantic.*1.*2"):
-        golden_specs._take_candidates("silver", "semantic", [object()], 2)
+def _cand(key: str, subjects: tuple[str, ...], service: str = "svc-a"):
+    return golden_specs._Candidate(
+        type="semantic",
+        anchor_values=(key,),
+        answer_values=(),
+        answer_fact_ids=(f"f-{key}",),
+        qrels=(),
+        reference_answer=None,
+        subjects=subjects,
+        service=service,
+        discriminator=key,
+    )
+
+
+def _select(candidates, quota, *, type_cap=1, set_cap=2, counts=None, avoid=()):
+    return golden_specs._select_diverse(
+        candidates,
+        quota,
+        set_name="gold",
+        question_type="semantic",
+        seed_key="7:gold:semantic",
+        type_cap=type_cap,
+        set_cap=set_cap,
+        set_counts=Counter() if counts is None else counts,
+        avoid=frozenset(avoid),
+    )
+
+
+def test_diverse_selection_caps_questions_per_subject_within_a_type() -> None:
+    candidates = [_cand(f"a{i}", ("INC-A",)) for i in range(5)] + [
+        _cand("b0", ("INC-B",), "svc-b"),
+        _cand("c0", ("INC-C",), "svc-c"),
+    ]
+
+    chosen = _select(candidates, 3, type_cap=1)
+
+    assert Counter(s for c in chosen for s in c.subjects) == {
+        "INC-A": 1,
+        "INC-B": 1,
+        "INC-C": 1,
+    }
+
+
+def test_set_cap_counts_every_subject_of_a_multi_doc_answer() -> None:
+    counts = Counter({"INC-A": 1})
+    pair = _cand("pair", ("INC-A", "INC-B"))
+    lone = _cand("lone", ("INC-C",), "svc-c")
+
+    chosen = _select([pair, lone], 2, type_cap=2, set_cap=2, counts=counts)
+
+    assert {c.discriminator for c in chosen} == {"pair", "lone"}
+    assert counts == {"INC-A": 2, "INC-B": 1, "INC-C": 1}
+    with pytest.raises(golden_specs.SpecBuildError):
+        _select([_cand("again", ("INC-A",))], 1, type_cap=2, set_cap=2, counts=counts)
+
+
+def test_diverse_selection_is_a_deterministic_shuffle_not_a_prefix() -> None:
+    candidates = [
+        _cand(f"k{i:02d}", (f"INC-{i:02d}",), f"svc-{i % 4}") for i in range(40)
+    ]
+
+    first = [c.discriminator for c in _select(candidates, 10)]
+    second = [c.discriminator for c in _select(candidates, 10)]
+
+    assert first == second
+    assert first != [f"k{i:02d}" for i in range(10)]
+
+
+def test_diverse_selection_prefers_subjects_the_gold_set_did_not_use() -> None:
+    candidates = [_cand("gold-used", ("INC-G",)), _cand("fresh", ("INC-F",), "svc-f")]
+
+    assert [c.discriminator for c in _select(candidates, 1, avoid=("INC-G",))] == [
+        "fresh"
+    ]
+    # Falls back to an avoided subject rather than failing when it must.
+    assert len(_select(candidates, 2, avoid=("INC-G",))) == 2
+
+
+def test_diverse_selection_shortage_fails_with_the_achievable_maximum() -> None:
+    candidates = [_cand(f"a{i}", ("INC-A",)) for i in range(5)]
+
+    with pytest.raises(golden_specs.SpecBuildError, match="semantic.*max=1.*quota=3"):
+        _select(candidates, 3, type_cap=1)
 
 
 def test_actual_repository_specs_meet_quotas_validate_and_are_deterministic(
@@ -475,15 +550,12 @@ def test_actual_repository_specs_meet_quotas_validate_and_are_deterministic(
         for qrel in question.qrels
         if qrel.rel == 2 and qrel.fact_id in seed.facts
     }
-    temporal_answer_ids = set(temporal_answer_facts)
-    assert sum(fact.kind == "person" for fact in temporal_answer_facts.values()) == 1
-    assert "f-inc-2026-004-owner" in temporal_answer_ids
-    replacement = next(
-        question
+    assert all(
+        question.as_of == temporal_answer_facts[qrel.fact_id].date.isoformat()
         for question in temporal
-        if any(qrel.fact_id == "f-inc-2026-004-owner" for qrel in question.qrels)
+        for qrel in question.qrels
+        if qrel.rel == 2 and qrel.fact_id in temporal_answer_facts
     )
-    assert replacement.as_of == "2026-04-18"
 
     document_facts = {
         doc_id: {span["fact_id"] for span in document["fact_spans"]}
@@ -509,4 +581,10 @@ def test_actual_repository_specs_meet_quotas_validate_and_are_deterministic(
         == summary["unmarked_candidate_questions"]
     )
     assert set(summary["candidates"]) == {"gold", "silver"}
+    caps = {"gold": (1, 2), "silver": (2, 4)}
+    for set_name, (type_cap, set_cap) in caps.items():
+        per_type = summary["diversity"][set_name]
+        assert all(v["max_per_subject"] <= type_cap for v in per_type.values())
+        assert summary["diversity_totals"][set_name]["max_per_subject"] <= set_cap
+    assert set(summary["gold_silver_overlap"]) == {"subjects", "silver_questions"}
     assert summary["rejected_candidates"]

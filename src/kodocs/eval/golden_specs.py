@@ -10,8 +10,7 @@ import sqlite3
 from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
-from datetime import timedelta
-from itertools import combinations, pairwise
+from itertools import combinations
 from pathlib import Path
 
 from kodocs.eval.golden import (
@@ -114,6 +113,10 @@ class _Candidate:
     temporal_candidate_count: int = 0
     document_fact_ids: Mapping[str, frozenset[str]] | None = None
     discriminator: str = ""
+    # Diversity keys: the incidents/events (or other anchors) the answer draws
+    # on, and the service they belong to. Filled by _annotate_subjects.
+    subjects: tuple[str, ...] = ()
+    service: str = ""
 
     @property
     def key(self) -> tuple[object, ...]:
@@ -132,6 +135,11 @@ class _BuildResult:
     questions: list[Question]
     candidates: dict[str, dict[str, int]]
     rejected: Counter[str]
+    diversity: dict[str, object]
+
+
+# Per-subject caps: (within one type, across all types of one set).
+DIVERSITY_CAPS = {"gold": (1, 2), "silver": (2, 4)}
 
 
 def fact_index(
@@ -426,15 +434,12 @@ def _candidate_pools(
                 pools["multi_doc"].append(candidate)
 
     temporal_groups: dict[tuple[str, str], list[Fact]] = defaultdict(list)
-    replacement_groups: dict[tuple[str, str], list[Fact]] = defaultdict(list)
     for fact in seed.facts.values():
         service = _service_for_subject(seed, fact.subject)
         if service is None or fact.date is None or not index.get(fact.fact_id):
             continue
         if fact.kind == "text":
             temporal_groups[(service, _attribute(fact))].append(fact)
-        elif fact.kind == "person":
-            replacement_groups[(service, _attribute(fact))].append(fact)
 
     for (service, _), facts in sorted(temporal_groups.items()):
         dates = Counter(fact.date for fact in facts)
@@ -458,34 +463,6 @@ def _candidate_pools(
                 as_of=fact.date.isoformat(),
                 temporal_mode="event",
                 temporal_candidate_count=len(facts),
-            )
-            if candidate is not None:
-                pools["temporal"].append(candidate)
-
-    for (service, _), facts in sorted(replacement_groups.items()):
-        ordered = sorted(facts, key=lambda item: (item.date, item.fact_id))
-        for old, new in pairwise(ordered):
-            if old.value == new.value or old.date is None or new.date is None:
-                continue
-            gap = (new.date - old.date).days
-            if gap <= 1:
-                rejected["temporal_replacement_has_no_between_date"] += 1
-                continue
-            as_of = old.date + timedelta(days=gap // 2)
-            candidate = _fact_candidate(
-                "temporal",
-                (service,),
-                (old,),
-                seed=seed,
-                docs=docs,
-                index=index,
-                people=people,
-                document_fact_ids=document_fact_ids,
-                tags=("temporal:as_of_event",),
-                as_of=as_of.isoformat(),
-                temporal_mode="replacement",
-                temporal_candidate_count=len(ordered),
-                discriminator=new.fact_id,
             )
             if candidate is not None:
                 pools["temporal"].append(candidate)
@@ -625,18 +602,111 @@ def _sql_candidates(
         connection.close()
 
 
-def _take_candidates(
+def _annotate_subjects(
+    candidate: _Candidate, seed: Seed, docs: Mapping[str, Mapping[str, object]]
+) -> _Candidate:
+    subjects = sorted(
+        {
+            seed.facts[fact_id].subject
+            for fact_id in candidate.answer_fact_ids
+            if fact_id in seed.facts
+        }
+    )
+    if not subjects:
+        if candidate.type == "permission":
+            subjects = [f"doc:{candidate.discriminator}"]
+        elif candidate.type == "sql":
+            subjects = [f"sql:{candidate.discriminator}"]
+        else:
+            subjects = list(candidate.anchor_values[:1])
+    service = next(
+        (s for s in (_service_for_subject(seed, x) for x in subjects) if s), None
+    )
+    if service is None and candidate.type == "permission":
+        team = docs.get(candidate.discriminator, {}).get("team")
+        service = f"team:{team}" if isinstance(team, str) else None
+    return replace(candidate, subjects=tuple(subjects), service=service or "none")
+
+
+def _select_diverse(
+    candidates: Sequence[_Candidate],
+    quota: int,
+    *,
     set_name: str,
     question_type: str,
-    candidates: Sequence[object],
-    quota: int,
-) -> list[object]:
-    if len(candidates) < quota:
-        raise SpecBuildError(
-            f"candidate shortage: set={set_name} type={question_type} "
-            f"candidates={len(candidates)} quota={quota}"
+    seed_key: str,
+    type_cap: int,
+    set_cap: int,
+    set_counts: Counter[str],
+    avoid: frozenset[str] = frozenset(),
+) -> list[_Candidate]:
+    """Shuffle deterministically, then take round-robin by service then subject.
+
+    A candidate is taken only while every subject it draws on stays under the
+    per-type cap and the per-set cap (multi_doc counts each subject once).
+    Subjects in ``avoid`` (used by the gold set) are skipped on a first pass.
+    Caps are never relaxed: a shortage raises with the achievable maximum.
+    """
+    shuffled = list(candidates)
+    random.Random(seed_key).shuffle(shuffled)
+    by_service: dict[str, dict[str, list[_Candidate]]] = {}
+    for candidate in shuffled:
+        first = candidate.subjects[0] if candidate.subjects else ""
+        by_service.setdefault(candidate.service, {}).setdefault(first, []).append(
+            candidate
         )
-    return list(candidates[:quota])
+    type_counts: Counter[str] = Counter()
+    selected: list[_Candidate] = []
+    taken: set[int] = set()
+
+    def allowed(candidate: _Candidate, skip: frozenset[str]) -> bool:
+        return all(
+            type_counts[s] < type_cap and set_counts[s] < set_cap and s not in skip
+            for s in candidate.subjects
+        )
+
+    for skip in (avoid, frozenset()) if avoid else (frozenset(),):
+        rotation = {service: 0 for service in by_service}
+        progress = True
+        while len(selected) < quota and progress:
+            progress = False
+            for service, subjects in by_service.items():
+                if len(selected) >= quota:
+                    break
+                keys = list(subjects)
+                for offset in range(len(keys)):
+                    key = keys[(rotation[service] + offset) % len(keys)]
+                    pick = next(
+                        (
+                            c
+                            for c in subjects[key]
+                            if id(c) not in taken and allowed(c, skip)
+                        ),
+                        None,
+                    )
+                    if pick is None:
+                        continue
+                    rotation[service] = (rotation[service] + offset + 1) % len(keys)
+                    taken.add(id(pick))
+                    selected.append(pick)
+                    type_counts.update(pick.subjects)
+                    set_counts.update(pick.subjects)
+                    progress = True
+                    break
+    if len(selected) < quota:
+        raise SpecBuildError(
+            f"diversity shortage: set={set_name} type={question_type} "
+            f"max={len(selected)} quota={quota}"
+        )
+    return selected
+
+
+def _diversity(selected: Sequence[_Candidate]) -> dict[str, int]:
+    counts = Counter(s for candidate in selected for s in candidate.subjects)
+    return {
+        "distinct_subjects": len(counts),
+        "max_per_subject": max(counts.values(), default=0),
+    }
 
 
 def _build_specs_result(
@@ -662,41 +732,98 @@ def _build_specs_result(
                 rejected[f"{question_type}_no_eligible_asker"] += 1
         eligible[question_type] = accepted
 
+    eligible = {
+        question_type: [_annotate_subjects(c, seed, docs) for c in candidates]
+        for question_type, candidates in eligible.items()
+    }
     candidate_counts: dict[str, dict[str, int]] = {"gold": {}, "silver": {}}
-    selected_gold: list[_Candidate] = []
-    for question_type in QUESTION_TYPES:
-        quota = GOLD_QUOTA.get((question_type, "synthetic"), 0)
-        if not quota:
-            continue
+    diversity: dict[str, dict[str, dict[str, int]]] = {"gold": {}, "silver": {}}
+    totals: dict[str, Counter[str]] = {"gold": Counter(), "silver": Counter()}
+
+    def by_scarcity(quotas: Mapping[str, int], pools: Mapping[str, list]) -> list[str]:
+        # Scarce types first so the per-set cap does not starve them.
+        return sorted(
+            (t for t, q in quotas.items() if q),
+            key=lambda t: (len(pools.get(t, [])) / quotas[t], t),
+        )
+
+    gold_quotas = {
+        question_type: GOLD_QUOTA.get((question_type, "synthetic"), 0)
+        for question_type in QUESTION_TYPES
+    }
+    type_cap, set_cap = DIVERSITY_CAPS["gold"]
+    gold_by_type: dict[str, list[_Candidate]] = {}
+    for question_type in by_scarcity(gold_quotas, eligible):
         available = eligible.get(question_type, [])
         candidate_counts["gold"][question_type] = len(available)
-        selected_gold.extend(
-            _take_candidates("gold", question_type, available, quota)  # type: ignore[arg-type]
+        gold_by_type[question_type] = _select_diverse(
+            available,
+            gold_quotas[question_type],
+            set_name="gold",
+            question_type=question_type,
+            seed_key=f"{random_seed}:gold:{question_type}",
+            type_cap=type_cap,
+            set_cap=set_cap,
+            set_counts=totals["gold"],
         )
+        diversity["gold"][question_type] = _diversity(gold_by_type[question_type])
+    selected_gold = [c for t in QUESTION_TYPES for c in gold_by_type.get(t, [])]
 
     gold_answer_facts = {
         fact_id for candidate in selected_gold for fact_id in candidate.answer_fact_ids
     }
     gold_keys = {candidate.key for candidate in selected_gold}
-    selected_silver: list[_Candidate] = []
-    for question_type, quota in SILVER_QUOTA.items():
-        available = [
+    gold_subjects = frozenset(s for c in selected_gold for s in c.subjects)
+    silver_pools = {
+        question_type: [
             candidate
             for candidate in eligible[question_type]
             if candidate.key not in gold_keys
             and gold_answer_facts.isdisjoint(candidate.answer_fact_ids)
         ]
+        for question_type in SILVER_QUOTA
+    }
+    type_cap, set_cap = DIVERSITY_CAPS["silver"]
+    silver_by_type: dict[str, list[_Candidate]] = {}
+    for question_type in by_scarcity(SILVER_QUOTA, silver_pools):
+        available = silver_pools[question_type]
         candidate_counts["silver"][question_type] = len(available)
-        if question_type == "temporal":
-            events = [c for c in available if c.temporal_mode == "event"]
-            replacements = [c for c in available if c.temporal_mode == "replacement"]
-            chosen = [
-                *_take_candidates("silver", "temporal:event", events, quota - 1),
-                *_take_candidates("silver", "temporal:replacement", replacements, 1),
-            ]
-        else:
-            chosen = _take_candidates("silver", question_type, available, quota)
-        selected_silver.extend(chosen)  # type: ignore[arg-type]
+        silver_by_type[question_type] = _select_diverse(
+            available,
+            SILVER_QUOTA[question_type],
+            set_name="silver",
+            question_type=question_type,
+            seed_key=f"{random_seed}:silver:{question_type}",
+            type_cap=type_cap,
+            set_cap=set_cap,
+            set_counts=totals["silver"],
+            avoid=gold_subjects,
+        )
+        diversity["silver"][question_type] = _diversity(silver_by_type[question_type])
+    selected_silver = [c for t in SILVER_QUOTA for c in silver_by_type[t]]
+    silver_touching_gold = [
+        c for c in selected_silver if gold_subjects.intersection(c.subjects)
+    ]
+    diversity_summary: dict[str, object] = {
+        "diversity": {k: dict(sorted(v.items())) for k, v in diversity.items()},
+        "diversity_totals": {
+            set_name: {
+                "distinct_subjects": len(counter),
+                "max_per_subject": max(counter.values(), default=0),
+            }
+            for set_name, counter in totals.items()
+        },
+        "diversity_caps": {
+            set_name: {"per_type": caps[0], "per_set": caps[1]}
+            for set_name, caps in DIVERSITY_CAPS.items()
+        },
+        "gold_silver_overlap": {
+            "subjects": len(
+                gold_subjects & {s for c in selected_silver for s in c.subjects}
+            ),
+            "silver_questions": len(silver_touching_gold),
+        },
+    }
 
     questions: list[Question] = []
     ordinal = 0
@@ -749,7 +876,7 @@ def _build_specs_result(
             validation_errors.append(f"{question.id}: {','.join(errors)}")
     if validation_errors:
         raise SpecBuildError("validation errors: " + "; ".join(validation_errors))
-    return _BuildResult(questions, candidate_counts, rejected)
+    return _BuildResult(questions, candidate_counts, rejected, diversity_summary)
 
 
 def _fact_candidate(
@@ -1012,6 +1139,7 @@ def _summary(
             set_name: dict(sorted(type_counts.items()))
             for set_name, type_counts in sorted(result.candidates.items())
         },
+        **result.diversity,
         "inputs": {
             "seed_files_sha256": seed_hashes,
             "docs_sha256": docs_hash,

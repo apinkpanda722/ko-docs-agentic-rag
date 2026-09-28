@@ -9,10 +9,10 @@
       "unanswerable": 67
     },
     "silver": {
-      "identifier": 207,
-      "multi_doc": 4606,
+      "identifier": 202,
+      "multi_doc": 4314,
       "permission": 25,
-      "semantic": 88,
+      "semantic": 84,
       "temporal": 87,
       "unanswerable": 64
     }
@@ -34,6 +34,84 @@
       "temporal": 20,
       "unanswerable": 15
     }
+  },
+  "diversity": {
+    "gold": {
+      "identifier": {
+        "distinct_subjects": 5,
+        "max_per_subject": 1
+      },
+      "multi_doc": {
+        "distinct_subjects": 12,
+        "max_per_subject": 1
+      },
+      "permission": {
+        "distinct_subjects": 5,
+        "max_per_subject": 1
+      },
+      "semantic": {
+        "distinct_subjects": 5,
+        "max_per_subject": 1
+      },
+      "sql": {
+        "distinct_subjects": 6,
+        "max_per_subject": 1
+      },
+      "unanswerable": {
+        "distinct_subjects": 3,
+        "max_per_subject": 1
+      }
+    },
+    "silver": {
+      "identifier": {
+        "distinct_subjects": 23,
+        "max_per_subject": 2
+      },
+      "multi_doc": {
+        "distinct_subjects": 48,
+        "max_per_subject": 2
+      },
+      "permission": {
+        "distinct_subjects": 15,
+        "max_per_subject": 1
+      },
+      "semantic": {
+        "distinct_subjects": 32,
+        "max_per_subject": 2
+      },
+      "temporal": {
+        "distinct_subjects": 20,
+        "max_per_subject": 1
+      },
+      "unanswerable": {
+        "distinct_subjects": 14,
+        "max_per_subject": 2
+      }
+    }
+  },
+  "diversity_caps": {
+    "gold": {
+      "per_set": 2,
+      "per_type": 1
+    },
+    "silver": {
+      "per_set": 4,
+      "per_type": 2
+    }
+  },
+  "diversity_totals": {
+    "gold": {
+      "distinct_subjects": 34,
+      "max_per_subject": 2
+    },
+    "silver": {
+      "distinct_subjects": 77,
+      "max_per_subject": 4
+    }
+  },
+  "gold_silver_overlap": {
+    "silver_questions": 0,
+    "subjects": 0
   },
   "inputs": {
     "db_content_hash": "1d59c69de93c8923c3084b017335dfa0ec21840a0eac357b2ba4b61d5247f10e",
@@ -98,8 +176,8 @@
   },
   "tags": {
     "canary": 20,
-    "injection": 13,
+    "injection": 30,
     "temporal:as_of_event": 20
   },
-  "unmarked_candidate_questions": 47
+  "unmarked_candidate_questions": 46
 }
