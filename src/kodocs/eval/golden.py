@@ -479,7 +479,7 @@ def _span_matches(qrel: Qrel, document: Mapping[str, object]) -> bool:
 
 def _article_exists(qrel: Qrel, regulation_index: Mapping[str, object]) -> bool:
     match = _LAW_DOC_ID_RE.fullmatch(qrel.doc_id)
-    if match is None or not isinstance(qrel.article_key, str):
+    if match is None:
         return False
     rules = regulation_index.get("rules")
     if not isinstance(rules, Mapping):
@@ -488,6 +488,8 @@ def _article_exists(qrel: Qrel, regulation_index: Mapping[str, object]) -> bool:
     for rule in rules.values():
         if not isinstance(rule, Mapping) or str(rule.get("serial")) != serial:
             continue
+        if qrel.article_key is None:
+            return qrel.annex_id is not None
         articles = rule.get("articles")
         return isinstance(articles, Mapping) and qrel.article_key in articles
     return False

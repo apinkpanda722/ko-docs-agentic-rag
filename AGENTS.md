@@ -82,5 +82,7 @@ make queries-dry   # 합성 문항 질문 문장 Batch 예상 토큰·비용(추
 make queries       # 합성 문항 질문 문장 Batch 생성/수거 → 결정론 검증 — 실제 API 호출·과금, 사용자 실행
 make query-validate  # 수거한 질의 초안 결정론 재검증(답 누수·어휘 겹침 상한·태그) → data/manifest/golden_query_validation.json (네트워크 없음)
 make lexical-report  # 수거한 질의 초안의 어휘 겹침 분포·상한 후보별 초과 수 출력(파일 쓰지 않음, 상한 확정용, 네트워크 없음)
+make golden-real-candidates  # 실제 규정 문항 후보(조 제목·확정 표·개정 쌍) → data/interim/golden/real_candidates.md (로컬 전용, 네트워크 없음)
+make golden-real-check       # data/interim/golden/real_drafts.jsonl 검증(할당·조 키·개정 쌍·답 없음 ③·본문 누출) → 커밋용 투영 data/synthetic/queries/real_projection.jsonl (네트워크 없음)
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)
