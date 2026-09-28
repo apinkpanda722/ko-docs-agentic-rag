@@ -22,8 +22,7 @@
     },
     {
       "dir": "m4-golden-set",
-      "status": "error",
-      "failed_at": "2026-09-28T22:35:29+0900"
+      "status": "pending"
     }
   ]
 }
