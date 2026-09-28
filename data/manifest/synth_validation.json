@@ -15,14 +15,16 @@
       "planned": 30
     },
     "team": {
-      "failed": 0,
+      "failed": 1,
       "generated": 4,
       "not_generated": 76,
-      "passed": 4,
+      "passed": 3,
       "planned": 80
     }
   },
-  "by_code": {},
+  "by_code": {
+    "prompt_artifact": 1
+  },
   "by_type": {
     "guide": {
       "failed": 0,
@@ -32,10 +34,10 @@
       "planned": 30
     },
     "incident": {
-      "failed": 0,
+      "failed": 1,
       "generated": 1,
       "not_generated": 24,
-      "passed": 1,
+      "passed": 0,
       "planned": 25
     },
     "meeting": {
@@ -72,15 +74,16 @@
     "leaks": 0,
     "present": 2
   },
-  "exhausted": 0,
-  "failed": 0,
+  "exhausted": 1,
+  "failed": 1,
   "generated": 10,
   "injections": {
     "expected": 12,
     "inserted": 7
   },
+  "invalidated": 1,
   "not_generated": 190,
-  "passed": 10,
+  "passed": 9,
   "planned": 200,
   "regressed": 0,
   "warnings": {}
