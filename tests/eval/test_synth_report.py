@@ -349,6 +349,86 @@ def test_style_warnings_are_rendered(tmp_path: Path) -> None:
     assert "| 마침표+조사 이음새 | 32/199 (16.1%) | 50 |" in rendered
 
 
+def test_dry_run_estimates_file_fills_estimate_ratio_and_calibration(
+    tmp_path: Path,
+) -> None:
+    _write_inputs(tmp_path)
+    batches_path = tmp_path / "data/manifest/anthropic_batches.jsonl"
+    rows = [json.loads(line) for line in batches_path.read_text().splitlines()]
+    del rows[0]["estimated_input_tokens"]
+    rows.append(
+        {
+            **rows[0],
+            "submission_id": "sub-2",
+            "batch_id": "batch-2",
+            "usage_totals": {**rows[0]["usage_totals"], "input_tokens": 50},
+        }
+    )
+    _write_jsonl(batches_path, rows)
+    _write_json(
+        tmp_path / "data/manifest/synth_dry_run_estimates.json",
+        {
+            "batches": {"batch-1": {"estimated_input_tokens": 125}},
+            "calibration_note": "파일럿 원장이 추정의 약 67%",
+        },
+    )
+
+    rendered = render_tables(tmp_path)
+
+    # Ratio only over batches that have an estimate (batch-1: 100 / 125).
+    assert "| dry-run 추정 입력 토큰 | 125 (추정 기록 1개 배치) |" in rendered
+    assert "| dry-run 추정 대비 실제 입력 토큰 비율 | 80.0% |" in rendered
+    assert "| 파일럿 보정 근거 | 파일럿 원장이 추정의 약 67% |" in rendered
+
+
+def test_uncollected_batch_is_noted_in_generation_and_validation(
+    tmp_path: Path,
+) -> None:
+    _write_inputs(tmp_path)
+    batches_path = tmp_path / "data/manifest/anthropic_batches.jsonl"
+    rows = [json.loads(line) for line in batches_path.read_text().splitlines()]
+    rows.append(
+        {
+            "submission_id": "sub-retry",
+            "batch_id": "batch-retry",
+            "state": "submitted",
+            "n_requests": 1,
+            "custom_ids": ["syn-incident-007-a3"],
+            "expires_at": "2026-09-29T06:16:08.5+00:00",
+            "ts": "2026-09-28T06:16:08+00:00",
+        }
+    )
+    _write_jsonl(batches_path, rows)
+
+    rendered = render_tables(tmp_path)
+
+    note = (
+        "미수거 배치 `batch-retry`(syn-incident-007-a3): 재시도 배치 제출됨·수거 대기"
+        "(만료 2026-09-29 15:16 KST). 코퍼스는 통과 2건 기준, 수거 결과는 후속 PR로 반영."
+    )
+    assert rendered.count(note) == 2
+
+
+def test_special_rows_use_registry_expected_and_validation_counts(
+    tmp_path: Path,
+) -> None:
+    _write_inputs(tmp_path)
+
+    rendered = render_tables(tmp_path)
+
+    assert "| 특수 | 카나리아 포함 | 30 | 2 |" in rendered
+    assert "| 특수 | 인젝션 포함 | 12 | 1 |" in rendered
+
+
+def test_review_section_labels_style_natural_as_naturalness(tmp_path: Path) -> None:
+    _write_inputs(tmp_path)
+
+    rendered = render_tables(tmp_path)
+
+    assert "| 문체 자연스러움 |" in rendered
+    assert "문체 다양성" not in rendered
+
+
 def test_write_report_preserves_outside_generated_region_and_omits_doc_body(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

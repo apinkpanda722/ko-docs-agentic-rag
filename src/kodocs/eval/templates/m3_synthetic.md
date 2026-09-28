@@ -49,6 +49,8 @@
 
 검수 표본(2026-09-28, `make review-sample`): 모집단 199건(incident-007 재시도 대기 중) 기준으로 추출, 이후 모집단이 바뀌어도 표본은 다시 뽑지 않음. 표본 20건 유형 guide 3·incident 3·meeting 5·notice 3·runbook 3·weekly 3, 권한 public 9·team 7·restricted 4, 부족 층 없음. 전체 2회차(msgbatch_01D4aUrs24E51Gaa9bdEYxyG, REGENERATE_TYPES=incident, 31건, $0.4313) 뒤 통과 199/200이며, syn-incident-007 시도 3(msgbatch_014CrGYtdjE38eego1bRPJop)은 수거 전이다. 수거 후에는 검증·지표·결과 문서만 갱신하고 `make review-sample`은 다시 실행하지 않는다.
 
+syn-incident-007: 재시도 배치 제출됨·수거 대기(`msgbatch_014CrGYtdjE38eego1bRPJop`, 시도 3, 만료 2026-09-29 15:16 KST). 코퍼스는 199건 기준, 수거 결과는 후속 PR로 반영.
+
 ## 11. 알려진 한계
 
 사람 검수(20건, 2026-09-28, 판단 초안 Claude·사람 확인) 뒤 전체 통과본 199건(syn-incident-007 재시도 대기 중)을 기준으로 센 수치다. 이번 코퍼스 버전에서는 재생성하지 않는다. 재현용 카운트는 `synth_metrics`의 `style_warnings`(5절 "문체 경고")이며 실패 조건이 아니다.

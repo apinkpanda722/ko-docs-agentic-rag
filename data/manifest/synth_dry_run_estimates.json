@@ -1,0 +1,18 @@
+{
+  "batches": {
+    "msgbatch_01D4aUrs24E51Gaa9bdEYxyG": {
+      "command": "make generate-dry REGENERATE_TYPES=incident",
+      "estimated_batch_cost_usd": 0.71,
+      "estimated_input_tokens": 114756,
+      "requests": 31
+    },
+    "msgbatch_01SHc7eNEULByVhCSyVD4GFp": {
+      "command": "make generate-dry",
+      "estimated_batch_cost_usd": 3.31,
+      "estimated_input_tokens": 553561,
+      "requests": 191
+    }
+  },
+  "calibration_note": "파일럿 원장이 dry-run 예상 비용의 약 67%(3차 $0.1287/$0.19, 4차 $0.1272/$0.19). 전체 생성 1회차 실측 $2.2491/예상 $3.31(68%), 2회차 $0.4313/예상 $0.71(61%)로 확인. 추정은 예산 상한 판단용이라 `chars_per_token_estimate`는 보정하지 않았다.",
+  "source": "제출 직전 dry-run 출력(VAT 포함 Batch 예상 비용). 배치 manifest에는 추정값이 저장되지 않아 따로 기록한다. 파일럿 1·2차와 syn-incident-007 재시도 배치는 dry-run 기록이 없다."
+}

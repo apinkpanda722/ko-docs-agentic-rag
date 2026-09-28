@@ -29,6 +29,9 @@ _REVIEW_PATH = Path("data/manifest/synth_review.json")
 _DB_PATH = Path("data/manifest/synth_db.json")
 _BATCHES_PATH = Path("data/manifest/anthropic_batches.jsonl")
 _COSTS_PATH = Path("data/manifest/costs.jsonl")
+# The batch manifest never stored dry-run estimates; observed ones live here.
+_DRY_RUNS_PATH = Path("data/manifest/synth_dry_run_estimates.json")
+_KST = ZoneInfo("Asia/Seoul")
 _PLAN_PATH = Path("data/synthetic/plan.jsonl")
 _CANARIES_PATH = Path("data/synthetic/canaries.json")
 _INJECTIONS_PATH = Path("data/synthetic/injections.json")
@@ -112,13 +115,15 @@ def _render_tables(root: Path, *, run_date: date | None) -> str:
     canaries = _load_optional_json(root / _CANARIES_PATH)
     injections = _load_optional_json(root / _INJECTIONS_PATH)
     review = _load_optional_json(root / _REVIEW_PATH)
+    dry_runs = _load_optional_json(root / _DRY_RUNS_PATH)
     latest_batches = _latest_batches(batches)
+    pending = _pending_batch_notes(latest_batches, validation)
     sections = [
         _execution_section(root, run_date, metrics, synth_db, latest_batches),
         _fixed_conditions_section(metrics, plans),
-        _generation_cost_section(latest_batches, costs),
-        _validation_section(validation, canaries, injections),
-        _quality_section(metrics),
+        _generation_cost_section(latest_batches, costs, dry_runs, pending),
+        _validation_section(validation, canaries, injections, pending),
+        _quality_section(metrics, validation),
         _database_section(synth_db),
         _review_section(review),
     ]
@@ -230,18 +235,30 @@ def _fixed_conditions_section(
 
 
 def _generation_cost_section(
-    batches: Sequence[Mapping[str, object]], costs: Sequence[Mapping[str, object]]
+    batches: Sequence[Mapping[str, object]],
+    costs: Sequence[Mapping[str, object]],
+    dry_runs: Mapping[str, object],
+    pending: Sequence[str],
 ) -> str:
     batch_rows: list[list[object]] = []
     estimated_inputs: list[int] = []
+    estimated_actual = 0
     actual_input = 0
+    dry_run_batches = _mapping(dry_runs.get("batches"))
     for batch in batches:
         result_counts = _mapping(batch.get("result_counts"))
         usage = _mapping(batch.get("usage_totals"))
         estimate = _estimated_input_tokens(batch)
+        if estimate is None:
+            estimate = _estimated_input_tokens(
+                _mapping(dry_run_batches.get(str(batch.get("batch_id"))))
+            )
+        batch_input = _integer(usage.get("input_tokens")) or 0
         if estimate is not None:
             estimated_inputs.append(estimate)
-        actual_input += _integer(usage.get("input_tokens")) or 0
+            # Compare only batches that have an estimate (pilots 1-2 have none).
+            estimated_actual += batch_input
+        actual_input += batch_input
         batch_rows.append(
             [
                 batch.get("batch_id"),
@@ -263,23 +280,34 @@ def _generation_cost_section(
     ledger_total = math.fsum(anthropic_amounts) if anthropic_amounts else None
     estimated_total = sum(estimated_inputs) if estimated_inputs else None
     ratio = (
-        actual_input / estimated_total
+        estimated_actual / estimated_total
         if estimated_total is not None and estimated_total > 0
         else None
     )
+    calibration = dry_runs.get("calibration_note")
     cost_rows = [
         ["Anthropic 원장 합계(VAT 포함, USD)", _usd(ledger_total)],
         [
             "콘솔 대조용 원장 합계(VAT 제외 환산, USD)",
             _usd(ledger_total / 1.1) if ledger_total is not None else None,
         ],
-        ["dry-run 추정 입력 토큰", estimated_total],
+        [
+            "dry-run 추정 입력 토큰",
+            (
+                f"{estimated_total} (추정 기록 {len(estimated_inputs)}개 배치)"
+                if estimated_total is not None
+                else None
+            ),
+        ],
         ["실제 입력 토큰", actual_input if batches else None],
         ["dry-run 추정 대비 실제 입력 토큰 비율", _percent(ratio)],
         [
             "파일럿 보정 근거",
             (
-                "파일럿 actual/dry-run 비율로 `chars_per_token_estimate` 보정 여부를 판단"
+                calibration
+                if isinstance(calibration, str) and calibration
+                else "파일럿 actual/dry-run 비율로 `chars_per_token_estimate` "
+                "보정 여부를 판단"
                 if ratio is not None
                 else None
             ),
@@ -299,6 +327,7 @@ def _generation_cost_section(
             "### 원장·dry-run 대조",
             "",
             _table(["항목", "값"], cost_rows),
+            *_note_lines(pending),
         ]
     )
 
@@ -307,6 +336,7 @@ def _validation_section(
     validation: Mapping[str, object],
     canaries: Mapping[str, object],
     injections: Mapping[str, object],
+    pending: Sequence[str],
 ) -> str:
     generated = _integer(validation.get("generated"))
     has_generated_documents = generated is not None and generated > 0
@@ -359,11 +389,42 @@ def _validation_section(
             "### 카나리아 30·인젝션 12 확인",
             "",
             _table(["레지스트리", "예상", "확인", "누설"], registry_rows),
+            *_note_lines(pending),
         ]
     )
 
 
-def _quality_section(metrics: Mapping[str, object]) -> str:
+def _pending_batch_notes(
+    batches: Sequence[Mapping[str, object]], validation: Mapping[str, object]
+) -> list[str]:
+    """One line per submitted but uncollected batch; gone once it is collected."""
+    notes = []
+    for batch in batches:
+        if batch.get("state") not in {"submitting", "submitted"}:
+            continue
+        expires = batch.get("expires_at")
+        expiry = (
+            datetime.fromisoformat(expires).astimezone(_KST).strftime("%Y-%m-%d %H:%M")
+            if isinstance(expires, str)
+            else None
+        )
+        notes.append(
+            f"미수거 배치 `{_display(batch.get('batch_id'))}`"
+            f"({', '.join(_string_list(batch.get('custom_ids')))}): "
+            f"재시도 배치 제출됨·수거 대기(만료 {_display(expiry)} KST). "
+            f"코퍼스는 통과 {_display(validation.get('passed'))}건 기준, "
+            "수거 결과는 후속 PR로 반영."
+        )
+    return notes
+
+
+def _note_lines(notes: Sequence[str]) -> list[str]:
+    return [line for note in notes for line in ("", note)]
+
+
+def _quality_section(
+    metrics: Mapping[str, object], validation: Mapping[str, object]
+) -> str:
     duplicate = _mapping(metrics.get("duplicate"))
     repeated = _mapping(metrics.get("repeated_sentences"))
     length = _mapping(_mapping(metrics.get("length")).get("by_type"))
@@ -402,7 +463,7 @@ def _quality_section(metrics: Mapping[str, object]) -> str:
         "",
         "### 분포",
         "",
-        _distribution_table(distribution),
+        _distribution_table(distribution, validation),
         "",
         "### 사실 커버리지",
         "",
@@ -553,7 +614,9 @@ def _style_rows(scope: str, values: Mapping[str, object]) -> list[list[object]]:
     ]
 
 
-def _distribution_table(distribution: Mapping[str, object]) -> str:
+def _distribution_table(
+    distribution: Mapping[str, object], validation: Mapping[str, object]
+) -> str:
     rows: list[list[object]] = []
     for dimension, label in (
         ("by_type", "유형"),
@@ -564,10 +627,18 @@ def _distribution_table(distribution: Mapping[str, object]) -> str:
         for category, raw in sorted(values.items()):
             counts = _mapping(raw)
             rows.append([label, category, counts.get("planned"), counts.get("passed")])
+    # Planned = registry size; passed = validation summary counts.
+    canary = _mapping(validation.get("canary"))
+    injection = _mapping(validation.get("injections"))
     rows.extend(
         [
-            ["특수", "카나리아 포함", None, distribution.get("canary_documents")],
-            ["특수", "인젝션 포함", None, distribution.get("injection_documents")],
+            ["특수", "카나리아 포함", canary.get("expected"), canary.get("present")],
+            [
+                "특수",
+                "인젝션 포함",
+                injection.get("expected"),
+                injection.get("inserted"),
+            ],
         ]
     )
     return _table(["차원", "값", "계획", "통과"], rows)
@@ -711,7 +782,7 @@ def _review_section(review: Mapping[str, object]) -> str:
         ["검수 표본 선정", result(selected)],
         ["사실 일관성", result(consistency_text)],
         [
-            "문체 다양성",
+            "문체 자연스러움",
             result(_rating_text(style)),
         ],
         ["현실감", result(_rating_text(realism))],
