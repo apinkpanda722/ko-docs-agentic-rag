@@ -45,7 +45,7 @@ MARKER_RE = re.compile(
 )
 # 2: 사실 표시를 ⟦F:…⟧…⟦/F⟧에서 <fact id="…">…</fact>로 교체(파일럿 1차 4/10 깨짐),
 #    계획이 준 식별자·규정 사실 인정, prompt_artifact 추가.
-VALIDATOR_VERSION = 2
+VALIDATOR_VERSION = 3
 
 _MARKER_TOKEN_RE = re.compile(
     r'<fact id="(?P<fid>f-[a-z0-9]+(?:-[a-z0-9]+)*)">|(?P<close></fact>)'
@@ -320,8 +320,9 @@ def _validate_document_candidate(
                 )
             )
 
-    # Identifiers the plan itself hands to the model (assigned id facts and the
-    # title hint, e.g. an incident report's own INC number) count as assigned.
+    # Identifiers the plan itself hands to the model (assigned id facts, the
+    # title hint, e.g. an incident report's own INC number, and the incident an
+    # assigned incident fact belongs to) count as assigned.
     assigned_ids = {
         str(seed.facts[fact_id].value)
         for fact_id in doc.fact_ids
@@ -332,6 +333,12 @@ def _validate_document_candidate(
         value
         for kind in ("ticket", "approval", "incident")
         for value, _, _ in title_identifiers[kind]
+    }
+    assigned_ids |= {
+        value
+        for fact_id in doc.fact_ids
+        if fact_id in seed.facts
+        for value, _, _ in extract_identifiers(seed.facts[fact_id].subject)["incident"]
     }
     identifiers = extract_identifiers(body)
     for kind in ("ticket", "approval", "incident"):

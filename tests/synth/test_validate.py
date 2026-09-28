@@ -627,6 +627,34 @@ def test_identifier_given_by_title_hint_counts_as_assigned() -> None:
     assert "unassigned_identifier" not in _codes(issues)
 
 
+def test_incident_number_of_assigned_incident_fact_counts_as_assigned() -> None:
+    cause = replace(_fact("f-inc-2025-001-cause"), subject="INC-2025-001")
+    text = _markdown(
+        '<fact id="f-inc-2025-001-cause">검증 대상 사실</fact>',
+        extra="\nINC-2025-001 재발 방지",
+    )
+    _, issues = _validate(_plan(cause.fact_id), _generation(text), _seed(cause))
+
+    assert "unassigned_identifier" not in _codes(issues)
+
+
+def test_other_identifiers_of_that_incident_stay_unassigned() -> None:
+    cause = replace(_fact("f-inc-2025-001-cause"), subject="INC-2025-001")
+    ticket = replace(
+        _fact("f-inc-2025-001-ticket", kind="id", value="SRE-1004"),
+        subject="INC-2025-001",
+    )
+    text = _markdown(
+        '<fact id="f-inc-2025-001-cause">검증 대상 사실</fact>',
+        extra="\nINC-2025-001 후속 SRE-1004",
+    )
+    _, issues = _validate(_plan(cause.fact_id), _generation(text), _seed(cause, ticket))
+
+    assert [
+        issue.detail for issue in issues if issue.code == "unassigned_identifier"
+    ] == ["배정되지 않은 ticket 식별자입니다: SRE-1004"]
+
+
 def test_assigned_regulation_fact_counts_as_planned_regulation() -> None:
     regulation = _fact(kind="regulation", value="출장규칙 제8조")
     text = _markdown('<fact id="f-topic">출장규칙 제8조</fact>에 따라 정산한다.')
@@ -654,10 +682,23 @@ def _faithful_body(plan: DocPlan, seed: Seed, canary_values: dict[str, str]) -> 
     references = "".join(
         f"\n{reference}를 참조한다." for reference in plan.regulation_refs
     )
+    # A model naturally names the incident an assigned incident fact belongs to.
+    incidents = "".join(
+        f"\n{subject} 관련 내용이다."
+        for subject in sorted(
+            {
+                seed.facts[fact_id].subject
+                for fact_id in plan.fact_ids
+                if fact_id in seed.facts
+                and seed.facts[fact_id].subject.startswith("INC-")
+            }
+        )
+    )
     return (
         f"# {plan.title_hint}\n\n{filler}\n\n"
         + "\n".join(marked)
         + references
+        + incidents
         + f"\n\n## 마무리\n{filler}"
     )
 

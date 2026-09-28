@@ -378,7 +378,8 @@ def run(
                 any_save_failure = any_save_failure or not saved
                 collected_batches += int(saved)
             if any_in_progress:
-                print_fn("진행 중입니다. 나중에 `make generate`를 다시 실행하세요.")
+                command = _rerun_command(limit, only_attempted)
+                print_fn(f"진행 중입니다. 나중에 `{command}`를 다시 실행하세요.")
                 return 1 if any_save_failure else 0
             if any_save_failure:
                 return 1
@@ -484,10 +485,20 @@ def run(
             },
         )
         _progress(print_fn, index, len(requests), "제출 기록")
+    command = _rerun_command(limit, only_attempted)
     print_fn(
-        "결과는 최대 24시간 뒤 준비됩니다. `make generate`를 다시 실행하면 수거합니다."
+        f"결과는 최대 24시간 뒤 준비됩니다. `{command}`를 다시 실행하면 수거합니다."
     )
     return 0
+
+
+def _rerun_command(limit: int | None, only_attempted: bool) -> str:
+    """The make target that ran this invocation, to repeat for collection."""
+    if limit is not None:
+        return "make generate-pilot"
+    if only_attempted:
+        return "make generate-pilot-rerun"
+    return "make generate"
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -650,15 +661,16 @@ def _facts_block(
         age = doc.fact_age_days.get(fact.fact_id)
         phrase = doc.fact_time_phrases.get(fact.fact_id)
         # Only the decided phrase and the date; helper wording such as the day
-        # count was copied into bodies in pilot 1.
+        # count was copied into bodies in pilot 1. The phrase and date are
+        # labelled as outside the marker: pilot 2 wrapped them in the fact id.
         age_text = (
-            f" | 사실 날짜 {fact.date.isoformat()} | 시점 표현: {phrase}"
+            f" | 표시 밖 시점 표현: {phrase} (사실 날짜 {fact.date.isoformat()})"
             if age is not None and phrase is not None and fact.date is not None
             else ""
         )
         lines.append(
             f"- {fact.fact_id} | {_FACT_KIND_NAMES[fact.kind]} | {value} | "
-            f"허용 표기: {allowed}{age_text}"
+            f"표시 안 허용 표기: {allowed}{age_text}"
         )
     return "\n".join(lines) or "- 없음"
 

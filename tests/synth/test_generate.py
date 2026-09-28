@@ -439,6 +439,82 @@ def test_in_progress_batch_does_not_run_post_collection_pipeline(
     assert calls == []
 
 
+RERUN_CASES = [
+    pytest.param({"limit": 10}, "make generate-pilot", id="limit"),
+    pytest.param(
+        {"limit": None, "only_attempted": True},
+        "make generate-pilot-rerun",
+        id="only-attempted",
+    ),
+    pytest.param({"limit": None}, "make generate", id="full"),
+]
+
+
+@pytest.mark.parametrize(("options", "command"), RERUN_CASES)
+def test_in_progress_message_names_the_command_that_was_run(
+    corpus: tuple[Seed, list[DocPlan]],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    options: dict[str, object],
+    command: str,
+) -> None:
+    seed, plans = corpus
+    _prepare_root(tmp_path, plans[:1], monkeypatch, seed)
+    client = FakeClient(
+        opened=[{"batch_id": "batch-open"}],
+        statuses={"batch-open": _status("in_progress")},
+    )
+    output: list[str] = []
+
+    run(
+        tmp_path,
+        client=client,  # type: ignore[arg-type]
+        config=_config(),
+        dry_run=False,
+        assume_yes=True,
+        print_fn=lambda message, **_kwargs: output.append(str(message)),
+        **options,  # type: ignore[arg-type]
+    )
+
+    assert output[-1] == f"진행 중입니다. 나중에 `{command}`를 다시 실행하세요."
+
+
+@pytest.mark.parametrize(("options", "command"), RERUN_CASES)
+def test_submit_message_names_the_command_that_was_run(
+    corpus: tuple[Seed, list[DocPlan]],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    options: dict[str, object],
+    command: str,
+) -> None:
+    seed, plans = corpus
+    selected = plans[:2]
+    _prepare_root(tmp_path, selected, monkeypatch, seed)
+    if options.get("only_attempted"):
+        for plan in selected:
+            _store_attempt(
+                tmp_path, plan, seed, attempt=1, template="0" * 64, passed=True
+            )
+    client = FakeClient()
+    output: list[str] = []
+
+    code = run(
+        tmp_path,
+        client=client,  # type: ignore[arg-type]
+        config=_config(),
+        dry_run=False,
+        assume_yes=True,
+        print_fn=lambda message, **_kwargs: output.append(str(message)),
+        **options,  # type: ignore[arg-type]
+    )
+
+    assert code == 0
+    assert len(client.submit_calls) == 1
+    assert output[-1] == (
+        f"결과는 최대 24시간 뒤 준비됩니다. `{command}`를 다시 실행하면 수거합니다."
+    )
+
+
 def _append_submitted(
     root: Path,
     plan: DocPlan,
@@ -882,6 +958,29 @@ def test_prompt_gives_calendar_phrase_per_fact_and_forbids_own_relative_time(
     assert "지난해` 또는" not in request.system
 
 
+def test_prompt_separates_marker_value_from_time_phrase_outside_marker(
+    corpus: tuple[Seed, list[DocPlan]],
+) -> None:
+    # Pilot 2: three bodies wrapped the time phrase or fact date in the fact id.
+    seed, plans = corpus
+    plan = next(plan for plan in plans if plan.fact_time_phrases)
+
+    request, _ = build_request(plan, seed, config=_config(), attempt=1)
+
+    for fact_id, phrase in plan.fact_time_phrases.items():
+        line = next(line for line in request.user.splitlines() if fact_id in line)
+        inside, _, outside = line.partition(" | 표시 밖 시점 표현: ")
+        assert "| 표시 안 허용 표기: " in inside
+        assert phrase not in inside.partition("| 표시 안 허용 표기: ")[2]
+        assert outside.startswith(f"{phrase} (사실 날짜 ")
+    assert "표시 안에는 그 사실의 값만 넣는다" in request.system
+    assert "사실 날짜·시점 표현은 표시 밖에 쓴다" in request.system
+    assert "한 사실 ID는 한 번만 감싼다" in request.system
+    assert (
+        '<fact id="f-example-owner">홍길동 팀장</fact>이 지난해 6월' in request.system
+    )
+
+
 def test_pilot_limit_on_committed_plan_covers_types_access_canary_and_retrospective() -> (
     None
 ):
@@ -961,7 +1060,7 @@ def test_prompts_for_all_plans_carry_no_person_ids_or_helper_wording(
         assert person_id.search(request.user) is None, plan.doc_id
         assert "문서 날짜 기준" not in request.user, plan.doc_id
         assert "⟦" not in request.user and "⟧" not in request.user
-    assert '<fact id="f-example-restored">2026-06-25 15:18</fact>' in request.system
+    assert '<fact id="f-example-owner">홍길동 팀장</fact>' in request.system
     assert "⟦" not in request.system
 
 
