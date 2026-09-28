@@ -549,6 +549,7 @@ def run(root: Path, *, print_fn: PrintFn = print) -> int:
             injection_expected=injection_expected,
             injections_inserted=0,
             regressed=0,
+            invalidated=0,
         )
         _atomic_write_json(root / SUMMARY_PATH, summary)
         print_fn("생성 결과 없음, `make generate` 먼저 실행하세요.")
@@ -685,6 +686,41 @@ def run(root: Path, *, print_fn: PrintFn = print) -> int:
             )
             result["status"] = "failed"
 
+    # Every file in docs/ must pass the current validator. A kept pass from an
+    # earlier attempt or validator is re-judged; one that now fails is removed
+    # (its generation cache stays, so it is reproducible) and retried.
+    kept_documents: dict[str, Mapping[str, object]] = {}
+    invalidated_ids: set[str] = set()
+    for plan in plans:
+        output_path = root / DOCS_DIR / f"{plan.doc_id}.json"
+        if results[plan.doc_id]["status"] == "passed" or not output_path.exists():
+            continue
+        kept = _revalidate_kept(
+            root,
+            plan,
+            output_path,
+            seed=seed,
+            index=index,
+            banned_names=banned_names,
+            canaries=canaries,
+            injection=injection_by_id.get(plan.injection_id),
+            validated_with=validated_with,
+        )
+        if kept is None:
+            invalidated_ids.add(plan.doc_id)
+        else:
+            kept_documents[plan.doc_id] = kept
+    if kept_documents:
+        final_bodies = {
+            doc_id: str(result["document"]["body"])  # type: ignore[index]
+            for doc_id, result in results.items()
+            if result["status"] == "passed"
+        } | {doc_id: str(doc["body"]) for doc_id, doc in kept_documents.items()}
+        for doc_id in check_canary_isolation(final_bodies, canaries):
+            if doc_id in kept_documents:
+                del kept_documents[doc_id]
+                invalidated_ids.add(doc_id)
+
     existing_failure_keys = {
         (row.get("doc_id"), row.get("attempt"))
         for row in latest_records(
@@ -693,6 +729,7 @@ def run(root: Path, *, print_fn: PrintFn = print) -> int:
         )
     }
     regressed = 0
+    invalidated = 0
     for plan in plans:
         result = results[plan.doc_id]
         status = result["status"]
@@ -703,9 +740,14 @@ def run(root: Path, *, print_fn: PrintFn = print) -> int:
                 raise TypeError(f"통과 문서가 객체가 아닙니다: {plan.doc_id}")
             _assert_span_invariants(document)
             _atomic_write_json(output_path, document)
-        elif status == "failed":
-            if output_path.exists():
-                regressed += 1
+        elif plan.doc_id in invalidated_ids:
+            output_path.unlink()
+            invalidated += 1
+        elif plan.doc_id in kept_documents:
+            _assert_span_invariants(kept_documents[plan.doc_id])
+            _atomic_write_json(output_path, kept_documents[plan.doc_id])
+            regressed += int(status == "failed")
+        if status == "failed":
             key = (plan.doc_id, result["attempt"])
             if key not in existing_failure_keys:
                 issues = result.get("issues", [])
@@ -776,6 +818,7 @@ def run(root: Path, *, print_fn: PrintFn = print) -> int:
         injection_expected=injection_expected,
         injections_inserted=injections_inserted,
         regressed=regressed,
+        invalidated=invalidated,
     )
     _atomic_write_json(root / SUMMARY_PATH, summary)
     print_fn(
@@ -784,6 +827,11 @@ def run(root: Path, *, print_fn: PrintFn = print) -> int:
     )
     if regressed:
         print_fn(f"회귀 {regressed}건: 기존 통과 파일은 보존했습니다.")
+    if invalidated:
+        print_fn(
+            f"무효화 {invalidated}건: 현재 검증기에 실패한 기존 통과본을 docs/에서 "
+            "제거했습니다(재시도 대상)."
+        )
     return 1 if summary["passed"] == 0 or regressed or ledger_leaks else 0
 
 
@@ -797,6 +845,45 @@ def main(argv: Sequence[str] | None = None) -> int:
     except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
         print(f"합성 문서 검증 실패: {_first_line(str(exc))}")
         return 1
+
+
+def _revalidate_kept(
+    root: Path,
+    plan: DocPlan,
+    path: Path,
+    *,
+    seed: Seed,
+    index: Mapping[str, object],
+    banned_names: Sequence[str],
+    canaries: Sequence[Mapping[str, object]],
+    injection: Mapping[str, object] | None,
+    validated_with: Mapping[str, object],
+) -> Mapping[str, object] | None:
+    """Re-judge a kept passing doc from its own cache; None when it now fails."""
+    try:
+        kept = json.loads(path.read_text(encoding="utf-8"))
+        generation_info = kept["generation"]
+        attempt = int(generation_info["attempt"])
+        cache_key = str(generation_info["cache_key"])
+        generation = _load_generation_cache(
+            root / GENERATIONS_DIR / f"{cache_key}.json",
+            plan=plan,
+            attempt=attempt,
+            cache_key=cache_key,
+        )
+        document, issues = _validate_document_candidate(
+            plan,
+            generation,
+            seed=seed,
+            index=index,
+            banned_names=banned_names,
+            canaries=canaries,
+            injection=injection,
+            validated_with=validated_with,
+        )
+    except Exception:  # noqa: BLE001 - an unreadable kept doc cannot be trusted
+        return None
+    return None if _has_failure(issues) else document
 
 
 def _regulation_issues(
@@ -918,6 +1005,7 @@ def _build_summary(
     injection_expected: int,
     injections_inserted: int,
     regressed: int,
+    invalidated: int,
 ) -> dict[str, object]:
     statuses = {
         plan.doc_id: str(results.get(plan.doc_id, {}).get("status", "not_generated"))
@@ -967,6 +1055,7 @@ def _build_summary(
         "not_generated": totals["not_generated"],
         "exhausted": exhausted,
         "regressed": regressed,
+        "invalidated": invalidated,
         "by_code": dict(sorted(by_code.items())),
         "by_type": dimensions("doc_type"),
         "by_access": dimensions("access"),

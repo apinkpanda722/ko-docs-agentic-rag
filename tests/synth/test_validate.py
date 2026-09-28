@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import asdict, replace
 from pathlib import Path
 from types import MappingProxyType
@@ -402,11 +403,13 @@ def _write_cache(
     *,
     cache_key: str,
     broken: bool = False,
+    attempt: int = 1,
 ) -> None:
     generation = {
         **_generation(text),
         "doc_id": plan.doc_id,
-        "custom_id": f"{plan.doc_id}-a1",
+        "attempt": attempt,
+        "custom_id": f"{plan.doc_id}-a{attempt}",
         "cache_key": cache_key,
         # Same prompt revision as the current templates.
         "template_hash": template_hash(plan.doc_type),
@@ -423,8 +426,8 @@ def _write_cache(
             json.dumps(
                 {
                     "doc_id": plan.doc_id,
-                    "attempt": 1,
-                    "custom_id": f"{plan.doc_id}-a1",
+                    "attempt": attempt,
+                    "custom_id": f"{plan.doc_id}-a{attempt}",
                     "cache_key": cache_key,
                     "batch_id": "batch-1",
                     "status": "stored",
@@ -534,9 +537,58 @@ def test_zero_passing_documents_returns_failure(
     assert validate.run(tmp_path, print_fn=lambda *_args, **_kwargs: None) == 1
 
 
-def test_previously_passing_document_that_now_fails_is_kept_and_marked_regressed(
+_OLD_PROMPT_ARTIFACT_RE = re.compile(r"(?<![A-Za-z0-9-])p-\d{3}(?!\d)|문서 날짜 기준")
+LEAK = "본 문서에서는 배정된 사실 범위 내에서 원인을 단정하지 않는다."
+
+
+def _quiet(*_args: object, **_kwargs: object) -> None:
+    return None
+
+
+def test_passed_doc_failing_the_current_validator_is_removed_and_retried(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    # (a) A doc that passed an earlier validator but fails a newer rule
+    # (pilot 4: "배정된 사실") leaves docs/ and becomes a retry target.
+    topic = _fact()
+    seed = _seed(topic)
+    stable = _plan(topic.fact_id, doc_id="syn-guide-001")
+    leaking = replace(stable, doc_id="syn-guide-002")
+    _prepare_run(tmp_path, monkeypatch, [stable, leaking], seed)
+    marked = '<fact id="f-topic">검증 대상 사실</fact>'
+    _write_cache(tmp_path, stable, _markdown(marked), cache_key="stable")
+    _write_cache(
+        tmp_path, leaking, _markdown(marked, extra=f"\n{LEAK}"), cache_key="leaking"
+    )
+    with monkeypatch.context() as old_rules:
+        old_rules.setattr(validate, "_PROMPT_ARTIFACT_RE", _OLD_PROMPT_ARTIFACT_RE)
+        assert validate.run(tmp_path, print_fn=_quiet) == 0
+    removed = tmp_path / DOCS_DIR / f"{leaking.doc_id}.json"
+    assert removed.exists()
+    messages: list[str] = []
+
+    code = validate.run(
+        tmp_path, print_fn=lambda message, **_kwargs: messages.append(message)
+    )
+    summary = json.loads((tmp_path / SUMMARY_PATH).read_text(encoding="utf-8"))
+
+    assert code == 0
+    assert not removed.exists()
+    assert (tmp_path / DOCS_DIR / f"{stable.doc_id}.json").exists()
+    assert summary["invalidated"] == 1
+    assert summary["regressed"] == 0
+    assert (summary["passed"], summary["failed"]) == (1, 1)
+    assert any("무효화 1건" in message for message in messages)
+    assert pending_docs(
+        tmp_path, [stable, leaking], config=load_generation_config()
+    ) == [(leaking, 2)]
+
+
+def test_current_pass_is_kept_when_a_newer_attempt_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # (b) Regression preservation applies only when the kept doc still passes
+    # the current validator.
     topic = _fact()
     seed = _seed(topic)
     stable = _plan(topic.fact_id, doc_id="syn-guide-001")
@@ -544,16 +596,17 @@ def test_previously_passing_document_that_now_fails_is_kept_and_marked_regressed
     _prepare_run(tmp_path, monkeypatch, [stable, regressing], seed)
     valid_text = _markdown('<fact id="f-topic">검증 대상 사실</fact>')
     _write_cache(tmp_path, stable, valid_text, cache_key="stable")
-    _write_cache(tmp_path, regressing, valid_text, cache_key="regressing")
-    assert validate.run(tmp_path, print_fn=lambda *_args, **_kwargs: None) == 0
+    _write_cache(tmp_path, regressing, valid_text, cache_key="regressing-a1")
+    assert validate.run(tmp_path, print_fn=_quiet) == 0
     kept = tmp_path / DOCS_DIR / f"{regressing.doc_id}.json"
     before = kept.read_bytes()
-
-    # The same cached generation now fails (e.g. after a stricter validator rule).
-    cache = tmp_path / "data/synthetic/generations/regressing.json"
-    generation = json.loads(cache.read_text(encoding="utf-8"))
-    generation["text"] = _markdown("표시가 없는 검증 대상 사실")
-    cache.write_text(json.dumps(generation, ensure_ascii=False), encoding="utf-8")
+    _write_cache(
+        tmp_path,
+        regressing,
+        _markdown("표시가 없는 검증 대상 사실"),
+        cache_key="regressing-a2",
+        attempt=2,
+    )
     messages: list[str] = []
 
     code = validate.run(
@@ -564,9 +617,66 @@ def test_previously_passing_document_that_now_fails_is_kept_and_marked_regressed
     assert code == 1
     assert kept.read_bytes() == before
     assert summary["regressed"] == 1
-    assert summary["passed"] == 1
-    assert summary["failed"] == 1
+    assert summary["invalidated"] == 0
+    assert (summary["passed"], summary["failed"]) == (1, 1)
     assert any("회귀 1건" in message for message in messages)
+
+
+def test_real_pilot_revalidation_invalidates_only_incident_001(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # (c) The committed pilot caches: all 10 passed validator v3; v4 removes
+    # syn-incident-001 ("배정된 사실" leak) and makes it the only retry target.
+    import shutil
+
+    from kodocs.synth.generate import _load_plan
+
+    repo = Path(__file__).parents[2]
+    shutil.copytree(repo / "data/seed", tmp_path / "data/seed")
+    for name in (
+        "plan.jsonl",
+        "canaries.json",
+        "injections.json",
+        "generation_log.jsonl",
+    ):
+        target = tmp_path / "data/synthetic" / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(repo / "data/synthetic" / name, target)
+    shutil.copytree(
+        repo / "data/synthetic/generations", tmp_path / "data/synthetic/generations"
+    )
+    (tmp_path / "data/manifest").mkdir(parents=True)
+    shutil.copy(
+        repo / "data/manifest/regulation_refs.json",
+        tmp_path / "data/manifest/regulation_refs.json",
+    )
+    with monkeypatch.context() as old_rules:
+        old_rules.setattr(validate, "_PROMPT_ARTIFACT_RE", _OLD_PROMPT_ARTIFACT_RE)
+        validate.run(tmp_path, print_fn=_quiet)
+    before = json.loads((tmp_path / SUMMARY_PATH).read_text(encoding="utf-8"))
+    assert before["passed"] == 10
+
+    validate.run(tmp_path, print_fn=_quiet)
+    summary = json.loads((tmp_path / SUMMARY_PATH).read_text(encoding="utf-8"))
+
+    assert summary["invalidated"] == 1
+    assert summary["regressed"] == 0
+    assert summary["passed"] == 9
+    assert summary["by_code"] == {"prompt_artifact": 1}
+    assert not (tmp_path / DOCS_DIR / "syn-incident-001.json").exists()
+    assert len(list((tmp_path / DOCS_DIR).glob("*.json"))) == 9
+    pilot = [
+        plan
+        for plan in _load_plan(tmp_path)
+        if (tmp_path / DOCS_DIR / f"{plan.doc_id}.json").exists()
+        or plan.doc_id == "syn-incident-001"
+    ]
+    assert [
+        (plan.doc_id, attempt)
+        for plan, attempt in pending_docs(
+            tmp_path, pilot, config=load_generation_config()
+        )
+    ] == [("syn-incident-001", 5)]
 
 
 @pytest.mark.parametrize(
