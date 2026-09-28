@@ -2,208 +2,213 @@
   "distribution": {
     "by_access": {
       "public": {
-        "passed": 4,
+        "passed": 83,
         "planned": 90
       },
       "restricted": {
-        "passed": 2,
+        "passed": 30,
         "planned": 30
       },
       "team": {
-        "passed": 4,
+        "passed": 70,
         "planned": 80
       }
     },
     "by_team": {
       "data-ai": {
-        "passed": 1,
+        "passed": 22,
         "planned": 23
       },
       "finance": {
-        "passed": 3,
+        "passed": 23,
         "planned": 25
       },
       "hr": {
-        "passed": 0,
+        "passed": 22,
         "planned": 25
       },
       "legal": {
-        "passed": 0,
+        "passed": 22,
         "planned": 25
       },
       "payments": {
-        "passed": 1,
+        "passed": 26,
         "planned": 27
       },
       "platform": {
-        "passed": 2,
+        "passed": 24,
         "planned": 26
       },
       "security": {
-        "passed": 2,
+        "passed": 24,
         "planned": 25
       },
       "sre": {
-        "passed": 1,
+        "passed": 20,
         "planned": 24
       }
     },
     "by_type": {
       "guide": {
-        "passed": 1,
+        "passed": 29,
         "planned": 30
       },
       "incident": {
-        "passed": 1,
+        "passed": 14,
         "planned": 25
       },
       "meeting": {
-        "passed": 4,
+        "passed": 46,
         "planned": 50
       },
       "notice": {
-        "passed": 1,
+        "passed": 24,
         "planned": 25
       },
       "runbook": {
-        "passed": 1,
+        "passed": 30,
         "planned": 30
       },
       "weekly": {
-        "passed": 2,
+        "passed": 40,
         "planned": 40
       }
     },
-    "canary_documents": 2,
-    "injection_documents": 7
+    "canary_documents": 30,
+    "injection_documents": 11
   },
   "duplicate": {
     "between_type": {
-      "max": 0.0466,
-      "mean": 0.0263,
-      "p95": 0.0403
+      "max": 0.1105,
+      "mean": 0.0259,
+      "p95": 0.0461
     },
     "near_duplicates": [],
     "overall": {
-      "max": 0.0811,
-      "mean": 0.0306,
-      "p95": 0.0603
+      "max": 0.21,
+      "mean": 0.0317,
+      "p95": 0.068
     },
-    "pair_count": 45,
+    "pair_count": 16653,
     "shingle_n": 5,
     "threshold": 0.5,
     "within_type": {
-      "max": 0.0811,
-      "mean": 0.0536,
-      "p95": 0.077
+      "max": 0.21,
+      "mean": 0.0578,
+      "p95": 0.0905
     }
   },
   "fact_coverage": {
-    "coverage_rate": 0.1378,
-    "covered_facts": 54,
+    "coverage_rate": 0.9668,
+    "covered_facts": 379,
     "documents_per_fact_distribution": {
-      "0": 338,
-      "1": 52,
-      "2": 2
+      "0": 13,
+      "1": 119,
+      "2": 103,
+      "3": 80,
+      "4": 42,
+      "5": 24,
+      "6": 10,
+      "7": 1
     },
-    "facts_in_2_plus_documents": 2,
+    "facts_in_2_plus_documents": 260,
     "normal_facts_total": 392
   },
   "length": {
     "by_type": {
       "guide": {
-        "coefficient_of_variation": 0.0,
-        "documents": 1,
-        "max_chars": 1806,
-        "mean_chars": 1806.0,
-        "min_chars": 1806,
-        "stddev_chars": 0.0,
-        "target_mean_chars": 1800.0,
-        "target_ratio": 1.0033
+        "coefficient_of_variation": 0.1561,
+        "documents": 29,
+        "max_chars": 2134,
+        "mean_chars": 1597.2759,
+        "min_chars": 1235,
+        "stddev_chars": 249.3435,
+        "target_mean_chars": 1758.6207,
+        "target_ratio": 0.9083
       },
       "incident": {
-        "coefficient_of_variation": 0.0,
-        "documents": 1,
-        "max_chars": 2364,
-        "mean_chars": 2364.0,
-        "min_chars": 2364,
-        "stddev_chars": 0.0,
-        "target_mean_chars": 3400.0,
-        "target_ratio": 0.6953
+        "coefficient_of_variation": 0.2713,
+        "documents": 14,
+        "max_chars": 2514,
+        "mean_chars": 1647.1429,
+        "min_chars": 1011,
+        "stddev_chars": 446.9263,
+        "target_mean_chars": 2842.8571,
+        "target_ratio": 0.5794
       },
       "meeting": {
-        "coefficient_of_variation": 0.1734,
-        "documents": 4,
-        "max_chars": 1836,
-        "mean_chars": 1666.5,
+        "coefficient_of_variation": 0.1514,
+        "documents": 46,
+        "max_chars": 2174,
+        "mean_chars": 1751.2609,
         "min_chars": 1166,
-        "stddev_chars": 288.9719,
-        "target_mean_chars": 2200.0,
-        "target_ratio": 0.7575
+        "stddev_chars": 265.0647,
+        "target_mean_chars": 2208.6957,
+        "target_ratio": 0.7929
       },
       "notice": {
-        "coefficient_of_variation": 0.0,
-        "documents": 1,
-        "max_chars": 1053,
-        "mean_chars": 1053.0,
-        "min_chars": 1053,
-        "stddev_chars": 0.0,
-        "target_mean_chars": 1100.0,
-        "target_ratio": 0.9573
+        "coefficient_of_variation": 0.2171,
+        "documents": 24,
+        "max_chars": 1324,
+        "mean_chars": 917.2083,
+        "min_chars": 595,
+        "stddev_chars": 199.1229,
+        "target_mean_chars": 1175.0,
+        "target_ratio": 0.7806
       },
       "runbook": {
-        "coefficient_of_variation": 0.0,
-        "documents": 1,
+        "coefficient_of_variation": 0.1426,
+        "documents": 30,
         "max_chars": 2481,
-        "mean_chars": 2481.0,
-        "min_chars": 2481,
-        "stddev_chars": 0.0,
-        "target_mean_chars": 3000.0,
-        "target_ratio": 0.827
+        "mean_chars": 1994.3667,
+        "min_chars": 1540,
+        "stddev_chars": 284.3168,
+        "target_mean_chars": 2360.0,
+        "target_ratio": 0.8451
       },
       "weekly": {
-        "coefficient_of_variation": 0.0042,
-        "documents": 2,
-        "max_chars": 2012,
-        "mean_chars": 2003.5,
-        "min_chars": 1995,
-        "stddev_chars": 8.5,
-        "target_mean_chars": 2200.0,
-        "target_ratio": 0.9107
+        "coefficient_of_variation": 0.2241,
+        "documents": 40,
+        "max_chars": 2370,
+        "mean_chars": 1541.375,
+        "min_chars": 905,
+        "stddev_chars": 345.374,
+        "target_mean_chars": 1880.0,
+        "target_ratio": 0.8199
       }
     }
   },
   "lexical_diversity": {
     "by_type": {
       "guide": {
-        "distinct_2": 0.396,
-        "total_bigrams": 1687,
-        "unique_bigrams": 668
+        "distinct_2": 0.0836,
+        "total_bigrams": 44839,
+        "unique_bigrams": 3747
       },
       "incident": {
-        "distinct_2": 0.3306,
-        "total_bigrams": 2235,
-        "unique_bigrams": 739
+        "distinct_2": 0.1076,
+        "total_bigrams": 22309,
+        "unique_bigrams": 2400
       },
       "meeting": {
-        "distinct_2": 0.2206,
-        "total_bigrams": 6296,
-        "unique_bigrams": 1389
+        "distinct_2": 0.0536,
+        "total_bigrams": 77866,
+        "unique_bigrams": 4171
       },
       "notice": {
-        "distinct_2": 0.4852,
-        "total_bigrams": 946,
-        "unique_bigrams": 459
+        "distinct_2": 0.1231,
+        "total_bigrams": 21025,
+        "unique_bigrams": 2589
       },
       "runbook": {
-        "distinct_2": 0.3488,
-        "total_bigrams": 2354,
-        "unique_bigrams": 821
+        "distinct_2": 0.0647,
+        "total_bigrams": 58188,
+        "unique_bigrams": 3762
       },
       "weekly": {
-        "distinct_2": 0.314,
-        "total_bigrams": 3850,
-        "unique_bigrams": 1209
+        "distinct_2": 0.0683,
+        "total_bigrams": 59786,
+        "unique_bigrams": 4081
       }
     }
   },
@@ -275,6 +280,26 @@
       "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
       "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
     },
+    "template_hash_counts": {
+      "guide": {
+        "6d6499ecfc15e0355caba0a70fac1f1a5d7f041fd2cb8c8522b70fbc1c51a67e": 29
+      },
+      "incident": {
+        "08463271319edad61031a0ed34ba7cc326e83bb90329ddb33b43c44ad407cf43": 14
+      },
+      "meeting": {
+        "8196fa38d17b04a7f4dbe3edb649a4606ce1b7d49914a4b866df71b4b7748772": 46
+      },
+      "notice": {
+        "b077ed0739e21b98cea6c8667b9bc24338ec1932f42c15fb6c4c51297fe2af79": 24
+      },
+      "runbook": {
+        "f2a856cb7f36eb28a2626539fe2c262546ab9a85bc9ce686e195db7cbf30478f": 30
+      },
+      "weekly": {
+        "e896c8ba882f6742896ed9215323a4f82d624aa23c1314065198acd941611d54": 40
+      }
+    },
     "template_hashes": [
       "08463271319edad61031a0ed34ba7cc326e83bb90329ddb33b43c44ad407cf43",
       "6d6499ecfc15e0355caba0a70fac1f1a5d7f041fd2cb8c8522b70fbc1c51a67e",
@@ -284,147 +309,321 @@
       "f2a856cb7f36eb28a2626539fe2c262546ab9a85bc9ce686e195db7cbf30478f"
     ],
     "validator_versions": [
-      3
+      4
     ]
   },
   "repeated_sentences": {
-    "sentences_in_3_plus_docs": 1,
+    "sentences_in_3_plus_docs": 32,
     "top": [
       {
-        "document_count": 3,
-        "sentence_prefix": "결정 사항"
+        "document_count": 12,
+        "sentence_prefix": "담당 팀: 데이터AI팀 (data-ai)"
+      },
+      {
+        "document_count": 9,
+        "sentence_prefix": "담당 팀: 법무컴플라이언스팀"
+      },
+      {
+        "document_count": 9,
+        "sentence_prefix": "담당 팀: 정보보안팀"
+      },
+      {
+        "document_count": 8,
+        "sentence_prefix": "담당 팀: SRE인프라팀"
+      },
+      {
+        "document_count": 7,
+        "sentence_prefix": "담당 팀: 결제서비스팀 (payments)"
+      },
+      {
+        "document_count": 6,
+        "sentence_prefix": "담당 팀: 인사팀"
+      },
+      {
+        "document_count": 6,
+        "sentence_prefix": "담당 팀: 재무팀"
+      },
+      {
+        "document_count": 5,
+        "sentence_prefix": "|---|---|---|"
+      },
+      {
+        "document_count": 5,
+        "sentence_prefix": "감사합니다."
+      },
+      {
+        "document_count": 5,
+        "sentence_prefix": "담당 팀: 플랫폼개발팀"
       }
     ]
   },
   "schema_version": 1,
   "scope": {
-    "passed_documents": 10
+    "passed_documents": 183
   },
   "style": {
     "by_type": {
       "guide": {
         "counts": {
-          "formal": 30,
-          "nominal": 1,
-          "other": 12,
-          "plain": 0
+          "formal": 311,
+          "nominal": 34,
+          "other": 473,
+          "plain": 379
         },
         "ratios": {
-          "formal": 0.6977,
-          "nominal": 0.0233,
-          "other": 0.2791,
-          "plain": 0.0
+          "formal": 0.2598,
+          "nominal": 0.0284,
+          "other": 0.3952,
+          "plain": 0.3166
         },
-        "sentences": 43
+        "sentences": 1197
       },
       "incident": {
         "counts": {
-          "formal": 0,
-          "nominal": 0,
-          "other": 23,
-          "plain": 26
+          "formal": 40,
+          "nominal": 3,
+          "other": 187,
+          "plain": 265
         },
         "ratios": {
-          "formal": 0.0,
-          "nominal": 0.0,
-          "other": 0.4694,
-          "plain": 0.5306
+          "formal": 0.0808,
+          "nominal": 0.0061,
+          "other": 0.3778,
+          "plain": 0.5354
         },
-        "sentences": 49
+        "sentences": 495
       },
       "meeting": {
         "counts": {
-          "formal": 0,
-          "nominal": 5,
-          "other": 74,
-          "plain": 78
+          "formal": 1,
+          "nominal": 33,
+          "other": 853,
+          "plain": 942
         },
         "ratios": {
-          "formal": 0.0,
-          "nominal": 0.0318,
-          "other": 0.4713,
-          "plain": 0.4968
+          "formal": 0.0005,
+          "nominal": 0.018,
+          "other": 0.4664,
+          "plain": 0.515
         },
-        "sentences": 157
+        "sentences": 1829
       },
       "notice": {
         "counts": {
-          "formal": 0,
+          "formal": 177,
           "nominal": 0,
-          "other": 3,
-          "plain": 14
+          "other": 131,
+          "plain": 162
         },
         "ratios": {
-          "formal": 0.0,
+          "formal": 0.3766,
           "nominal": 0.0,
-          "other": 0.1765,
-          "plain": 0.8235
+          "other": 0.2787,
+          "plain": 0.3447
         },
-        "sentences": 17
+        "sentences": 470
       },
       "runbook": {
         "counts": {
-          "formal": 0,
-          "nominal": 0,
-          "other": 17,
-          "plain": 34
+          "formal": 1,
+          "nominal": 7,
+          "other": 731,
+          "plain": 924
         },
         "ratios": {
-          "formal": 0.0,
-          "nominal": 0.0,
-          "other": 0.3333,
-          "plain": 0.6667
+          "formal": 0.0006,
+          "nominal": 0.0042,
+          "other": 0.4396,
+          "plain": 0.5556
         },
-        "sentences": 51
+        "sentences": 1663
       },
       "weekly": {
         "counts": {
-          "formal": 23,
-          "nominal": 2,
-          "other": 12,
-          "plain": 28
+          "formal": 269,
+          "nominal": 44,
+          "other": 332,
+          "plain": 571
         },
         "ratios": {
-          "formal": 0.3538,
-          "nominal": 0.0308,
-          "other": 0.1846,
-          "plain": 0.4308
+          "formal": 0.2212,
+          "nominal": 0.0362,
+          "other": 0.273,
+          "plain": 0.4696
         },
-        "sentences": 65
+        "sentences": 1216
       }
     },
     "overall": {
       "counts": {
-        "formal": 53,
-        "nominal": 8,
-        "other": 141,
-        "plain": 180
+        "formal": 799,
+        "nominal": 121,
+        "other": 2707,
+        "plain": 3243
       },
       "ratios": {
-        "formal": 0.1387,
-        "nominal": 0.0209,
-        "other": 0.3691,
-        "plain": 0.4712
+        "formal": 0.1163,
+        "nominal": 0.0176,
+        "other": 0.394,
+        "plain": 0.4721
       },
-      "sentences": 382
+      "sentences": 6870
     }
   },
   "unprompted_relative_time": {
     "by_doc": {
+      "syn-guide-004": {
+        "최근": 1
+      },
+      "syn-guide-005": {
+        "최근": 1
+      },
+      "syn-guide-009": {
+        "최근": 1
+      },
+      "syn-guide-010": {
+        "최근": 1
+      },
+      "syn-guide-011": {
+        "최근": 1
+      },
+      "syn-guide-013": {
+        "최근": 1
+      },
+      "syn-guide-016": {
+        "최근": 1
+      },
+      "syn-guide-017": {
+        "최근": 1
+      },
+      "syn-guide-021": {
+        "최근": 1
+      },
+      "syn-guide-023": {
+        "최근": 1
+      },
       "syn-meeting-001": {
         "최근": 3
       },
       "syn-meeting-002": {
         "최근": 3
       },
+      "syn-meeting-003": {
+        "최근": 1
+      },
       "syn-meeting-004": {
         "최근": 3
       },
+      "syn-meeting-005": {
+        "최근": 5
+      },
+      "syn-meeting-006": {
+        "최근": 1
+      },
+      "syn-meeting-009": {
+        "최근": 1
+      },
+      "syn-meeting-010": {
+        "최근": 1
+      },
+      "syn-meeting-012": {
+        "최근": 1
+      },
+      "syn-meeting-021": {
+        "최근": 1
+      },
+      "syn-meeting-023": {
+        "최근": 1
+      },
+      "syn-meeting-024": {
+        "최근": 1
+      },
+      "syn-meeting-028": {
+        "최근": 1
+      },
+      "syn-meeting-029": {
+        "최근": 2
+      },
+      "syn-meeting-031": {
+        "최근": 1
+      },
+      "syn-meeting-035": {
+        "최근": 1
+      },
+      "syn-meeting-036": {
+        "최근": 1
+      },
+      "syn-meeting-047": {
+        "최근": 1
+      },
+      "syn-notice-006": {
+        "최근": 1
+      },
+      "syn-notice-011": {
+        "최근": 1
+      },
+      "syn-notice-016": {
+        "최근": 1
+      },
+      "syn-notice-020": {
+        "최근": 2
+      },
+      "syn-notice-021": {
+        "최근": 1
+      },
+      "syn-runbook-005": {
+        "최근": 1
+      },
+      "syn-runbook-009": {
+        "최근": 1
+      },
+      "syn-runbook-010": {
+        "최근": 1
+      },
+      "syn-runbook-011": {
+        "최근": 2
+      },
+      "syn-runbook-012": {
+        "최근": 1
+      },
+      "syn-runbook-016": {
+        "최근": 1
+      },
+      "syn-runbook-022": {
+        "최근": 1
+      },
+      "syn-runbook-024": {
+        "최근": 1
+      },
+      "syn-runbook-026": {
+        "최근": 1
+      },
+      "syn-runbook-027": {
+        "최근": 1
+      },
+      "syn-runbook-029": {
+        "최근": 1
+      },
+      "syn-runbook-030": {
+        "최근": 1
+      },
       "syn-weekly-001": {
+        "최근": 1
+      },
+      "syn-weekly-012": {
+        "최근": 1
+      },
+      "syn-weekly-013": {
+        "최근": 1
+      },
+      "syn-weekly-032": {
+        "최근": 1
+      },
+      "syn-weekly-033": {
         "최근": 1
       }
     },
-    "documents_with_warning": 4,
+    "documents_with_warning": 50,
     "terms": [
       "최근",
       "얼마 전",
@@ -433,16 +632,21 @@
       "요새",
       "근래"
     ],
-    "total": 10
+    "total": 63
   },
   "validation": {
-    "exhausted": 0,
-    "failed": 0,
-    "failure_codes": {},
-    "generated": 10,
-    "not_generated": 190,
-    "pass_rate": 1.0,
-    "passed": 10,
+    "exhausted": 1,
+    "failed": 17,
+    "failure_codes": {
+      "fact_missing": 1,
+      "fact_value_mismatch": 14,
+      "marker_malformed": 2,
+      "prompt_artifact": 3
+    },
+    "generated": 200,
+    "not_generated": 0,
+    "pass_rate": 0.915,
+    "passed": 183,
     "planned": 200
   }
 }

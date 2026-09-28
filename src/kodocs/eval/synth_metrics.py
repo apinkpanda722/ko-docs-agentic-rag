@@ -290,7 +290,9 @@ def _repeated_sentence_metrics(
     for doc in docs:
         occurrences.update(
             sentence
-            for sentence in set(_sentences(_required_string(doc, "body")))
+            for sentence in set(
+                _sentences(_required_string(doc, "body"), skip_headings=True)
+            )
             if not _LIST_MARKER_RE.fullmatch(sentence)
         )
     repeated = [
@@ -488,6 +490,7 @@ def _validation_metrics(validation: Mapping[str, object]) -> dict[str, object]:
 def _provenance(docs: Sequence[Mapping[str, object]]) -> dict[str, object]:
     models: set[str] = set()
     template_hashes: set[str] = set()
+    template_hash_counts: dict[str, Counter[str]] = defaultdict(Counter)
     validator_versions: set[object] = set()
     regulation_hashes: set[str] = set()
     seed_hashes: dict[str, str] = {}
@@ -499,6 +502,9 @@ def _provenance(docs: Sequence[Mapping[str, object]]) -> dict[str, object]:
                 models.add(str(generation["model"]))
             if isinstance(generation.get("template_hash"), str):
                 template_hashes.add(str(generation["template_hash"]))
+                template_hash_counts[_required_string(doc, "doc_type")][
+                    str(generation["template_hash"])
+                ] += 1
             settings = generation.get("generation")
             if isinstance(settings, Mapping):
                 generations.add(
@@ -526,6 +532,10 @@ def _provenance(docs: Sequence[Mapping[str, object]]) -> dict[str, object]:
         "models": sorted(models),
         "generation_records": [json.loads(value) for value in sorted(generations)],
         "template_hashes": sorted(template_hashes),
+        "template_hash_counts": {
+            doc_type: dict(sorted(counts.items()))
+            for doc_type, counts in sorted(template_hash_counts.items())
+        },
         "seed_files_sha256": dict(sorted(seed_hashes.items())),
         "regulation_index_sha256": sorted(regulation_hashes),
         "validator_versions": sorted(validator_versions, key=str),
@@ -545,10 +555,16 @@ def _analysis_text(text: str) -> str:
     return without_title
 
 
-def _sentences(text: str) -> list[str]:
+def _sentences(text: str, *, skip_headings: bool = False) -> list[str]:
+    analysis = _analysis_text(text)
+    if skip_headings:
+        # Markdown headings ("## 목적") are section labels, not sentences.
+        analysis = "\n".join(
+            line for line in analysis.splitlines() if not line.lstrip().startswith("#")
+        )
     return [
         normalized
-        for part in _SENTENCE_SPLIT_RE.split(_analysis_text(text))
+        for part in _SENTENCE_SPLIT_RE.split(analysis)
         if (normalized := _normalize_sentence(part))
     ]
 

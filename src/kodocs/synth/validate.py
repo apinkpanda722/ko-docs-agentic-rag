@@ -22,7 +22,13 @@ from kodocs.ingest.manifest import (
 )
 from kodocs.llm.settings import load_generation_config
 from kodocs.synth import db
-from kodocs.synth.generate import GENERATION_LOG, GENERATIONS_DIR, _load_plan
+from kodocs.synth.generate import (
+    GENERATION_LOG,
+    GENERATIONS_DIR,
+    NARRATIVE_FACT_LABEL,
+    _exhausted_docs,
+    _load_plan,
+)
 from kodocs.synth.identifiers import REGULATION_REF_RE, extract_identifiers
 from kodocs.synth.plan import CANARIES_PATH, INJECTIONS_PATH, DocPlan
 from kodocs.synth.regulations import INDEX_PATH, load_index
@@ -47,7 +53,8 @@ MARKER_RE = re.compile(
 #    계획이 준 식별자·규정 사실 인정, prompt_artifact 추가.
 # 3: 배정 사실이 속한 장애(INC-*) 번호를 배정 식별자로 인정(파일럿 2차).
 # 4: prompt_artifact에 프롬프트 지시문 문구 "배정된 사실" 추가(파일럿 4차).
-VALIDATOR_VERSION = 4
+# 5: prompt_artifact에 서술 사실 자리표시·"배정된 자료"·"배정된 수치" 추가(전체 1회차).
+VALIDATOR_VERSION = 5
 
 _MARKER_TOKEN_RE = re.compile(
     r'<fact id="(?P<fid>f-[a-z0-9]+(?:-[a-z0-9]+)*)">|(?P<close></fact>)'
@@ -55,8 +62,17 @@ _MARKER_TOKEN_RE = re.compile(
 # Anything marker-like left after stripping valid tokens is malformed. No lenient
 # repair: a guessed fix would silently move fact spans.
 _MARKER_LEFTOVER_RE = re.compile(r"<fact|</fact>|⟦|⟧")
+_PROMPT_ARTIFACT_PHRASES = (
+    "문서 날짜 기준",
+    "배정된 사실",
+    "배정된 자료",
+    "배정된 수치",
+    "서술 요지를 자연스럽게",
+    NARRATIVE_FACT_LABEL,
+)
 _PROMPT_ARTIFACT_RE = re.compile(
-    r"(?<![A-Za-z0-9-])p-\d{3}(?!\d)|문서 날짜 기준|배정된 사실"
+    r"(?<![A-Za-z0-9-])p-\d{3}(?!\d)|"
+    + "|".join(re.escape(phrase) for phrase in _PROMPT_ARTIFACT_PHRASES)
 )
 # A number inside an identifier (INC-2025-007 원장) is not an amount.
 _AMOUNT_RE = re.compile(r"(?<![\dA-Za-z-])(?P<number>\d[\d,]*)\s*(?P<unit>억|만)?\s*원")
@@ -542,7 +558,7 @@ def run(root: Path, *, print_fn: PrintFn = print) -> int:
             {},
             by_code={},
             warnings={},
-            exhausted=0,
+            exhausted_docs=[],
             canary_expected=canary_expected,
             canary_present=0,
             canary_leaks=0,
@@ -777,14 +793,9 @@ def run(root: Path, *, print_fn: PrintFn = print) -> int:
         by_code.update(code for code in codes if code in _FAILURE_CODES)
         warnings.update(code for code in codes if code in _WARNING_CODES)
 
-    max_attempts = load_generation_config().max_attempts
-    exhausted = sum(
-        1
-        for result in results.values()
-        if result.get("status") != "passed"
-        and isinstance(result.get("attempt"), int)
-        and int(result["attempt"]) >= max_attempts
-    )
+    # Same rule as generation: only attempts made with the current templates
+    # count toward max_attempts (full run 1 counted raw attempt numbers).
+    exhausted_docs = _exhausted_docs(root, plans, config=load_generation_config())
     canary_present = sum(
         1
         for row in canaries
@@ -811,7 +822,7 @@ def run(root: Path, *, print_fn: PrintFn = print) -> int:
         results,
         by_code=dict(sorted(by_code.items())),
         warnings=dict(sorted(warnings.items())),
-        exhausted=exhausted,
+        exhausted_docs=exhausted_docs,
         canary_expected=canary_expected,
         canary_present=canary_present,
         canary_leaks=canary_leaks,
@@ -998,7 +1009,7 @@ def _build_summary(
     *,
     by_code: Mapping[str, int],
     warnings: Mapping[str, int],
-    exhausted: int,
+    exhausted_docs: Sequence[str],
     canary_expected: int,
     canary_present: int,
     canary_leaks: int,
@@ -1053,7 +1064,8 @@ def _build_summary(
         "passed": totals["passed"],
         "failed": totals["failed"],
         "not_generated": totals["not_generated"],
-        "exhausted": exhausted,
+        "exhausted": len(exhausted_docs),
+        "exhausted_docs": sorted(exhausted_docs),
         "regressed": regressed,
         "invalidated": invalidated,
         "by_code": dict(sorted(by_code.items())),

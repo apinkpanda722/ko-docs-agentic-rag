@@ -71,7 +71,7 @@ make plan-docs    # 시드 → 문서 200건 생성 계획·카나리아·인젝
 make generate-dry   # 합성 문서 생성 예상 토큰·비용(Batch)만 출력 — 네트워크 없음
 make generate-pilot # 파일럿 10건 Batch 제출/수거 — 실제 API 호출·과금, 확인 후 실행, 사용자 실행
 make generate-pilot-rerun # 이미 시도한 문서(파일럿)만 바뀐 프롬프트로 새 시도 제출/수거 — 실제 API 호출·과금, 사용자 실행
-make generate       # 합성 문서 Batch 생성(재실행 시 조회·수거) → 수거 후 검증·지표·결과 문서 — 실제 API 호출·과금, 사용자 실행
+make generate       # 합성 문서 Batch 생성(재실행 시 조회·수거) → 수거 후 검증·지표·결과 문서 — 실제 API 호출·과금, 사용자 실행. 템플릿이 바뀐 유형의 통과본까지 다시 만들 때 REGENERATE_TYPES=incident (generate-dry도 같음)
 make synth-validate # 생성 결과 결정론 검증 → data/synthetic/docs/·validation_failures.jsonl·data/manifest/synth_validation.json (네트워크 없음)
 make synth-metrics  # 합성 문서 중복·다양성·분포·사실 커버리지 → data/manifest/synth_metrics.json (네트워크 없음)
 make synth-report   # M3 결과 문서 docs/results/2026-09-27-m3-synthetic.md(실행일과 관계없이 고정) 갱신 (네트워크 없음)

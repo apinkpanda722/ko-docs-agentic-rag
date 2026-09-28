@@ -306,3 +306,33 @@ def test_repeated_sentences_skip_fragments_that_are_only_list_markers() -> None:
     assert not any(prefix in {"1.", "2.", "10.", "가.", "①"} for prefix in prefixes)
     assert "결정 사항" in prefixes
     assert "일정을 공유했다." in prefixes
+
+
+def test_repeated_sentences_skip_markdown_heading_lines() -> None:
+    # Full run 1: "다음 주 계획", "목적" headings were counted as sentences.
+    body = "# 주간보고\n## 목적\n일정을 공유했다.\n### 다음 주 계획\n배포를 준비한다."
+    docs = [_doc(f"doc-{name}", body=body) for name in "abc"]
+
+    prefixes = [
+        row["sentence_prefix"] for row in compute(docs)["repeated_sentences"]["top"]
+    ]
+
+    assert "목적" not in prefixes
+    assert "다음 주 계획" not in prefixes
+    assert prefixes == ["배포를 준비한다.", "일정을 공유했다."]
+
+
+def test_provenance_counts_passed_documents_per_type_and_template_hash() -> None:
+    docs = [
+        _doc("doc-a", doc_type="incident"),
+        _doc("doc-b", doc_type="incident"),
+        _doc("doc-c", doc_type="meeting"),
+    ]
+    docs[1]["generation"]["template_hash"] = "template-incident-v2"  # type: ignore[index]
+
+    counts = compute(docs)["provenance"]["template_hash_counts"]
+
+    assert counts == {
+        "incident": {"template-incident": 1, "template-incident-v2": 1},
+        "meeting": {"template-meeting": 1},
+    }

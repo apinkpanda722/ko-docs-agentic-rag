@@ -10,7 +10,7 @@ import os
 import re
 import tempfile
 from collections import Counter, defaultdict, deque
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import asdict
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -50,6 +50,8 @@ from kodocs.synth.seed import (
 
 GENERATIONS_DIR = Path("data/synthetic/generations")
 GENERATION_LOG = Path("data/synthetic/generation_log.jsonl")
+# Placeholder for narrative facts in the facts block; also a prompt_artifact.
+NARRATIVE_FACT_LABEL = "규칙 2의 서술 사실"
 VALIDATION_FAILURES = Path("data/synthetic/validation_failures.jsonl")
 DOCS_DIR = Path("data/synthetic/docs")
 TEMPLATES_DIR = Path(__file__).with_name("templates")
@@ -253,13 +255,18 @@ def pending_docs(
     plan: Sequence[DocPlan],
     *,
     config: GenerationConfig,
+    regenerate_types: Collection[str] = (),
 ) -> list[tuple[DocPlan, int]]:
     """Return retryable documents and their next monotonically increasing attempt.
 
-    A document whose latest attempt used other prompt templates (a template
-    revision) is regenerated even if it passed. ``max_attempts`` counts only
-    attempts made with the current templates, so an earlier revision's failures
-    do not use up the new revision's budget; attempt numbers keep increasing.
+    Failed, invalidated and ungenerated documents are always retried with the
+    current templates. A passed document from other prompt templates (a
+    template revision) is regenerated only when its type is in
+    ``regenerate_types``: a system.md edit changes every type's hash, but only
+    the named types changed in substance (full run 1). ``max_attempts`` counts
+    only attempts made with the current templates, so an earlier revision's
+    failures do not use up the new revision's budget; attempt numbers keep
+    increasing.
     """
     history = _generation_history(root)
     failures = _validation_failures(root)
@@ -273,7 +280,10 @@ def pending_docs(
         current = current_hashes.setdefault(doc.doc_type, template_hash(doc.doc_type))
         latest_attempt = max(attempts)
         latest = attempts[latest_attempt]
-        if not _is_other_revision(latest, current):
+        regenerate = (
+            _is_other_revision(latest, current) and doc.doc_type in regenerate_types
+        )
+        if not regenerate:
             if _validated_doc_matches(root, doc.doc_id, latest):
                 continue
             failed_validation = failures.get((doc.doc_id, latest_attempt), False)
@@ -318,6 +328,7 @@ def run(
     monthly_budget_usd: float = DEFAULT_MONTHLY_BUDGET_USD,
     after_collection: PostCollectionFn | None = None,
     only_attempted: bool = False,
+    regenerate_types: Collection[str] | None = None,
 ) -> int:
     """Advance generation by exactly one safe state-machine transition."""
     root = Path(root)
@@ -395,10 +406,15 @@ def run(
     seed = load_seed(root)
     canary_values = _load_canary_values(root)
     selected_scope = _only_plans(plans, only)
+    if regenerate_types is None:
+        # A pilot rerun exists to try changed prompts on every attempted doc.
+        regenerate_types = DOC_TYPES if only_attempted else ()
     if only_attempted:
         attempted = _generation_history(root)
         selected_scope = [plan for plan in selected_scope if plan.doc_id in attempted]
-    targets = pending_docs(root, selected_scope, config=config)
+    targets = pending_docs(
+        root, selected_scope, config=config, regenerate_types=regenerate_types
+    )
     exhausted = _exhausted_docs(root, selected_scope, config=config)
     if limit is not None:
         targets = _balanced_limit(targets, limit)
@@ -448,6 +464,8 @@ def run(
         remaining_after=remaining_after,
         print_fn=print_fn,
     )
+    if regenerate_types:
+        print_fn(f"통과본 재생성 유형: {', '.join(sorted(regenerate_types))}")
     if exhausted:
         print_fn(f"exhausted {len(exhausted)}건: {', '.join(exhausted)}")
     if estimates["budget_max"] > monthly_budget_usd - month_total:
@@ -519,6 +537,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="store_true",
         help="이미 생성을 시도한 문서만 대상으로 한다(파일럿 재실행)",
     )
+    parser.add_argument(
+        "--regenerate-types",
+        nargs="+",
+        choices=DOC_TYPES,
+        metavar="TYPE",
+        help="템플릿이 바뀐 이 유형은 통과본도 현재 템플릿으로 다시 생성",
+    )
     parser.add_argument("--status", action="store_true")
     parser.add_argument(
         "--adopt-batch",
@@ -565,6 +590,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 only=args.only,
                 monthly_budget_usd=settings.monthly_budget_usd,
                 only_attempted=args.only_attempted,
+                regenerate_types=args.regenerate_types,
             )
         except (OSError, TypeError, ValueError) as exc:
             print(f"생성 계획 실패: {_first_line(str(exc))}")
@@ -607,6 +633,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             monthly_budget_usd=settings.monthly_budget_usd,
             after_collection=_run_post_collection if args.then_validate else None,
             only_attempted=args.only_attempted,
+            regenerate_types=args.regenerate_types,
         )
     except (OSError, TypeError, ValueError, RuntimeError) as exc:
         print(f"생성 실행 실패: {_first_line(str(exc))}")
@@ -649,15 +676,20 @@ def _facts_block(
 ) -> str:
     lines: list[str] = []
     for fact in facts:
+        forms = surface_forms(fact, people=people)
         if fact.kind == "person":
             person = people[str(fact.value)]
             value = (
                 f"{person.name} {GRADES[person.grade]} ({TEAMS[person.team].name_ko}팀)"
             )
+        elif fact.kind == "datetime":
+            # Full run 1 copied the raw ISO value ("2026-06-14T05:35").
+            value = forms[0]
         else:
             value = str(fact.value)
-        forms = surface_forms(fact, people=people)
-        allowed = " / ".join(forms) if forms else "서술 요지를 자연스럽게"
+        # Full run 1 copied the old placeholder wording into a body; a rule
+        # reference is not prose a model would reuse.
+        allowed = " / ".join(forms) if forms else NARRATIVE_FACT_LABEL
         age = doc.fact_age_days.get(fact.fact_id)
         phrase = doc.fact_time_phrases.get(fact.fact_id)
         # Only the decided phrase and the date; helper wording such as the day

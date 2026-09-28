@@ -81,8 +81,11 @@ build-db:
 plan-docs:
 	uv run python -m kodocs.synth.plan
 
+# 템플릿이 바뀐 유형의 통과본까지 다시 만들 때: make generate REGENERATE_TYPES=incident
+REGENERATE_FLAGS = $(if $(REGENERATE_TYPES),--regenerate-types $(REGENERATE_TYPES))
+
 generate-dry:
-	uv run python -m kodocs.synth.generate --dry-run
+	uv run python -m kodocs.synth.generate --dry-run $(REGENERATE_FLAGS)
 
 generate-pilot:
 	uv run python -m kodocs.synth.generate --limit 10
@@ -91,7 +94,7 @@ generate-pilot-rerun:
 	uv run python -m kodocs.synth.generate --only-attempted
 
 generate:
-	uv run python -m kodocs.synth.generate --then-validate
+	uv run python -m kodocs.synth.generate --then-validate $(REGENERATE_FLAGS)
 
 synth-validate:
 	uv run python -m kodocs.synth.validate

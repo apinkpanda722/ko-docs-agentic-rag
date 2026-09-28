@@ -207,7 +207,26 @@ def _fixed_conditions_section(
         ["생성 방식", "Anthropic Message Batch 사용"],
         ["품질 지표 대상", "검증 통과 문서만 사용(분자·분모 동일 집합)"],
     ]
-    return "\n".join(["## 2. 고정 조건", "", _table(["조건", "고정값"], rows)])
+    template_rows = [
+        [doc_type, f"`{template[:12]}`", count]
+        for doc_type, counts in sorted(
+            _mapping(provenance.get("template_hash_counts")).items()
+        )
+        for template, count in sorted(_mapping(counts).items())
+    ] or [[_PLACEHOLDER, _PLACEHOLDER, _PLACEHOLDER]]
+    return "\n".join(
+        [
+            "## 2. 고정 조건",
+            "",
+            _table(["조건", "고정값"], rows),
+            "",
+            "### 템플릿 버전별 통과 문서 수",
+            "",
+            "템플릿 해시(system.md + 유형 템플릿) 앞 12자 기준이다.",
+            "",
+            _table(["유형", "템플릿 해시", "통과 문서 수"], template_rows),
+        ]
+    )
 
 
 def _generation_cost_section(

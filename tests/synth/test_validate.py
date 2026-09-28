@@ -622,6 +622,14 @@ def test_current_pass_is_kept_when_a_newer_attempt_fails(
     assert any("회귀 1건" in message for message in messages)
 
 
+PILOT_BATCHES = {
+    "msgbatch_01RtBBxu4rZaYfgpGcGb92MP",
+    "msgbatch_01WPEWG8ZgfC24tMViS2LLwj",
+    "msgbatch_01RLrpyr7gp6zqma9K6oho1L",
+    "msgbatch_01Qm4eX1ehsyw18ASU48iEvy",
+}
+
+
 def test_real_pilot_revalidation_invalidates_only_incident_001(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -633,18 +641,28 @@ def test_real_pilot_revalidation_invalidates_only_incident_001(
 
     repo = Path(__file__).parents[2]
     shutil.copytree(repo / "data/seed", tmp_path / "data/seed")
-    for name in (
-        "plan.jsonl",
-        "canaries.json",
-        "injections.json",
-        "generation_log.jsonl",
-    ):
+    for name in ("plan.jsonl", "canaries.json", "injections.json"):
         target = tmp_path / "data/synthetic" / name
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(repo / "data/synthetic" / name, target)
-    shutil.copytree(
-        repo / "data/synthetic/generations", tmp_path / "data/synthetic/generations"
+    # Only the pilot batches; later full-run attempts are also committed.
+    log_lines = [
+        line
+        for line in (repo / "data/synthetic/generation_log.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+        if json.loads(line).get("batch_id") in PILOT_BATCHES
+    ]
+    (tmp_path / "data/synthetic/generation_log.jsonl").write_text(
+        "\n".join(log_lines) + "\n", encoding="utf-8"
     )
+    (tmp_path / "data/synthetic/generations").mkdir()
+    for cache in (repo / "data/synthetic/generations").glob("*.json"):
+        if (
+            json.loads(cache.read_text(encoding="utf-8")).get("batch_id")
+            in PILOT_BATCHES
+        ):
+            shutil.copy(cache, tmp_path / "data/synthetic/generations" / cache.name)
     (tmp_path / "data/manifest").mkdir(parents=True)
     shutil.copy(
         repo / "data/manifest/regulation_refs.json",
@@ -711,6 +729,11 @@ def test_malformed_or_leftover_markers_fail_without_lenient_repair(
         "담당 p-001 확인",
         # Pilot 4 (incident-001): the prompt's own wording leaked into the body.
         "본 문서에서는 배정된 사실 범위 내에서 원인을 임의로 단정하지 않는다.",
+        # Full run 1: narrative placeholder and incident meta remarks.
+        "결정 배경은 서술 요지를 자연스럽게 정리했다.",
+        "규칙 2의 서술 사실에 따라 정리했다.",
+        "배정된 자료에는 영향 수치가 명시되어 있지 않다.",
+        "배정된 수치가 없어 기재하지 않는다.",
     ],
 )
 def test_prompt_artifacts_in_body_fail(leak: str) -> None:
@@ -723,7 +746,12 @@ def test_prompt_artifacts_in_body_fail(leak: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "ordinary", ["배정된 월말 집계 단계를 마쳤다.", "담당자 배정 예정이다."]
+    "ordinary",
+    [
+        "배정된 월말 집계 단계를 마쳤다.",
+        "담당자 배정 예정이다.",
+        "배정된 인력으로 자료를 정리했다.",
+    ],
 )
 def test_ordinary_use_of_assignment_words_is_not_a_prompt_artifact(
     ordinary: str,
@@ -891,3 +919,36 @@ def test_number_inside_identifier_followed_by_won_word_is_not_an_amount() -> Non
         plan, _generation(text + "\n추가 비용 3만 원"), _seed(topic)
     )
     assert "unassigned_amount" in _codes(still_checked)
+
+
+def test_exhausted_counts_only_attempts_with_the_current_templates(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Full run 1: syn-incident-001 failed its 5th attempt, but only 2 used the
+    # current templates, so it is still a retry target, not exhausted.
+    topic = _fact()
+    seed = _seed(topic)
+    plan = _plan(topic.fact_id)
+    _prepare_run(tmp_path, monkeypatch, [plan], seed)
+    failing = _markdown("표시 없는 검증 대상 사실")
+    for attempt in (1, 2, 3):
+        _write_cache(
+            tmp_path, plan, failing, cache_key=f"old-{attempt}", attempt=attempt
+        )
+        cache = tmp_path / f"data/synthetic/generations/old-{attempt}.json"
+        payload = json.loads(cache.read_text(encoding="utf-8"))
+        payload["template_hash"] = "0" * 64
+        cache.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    for attempt in (4, 5):
+        _write_cache(
+            tmp_path, plan, failing, cache_key=f"new-{attempt}", attempt=attempt
+        )
+
+    validate.run(tmp_path, print_fn=_quiet)
+    summary = json.loads((tmp_path / SUMMARY_PATH).read_text(encoding="utf-8"))
+
+    assert summary["exhausted"] == 0
+    assert summary["exhausted_docs"] == []
+    assert pending_docs(tmp_path, [plan], config=load_generation_config()) == [
+        (plan, 6)
+    ]

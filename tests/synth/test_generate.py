@@ -25,7 +25,7 @@ from kodocs.synth.generate import (
     template_hash,
 )
 from kodocs.synth.plan import DOC_TYPES, DocPlan, build_plan
-from kodocs.synth.seed import Seed, load_seed
+from kodocs.synth.seed import Seed, load_seed, surface_forms
 
 REPO_ROOT = Path(__file__).parents[2]
 
@@ -1000,6 +1000,91 @@ def test_prompt_gives_same_day_facts_their_date_but_no_time_phrase(
     assert "`당일`" in request.system
 
 
+def test_prompt_keeps_date_and_time_of_datetime_facts_inside_one_marker(
+    corpus: tuple[Seed, list[DocPlan]],
+) -> None:
+    # Full run 1: 11 bodies wrapped only the time ("2025-07-08 <fact>12:02</fact>").
+    seed, plans = corpus
+    plan = next(plan for plan in plans if plan.doc_type == "incident")
+
+    request, _ = build_request(plan, seed, config=_config(), attempt=1)
+
+    assert "일시 사실은 날짜와 시각을 함께 표시 안에 쓴다" in request.system
+    assert (
+        "표시 밖에 쓰는 '사실 날짜'는 사실 줄의 날짜 정보를 말하며 "
+        "값 자체의 날짜가 아니다" in request.system
+    )
+    assert '<fact id="f-example-restored">2026-06-25 15:18</fact>' in request.system
+
+
+def test_prompt_shows_datetime_values_in_an_allowed_form_not_iso(
+    corpus: tuple[Seed, list[DocPlan]],
+) -> None:
+    # Full run 1: guide-022·meeting-008 copied "2026-06-14T05:35" from the value.
+    seed, plans = corpus
+    people = {person.person_id: person for person in seed.people}
+    checked = 0
+    for plan in plans:
+        datetimes = [
+            seed.facts[fact_id]
+            for fact_id in plan.fact_ids
+            if fact_id in seed.facts and seed.facts[fact_id].kind == "datetime"
+        ]
+        if not datetimes:
+            continue
+        request, _ = build_request(plan, seed, config=_config(), attempt=1)
+        for fact in datetimes:
+            line = next(
+                line for line in request.user.splitlines() if fact.fact_id in line
+            )
+            value = line.split(" | ")[2]
+            assert value == surface_forms(fact, people=people)[0]
+            assert "T" not in value
+            checked += 1
+    assert checked
+
+
+def test_prompt_marks_narrative_facts_without_copyable_placeholder(
+    corpus: tuple[Seed, list[DocPlan]],
+) -> None:
+    # Full run 1: meeting-020 wrote "서술 요지를 자연스럽게" into its body.
+    seed, plans = corpus
+    plan = next(
+        plan
+        for plan in plans
+        if any(
+            fact_id in seed.facts and seed.facts[fact_id].kind == "text"
+            for fact_id in plan.fact_ids
+        )
+    )
+
+    request, _ = build_request(plan, seed, config=_config(), attempt=1)
+
+    assert "서술 요지를 자연스럽게" not in request.user
+    text_lines = [
+        line
+        for line in request.user.splitlines()
+        if line.startswith("- ") and " | 서술 | " in line
+    ]
+    assert text_lines
+    assert all("표시 안 허용 표기: 규칙 2의 서술 사실" in line for line in text_lines)
+
+
+def test_incident_template_asks_for_qualitative_impact_without_meta_remarks(
+    corpus: tuple[Seed, list[DocPlan]],
+) -> None:
+    # Full run 1: six incident reports explained that no figures were assigned.
+    seed, plans = corpus
+    plan = next(plan for plan in plans if plan.doc_type == "incident")
+
+    request, _ = build_request(plan, seed, config=_config(), attempt=1)
+
+    assert (
+        "영향받은 기능·사용자 유형을 정성적으로 쓰고, 자료나 수치가 없다는 사실은 "
+        "언급하지 않는다" in request.user
+    )
+
+
 def test_pilot_limit_on_committed_plan_covers_types_access_canary_and_retrospective() -> (
     None
 ):
@@ -1111,14 +1196,88 @@ def _store_attempt(
         )
 
 
-def test_document_from_older_prompt_revision_is_regenerated_even_if_it_passed(
+def test_passed_document_from_older_revision_is_regenerated_only_for_listed_types(
+    corpus: tuple[Seed, list[DocPlan]], tmp_path: Path
+) -> None:
+    # Full run 1: a system.md change alters every type's hash, but only the
+    # incident template changed in substance, so only listed types regenerate.
+    seed, plans = corpus
+    incident = next(plan for plan in plans if plan.doc_type == "incident")
+    meeting = next(plan for plan in plans if plan.doc_type == "meeting")
+    for plan in (incident, meeting):
+        _store_attempt(tmp_path, plan, seed, attempt=1, template="0" * 64, passed=True)
+
+    assert pending_docs(tmp_path, [incident, meeting], config=_config()) == []
+    assert pending_docs(
+        tmp_path,
+        [incident, meeting],
+        config=_config(),
+        regenerate_types={"incident"},
+    ) == [(incident, 2)]
+
+
+FAILED_ISSUES = [{"code": "fact_value_mismatch", "detail": "x"}]
+
+
+def test_failed_document_of_unlisted_type_is_still_retried_with_current_templates(
     corpus: tuple[Seed, list[DocPlan]], tmp_path: Path
 ) -> None:
     seed, plans = corpus
-    plan = plans[0]
-    _store_attempt(tmp_path, plan, seed, attempt=1, template="0" * 64, passed=True)
+    meeting = next(plan for plan in plans if plan.doc_type == "meeting")
+    for attempt in (1, 2, 3):
+        _store_attempt(tmp_path, meeting, seed, attempt=attempt, template="0" * 64)
+    failures = tmp_path / "data/synthetic/validation_failures.jsonl"
+    failures.write_text(
+        json.dumps({"doc_id": meeting.doc_id, "attempt": 3, "issues": FAILED_ISSUES})
+        + "\n",
+        encoding="utf-8",
+    )
 
-    assert pending_docs(tmp_path, [plan], config=_config()) == [(plan, 2)]
+    assert pending_docs(
+        tmp_path,
+        [meeting],
+        config=_config(max_attempts=3),
+        regenerate_types={"incident"},
+    ) == [(meeting, 4)]
+
+
+def test_run_regenerates_listed_types_and_retries_failures_only_elsewhere(
+    corpus: tuple[Seed, list[DocPlan]],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seed, plans = corpus
+    incident = next(plan for plan in plans if plan.doc_type == "incident")
+    kept, failed = [plan for plan in plans if plan.doc_type == "meeting"][:2]
+    _prepare_root(tmp_path, [incident, kept, failed], monkeypatch, seed)
+    for plan in (incident, kept):
+        _store_attempt(tmp_path, plan, seed, attempt=1, template="0" * 64, passed=True)
+    _store_attempt(tmp_path, failed, seed, attempt=1, template="0" * 64)
+    (tmp_path / "data/synthetic/validation_failures.jsonl").write_text(
+        json.dumps({"doc_id": failed.doc_id, "attempt": 1, "issues": FAILED_ISSUES})
+        + "\n",
+        encoding="utf-8",
+    )
+    client = FakeClient()
+    output: list[str] = []
+
+    assert (
+        run(
+            tmp_path,
+            client=client,  # type: ignore[arg-type]
+            config=_config(),
+            dry_run=False,
+            limit=None,
+            assume_yes=True,
+            regenerate_types={"incident"},
+            print_fn=lambda message, **_kwargs: output.append(str(message)),
+        )
+        == 0
+    )
+    assert sorted(request.custom_id for request in client.submit_calls[0]) == sorted(
+        [f"{incident.doc_id}-a2", f"{failed.doc_id}-a2"]
+    )
+    assert any("통과본 재생성 유형: incident" in line for line in output)
 
 
 def test_document_from_current_revision_that_passed_is_not_regenerated(

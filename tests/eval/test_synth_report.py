@@ -310,6 +310,24 @@ def test_unprompted_relative_time_warning_is_rendered(tmp_path: Path) -> None:
     assert "경고 문서 2건, 합계 11회" in rendered
 
 
+def test_template_version_counts_are_rendered(tmp_path: Path) -> None:
+    _write_inputs(tmp_path)
+    metrics_path = tmp_path / "data/manifest/synth_metrics.json"
+    metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+    metrics["provenance"]["template_hash_counts"] = {
+        "incident": {"a" * 64: 3, "b" * 64: 22},
+        "meeting": {"c" * 64: 50},
+    }
+    _write_json(metrics_path, metrics)
+
+    rendered = render_tables(tmp_path)
+
+    assert "### 템플릿 버전별 통과 문서 수" in rendered
+    assert f"| incident | `{'a' * 12}` | 3 |" in rendered
+    assert f"| incident | `{'b' * 12}` | 22 |" in rendered
+    assert f"| meeting | `{'c' * 12}` | 50 |" in rendered
+
+
 def test_write_report_preserves_outside_generated_region_and_omits_doc_body(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
