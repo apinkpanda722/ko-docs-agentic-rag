@@ -1,0 +1,49 @@
+{
+  "counts": {
+    "identifier": 2,
+    "multi_doc": 2,
+    "semantic": 4,
+    "table": 6,
+    "temporal": 5,
+    "unanswerable": 1
+  },
+  "inputs": {
+    "drafts_sha256": "fe882fcc7cd2f7a9e7c07e81b003d4949d157b68db2a2c3f9e8b3acabad121af",
+    "law_files_sha256": "a01fde9860ed0776a8167105eb5caf9a34a36d0ef8cab2c5108cb0334f270889",
+    "regulation_refs_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
+    "table_golden_sha256": "4f4025349a6a85f75abbd92068b82cf41d1eccb7fc5037a3679ab24c88cf706a",
+    "version_matches_sha256": "5f5e132ed58f1a420e282d1134dfc36c82b31a9dbfeab443c94c9323e5e421d7"
+  },
+  "no_answer_checks": {
+    "g-real-020": true
+  },
+  "quota_diff": {
+    "identifier": 0,
+    "multi_doc": 0,
+    "semantic": 0,
+    "table": 0,
+    "temporal": 0,
+    "unanswerable": 0
+  },
+  "revision_pairs_available": 161,
+  "synthetic_no_answer_real_check": {
+    "g-syn-022": true,
+    "g-syn-023": true,
+    "g-syn-024": true,
+    "s-syn-136": true,
+    "s-syn-137": true,
+    "s-syn-138": true,
+    "s-syn-139": true,
+    "s-syn-140": true,
+    "s-syn-141": true,
+    "s-syn-142": true,
+    "s-syn-143": true,
+    "s-syn-144": true,
+    "s-syn-145": true,
+    "s-syn-146": true,
+    "s-syn-147": true,
+    "s-syn-148": true,
+    "s-syn-149": true,
+    "s-syn-150": true
+  }
+}

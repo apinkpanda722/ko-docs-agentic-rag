@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import unicodedata
 from dataclasses import replace
 from pathlib import Path
 
@@ -410,3 +411,48 @@ def test_committed_projection_never_contains_reference_answers() -> None:
         )
         for row in rows
     )
+
+
+LEAK_WINDOW = 20
+# Commit paths; data/golden/tables holds gitignored original tables.
+COMMIT_DIRS = ("data/golden", "data/synthetic/queries", "data/manifest", "docs/results")
+TEXT_SUFFIXES = {".json", ".jsonl", ".md", ".csv", ".txt"}
+
+
+def _squash(text: str) -> str:
+    return "".join(unicodedata.normalize("NFC", text).split())
+
+
+def test_private_reference_answers_never_appear_in_commit_paths() -> None:
+    # Content-level guard: the field check above only proves projection rows
+    # lack the key; this proves no 20+ character run of any private reference
+    # answer was copied into a committed file.
+    drafts = ROOT / golden_real.DRAFTS_PATH
+    if not drafts.is_file():
+        pytest.skip("로컬 실제 문항 초안 없음")
+    rows = [
+        json.loads(line)
+        for line in drafts.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    answers = [
+        _squash(row["reference_answer"])
+        for row in rows
+        if isinstance(row.get("reference_answer"), str)
+    ]
+    corpus = {
+        path: _squash(path.read_text(encoding="utf-8"))
+        for directory in COMMIT_DIRS
+        for path in sorted((ROOT / directory).rglob("*"))
+        if path.is_file()
+        and path.suffix in TEXT_SUFFIXES
+        and "data/golden/tables" not in path.as_posix()
+    }
+    leaks = [
+        (path.relative_to(ROOT).as_posix(), answer[i : i + LEAK_WINDOW])
+        for answer in answers
+        for i in range(len(answer) - LEAK_WINDOW + 1)
+        for path, text in corpus.items()
+        if answer[i : i + LEAK_WINDOW] in text
+    ]
+    assert leaks == []
