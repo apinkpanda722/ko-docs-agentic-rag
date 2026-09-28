@@ -8,7 +8,7 @@
     "unanswerable": 1
   },
   "inputs": {
-    "drafts_sha256": "fe882fcc7cd2f7a9e7c07e81b003d4949d157b68db2a2c3f9e8b3acabad121af",
+    "drafts_sha256": "a78d900a30935560057a5e1634419d14946a5527cfac8204a69d2c9a0ee022f1",
     "law_files_sha256": "a01fde9860ed0776a8167105eb5caf9a34a36d0ef8cab2c5108cb0334f270889",
     "regulation_refs_sha256": "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac",
     "table_golden_sha256": "4f4025349a6a85f75abbd92068b82cf41d1eccb7fc5037a3679ab24c88cf706a",
