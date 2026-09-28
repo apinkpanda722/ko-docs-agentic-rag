@@ -1,17 +1,17 @@
 {
   "by_access": {
     "public": {
-      "failed": 2,
+      "failed": 0,
       "generated": 4,
       "not_generated": 86,
-      "passed": 2,
+      "passed": 4,
       "planned": 90
     },
     "restricted": {
-      "failed": 2,
+      "failed": 0,
       "generated": 2,
       "not_generated": 28,
-      "passed": 0,
+      "passed": 2,
       "planned": 30
     },
     "team": {
@@ -22,12 +22,7 @@
       "planned": 80
     }
   },
-  "by_code": {
-    "fact_missing": 1,
-    "fact_value_mismatch": 3,
-    "marker_malformed": 1,
-    "unassigned_identifier": 1
-  },
+  "by_code": {},
   "by_type": {
     "guide": {
       "failed": 0,
@@ -44,10 +39,10 @@
       "planned": 25
     },
     "meeting": {
-      "failed": 2,
+      "failed": 0,
       "generated": 4,
       "not_generated": 46,
-      "passed": 2,
+      "passed": 4,
       "planned": 50
     },
     "notice": {
@@ -58,17 +53,17 @@
       "planned": 25
     },
     "runbook": {
-      "failed": 1,
+      "failed": 0,
       "generated": 1,
       "not_generated": 29,
-      "passed": 0,
+      "passed": 1,
       "planned": 30
     },
     "weekly": {
-      "failed": 1,
+      "failed": 0,
       "generated": 2,
       "not_generated": 38,
-      "passed": 1,
+      "passed": 2,
       "planned": 40
     }
   },
@@ -78,14 +73,14 @@
     "present": 2
   },
   "exhausted": 0,
-  "failed": 4,
+  "failed": 0,
   "generated": 10,
   "injections": {
     "expected": 12,
     "inserted": 7
   },
   "not_generated": 190,
-  "passed": 6,
+  "passed": 10,
   "planned": 200,
   "regressed": 0,
   "warnings": {}
