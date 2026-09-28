@@ -75,7 +75,16 @@
     {
       "step": 5,
       "name": "real-items",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-28T21:31:10+0900",
+      "summary": "실제 규정 후보 생성·초안 검증·안전 투영 도구와 13개 테스트, Make 명령을 구현했으며 모든 AC와 make verify(829 passed)를 통과했습니다.",
+      "completed_at": "2026-09-28T21:43:32+0900",
+      "usage": {
+        "input_tokens": 3416155,
+        "cached_input_tokens": 3286144,
+        "output_tokens": 33651,
+        "attempts": 1
+      }
     },
     {
       "step": 6,
