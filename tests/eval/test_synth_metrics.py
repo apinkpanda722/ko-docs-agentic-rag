@@ -336,3 +336,48 @@ def test_provenance_counts_passed_documents_per_type_and_template_hash() -> None
         "incident": {"template-incident": 1, "template-incident-v2": 1},
         "meeting": {"template-meeting": 1},
     }
+
+
+def test_style_warnings_count_known_issues_found_in_human_review() -> None:
+    # Human review of 20 docs (2026-09-28); warnings only, never failures.
+    docs = [
+        _doc(
+            "doc-seam",
+            doc_type="meeting",
+            body="# A\n원인이 남아 있었다.는 점을 확인했다.",
+        ),
+        _doc(
+            "doc-list", doc_type="meeting", body="# B\n권도온 / 권도온 팀장이 맡았다."
+        ),
+        _doc(
+            "doc-ticket",
+            doc_type="incident",
+            body="# C\n- 문서 번호: PLT-1001\n- 작성자: 가상인",
+        ),
+        _doc(
+            "doc-own-inc",
+            doc_type="incident",
+            body="# D\n- 문서 번호: INC-2025-002\n- 작성자: 가상인",
+        ),
+        _doc(
+            "doc-notice",
+            doc_type="notice",
+            body="# E\n문의하기 바란다. 협조해 주시기 바랍니다. 변경 시 공유할 것.",
+        ),
+        _doc("doc-guide", doc_type="guide", body="# F\n절차를 따른다. 문의 바람."),
+    ]
+
+    warnings = compute(docs)["style_warnings"]
+
+    assert warnings["sentence_seam"]["documents"] == 1
+    assert warnings["surface_form_list_leak"]["documents"] == 1
+    # Only a ticket number, not the report's own INC number, is a misuse.
+    assert warnings["incident_ticket_as_doc_number"]["documents"] == 1
+    assert warnings["incident_ticket_as_doc_number"]["population"] == 2
+    request = warnings["narrative_request_phrases"]
+    assert (request["documents"], request["occurrences"]) == (1, 2)
+    assert request["by_type"]["notice"] == {"documents": 1, "population": 1}
+    assert request["by_type"]["guide"] == {"documents": 0, "population": 1}
+    bullet = warnings["bullet_request_endings"]
+    assert (bullet["documents"], bullet["occurrences"]) == (2, 2)
+    assert warnings["sentence_seam"]["rate"] == round(1 / 6, 4)

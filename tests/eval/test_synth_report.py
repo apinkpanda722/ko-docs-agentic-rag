@@ -328,6 +328,27 @@ def test_template_version_counts_are_rendered(tmp_path: Path) -> None:
     assert f"| meeting | `{'c' * 12}` | 50 |" in rendered
 
 
+def test_style_warnings_are_rendered(tmp_path: Path) -> None:
+    _write_inputs(tmp_path)
+    metrics_path = tmp_path / "data/manifest/synth_metrics.json"
+    metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+    metrics["style_warnings"] = {
+        "sentence_seam": {
+            "documents": 32,
+            "occurrences": 50,
+            "population": 199,
+            "rate": 0.1608,
+            "by_type": {},
+        }
+    }
+    _write_json(metrics_path, metrics)
+
+    rendered = render_tables(tmp_path)
+
+    assert "### 문체 경고(실패 아님)" in rendered
+    assert "| 마침표+조사 이음새 | 32/199 (16.1%) | 50 |" in rendered
+
+
 def test_write_report_preserves_outside_generated_region_and_omits_doc_body(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

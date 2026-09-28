@@ -14,6 +14,7 @@ from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 
+from kodocs.synth.identifiers import TICKET_RE
 from kodocs.synth.injection_texts import INJECTION_TEXTS
 from kodocs.synth.seed import load_seed
 
@@ -37,6 +38,26 @@ _STYLE_CATEGORIES = ("formal", "plain", "nominal", "other")
 _LIST_MARKER_RE = re.compile(r"^(?:\d+|[가-힣]|[①-⑳]|[-*+•])[.)]?$")
 # Vague relative time the prompt forbids unless given (rule 6); a warning only.
 RELATIVE_TIME_TERMS = ("최근", "얼마 전", "지난달", "요즘", "요새", "근래")
+# Known issues from the human review (2026-09-28), counted as warnings only:
+# (pattern, doc types it applies to, or None for every type).
+_STYLE_WARNING_PATTERNS: dict[str, tuple[re.Pattern[str], frozenset[str] | None]] = {
+    # "…했다.는": seed narrative facts are full sentences ending in a period.
+    "sentence_seam": (re.compile(r"다\.(?=[가-힣])"), None),
+    # "권도온 / 권도온 팀장": the " / " joined allowed-forms list leaked.
+    "surface_form_list_leak": (re.compile(r"(\S+(?: \S+)?) / \1"), None),
+    # A ticket number, not the report's own INC number, labelled 문서 번호.
+    "incident_ticket_as_doc_number": (
+        re.compile(r"문서 번호\s*[:：]?\s*\**\s*" + TICKET_RE.pattern),
+        frozenset({"incident"}),
+    ),
+    # Narrative requests ("~주시기 바랍니다", "~하기 바란다").
+    "narrative_request_phrases": (
+        re.compile(r"바란다|바랍니다|부탁드립니다|주십시오|주세요"),
+        None,
+    ),
+    # Bullet-style request endings usual in real memos ("문의 바람", "~할 것").
+    "bullet_request_endings": (re.compile(r"(?:바람|할 것)(?=[.\n]|$)"), None),
+}
 
 
 def normalize_for_shingles(text: str) -> str:
@@ -176,10 +197,41 @@ def _compute(
         "distribution": _distribution_metrics(ordered_docs, plan_counts),
         "fact_coverage": _fact_coverage(ordered_docs, normal_fact_ids),
         "unprompted_relative_time": _unprompted_relative_time(ordered_docs),
+        "style_warnings": _style_warnings(ordered_docs),
         "validation": _validation_metrics(validation),
         "provenance": _provenance(ordered_docs),
     }
     return _round_tree(payload)  # type: ignore[return-value]
+
+
+def _style_warnings(docs: Sequence[Mapping[str, object]]) -> dict[str, object]:
+    """Per known issue: documents, occurrences, and per-type document counts."""
+    output: dict[str, object] = {}
+    for name, (pattern, doc_types) in _STYLE_WARNING_PATTERNS.items():
+        scoped = [
+            doc
+            for doc in docs
+            if doc_types is None or _required_string(doc, "doc_type") in doc_types
+        ]
+        by_type: dict[str, dict[str, int]] = {}
+        documents = occurrences = 0
+        for doc in scoped:
+            count = len(pattern.findall(_analysis_text(_required_string(doc, "body"))))
+            stats = by_type.setdefault(
+                _required_string(doc, "doc_type"), {"documents": 0, "population": 0}
+            )
+            stats["population"] += 1
+            stats["documents"] += int(count > 0)
+            documents += int(count > 0)
+            occurrences += count
+        output[name] = {
+            "documents": documents,
+            "occurrences": occurrences,
+            "population": len(scoped),
+            "rate": documents / len(scoped) if scoped else None,
+            "by_type": dict(sorted(by_type.items())),
+        }
+    return output
 
 
 def _unprompted_relative_time(

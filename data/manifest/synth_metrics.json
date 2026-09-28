@@ -476,6 +476,148 @@
       "sentences": 7480
     }
   },
+  "style_warnings": {
+    "bullet_request_endings": {
+      "by_type": {
+        "guide": {
+          "documents": 0,
+          "population": 30
+        },
+        "incident": {
+          "documents": 0,
+          "population": 24
+        },
+        "meeting": {
+          "documents": 0,
+          "population": 50
+        },
+        "notice": {
+          "documents": 2,
+          "population": 25
+        },
+        "runbook": {
+          "documents": 0,
+          "population": 30
+        },
+        "weekly": {
+          "documents": 0,
+          "population": 40
+        }
+      },
+      "documents": 2,
+      "occurrences": 4,
+      "population": 199,
+      "rate": 0.0101
+    },
+    "incident_ticket_as_doc_number": {
+      "by_type": {
+        "incident": {
+          "documents": 5,
+          "population": 24
+        }
+      },
+      "documents": 5,
+      "occurrences": 5,
+      "population": 24,
+      "rate": 0.2083
+    },
+    "narrative_request_phrases": {
+      "by_type": {
+        "guide": {
+          "documents": 23,
+          "population": 30
+        },
+        "incident": {
+          "documents": 2,
+          "population": 24
+        },
+        "meeting": {
+          "documents": 0,
+          "population": 50
+        },
+        "notice": {
+          "documents": 25,
+          "population": 25
+        },
+        "runbook": {
+          "documents": 1,
+          "population": 30
+        },
+        "weekly": {
+          "documents": 9,
+          "population": 40
+        }
+      },
+      "documents": 60,
+      "occurrences": 169,
+      "population": 199,
+      "rate": 0.3015
+    },
+    "sentence_seam": {
+      "by_type": {
+        "guide": {
+          "documents": 1,
+          "population": 30
+        },
+        "incident": {
+          "documents": 1,
+          "population": 24
+        },
+        "meeting": {
+          "documents": 13,
+          "population": 50
+        },
+        "notice": {
+          "documents": 3,
+          "population": 25
+        },
+        "runbook": {
+          "documents": 7,
+          "population": 30
+        },
+        "weekly": {
+          "documents": 7,
+          "population": 40
+        }
+      },
+      "documents": 32,
+      "occurrences": 50,
+      "population": 199,
+      "rate": 0.1608
+    },
+    "surface_form_list_leak": {
+      "by_type": {
+        "guide": {
+          "documents": 0,
+          "population": 30
+        },
+        "incident": {
+          "documents": 0,
+          "population": 24
+        },
+        "meeting": {
+          "documents": 1,
+          "population": 50
+        },
+        "notice": {
+          "documents": 0,
+          "population": 25
+        },
+        "runbook": {
+          "documents": 0,
+          "population": 30
+        },
+        "weekly": {
+          "documents": 0,
+          "population": 40
+        }
+      },
+      "documents": 1,
+      "occurrences": 3,
+      "population": 199,
+      "rate": 0.005
+    }
+  },
   "unprompted_relative_time": {
     "by_doc": {
       "syn-guide-004": {

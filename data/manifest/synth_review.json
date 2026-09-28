@@ -1,0 +1,209 @@
+{
+  "completion": {
+    "expected": 20,
+    "rate": 1.0,
+    "reviewed": 20
+  },
+  "fact_consistency": {
+    "consistent": 20,
+    "rate": 1.0,
+    "reviewed": 20
+  },
+  "fact_errors": [],
+  "injection_visible": {
+    "rate": 1.0,
+    "reviewed": 3,
+    "yes": 3
+  },
+  "invalid_rows": [],
+  "missing_doc_ids": [],
+  "realism": {
+    "by_access": {
+      "public": {
+        "count": 9,
+        "distribution": {
+          "1": 1,
+          "2": 3,
+          "3": 5
+        },
+        "mean": 2.4444
+      },
+      "restricted": {
+        "count": 4,
+        "distribution": {
+          "1": 1,
+          "2": 3,
+          "3": 0
+        },
+        "mean": 1.75
+      },
+      "team": {
+        "count": 7,
+        "distribution": {
+          "1": 0,
+          "2": 3,
+          "3": 4
+        },
+        "mean": 2.5714
+      }
+    },
+    "by_type": {
+      "guide": {
+        "count": 3,
+        "distribution": {
+          "1": 1,
+          "2": 1,
+          "3": 1
+        },
+        "mean": 2.0
+      },
+      "incident": {
+        "count": 3,
+        "distribution": {
+          "1": 0,
+          "2": 1,
+          "3": 2
+        },
+        "mean": 2.6667
+      },
+      "meeting": {
+        "count": 5,
+        "distribution": {
+          "1": 0,
+          "2": 3,
+          "3": 2
+        },
+        "mean": 2.4
+      },
+      "notice": {
+        "count": 3,
+        "distribution": {
+          "1": 1,
+          "2": 1,
+          "3": 1
+        },
+        "mean": 2.0
+      },
+      "runbook": {
+        "count": 3,
+        "distribution": {
+          "1": 0,
+          "2": 3,
+          "3": 0
+        },
+        "mean": 2.0
+      },
+      "weekly": {
+        "count": 3,
+        "distribution": {
+          "1": 0,
+          "2": 0,
+          "3": 3
+        },
+        "mean": 3.0
+      }
+    },
+    "distribution": {
+      "1": 2,
+      "2": 9,
+      "3": 9
+    },
+    "mean": 2.35,
+    "reviewed": 20
+  },
+  "schema_version": 1,
+  "style_natural": {
+    "by_access": {
+      "public": {
+        "count": 9,
+        "distribution": {
+          "1": 2,
+          "2": 5,
+          "3": 2
+        },
+        "mean": 2.0
+      },
+      "restricted": {
+        "count": 4,
+        "distribution": {
+          "1": 2,
+          "2": 1,
+          "3": 1
+        },
+        "mean": 1.75
+      },
+      "team": {
+        "count": 7,
+        "distribution": {
+          "1": 1,
+          "2": 3,
+          "3": 3
+        },
+        "mean": 2.2857
+      }
+    },
+    "by_type": {
+      "guide": {
+        "count": 3,
+        "distribution": {
+          "1": 1,
+          "2": 2,
+          "3": 0
+        },
+        "mean": 1.6667
+      },
+      "incident": {
+        "count": 3,
+        "distribution": {
+          "1": 0,
+          "2": 1,
+          "3": 2
+        },
+        "mean": 2.6667
+      },
+      "meeting": {
+        "count": 5,
+        "distribution": {
+          "1": 3,
+          "2": 0,
+          "3": 2
+        },
+        "mean": 1.8
+      },
+      "notice": {
+        "count": 3,
+        "distribution": {
+          "1": 1,
+          "2": 1,
+          "3": 1
+        },
+        "mean": 2.0
+      },
+      "runbook": {
+        "count": 3,
+        "distribution": {
+          "1": 0,
+          "2": 2,
+          "3": 1
+        },
+        "mean": 2.3333
+      },
+      "weekly": {
+        "count": 3,
+        "distribution": {
+          "1": 0,
+          "2": 3,
+          "3": 0
+        },
+        "mean": 2.0
+      }
+    },
+    "distribution": {
+      "1": 5,
+      "2": 9,
+      "3": 6
+    },
+    "mean": 2.05,
+    "reviewed": 20
+  }
+}

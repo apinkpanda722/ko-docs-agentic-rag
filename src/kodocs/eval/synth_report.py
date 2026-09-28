@@ -372,6 +372,7 @@ def _quality_section(metrics: Mapping[str, object]) -> str:
     distribution = _mapping(metrics.get("distribution"))
     facts = _mapping(metrics.get("fact_coverage"))
     relative = _mapping(metrics.get("unprompted_relative_time"))
+    style_warnings = _mapping(metrics.get("style_warnings"))
     sections = [
         "## 5. 품질 지표",
         "",
@@ -410,6 +411,10 @@ def _quality_section(metrics: Mapping[str, object]) -> str:
         "### 지시 없는 상대 시점(경고, 실패 아님)",
         "",
         _relative_time_text(relative),
+        "",
+        "### 문체 경고(실패 아님)",
+        "",
+        _style_warning_table(style_warnings),
     ]
     return "\n".join(sections)
 
@@ -578,6 +583,41 @@ def _facts_table(facts: Mapping[str, object]) -> str:
         ["2개 이상 문서에 등장한 사실 수", facts.get("facts_in_2_plus_documents")],
     ]
     return _table(["항목", "값"], rows)
+
+
+_STYLE_WARNING_LABELS = {
+    "sentence_seam": "마침표+조사 이음새",
+    "surface_form_list_leak": "허용 표기 목록 누출",
+    "incident_ticket_as_doc_number": "장애 보고서 티켓 번호를 문서 번호로 표기",
+    "narrative_request_phrases": "서술체 요청 문구",
+    "bullet_request_endings": "개조식 요청 종결",
+}
+
+
+def _style_warning_table(warnings: Mapping[str, object]) -> str:
+    if not warnings:
+        return _PLACEHOLDER
+    rows = []
+    for name, values in warnings.items():
+        stats = _mapping(values)
+        by_type = ", ".join(
+            f"{doc_type} {_mapping(counts).get('documents')}/"
+            f"{_mapping(counts).get('population')}"
+            for doc_type, counts in _mapping(stats.get("by_type")).items()
+        )
+        share = (
+            f"{_display(stats.get('documents'))}/{_display(stats.get('population'))}"
+            f" ({_display(_percent(stats.get('rate')))})"
+        )
+        rows.append(
+            [
+                _STYLE_WARNING_LABELS.get(name, name),
+                share,
+                stats.get("occurrences"),
+                by_type or None,
+            ]
+        )
+    return _table(["항목", "문서", "횟수", "유형별 문서"], rows)
 
 
 def _relative_time_text(relative: Mapping[str, object]) -> str:
