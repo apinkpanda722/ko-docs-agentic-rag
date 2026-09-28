@@ -25,6 +25,15 @@ from kodocs.costs import (
     estimate_usd,
 )
 from kodocs.eval.golden import Question, load_questions, write_questions
+from kodocs.eval.lexical import (
+    CONTAINMENT_CAP,
+    DOCS_PATH,
+    LCS_CAP,
+    MISMATCH_MAX,
+    load_documents,
+    overlap,
+    summarize,
+)
 from kodocs.ingest.manifest import append_record, load_records
 from kodocs.llm.anthropic_batch import (
     SERVICE_PREFIX,
@@ -47,6 +56,7 @@ from kodocs.synth.seed import (
 DRAFTS_DIR = Path("data/synthetic/queries/drafts")
 DRAFT_LOG = Path("data/synthetic/queries/draft_log.jsonl")
 VALIDATION_PATH = Path("data/synthetic/queries/validated.jsonl")
+VALIDATION_SUMMARY_PATH = Path("data/manifest/golden_query_validation.json")
 FAILURES_PATH = Path("data/synthetic/queries/draft_failures.jsonl")
 BATCHES_MANIFEST = Path("data/manifest/anthropic_batches_golden.jsonl")
 DRY_RUNS_PATH = Path("data/manifest/golden_dry_runs.jsonl")
@@ -217,6 +227,7 @@ def validate_draft(
     *,
     seed: Seed,
     people: Mapping[str, Person] | Sequence[Person],
+    docs: Mapping[str, Mapping[str, object]] | None = None,
 ) -> list[str]:
     """Return deterministic draft failure codes in stable check order."""
     people_by_id = (
@@ -234,9 +245,12 @@ def validate_draft(
         ("as_of_missing", _as_of_missing),
         ("prompt_artifact", _prompt_artifact),
     )
-    return [
+    codes = [
         code for code, check in checks if check(spec, candidate, seed, people_by_id)
     ]
+    if docs is not None and _overlap_exceeds(overlap(spec, candidate, docs)):
+        codes.append("overlap_cap")
+    return codes
 
 
 def run(
@@ -363,12 +377,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--limit", type=_positive_int)
     parser.add_argument("--yes", action="store_true")
     parser.add_argument("--status", action="store_true")
+    parser.add_argument("--validate-only", action="store_true")
     args = parser.parse_args(argv)
-    if args.dry_run and args.status:
-        parser.error("--dry-run과 --status는 함께 쓸 수 없습니다")
+    modes = sum((args.dry_run, args.status, args.validate_only))
+    if modes > 1:
+        parser.error("--dry-run, --status, --validate-only는 함께 쓸 수 없습니다")
 
     root = args.root.resolve()
     try:
+        if args.validate_only:
+            return validate_only(root)
         config = load_generation_config(section="golden_queries")
         if args.dry_run:
             return run(
@@ -407,6 +425,28 @@ def main(argv: Sequence[str] | None = None) -> int:
     except (OSError, TypeError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
         print(f"질문 초안 실행 실패: {_first_line(str(exc))}")
         return 1
+
+
+def validate_only(root: Path, *, print_fn: PrintFn = print) -> int:
+    """Revalidate collected immutable draft caches without API access."""
+    root = Path(root)
+    if not sorted((root / DRAFTS_DIR).glob("*.json")):
+        print_fn("수거한 초안 없음, `make queries` 먼저")
+        return 1
+    specs = load_questions(root / SPECS_PATH)
+    seed = load_seed(root)
+    docs = load_documents(root / DOCS_PATH)
+    summary = _write_validation_outputs(
+        root,
+        specs=specs,
+        seed=seed,
+        people={person.person_id: person for person in seed.people},
+        docs=docs,
+    )
+    print_fn(
+        f"질문 초안 재검증 완료: 통과 {summary['validated']} 실패 {summary['failed']}"
+    )
+    return 0
 
 
 def _asked_attribute(spec: Question) -> str:
@@ -552,6 +592,16 @@ def _prompt_artifact(
     )
 
 
+def _overlap_exceeds(metrics: Mapping[str, object]) -> bool:
+    containment = metrics.get("containment")
+    lcs = metrics.get("lcs")
+    return (
+        isinstance(containment, (int, float))
+        and not isinstance(containment, bool)
+        and containment > CONTAINMENT_CAP
+    ) or (isinstance(lcs, int) and not isinstance(lcs, bool) and lcs > LCS_CAP)
+
+
 def _normalize_spaces(value: str) -> str:
     return " ".join(unicodedata.normalize("NFC", value).split())
 
@@ -595,6 +645,129 @@ def _draft_history(root: Path) -> dict[str, dict[int, dict[str, object]]]:
         if isinstance(spec_id, str) and isinstance(attempt, int) and attempt >= 1:
             history[spec_id][attempt] = payload
     return history
+
+
+def _write_validation_outputs(
+    root: Path,
+    *,
+    specs: Sequence[Question],
+    seed: Seed,
+    people: Mapping[str, Person],
+    docs: Mapping[str, Mapping[str, object]],
+) -> dict[str, object]:
+    by_id = {spec.id: spec for spec in specs}
+    attempts: dict[str, list[dict[str, object]]] = defaultdict(list)
+    for path in sorted((root / DRAFTS_DIR).glob("*.json")):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise TypeError(f"초안 캐시는 객체여야 합니다: {path}")
+        spec_id = payload.get("id")
+        attempt = payload.get("attempt")
+        if not isinstance(spec_id, str) or spec_id not in by_id:
+            raise ValueError(f"초안 캐시의 문항이 명세에 없습니다: {path}")
+        if not isinstance(attempt, int) or isinstance(attempt, bool) or attempt < 1:
+            raise ValueError(f"초안 캐시의 attempt가 잘못되었습니다: {path}")
+        spec = by_id[spec_id]
+        metrics: dict[str, float | int | None] = {
+            "containment": None,
+            "lcs": None,
+            "target_chars": 0,
+        }
+        question: str | None = None
+        if payload.get("result_type") == "succeeded":
+            text = payload.get("text")
+            if not isinstance(text, str):
+                raise ValueError(f"succeeded 초안에 text가 없습니다: {path}")
+            question = text.strip()
+            metrics = overlap(spec, question, docs)
+            codes = validate_draft(
+                spec,
+                question,
+                seed=seed,
+                people=people,
+                docs=docs,
+            )
+        else:
+            codes = [f"batch_{payload.get('result_type', 'missing')}"]
+        attempts[spec_id].append(
+            {
+                "attempt": attempt,
+                "path": path.name,
+                "question": question,
+                "codes": codes,
+                "metrics": metrics,
+            }
+        )
+
+    validated: list[Question] = []
+    failed = 0
+    by_code: Counter[str] = Counter()
+    overlap_rows: list[dict[str, object]] = []
+    validated_overlap_n = 0
+    for spec_id in sorted(attempts):
+        spec = by_id[spec_id]
+        outcomes = sorted(
+            attempts[spec_id],
+            key=lambda item: (int(item["attempt"]), str(item["path"])),
+        )
+        passing = next((item for item in outcomes if not item["codes"]), None)
+        selected = passing if passing is not None else outcomes[-1]
+        metrics = selected["metrics"]
+        assert isinstance(metrics, Mapping)
+        overlap_rows.append({"id": spec.id, "type": spec.type, **metrics})
+        if passing is not None:
+            question = passing["question"]
+            assert isinstance(question, str)
+            passing_metrics = passing["metrics"]
+            assert isinstance(passing_metrics, Mapping)
+            validated.append(_tagged_question(spec, question, passing_metrics))
+            containment = passing_metrics.get("containment")
+            if isinstance(containment, (int, float)) and not isinstance(
+                containment, bool
+            ):
+                validated_overlap_n += 1
+        else:
+            failed += 1
+            codes = selected["codes"]
+            assert isinstance(codes, Sequence)
+            by_code.update(str(code) for code in codes)
+
+    validated.sort(key=lambda item: item.id)
+    write_questions(root / VALIDATION_PATH, validated)
+    mismatch_n = sum("lexical_mismatch" in question.tags for question in validated)
+    summary: dict[str, object] = {
+        "validated": len(validated),
+        "failed": failed,
+        "by_code": dict(sorted(by_code.items())),
+        "overlap": summarize(overlap_rows),
+        "caps": {
+            "containment": CONTAINMENT_CAP,
+            "lcs": LCS_CAP,
+            "mismatch_max": MISMATCH_MAX,
+        },
+        "lexical_mismatch": {
+            "n": mismatch_n,
+            "share": mismatch_n / validated_overlap_n if validated_overlap_n else None,
+        },
+    }
+    _write_json(root / VALIDATION_SUMMARY_PATH, summary)
+    return summary
+
+
+def _tagged_question(
+    spec: Question,
+    question: str,
+    metrics: Mapping[str, object],
+) -> Question:
+    tags = tuple(tag for tag in spec.tags if tag != "lexical_mismatch")
+    containment = metrics.get("containment")
+    if (
+        isinstance(containment, (int, float))
+        and not isinstance(containment, bool)
+        and containment <= MISMATCH_MAX
+    ):
+        tags = (*tags, "lexical_mismatch")
+    return replace(spec, question=question, tags=tags)
 
 
 def _other_template(record: Mapping[str, object], current_hash: str) -> bool:
@@ -730,12 +903,7 @@ def _collect_batch(
     by_id = {spec.id: spec for spec in specs}
     seed = load_seed(root)
     people = {person.person_id: person for person in seed.people}
-    validated_path = root / VALIDATION_PATH
-    validated = (
-        {question.id: question for question in load_questions(validated_path)}
-        if validated_path.exists()
-        else {}
-    )
+    docs = load_documents(root / DOCS_PATH)
     log_by_custom_id = {
         str(record.get("custom_id")): record
         for record in load_records(root / DRAFT_LOG)
@@ -802,9 +970,13 @@ def _collect_batch(
                 if not isinstance(text, str):
                     raise ValueError("succeeded 초안에 text가 없습니다")
                 question = text.strip()
-                codes = validate_draft(spec, question, seed=seed, people=people)
-                if not codes:
-                    validated[spec_id] = replace(spec, question=question)
+                codes = validate_draft(
+                    spec,
+                    question,
+                    seed=seed,
+                    people=people,
+                    docs=docs,
+                )
             else:
                 codes = [f"batch_{cache.get('result_type', 'missing')}"]
             if codes and (spec_id, attempt) not in failed_keys:
@@ -840,8 +1012,12 @@ def _collect_batch(
                 f"결과 저장 실패: {result.custom_id} ({type(exc).__name__}) — 계속 진행합니다."
             )
         _progress(print_fn, index, len(results), "결과 저장")
-    write_questions(
-        validated_path, sorted(validated.values(), key=lambda item: item.id)
+    _write_validation_outputs(
+        root,
+        specs=specs,
+        seed=seed,
+        people=people,
+        docs=docs,
     )
     if not save_failed:
         client.mark_collected(batch_id)

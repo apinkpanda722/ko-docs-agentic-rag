@@ -80,5 +80,7 @@ make review-score   # data/golden/synthetic_review/*.csv 사람 검수 결과 �
 make query-specs    # 합성 문항 명세(골드 합성 30·실버 150, qrels 결정론) → data/synthetic/queries/specs.jsonl (네트워크 없음)
 make queries-dry   # 합성 문항 질문 문장 Batch 예상 토큰·비용(추정값을 data/manifest/golden_dry_runs.jsonl에 기록) — 네트워크 없음
 make queries       # 합성 문항 질문 문장 Batch 생성/수거 → 결정론 검증 — 실제 API 호출·과금, 사용자 실행
+make query-validate  # 수거한 질의 초안 결정론 재검증(답 누수·어휘 겹침 상한·태그) → data/manifest/golden_query_validation.json (네트워크 없음)
+make lexical-report  # 수거한 질의 초안의 어휘 겹침 분포·상한 후보별 초과 수 출력(파일 쓰지 않음, 상한 확정용, 네트워크 없음)
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)
