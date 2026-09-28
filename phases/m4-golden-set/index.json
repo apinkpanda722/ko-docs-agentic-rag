@@ -33,7 +33,16 @@
     {
       "step": 2,
       "name": "synth-specs",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-28T20:30:34+0900",
+      "summary": "결정론적 합성 명세 180건을 생성했습니다: 골드 30건(식별자 5·의미 5·다중 6·권한 5·답없음 3·SQL 6), 실버 150건(식별자 25·의미 40·다중 35·시점 20·권한 15·답없음 15); make verify는 771 passed였습니다.",
+      "completed_at": "2026-09-28T20:44:26+0900",
+      "usage": {
+        "input_tokens": 2984113,
+        "cached_input_tokens": 2864384,
+        "output_tokens": 36425,
+        "attempts": 1
+      }
     },
     {
       "step": 3,
