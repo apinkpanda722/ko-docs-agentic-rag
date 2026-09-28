@@ -9,10 +9,10 @@
 | 항목 | 값 |
 | --- | --- |
 | 실행일 | 2026-09-28 |
-| 커밋 해시 (`git rev-parse --short HEAD`) | 92a4fd4 |
+| 커밋 해시 (`git rev-parse --short HEAD`) | 92d9106 |
 | 생성 모델·버전 | claude-sonnet-5 |
 | generation 기록 | model=claude-sonnet-5, temperature=null (모델 미지원: unsupported_by_model), thinking=disabled, effort=null, max_tokens=6000 |
-| 프롬프트 템플릿 해시 | 08463271319edad61031a0ed34ba7cc326e83bb90329ddb33b43c44ad407cf43<br>6d6499ecfc15e0355caba0a70fac1f1a5d7f041fd2cb8c8522b70fbc1c51a67e<br>8196fa38d17b04a7f4dbe3edb649a4606ce1b7d49914a4b866df71b4b7748772<br>b077ed0739e21b98cea6c8667b9bc24338ec1932f42c15fb6c4c51297fe2af79<br>e896c8ba882f6742896ed9215323a4f82d624aa23c1314065198acd941611d54<br>f2a856cb7f36eb28a2626539fe2c262546ab9a85bc9ce686e195db7cbf30478f |
+| 프롬프트 템플릿 해시 | 0e4a2386f8efccee8a5214861b45d7811efb4c00979270144191d472316630c5<br>208e83bc44a971e490a4c96cc8648d7ff71ce18bf17ea97080c069862095ee07<br>6d6499ecfc15e0355caba0a70fac1f1a5d7f041fd2cb8c8522b70fbc1c51a67e<br>8196fa38d17b04a7f4dbe3edb649a4606ce1b7d49914a4b866df71b4b7748772<br>b077ed0739e21b98cea6c8667b9bc24338ec1932f42c15fb6c4c51297fe2af79<br>e896c8ba882f6742896ed9215323a4f82d624aa23c1314065198acd941611d54<br>ea60cea81c224af1be7e699121b98779a236895d21b8d0548c666a49fbc46210<br>f127f79ae5ffee73d31c5c470bb3454927b5242e2020e1441b4ee4b481a95883<br>f2a856cb7f36eb28a2626539fe2c262546ab9a85bc9ce686e195db7cbf30478f |
 | 시드 파일 해시 | data/seed/banned_names.yaml=8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231<br>data/seed/company.yaml=36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba<br>data/seed/events/data-ai.yaml=677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f<br>data/seed/events/finance.yaml=7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf<br>data/seed/events/hr.yaml=6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45<br>data/seed/events/legal.yaml=9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11<br>data/seed/events/payments.yaml=2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3<br>data/seed/events/platform.yaml=1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47<br>data/seed/events/security.yaml=75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff<br>data/seed/events/sre.yaml=6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4<br>data/seed/incidents/INC-2025-001.yaml=edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0<br>data/seed/incidents/INC-2025-002.yaml=e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414<br>data/seed/incidents/INC-2025-003.yaml=7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc<br>data/seed/incidents/INC-2025-004.yaml=be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff<br>data/seed/incidents/INC-2025-005.yaml=ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865<br>data/seed/incidents/INC-2025-006.yaml=dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3<br>data/seed/incidents/INC-2025-007.yaml=a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc<br>data/seed/incidents/INC-2025-008.yaml=da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f<br>data/seed/incidents/INC-2025-009.yaml=becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c<br>data/seed/incidents/INC-2025-010.yaml=2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e<br>data/seed/incidents/INC-2026-001.yaml=83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da<br>data/seed/incidents/INC-2026-002.yaml=a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae<br>data/seed/incidents/INC-2026-003.yaml=09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5<br>data/seed/incidents/INC-2026-004.yaml=c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d<br>data/seed/incidents/INC-2026-005.yaml=266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5<br>data/seed/incidents/INC-2026-006.yaml=5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e<br>data/seed/incidents/INC-2026-007.yaml=4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3<br>data/seed/incidents/INC-2026-008.yaml=1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1<br>data/seed/incidents/INC-2026-009.yaml=01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7<br>data/seed/incidents/INC-2026-010.yaml=4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4<br>data/seed/incidents/INC-2026-011.yaml=988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97<br>data/seed/incidents/INC-2026-012.yaml=95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a<br>data/seed/incidents/INC-2026-013.yaml=acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15<br>data/seed/incidents/INC-2026-014.yaml=6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76<br>data/seed/incidents/INC-2026-031.yaml=6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4<br>data/seed/ledger/approvals_anchor.yaml=2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6<br>data/seed/ledger/rules.yaml=5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b<br>data/seed/ledger/tickets_anchor.yaml=86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b<br>data/seed/people/data-ai.yaml=a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74<br>data/seed/people/finance.yaml=9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248<br>data/seed/people/hr.yaml=7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7<br>data/seed/people/legal.yaml=e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7<br>data/seed/people/payments.yaml=b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9<br>data/seed/people/platform.yaml=a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e<br>data/seed/people/security.yaml=c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8<br>data/seed/people/sre.yaml=79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa<br>data/seed/regulation_refs.yaml=159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7<br>data/seed/services.yaml=bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7<br>data/seed/teams.yaml=e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f |
 | 규정 색인 해시 | e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac |
 | SQLite `content_hash` | 1d59c69de93c8923c3084b017335dfa0ec21840a0eac357b2ba4b61d5247f10e |
@@ -26,7 +26,7 @@
 | --- | --- |
 | 문서 계획 | 계획 200건 / 유형 guide=30, incident=25, meeting=50, notice=25, runbook=30, weekly=40 / 권한 public=90, restricted=30, team=80 |
 | 인라인 사실 표시 | `<fact id="fact_id">…</fact>` 후 검증기가 span으로 변환 |
-| 검증 규칙 버전 | 4 |
+| 검증 규칙 버전 | 5 |
 | 재생성 상한 | 최대 시도 3회 |
 | 생성 방식 | Anthropic Message Batch 사용 |
 | 품질 지표 대상 | 검증 통과 문서만 사용(분자·분모 동일 집합) |
@@ -37,10 +37,13 @@
 
 | 유형 | 템플릿 해시 | 통과 문서 수 |
 | --- | --- | --- |
+| guide | `208e83bc44a9` | 1 |
 | guide | `6d6499ecfc15` | 29 |
-| incident | `08463271319e` | 14 |
+| incident | `ea60cea81c22` | 24 |
+| meeting | `0e4a2386f8ef` | 4 |
 | meeting | `8196fa38d17b` | 46 |
 | notice | `b077ed0739e2` | 24 |
+| notice | `f127f79ae5ff` | 1 |
 | runbook | `f2a856cb7f36` | 30 |
 | weekly | `e896c8ba882f` | 40 |
 
@@ -55,15 +58,16 @@
 | msgbatch_01RLrpyr7gp6zqma9K6oho1L | collected | 10 | canceled=0, errored=0, expired=0, missing=0, succeeded=10 | input=21425, output=19111, cache_create=0, cache_read=0 |
 | msgbatch_01Qm4eX1ehsyw18ASU48iEvy | collected | 10 | canceled=0, errored=0, expired=0, missing=0, succeeded=10 | input=22177, output=18694, cache_create=0, cache_read=0 |
 | msgbatch_01SHc7eNEULByVhCSyVD4GFp | collected | 191 | canceled=0, errored=0, expired=0, missing=0, succeeded=191 | input=416606, output=325611, cache_create=0, cache_read=0 |
+| msgbatch_01D4aUrs24E51Gaa9bdEYxyG | collected | 31 | canceled=0, errored=0, expired=0, missing=0, succeeded=31 | input=83625, output=61701, cache_create=0, cache_read=0 |
 
 ### 원장·dry-run 대조
 
 | 항목 | 값 |
 | --- | --- |
-| Anthropic 원장 합계(VAT 포함, USD) | 2.7595 |
-| 콘솔 대조용 원장 합계(VAT 제외 환산, USD) | 2.5087 |
+| Anthropic 원장 합계(VAT 포함, USD) | 3.1909 |
+| 콘솔 대조용 원장 합계(VAT 제외 환산, USD) | 2.9008 |
 | dry-run 추정 입력 토큰 | (실행 후 기록) |
-| 실제 입력 토큰 | 499470 |
+| 실제 입력 토큰 | 583095 |
 | dry-run 추정 대비 실제 입력 토큰 비율 | (실행 후 기록) |
 | 파일럿 보정 근거 | (실행 후 기록) |
 
@@ -72,12 +76,12 @@
 | 항목 | 값 |
 | --- | --- |
 | 계획 | 200 |
-| 통과 | 183 |
-| 실패 | 17 |
+| 통과 | 199 |
+| 실패 | 1 |
 | 미생성 | 0 |
-| 소진 | 1 |
-| 통과율(통과/생성) | 91.5% |
-| 실패 코드 분포 | fact_missing=1, fact_value_mismatch=14, marker_malformed=2, prompt_artifact=3 |
+| 소진 | 0 |
+| 통과율(통과/생성) | 99.5% |
+| 실패 코드 분포 | fact_missing=1, marker_malformed=1 |
 
 ### 카나리아 30·인젝션 12 확인
 
@@ -94,9 +98,9 @@
 
 | 범위 | 최댓값 | p95 | 평균 |
 | --- | --- | --- | --- |
-| 전체 | 0.2100 | 0.0680 | 0.0317 |
-| 유형 안 | 0.2100 | 0.0905 | 0.0578 |
-| 유형 간 | 0.1105 | 0.0461 | 0.0259 |
+| 전체 | 0.2100 | 0.0683 | 0.0319 |
+| 유형 안 | 0.2100 | 0.0901 | 0.0584 |
+| 유형 간 | 0.1157 | 0.0466 | 0.0263 |
 
 #### 근접 중복 상위 20쌍(임계값 이상)
 
@@ -108,26 +112,26 @@
 
 | 문장 앞 40자 | 문서 수 |
 | --- | --- |
-| 3개 이상 문서의 동일 문장 수 | 32 |
-| 담당 팀: 데이터AI팀 (data-ai) | 12 |
-| 담당 팀: 법무컴플라이언스팀 | 9 |
-| 담당 팀: 정보보안팀 | 9 |
+| 3개 이상 문서의 동일 문장 수 | 37 |
+| 담당 팀: 법무컴플라이언스팀 | 11 |
+| 담당 팀: 결제서비스팀 (payments) | 10 |
+| 담당 팀: 데이터AI팀 (data-ai) | 10 |
+| 담당 팀: 정보보안팀 | 10 |
 | 담당 팀: SRE인프라팀 | 8 |
-| 담당 팀: 결제서비스팀 (payments) | 7 |
+| 감사합니다. | 6 |
 | 담당 팀: 인사팀 | 6 |
 | 담당 팀: 재무팀 | 6 |
+| 9%다. | 5 |
 | \|---\|---\|---\| | 5 |
-| 감사합니다. | 5 |
-| 담당 팀: 플랫폼개발팀 | 5 |
 
 ### 길이
 
 | 유형 | 문서 | 평균 | 표준편차 | 변동계수 | 최소 | 최대 | 계획 목표 | 목표 대비 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| guide | 29 | 1597.2759 | 249.3435 | 0.1561 | 1235 | 2134 | 1758.6207 | 90.8% |
-| incident | 14 | 1647.1429 | 446.9263 | 0.2713 | 1011 | 2514 | 2842.8571 | 57.9% |
-| meeting | 46 | 1751.2609 | 265.0647 | 0.1514 | 1166 | 2174 | 2208.6957 | 79.3% |
-| notice | 24 | 917.2083 | 199.1229 | 0.2171 | 595 | 1324 | 1175.0000 | 78.1% |
+| guide | 30 | 1612.7667 | 258.9571 | 0.1606 | 1235 | 2134 | 1773.3333 | 91.0% |
+| incident | 24 | 1893.5417 | 419.8945 | 0.2218 | 864 | 2639 | 2925.0000 | 64.7% |
+| meeting | 50 | 1760.6000 | 261.5775 | 0.1486 | 1166 | 2174 | 2216.0000 | 79.5% |
+| notice | 25 | 927.8800 | 201.9830 | 0.2177 | 595 | 1324 | 1184.0000 | 78.4% |
 | runbook | 30 | 1994.3667 | 284.3168 | 0.1426 | 1540 | 2481 | 2360.0000 | 84.5% |
 | weekly | 40 | 1541.3750 | 345.3740 | 0.2241 | 905 | 2370 | 1880.0000 | 82.0% |
 
@@ -135,10 +139,10 @@
 
 | 유형 | distinct-2 | 고유 bigram | 전체 bigram |
 | --- | --- | --- | --- |
-| guide | 0.0836 | 3747 | 44839 |
-| incident | 0.1076 | 2400 | 22309 |
-| meeting | 0.0536 | 4171 | 77866 |
-| notice | 0.1231 | 2589 | 21025 |
+| guide | 0.0811 | 3798 | 46853 |
+| incident | 0.0768 | 3390 | 44156 |
+| meeting | 0.0506 | 4307 | 85111 |
+| notice | 0.1202 | 2664 | 22169 |
 | runbook | 0.0647 | 3762 | 58188 |
 | weekly | 0.0683 | 4081 | 59786 |
 
@@ -146,26 +150,26 @@
 
 | 범위 | 종결 유형 | 문장 수 | 비율 |
 | --- | --- | --- | --- |
-| 전체 | 합니다·했습니다류 | 799 | 11.6% |
-| 전체 | 한다·했다류 | 3243 | 47.2% |
-| 전체 | 함·음·명사형 | 121 | 1.8% |
-| 전체 | 기타 | 2707 | 39.4% |
-| guide | 합니다·했습니다류 | 311 | 26.0% |
-| guide | 한다·했다류 | 379 | 31.7% |
-| guide | 함·음·명사형 | 34 | 2.8% |
-| guide | 기타 | 473 | 39.5% |
-| incident | 합니다·했습니다류 | 40 | 8.1% |
-| incident | 한다·했다류 | 265 | 53.5% |
-| incident | 함·음·명사형 | 3 | 0.6% |
-| incident | 기타 | 187 | 37.8% |
+| 전체 | 합니다·했습니다류 | 845 | 11.3% |
+| 전체 | 한다·했다류 | 3613 | 48.3% |
+| 전체 | 함·음·명사형 | 125 | 1.7% |
+| 전체 | 기타 | 2897 | 38.7% |
+| guide | 합니다·했습니다류 | 344 | 27.6% |
+| guide | 한다·했다류 | 380 | 30.4% |
+| guide | 함·음·명사형 | 35 | 2.8% |
+| guide | 기타 | 489 | 39.2% |
+| incident | 합니다·했습니다류 | 53 | 6.1% |
+| incident | 한다·했다류 | 532 | 61.6% |
+| incident | 함·음·명사형 | 1 | 0.1% |
+| incident | 기타 | 278 | 32.2% |
 | meeting | 합니다·했습니다류 | 1 | 0.1% |
-| meeting | 한다·했다류 | 942 | 51.5% |
-| meeting | 함·음·명사형 | 33 | 1.8% |
-| meeting | 기타 | 853 | 46.6% |
-| notice | 합니다·했습니다류 | 177 | 37.7% |
-| notice | 한다·했다류 | 162 | 34.5% |
+| meeting | 한다·했다류 | 1027 | 51.5% |
+| meeting | 함·음·명사형 | 38 | 1.9% |
+| meeting | 기타 | 929 | 46.6% |
+| notice | 합니다·했습니다류 | 177 | 35.8% |
+| notice | 한다·했다류 | 179 | 36.2% |
 | notice | 함·음·명사형 | 0 | 0.0% |
-| notice | 기타 | 131 | 27.9% |
+| notice | 기타 | 138 | 27.9% |
 | runbook | 합니다·했습니다류 | 1 | 0.1% |
 | runbook | 한다·했다류 | 924 | 55.6% |
 | runbook | 함·음·명사형 | 7 | 0.4% |
@@ -179,39 +183,39 @@
 
 | 차원 | 값 | 계획 | 통과 |
 | --- | --- | --- | --- |
-| 유형 | guide | 30 | 29 |
-| 유형 | incident | 25 | 14 |
-| 유형 | meeting | 50 | 46 |
-| 유형 | notice | 25 | 24 |
+| 유형 | guide | 30 | 30 |
+| 유형 | incident | 25 | 24 |
+| 유형 | meeting | 50 | 50 |
+| 유형 | notice | 25 | 25 |
 | 유형 | runbook | 30 | 30 |
 | 유형 | weekly | 40 | 40 |
-| 권한 | public | 90 | 83 |
+| 권한 | public | 90 | 89 |
 | 권한 | restricted | 30 | 30 |
-| 권한 | team | 80 | 70 |
-| 팀 | data-ai | 23 | 22 |
-| 팀 | finance | 25 | 23 |
-| 팀 | hr | 25 | 22 |
-| 팀 | legal | 25 | 22 |
-| 팀 | payments | 27 | 26 |
-| 팀 | platform | 26 | 24 |
-| 팀 | security | 25 | 24 |
-| 팀 | sre | 24 | 20 |
+| 권한 | team | 80 | 80 |
+| 팀 | data-ai | 23 | 23 |
+| 팀 | finance | 25 | 24 |
+| 팀 | hr | 25 | 25 |
+| 팀 | legal | 25 | 25 |
+| 팀 | payments | 27 | 27 |
+| 팀 | platform | 26 | 26 |
+| 팀 | security | 25 | 25 |
+| 팀 | sre | 24 | 24 |
 | 특수 | 카나리아 포함 | (실행 후 기록) | 30 |
-| 특수 | 인젝션 포함 | (실행 후 기록) | 11 |
+| 특수 | 인젝션 포함 | (실행 후 기록) | 12 |
 
 ### 사실 커버리지
 
 | 항목 | 값 |
 | --- | --- |
 | normal 사실 수 | 392 |
-| 커버된 사실 수 | 379 |
-| 커버리지 | 96.7% |
-| 사실당 등장 문서 수 분포 | 0=13, 1=119, 2=103, 3=80, 4=42, 5=24, 6=10, 7=1 |
-| 2개 이상 문서에 등장한 사실 수 | 260 |
+| 커버된 사실 수 | 391 |
+| 커버리지 | 99.7% |
+| 사실당 등장 문서 수 분포 | 0=1, 1=102, 2=97, 3=93, 4=53, 5=32, 6=12, 7=2 |
+| 2개 이상 문서에 등장한 사실 수 | 289 |
 
 ### 지시 없는 상대 시점(경고, 실패 아님)
 
-본문에 `최근`·`얼마 전`·`지난달`·`요즘`·`요새`·`근래`가 나오지만 그 문서에 주어진 시점 표현에는 없는 경우를 문서별로 센다(프롬프트 규칙 6 위반 후보, 검증 실패로 처리하지 않음). 경고 문서 50건, 합계 63회.
+본문에 `최근`·`얼마 전`·`지난달`·`요즘`·`요새`·`근래`가 나오지만 그 문서에 주어진 시점 표현에는 없는 경우를 문서별로 센다(프롬프트 규칙 6 위반 후보, 검증 실패로 처리하지 않음). 경고 문서 56건, 합계 74회.
 
 | 문서 | 횟수 |
 | --- | --- |
@@ -224,21 +228,27 @@
 | syn-guide-016 | 최근 1 |
 | syn-guide-017 | 최근 1 |
 | syn-guide-021 | 최근 1 |
+| syn-guide-022 | 최근 3 |
 | syn-guide-023 | 최근 1 |
+| syn-incident-021 | 최근 1 |
+| syn-incident-025 | 최근 2 |
 | syn-meeting-001 | 최근 3 |
 | syn-meeting-002 | 최근 3 |
 | syn-meeting-003 | 최근 1 |
 | syn-meeting-004 | 최근 3 |
 | syn-meeting-005 | 최근 5 |
 | syn-meeting-006 | 최근 1 |
+| syn-meeting-008 | 최근 3 |
 | syn-meeting-009 | 최근 1 |
 | syn-meeting-010 | 최근 1 |
 | syn-meeting-012 | 최근 1 |
+| syn-meeting-020 | 최근 1 |
 | syn-meeting-021 | 최근 1 |
 | syn-meeting-023 | 최근 1 |
 | syn-meeting-024 | 최근 1 |
 | syn-meeting-028 | 최근 1 |
 | syn-meeting-029 | 최근 2 |
+| syn-meeting-030 | 최근 1 |
 | syn-meeting-031 | 최근 1 |
 | syn-meeting-035 | 최근 1 |
 | syn-meeting-036 | 최근 1 |
@@ -342,3 +352,5 @@
 전체 생성 1회차(Batch `msgbatch_01SHc7eNEULByVhCSyVD4GFp`, 2026-09-28 수거): 191건 제출, 통과 183/200, 원장 입력 416,606·출력 325,611토큰, $2.2491(VAT 포함). 실패 17건 분류: 일시 사실 분할 11(시각만 표시로 감쌈: incident-001·005·007·008·012·016·020·024·025, meeting-030·040), ISO 값 노출 2(guide-022, meeting-008), 서술 사실 자리표시 누출 1(meeting-020), 장애 보고서 메타 서술("배정된 자료에는 수치가 명시되어 있지 않아…"; 실패 incident-006·007·024, 통과본 incident-003·004·014에도 있음). 검증 요약의 exhausted=1은 syn-incident-001로, 검증기가 시도 번호(5)를 상한 3과 비교했기 때문이다. 현재 템플릿으로 만든 시도는 4·5회차 2번뿐이라 실제로는 재시도 대상이었다.
 
 전체 1회차 뒤 변경(검증기 버전 5): system.md에 "일시 사실은 날짜와 시각을 함께 표시 안에 쓴다. 표시 밖에 쓰는 '사실 날짜'는 사실 줄의 날짜 정보를 말하며 값 자체의 날짜가 아니다"와 일시 예시 추가(검증기는 그대로 엄격). 사실 줄의 일시 값을 허용 표기 첫 형태(예: 2026-06-14 05:35)로, 서술 사실의 허용 표기 칸을 `규칙 2의 서술 사실`로 바꿈. incident.md 영향 절 지시를 "영향받은 기능·사용자 유형을 정성적으로 쓰고, 자료나 수치가 없다는 사실은 언급하지 않는다"로 바꿈. `prompt_artifact`에 "서술 요지를 자연스럽게", "규칙 2의 서술 사실", "배정된 자료", "배정된 수치" 추가. 재생성 범위: 템플릿 해시가 바뀐 통과본은 `--regenerate-types`(Makefile `REGENERATE_TYPES`)에 적은 유형만 다시 만들고, 나머지 유형은 실패·무효화·미생성 문서만 재시도한다. system.md가 바뀌면 모든 유형의 해시가 바뀌므로, 장애 보고서만 `make generate REGENERATE_TYPES=incident`로 25건 전부를 새 템플릿으로 만든다. exhausted는 생성과 같은 규칙(현재 템플릿 시도 수)으로 세고 문서 ID(`exhausted_docs`)를 함께 기록한다. 반복 문장 지표에서 Markdown 제목 줄을 제외한다. 2절에 템플릿 버전별 통과 문서 수 표를 추가했다. 길이 미달 경고는 그대로 두고 고치지 않는다.
+
+검수 표본(2026-09-28, `make review-sample`): 모집단 199건(incident-007 재시도 대기 중) 기준으로 추출, 이후 모집단이 바뀌어도 표본은 다시 뽑지 않음. 표본 20건 유형 guide 3·incident 3·meeting 5·notice 3·runbook 3·weekly 3, 권한 public 9·team 7·restricted 4, 부족 층 없음. 전체 2회차(msgbatch_01D4aUrs24E51Gaa9bdEYxyG, REGENERATE_TYPES=incident, 31건, $0.4313) 뒤 통과 199/200이며, syn-incident-007 시도 3(msgbatch_014CrGYtdjE38eego1bRPJop)은 수거 전이다. 수거 후에는 검증·지표·결과 문서만 갱신하고 `make review-sample`은 다시 실행하지 않는다.

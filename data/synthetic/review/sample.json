@@ -1,0 +1,343 @@
+{
+  "docs": [
+    {
+      "access_level": "team",
+      "doc_id": "syn-guide-007",
+      "doc_type": "guide",
+      "fact_ids": [
+        "f-evt-036-service",
+        "f-evt-036-version",
+        "f-evt-036-service",
+        "f-evt-037-owner",
+        "f-evt-037-owner",
+        "f-evt-037-policy",
+        "f-evt-037-rule",
+        "f-evt-036-service",
+        "f-evt-037-rule",
+        "f-evt-037-owner"
+      ],
+      "path": "data/synthetic/docs/syn-guide-007.json"
+    },
+    {
+      "access_level": "public",
+      "doc_id": "syn-guide-023",
+      "doc_type": "guide",
+      "fact_ids": [
+        "f-evt-036-version",
+        "f-evt-039-org",
+        "f-evt-037-owner"
+      ],
+      "path": "data/synthetic/docs/syn-guide-023.json"
+    },
+    {
+      "access_level": "restricted",
+      "doc_id": "syn-guide-026",
+      "doc_type": "guide",
+      "fact_ids": [
+        "f-evt-030-owner",
+        "f-evt-030-plan",
+        "f-canary-020",
+        "f-evt-030-service",
+        "f-service-deploy-control-owner",
+        "f-service-deploy-control-slo",
+        "f-service-deploy-control-oncall",
+        "f-evt-030-owner",
+        "f-service-deploy-control-oncall"
+      ],
+      "path": "data/synthetic/docs/syn-guide-026.json"
+    },
+    {
+      "access_level": "team",
+      "doc_id": "syn-incident-001",
+      "doc_type": "incident",
+      "fact_ids": [
+        "f-inc-2025-001-ticket",
+        "f-inc-2025-001-owner",
+        "f-inc-2025-001-service",
+        "f-inc-2025-001-severity",
+        "f-inc-2025-001-start",
+        "f-inc-2025-001-restored",
+        "f-inc-2025-001-cause",
+        "f-inc-2025-001-action"
+      ],
+      "path": "data/synthetic/docs/syn-incident-001.json"
+    },
+    {
+      "access_level": "public",
+      "doc_id": "syn-incident-015",
+      "doc_type": "incident",
+      "fact_ids": [
+        "f-inc-2026-005-ticket",
+        "f-inc-2026-005-owner",
+        "f-inc-2026-005-service",
+        "f-inc-2026-005-severity",
+        "f-inc-2026-005-start",
+        "f-inc-2026-005-restored",
+        "f-inc-2026-005-cause",
+        "f-inc-2026-005-action"
+      ],
+      "path": "data/synthetic/docs/syn-incident-015.json"
+    },
+    {
+      "access_level": "team",
+      "doc_id": "syn-incident-022",
+      "doc_type": "incident",
+      "fact_ids": [
+        "f-inc-2026-012-ticket",
+        "f-inc-2026-012-owner",
+        "f-inc-2026-012-service",
+        "f-inc-2026-012-severity",
+        "f-inc-2026-012-start",
+        "f-inc-2026-012-restored",
+        "f-inc-2026-012-cause",
+        "f-inc-2026-012-action",
+        "f-inc-2026-012-owner"
+      ],
+      "path": "data/synthetic/docs/syn-incident-022.json"
+    },
+    {
+      "access_level": "public",
+      "doc_id": "syn-meeting-002",
+      "doc_type": "meeting",
+      "fact_ids": [
+        "f-service-payment-router-owner",
+        "f-evt-009-incident",
+        "f-inc-2025-002-cause",
+        "f-inc-2026-013-ticket",
+        "f-evt-015-incident",
+        "f-inc-2026-031-cause",
+        "f-inc-2026-031-action"
+      ],
+      "path": "data/synthetic/docs/syn-meeting-002.json"
+    },
+    {
+      "access_level": "team",
+      "doc_id": "syn-meeting-005",
+      "doc_type": "meeting",
+      "fact_ids": [
+        "f-service-security-center-oncall",
+        "f-evt-034-incident",
+        "f-inc-2026-007-cause",
+        "f-inc-2026-007-action",
+        "f-inc-2026-007-owner",
+        "f-evt-034-incident",
+        "f-service-security-center-oncall"
+      ],
+      "path": "data/synthetic/docs/syn-meeting-005.json"
+    },
+    {
+      "access_level": "public",
+      "doc_id": "syn-meeting-017",
+      "doc_type": "meeting",
+      "fact_ids": [
+        "f-inc-2025-009-service",
+        "f-evt-001-service",
+        "f-inc-2025-009-owner",
+        "f-inc-2025-009-cause",
+        "f-inc-2025-009-action",
+        "f-inc-2025-009-restored",
+        "f-evt-001-service",
+        "f-inc-2025-009-owner"
+      ],
+      "path": "data/synthetic/docs/syn-meeting-017.json"
+    },
+    {
+      "access_level": "public",
+      "doc_id": "syn-meeting-044",
+      "doc_type": "meeting",
+      "fact_ids": [
+        "f-evt-032-service",
+        "f-evt-026-incident",
+        "f-evt-026-service",
+        "f-evt-026-plan",
+        "f-evt-027-service",
+        "f-evt-027-result"
+      ],
+      "path": "data/synthetic/docs/syn-meeting-044.json"
+    },
+    {
+      "access_level": "restricted",
+      "doc_id": "syn-meeting-048",
+      "doc_type": "meeting",
+      "fact_ids": [
+        "f-evt-054-owner",
+        "f-evt-054-plan",
+        "f-evt-054-rule",
+        "f-inc-2025-008-service",
+        "f-inc-2025-008-severity",
+        "f-inc-2025-008-start",
+        "f-inc-2025-008-ticket",
+        "f-service-contract-vault-dependency",
+        "f-canary-004"
+      ],
+      "path": "data/synthetic/docs/syn-meeting-048.json"
+    },
+    {
+      "access_level": "public",
+      "doc_id": "syn-notice-008",
+      "doc_type": "notice",
+      "fact_ids": [
+        "f-evt-045-org",
+        "f-inc-2026-010-ticket",
+        "f-inc-2026-010-start"
+      ],
+      "path": "data/synthetic/docs/syn-notice-008.json"
+    },
+    {
+      "access_level": "public",
+      "doc_id": "syn-notice-019",
+      "doc_type": "notice",
+      "fact_ids": [
+        "f-inc-2026-004-cause",
+        "f-inc-2026-004-owner",
+        "f-inc-2026-004-restored",
+        "f-service-identity-api-slo",
+        "f-evt-007-decision"
+      ],
+      "path": "data/synthetic/docs/syn-notice-019.json"
+    },
+    {
+      "access_level": "restricted",
+      "doc_id": "syn-notice-025",
+      "doc_type": "notice",
+      "fact_ids": [
+        "f-evt-014-service",
+        "f-evt-014-plan",
+        "f-canary-030",
+        "f-evt-014-owner"
+      ],
+      "path": "data/synthetic/docs/syn-notice-025.json"
+    },
+    {
+      "access_level": "team",
+      "doc_id": "syn-runbook-004",
+      "doc_type": "runbook",
+      "fact_ids": [
+        "f-evt-011-version",
+        "f-evt-016-service",
+        "f-inc-2026-003-service",
+        "f-inc-2026-003-owner",
+        "f-inc-2026-003-restored"
+      ],
+      "path": "data/synthetic/docs/syn-runbook-004.json"
+    },
+    {
+      "access_level": "team",
+      "doc_id": "syn-runbook-017",
+      "doc_type": "runbook",
+      "fact_ids": [
+        "f-evt-052-focus",
+        "f-evt-051-owner",
+        "f-evt-051-rule",
+        "f-evt-052-org",
+        "f-evt-052-owner"
+      ],
+      "path": "data/synthetic/docs/syn-runbook-017.json"
+    },
+    {
+      "access_level": "restricted",
+      "doc_id": "syn-runbook-030",
+      "doc_type": "runbook",
+      "fact_ids": [
+        "f-evt-014-owner",
+        "f-canary-018",
+        "f-evt-014-service",
+        "f-evt-011-service",
+        "f-evt-011-service",
+        "f-evt-014-owner",
+        "f-evt-014-plan",
+        "f-evt-014-service",
+        "f-evt-011-service"
+      ],
+      "path": "data/synthetic/docs/syn-runbook-030.json"
+    },
+    {
+      "access_level": "team",
+      "doc_id": "syn-weekly-001",
+      "doc_type": "weekly",
+      "fact_ids": [
+        "f-inc-2026-007-service",
+        "f-inc-2026-007-ticket",
+        "f-inc-2026-007-severity",
+        "f-inc-2026-007-start",
+        "f-inc-2026-007-cause",
+        "f-inc-2026-007-action",
+        "f-inc-2026-007-restored",
+        "f-inc-2026-007-owner",
+        "f-inc-2026-007-ticket"
+      ],
+      "path": "data/synthetic/docs/syn-weekly-001.json"
+    },
+    {
+      "access_level": "public",
+      "doc_id": "syn-weekly-013",
+      "doc_type": "weekly",
+      "fact_ids": [
+        "f-inc-2026-004-cause",
+        "f-evt-001-incident",
+        "f-evt-001-service",
+        "f-evt-001-decision",
+        "f-evt-002-result",
+        "f-evt-003-incident"
+      ],
+      "path": "data/synthetic/docs/syn-weekly-013.json"
+    },
+    {
+      "access_level": "public",
+      "doc_id": "syn-weekly-021",
+      "doc_type": "weekly",
+      "fact_ids": [
+        "f-inc-2025-009-service",
+        "f-inc-2025-009-ticket",
+        "f-inc-2025-009-service",
+        "f-inc-2025-009-start",
+        "f-inc-2025-009-severity",
+        "f-inc-2025-009-owner",
+        "f-inc-2025-009-cause",
+        "f-inc-2025-009-action",
+        "f-inc-2025-009-restored",
+        "f-inc-2025-009-ticket",
+        "f-inc-2025-009-service",
+        "f-inc-2025-009-ticket",
+        "f-inc-2025-009-owner"
+      ],
+      "path": "data/synthetic/docs/syn-weekly-021.json"
+    }
+  ],
+  "population_count": 199,
+  "population_note": "모집단 199건(incident-007 재시도 대기 중) 기준으로 추출, 이후 모집단이 바뀌어도 표본은 다시 뽑지 않음",
+  "random_seed": 20258209,
+  "shortfalls": [],
+  "size": 20,
+  "strata_counts": {
+    "by_access": {
+      "public": 9,
+      "restricted": 4,
+      "team": 7
+    },
+    "by_type": {
+      "guide": 3,
+      "incident": 3,
+      "meeting": 5,
+      "notice": 3,
+      "runbook": 3,
+      "weekly": 3
+    },
+    "by_type_access": {
+      "guide|public": 1,
+      "guide|restricted": 1,
+      "guide|team": 1,
+      "incident|public": 1,
+      "incident|team": 2,
+      "meeting|public": 3,
+      "meeting|restricted": 1,
+      "meeting|team": 1,
+      "notice|public": 2,
+      "notice|restricted": 1,
+      "runbook|restricted": 1,
+      "runbook|team": 2,
+      "weekly|public": 2,
+      "weekly|team": 1
+    }
+  }
+}
