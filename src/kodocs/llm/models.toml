@@ -7,3 +7,12 @@ temperature = ""              # Sonnet 5 sampling parameters unsupported; record
 max_attempts = 3
 pilot_limit = 10
 chars_per_token_estimate = 0.8  # conservative dry-run assumption; recalibrate by pilot
+
+[golden_queries]
+model = "claude-sonnet-5"
+max_tokens = 400
+thinking = "disabled"
+effort = ""
+temperature = ""              # Sonnet 5 sampling parameters unsupported; record null
+max_attempts = 3
+chars_per_token_estimate = 0.8

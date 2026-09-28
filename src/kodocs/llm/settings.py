@@ -109,7 +109,10 @@ def load_generation_config(
         effort=effort,
         temperature=temperature,
         max_attempts=_required_int(raw.get("max_attempts"), name="max_attempts"),
-        pilot_limit=_required_int(raw.get("pilot_limit"), name="pilot_limit"),
+        # Small generation roles such as golden-query drafting do not have a
+        # separate pilot workflow. Keep the field on the shared value object,
+        # while allowing those TOML sections to omit it.
+        pilot_limit=_required_int(raw.get("pilot_limit", 1), name="pilot_limit"),
         chars_per_token_estimate=_required_float(
             raw.get("chars_per_token_estimate"),
             name="chars_per_token_estimate",
