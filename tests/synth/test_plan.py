@@ -402,7 +402,8 @@ def test_incident_age_summary_reports_no_violations(built) -> None:
     [
         # 8일 전이지만 같은 달: "지난달"이 아니라 지난주
         (date(2026, 6, 20), date(2026, 6, 12), "지난주"),
-        (date(2026, 6, 20), date(2026, 6, 20), "당일"),
+        # 문서 날짜와 같은 날: 기준 없는 "당일"을 주지 않는다(파일럿 3차)
+        (date(2026, 6, 20), date(2026, 6, 20), None),
         (date(2026, 6, 20), date(2026, 6, 16), "이번 주"),
         (date(2026, 6, 25), date(2026, 6, 3), "이달 초"),
         (date(2026, 6, 30), date(2026, 6, 14), "이달 중순"),
@@ -427,10 +428,29 @@ def test_time_phrase_rejects_facts_after_the_document_date() -> None:
         time_phrase(date(2026, 6, 21), date(2026, 6, 20))
 
 
-def test_plans_carry_a_calendar_phrase_for_every_dated_fact(built) -> None:
+def test_plans_carry_a_calendar_phrase_for_every_fact_dated_before_the_doc(
+    built,
+) -> None:
     seed, plans, _, _ = built
     for plan in plans:
         document_date = date.fromisoformat(plan.date)
-        assert set(plan.fact_time_phrases) == set(plan.fact_age_days)
+        assert set(plan.fact_time_phrases) == {
+            fact_id for fact_id, age in plan.fact_age_days.items() if age > 0
+        }
         for fact_id, phrase in plan.fact_time_phrases.items():
             assert phrase == time_phrase(seed.facts[fact_id].date, document_date)
+
+
+def test_committed_plan_has_no_same_day_phrase() -> None:
+    rows = [
+        json.loads(line)
+        for line in (REPO_ROOT / "data/synthetic/plan.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    phrases = [phrase for row in rows for phrase in row["fact_time_phrases"].values()]
+    assert "당일" not in phrases
+    for row in rows:
+        assert set(row["fact_time_phrases"]) == {
+            fact_id for fact_id, age in row["fact_age_days"].items() if age > 0
+        }

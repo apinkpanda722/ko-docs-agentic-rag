@@ -32,6 +32,8 @@ _NOMINAL_RE = re.compile(
     r"(?:함|음|임|됨|완료|예정|필요|확인|대상|상태|결과|계획|진행|종료|발생|성공|실패)$"
 )
 _STYLE_CATEGORIES = ("formal", "plain", "nominal", "other")
+# Vague relative time the prompt forbids unless given (rule 6); a warning only.
+RELATIVE_TIME_TERMS = ("최근", "얼마 전", "지난달", "요즘", "요새", "근래")
 
 
 def normalize_for_shingles(text: str) -> str:
@@ -112,6 +114,9 @@ def run(root: Path) -> int:
             target = style.get("length_target_chars")
             if _is_number(target) and float(target) > 0:
                 document["_length_target_chars"] = int(float(target))
+        phrases = plan.get("fact_time_phrases")
+        if isinstance(phrases, Mapping):
+            document["_fact_time_phrases"] = dict(phrases)
         docs.append(document)
 
     if not docs or len(docs) != passed:
@@ -167,10 +172,40 @@ def _compute(
         "style": _style_metrics(ordered_docs),
         "distribution": _distribution_metrics(ordered_docs, plan_counts),
         "fact_coverage": _fact_coverage(ordered_docs, normal_fact_ids),
+        "unprompted_relative_time": _unprompted_relative_time(ordered_docs),
         "validation": _validation_metrics(validation),
         "provenance": _provenance(ordered_docs),
     }
     return _round_tree(payload)  # type: ignore[return-value]
+
+
+def _unprompted_relative_time(
+    docs: Sequence[Mapping[str, object]],
+) -> dict[str, object]:
+    """Per document, vague relative-time terms absent from its given phrases."""
+    by_doc: dict[str, dict[str, int]] = {}
+    for doc in docs:
+        phrases = doc.get("_fact_time_phrases")
+        given = (
+            [str(value) for value in phrases.values()]
+            if isinstance(phrases, Mapping)
+            else []
+        )
+        body = _analysis_text(_required_string(doc, "body"))
+        counts = {
+            term: count
+            for term in RELATIVE_TIME_TERMS
+            if not any(term in phrase for phrase in given)
+            and (count := body.count(term))
+        }
+        if counts:
+            by_doc[_required_string(doc, "doc_id")] = counts
+    return {
+        "terms": list(RELATIVE_TIME_TERMS),
+        "documents_with_warning": len(by_doc),
+        "total": sum(sum(counts.values()) for counts in by_doc.values()),
+        "by_doc": by_doc,
+    }
 
 
 def _duplicate_metrics(docs: Sequence[Mapping[str, object]]) -> dict[str, object]:

@@ -267,6 +267,49 @@ def test_render_tables_includes_metrics_provenance_and_anthropic_cost_only(
     assert "Batch 사용" in rendered
 
 
+def test_write_report_keeps_one_fixed_m3_report_across_run_dates(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Pilot 3: a new run date created a second, dated M3 report.
+    _write_inputs(tmp_path)
+    monkeypatch.setattr(synth_report, "_git_commit", lambda _root: "abc1234")
+
+    first = write_report(tmp_path, run_date=date(2026, 9, 27))
+    first.write_text(
+        first.read_text(encoding="utf-8").replace("(사용자 기록)", "콘솔 값", 1),
+        encoding="utf-8",
+    )
+    second = write_report(tmp_path, run_date=date(2026, 9, 28))
+
+    assert first == second == tmp_path / "docs/results/2026-09-27-m3-synthetic.md"
+    assert sorted(p.name for p in (tmp_path / "docs/results").iterdir()) == [
+        "2026-09-27-m3-synthetic.md"
+    ]
+    updated = second.read_text(encoding="utf-8")
+    assert "콘솔 값" in updated
+    assert "2026-09-28" in updated
+
+
+def test_unprompted_relative_time_warning_is_rendered(tmp_path: Path) -> None:
+    _write_inputs(tmp_path)
+    metrics_path = tmp_path / "data/manifest/synth_metrics.json"
+    metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+    metrics["unprompted_relative_time"] = {
+        "terms": ["최근", "얼마 전", "지난달", "요즘", "요새", "근래"],
+        "documents_with_warning": 2,
+        "total": 11,
+        "by_doc": {"syn-meeting-001": {"최근": 6}, "syn-meeting-004": {"최근": 5}},
+    }
+    _write_json(metrics_path, metrics)
+
+    rendered = render_tables(tmp_path)
+
+    assert "### 지시 없는 상대 시점(경고, 실패 아님)" in rendered
+    assert "| syn-meeting-001 | 최근 6 |" in rendered
+    assert "| syn-meeting-004 | 최근 5 |" in rendered
+    assert "경고 문서 2건, 합계 11회" in rendered
+
+
 def test_write_report_preserves_outside_generated_region_and_omits_doc_body(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

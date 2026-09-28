@@ -981,6 +981,25 @@ def test_prompt_separates_marker_value_from_time_phrase_outside_marker(
     )
 
 
+def test_prompt_gives_same_day_facts_their_date_but_no_time_phrase(
+    corpus: tuple[Seed, list[DocPlan]],
+) -> None:
+    # Pilot 3: "당일" was 48% of plan phrases and read as "당일 2025-01-15 09:10경".
+    seed, plans = corpus
+    plan = next(plan for plan in plans if 0 in plan.fact_age_days.values())
+    same_day = [fact_id for fact_id, age in plan.fact_age_days.items() if age == 0]
+
+    request, _ = build_request(plan, seed, config=_config(), attempt=1)
+
+    assert "당일" not in request.user
+    for fact_id in same_day:
+        line = next(line for line in request.user.splitlines() if fact_id in line)
+        assert "시점 표현" not in line
+        assert line.endswith(f" | 표시 밖 사실 날짜: {plan.date}")
+    assert "시점 표현 없이 사실 날짜만 제시된 사실" in request.system
+    assert "`당일`" in request.system
+
+
 def test_pilot_limit_on_committed_plan_covers_types_access_canary_and_retrospective() -> (
     None
 ):

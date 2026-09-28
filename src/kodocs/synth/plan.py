@@ -122,8 +122,11 @@ class DocPlan:
     fact_time_phrases: dict[str, str]
 
 
-def time_phrase(fact_date: date, document_date: date) -> str:
+def time_phrase(fact_date: date, document_date: date) -> str | None:
     """Calendar-based Korean phrase for when a fact happened, seen from the doc date.
+
+    A fact on the document date itself gets no phrase: pilot 3 turned "당일"
+    into unanchored text such as "당일 INC-2025-007 건".
 
     Weeks are Monday-start ISO weeks; months and years follow the calendar, so
     8 days earlier in the same month is never "지난달" and 100 days earlier in
@@ -134,7 +137,7 @@ def time_phrase(fact_date: date, document_date: date) -> str:
             f"fact date {fact_date} is after document date {document_date}"
         )
     if fact_date == document_date:
-        return "당일"
+        return None
     week_start = document_date - timedelta(days=document_date.weekday())
     if fact_date >= week_start:
         return "이번 주"
@@ -350,9 +353,10 @@ def build_plan(seed: Seed) -> tuple[list[DocPlan], dict, dict]:
             if fact.date is not None
         }
         fact_time_phrases = {
-            fact.fact_id: time_phrase(fact.date, document_date)
+            fact.fact_id: phrase
             for fact in assigned_facts
             if fact.date is not None
+            and (phrase := time_phrase(fact.date, document_date)) is not None
         }
         related = sorted(
             {

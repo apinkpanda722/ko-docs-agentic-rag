@@ -663,11 +663,15 @@ def _facts_block(
         # Only the decided phrase and the date; helper wording such as the day
         # count was copied into bodies in pilot 1. The phrase and date are
         # labelled as outside the marker: pilot 2 wrapped them in the fact id.
-        age_text = (
-            f" | 표시 밖 시점 표현: {phrase} (사실 날짜 {fact.date.isoformat()})"
-            if age is not None and phrase is not None and fact.date is not None
-            else ""
-        )
+        # Facts on the document date get only their date (pilot 3: "당일").
+        if age is None or fact.date is None:
+            age_text = ""
+        elif phrase is None:
+            age_text = f" | 표시 밖 사실 날짜: {fact.date.isoformat()}"
+        else:
+            age_text = (
+                f" | 표시 밖 시점 표현: {phrase} (사실 날짜 {fact.date.isoformat()})"
+            )
         lines.append(
             f"- {fact.fact_id} | {_FACT_KIND_NAMES[fact.kind]} | {value} | "
             f"표시 안 허용 표기: {allowed}{age_text}"

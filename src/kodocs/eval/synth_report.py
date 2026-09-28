@@ -21,6 +21,8 @@ TEMPLATE_PATH = Path(__file__).parent / "templates" / "m3_synthetic.md"
 BEGIN, END = "<!-- BEGIN generated -->", "<!-- END generated -->"
 
 _PLACEHOLDER = "(실행 후 기록)"
+# One M3 report regardless of run date; the run date is recorded inside it.
+REPORT_PATH = Path("docs/results/2026-09-27-m3-synthetic.md")
 _METRICS_PATH = Path("data/manifest/synth_metrics.json")
 _VALIDATION_PATH = Path("data/manifest/synth_validation.json")
 _REVIEW_PATH = Path("data/manifest/synth_review.json")
@@ -54,13 +56,11 @@ def write_report(
     run_date: date,
     out_path: Path | None = None,
 ) -> Path:
-    """Create a dated report or replace only its generated region."""
+    """Create the fixed M3 report or replace only its generated region."""
     if not isinstance(run_date, date):
         raise TypeError("run_date는 date여야 합니다.")
     root = Path(root).resolve()
-    destination = (
-        out_path or root / "docs/results" / f"{run_date.isoformat()}-m3-synthetic.md"
-    )
+    destination = out_path or root / REPORT_PATH
     source_path = destination if destination.exists() else TEMPLATE_PATH
     try:
         original = source_path.read_text(encoding="utf-8")
@@ -82,7 +82,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--date",
         default=datetime.now(ZoneInfo("Asia/Seoul")).date().isoformat(),
-        help="결과 파일 실행일(YYYY-MM-DD, 기본값: Asia/Seoul 오늘)",
+        help="결과 문서에 기록할 실행일(YYYY-MM-DD, 기본값: Asia/Seoul 오늘)",
     )
     parser.add_argument("--out", type=Path, help="기본 결과 경로 대신 쓸 파일")
     args = parser.parse_args(argv)
@@ -352,6 +352,7 @@ def _quality_section(metrics: Mapping[str, object]) -> str:
     style = _mapping(metrics.get("style"))
     distribution = _mapping(metrics.get("distribution"))
     facts = _mapping(metrics.get("fact_coverage"))
+    relative = _mapping(metrics.get("unprompted_relative_time"))
     sections = [
         "## 5. 품질 지표",
         "",
@@ -386,6 +387,10 @@ def _quality_section(metrics: Mapping[str, object]) -> str:
         "### 사실 커버리지",
         "",
         _facts_table(facts),
+        "",
+        "### 지시 없는 상대 시점(경고, 실패 아님)",
+        "",
+        _relative_time_text(relative),
     ]
     return "\n".join(sections)
 
@@ -554,6 +559,29 @@ def _facts_table(facts: Mapping[str, object]) -> str:
         ["2개 이상 문서에 등장한 사실 수", facts.get("facts_in_2_plus_documents")],
     ]
     return _table(["항목", "값"], rows)
+
+
+def _relative_time_text(relative: Mapping[str, object]) -> str:
+    if not relative:
+        return _PLACEHOLDER
+    terms = "·".join(f"`{term}`" for term in _string_list(relative.get("terms")))
+    summary = (
+        f"본문에 {terms}가 나오지만 그 문서에 주어진 시점 표현에는 없는 경우를 "
+        "문서별로 센다(프롬프트 규칙 6 위반 후보, 검증 실패로 처리하지 않음). "
+        f"경고 문서 {_display(relative.get('documents_with_warning'))}건, "
+        f"합계 {_display(relative.get('total'))}회."
+    )
+    by_doc = _mapping(relative.get("by_doc"))
+    if not by_doc:
+        return summary
+    rows = [
+        [
+            doc_id,
+            ", ".join(f"{term} {count}" for term, count in _mapping(counts).items()),
+        ]
+        for doc_id, counts in sorted(by_doc.items())
+    ]
+    return f"{summary}\n\n{_table(['문서', '횟수'], rows)}"
 
 
 def _database_section(synth_db: Mapping[str, object]) -> str:

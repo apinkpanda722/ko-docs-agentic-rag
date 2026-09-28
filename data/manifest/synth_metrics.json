@@ -1,0 +1,478 @@
+{
+  "distribution": {
+    "by_access": {
+      "public": {
+        "passed": 4,
+        "planned": 90
+      },
+      "restricted": {
+        "passed": 2,
+        "planned": 30
+      },
+      "team": {
+        "passed": 4,
+        "planned": 80
+      }
+    },
+    "by_team": {
+      "data-ai": {
+        "passed": 1,
+        "planned": 23
+      },
+      "finance": {
+        "passed": 3,
+        "planned": 25
+      },
+      "hr": {
+        "passed": 0,
+        "planned": 25
+      },
+      "legal": {
+        "passed": 0,
+        "planned": 25
+      },
+      "payments": {
+        "passed": 1,
+        "planned": 27
+      },
+      "platform": {
+        "passed": 2,
+        "planned": 26
+      },
+      "security": {
+        "passed": 2,
+        "planned": 25
+      },
+      "sre": {
+        "passed": 1,
+        "planned": 24
+      }
+    },
+    "by_type": {
+      "guide": {
+        "passed": 1,
+        "planned": 30
+      },
+      "incident": {
+        "passed": 1,
+        "planned": 25
+      },
+      "meeting": {
+        "passed": 4,
+        "planned": 50
+      },
+      "notice": {
+        "passed": 1,
+        "planned": 25
+      },
+      "runbook": {
+        "passed": 1,
+        "planned": 30
+      },
+      "weekly": {
+        "passed": 2,
+        "planned": 40
+      }
+    },
+    "canary_documents": 2,
+    "injection_documents": 7
+  },
+  "duplicate": {
+    "between_type": {
+      "max": 0.0501,
+      "mean": 0.028,
+      "p95": 0.0462
+    },
+    "near_duplicates": [],
+    "overall": {
+      "max": 0.0888,
+      "mean": 0.0328,
+      "p95": 0.0628
+    },
+    "pair_count": 45,
+    "shingle_n": 5,
+    "threshold": 0.5,
+    "within_type": {
+      "max": 0.0888,
+      "mean": 0.059,
+      "p95": 0.0821
+    }
+  },
+  "fact_coverage": {
+    "coverage_rate": 0.1378,
+    "covered_facts": 54,
+    "documents_per_fact_distribution": {
+      "0": 338,
+      "1": 52,
+      "2": 2
+    },
+    "facts_in_2_plus_documents": 2,
+    "normal_facts_total": 392
+  },
+  "length": {
+    "by_type": {
+      "guide": {
+        "coefficient_of_variation": 0.0,
+        "documents": 1,
+        "max_chars": 1776,
+        "mean_chars": 1776.0,
+        "min_chars": 1776,
+        "stddev_chars": 0.0,
+        "target_mean_chars": 1800.0,
+        "target_ratio": 0.9867
+      },
+      "incident": {
+        "coefficient_of_variation": 0.0,
+        "documents": 1,
+        "max_chars": 2142,
+        "mean_chars": 2142.0,
+        "min_chars": 2142,
+        "stddev_chars": 0.0,
+        "target_mean_chars": 3400.0,
+        "target_ratio": 0.63
+      },
+      "meeting": {
+        "coefficient_of_variation": 0.1106,
+        "documents": 4,
+        "max_chars": 1908,
+        "mean_chars": 1743.5,
+        "min_chars": 1432,
+        "stddev_chars": 192.792,
+        "target_mean_chars": 2200.0,
+        "target_ratio": 0.7925
+      },
+      "notice": {
+        "coefficient_of_variation": 0.0,
+        "documents": 1,
+        "max_chars": 1049,
+        "mean_chars": 1049.0,
+        "min_chars": 1049,
+        "stddev_chars": 0.0,
+        "target_mean_chars": 1100.0,
+        "target_ratio": 0.9536
+      },
+      "runbook": {
+        "coefficient_of_variation": 0.0,
+        "documents": 1,
+        "max_chars": 2247,
+        "mean_chars": 2247.0,
+        "min_chars": 2247,
+        "stddev_chars": 0.0,
+        "target_mean_chars": 3000.0,
+        "target_ratio": 0.749
+      },
+      "weekly": {
+        "coefficient_of_variation": 0.022,
+        "documents": 2,
+        "max_chars": 2300,
+        "mean_chars": 2250.5,
+        "min_chars": 2201,
+        "stddev_chars": 49.5,
+        "target_mean_chars": 2200.0,
+        "target_ratio": 1.023
+      }
+    }
+  },
+  "lexical_diversity": {
+    "by_type": {
+      "guide": {
+        "distinct_2": 0.4145,
+        "total_bigrams": 1655,
+        "unique_bigrams": 686
+      },
+      "incident": {
+        "distinct_2": 0.34,
+        "total_bigrams": 2015,
+        "unique_bigrams": 685
+      },
+      "meeting": {
+        "distinct_2": 0.2171,
+        "total_bigrams": 6595,
+        "unique_bigrams": 1432
+      },
+      "notice": {
+        "distinct_2": 0.5244,
+        "total_bigrams": 942,
+        "unique_bigrams": 494
+      },
+      "runbook": {
+        "distinct_2": 0.3874,
+        "total_bigrams": 2122,
+        "unique_bigrams": 822
+      },
+      "weekly": {
+        "distinct_2": 0.2832,
+        "total_bigrams": 4339,
+        "unique_bigrams": 1229
+      }
+    }
+  },
+  "provenance": {
+    "generation_records": [
+      {
+        "effort": null,
+        "max_tokens": 6000,
+        "model": "claude-sonnet-5",
+        "sampling": "unsupported_by_model",
+        "temperature": null,
+        "thinking": "disabled"
+      }
+    ],
+    "models": [
+      "claude-sonnet-5"
+    ],
+    "regulation_index_sha256": [
+      "e9e23327bd6954eb141596ab44254f3b4f4faa69d4dd9dba4726686c82201bac"
+    ],
+    "seed_files_sha256": {
+      "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
+      "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
+      "data/seed/events/data-ai.yaml": "677b072b51ef00df617630b9b1329dff71a788e521794d3b4126df7e08ebbc3f",
+      "data/seed/events/finance.yaml": "7703b804c3db034a6efa3bdfec77133db7d6d0ff670ffbcc7088e91ccb7552cf",
+      "data/seed/events/hr.yaml": "6b277a26d9fe74e87761b0c7f0c16080d80c3ae06a87994a75959228c18adb45",
+      "data/seed/events/legal.yaml": "9272b7dcedcb4059f0187ca5f41110fc4e895c117d7681dc289b696fba2aaf11",
+      "data/seed/events/payments.yaml": "2d5b0dd9a98e0dcb97756eb643f09bbf92283adb2a01235177b99aebe645edb3",
+      "data/seed/events/platform.yaml": "1c9adaa7940c058a2978f17b88ceb2a81806a849862e35cdfd61023f3fe99f47",
+      "data/seed/events/security.yaml": "75dfb1ca3036419ebeb598b63e6b6cd05631c30465eed9495b79228af65044ff",
+      "data/seed/events/sre.yaml": "6fe225cfa4086f0496ad95f0fdbe00854206b15bc4568776d4d60dde61b777c4",
+      "data/seed/incidents/INC-2025-001.yaml": "edb517e65dedf39a3965eff54399b6fee344076e4887032be29ce4d838a3b8f0",
+      "data/seed/incidents/INC-2025-002.yaml": "e0948645fc73aff2766ae47ff5b7da60a1add005f42a3c10a07f52c95b0e0414",
+      "data/seed/incidents/INC-2025-003.yaml": "7f533077854d0fa5bf712e55711492018be0363f1ecf0ba23200704fbfdab1bc",
+      "data/seed/incidents/INC-2025-004.yaml": "be7d9d0cf4de53fc22d55d24eb275ec3a9b179165207a724046195f937e343ff",
+      "data/seed/incidents/INC-2025-005.yaml": "ba3269446e781608e006b8600594c14f2be38a2e92046bcaf10646e21c040865",
+      "data/seed/incidents/INC-2025-006.yaml": "dd6d5402d12f3037983be4361bc53504d41538b1334cb2043eeeee801a6a42e3",
+      "data/seed/incidents/INC-2025-007.yaml": "a0dff711e6fbd41476410c2475e7748db23bc01da11faca6ca085c2f36a55abc",
+      "data/seed/incidents/INC-2025-008.yaml": "da7802c756e7c521d80d819f07312e490d34b2ec746e9fdbf1fc3104a76c463f",
+      "data/seed/incidents/INC-2025-009.yaml": "becebcf6de95045c506ad6125841ec70abca10b46f8c50e4e44e428e095b167c",
+      "data/seed/incidents/INC-2025-010.yaml": "2694091db8e8a3720e84cf52371226ff3b0bf8ac6d6ee81a1be55e803b6f620e",
+      "data/seed/incidents/INC-2026-001.yaml": "83360eb565041fccb60664c8f2574ecdbcaad1c4beae33e962d47afde24385da",
+      "data/seed/incidents/INC-2026-002.yaml": "a3c69728aafff311cb9be772d32da9303480e5b9d9d7ce1a0b0a10f7df7522ae",
+      "data/seed/incidents/INC-2026-003.yaml": "09cdcfa63b0bd6ca41fbeec224e1a56f26203d033ee0b54b9e8de3d3c5998be5",
+      "data/seed/incidents/INC-2026-004.yaml": "c0eed70c05cf25ee4457ae083ae238cfc324c329a75998537dc9deefd18f2c2d",
+      "data/seed/incidents/INC-2026-005.yaml": "266f0b0ef8b00adeb077c6220b47190267ed9d3cf1ed3b7b01b45042e35489f5",
+      "data/seed/incidents/INC-2026-006.yaml": "5d2f455a2865f30a4f5536eba6bb80bfc4c3febb3b804aa3449561271f661a8e",
+      "data/seed/incidents/INC-2026-007.yaml": "4dbdea6fb6e71b68320753e2b3b4a5d0eee6a9d0668b16c12fb801b125143db3",
+      "data/seed/incidents/INC-2026-008.yaml": "1fa6439336ab7e7bbe691083156b11bd353b12c36da788626be87c0ff0b1a5d1",
+      "data/seed/incidents/INC-2026-009.yaml": "01d642451c6b08bd6b6b498d59824df119d70aaddf635da6767a29968d0752a7",
+      "data/seed/incidents/INC-2026-010.yaml": "4ff4bf4df3614981f3c01251d0228a41606329423c47dd48232a996c908a95a4",
+      "data/seed/incidents/INC-2026-011.yaml": "988e1071452315643698c45341f47ebaad30cce5bd9422e92b2cc6cf86224e97",
+      "data/seed/incidents/INC-2026-012.yaml": "95ee1c1a76d50b0c95821a08aa67ddc54f5f4c6905008f75cc3c5fb8ce991b9a",
+      "data/seed/incidents/INC-2026-013.yaml": "acb69deb03a19e583b0fedfccde3b54e34eaaa6523fd31de3068a892c147ea15",
+      "data/seed/incidents/INC-2026-014.yaml": "6dd14ccfb4abcf51d04ba647f548c687447350954378fe2033abef6e1fd21b76",
+      "data/seed/incidents/INC-2026-031.yaml": "6d2bd256ef62c110e48c151ee7a9bab24ec19111292e2ba99fa96383ea32e6e4",
+      "data/seed/ledger/approvals_anchor.yaml": "2520b54675437b37b0f6fbfe957f86ddab03bc073ecddefdd2a13a7eab68aad6",
+      "data/seed/ledger/rules.yaml": "5d4cb77fd325c3d81238f49d825a5e3c5f652872afd6a01d5b2de930bc4fc51b",
+      "data/seed/ledger/tickets_anchor.yaml": "86e5122a0437e555dba69bb0a9619bf41c86d5b3a85a2b100c370a13c13fc86b",
+      "data/seed/people/data-ai.yaml": "a8bebeacdf8a6c48549cd8b5a6e9b7c3eb03db1f845f01ee305186dacd9d7f74",
+      "data/seed/people/finance.yaml": "9bf39c1f3ba59c37a89962e633c7bc746329b13494b13c78dba2a525595ad248",
+      "data/seed/people/hr.yaml": "7a17f8558fa6b780ac9939863f7796c115c8243c16b978a27a56feee2435a9f7",
+      "data/seed/people/legal.yaml": "e25dd179477fc3e3d117b9b7eaa1c5c3c502ff35354fa98a6914bc0100cf63e7",
+      "data/seed/people/payments.yaml": "b5ce8e558a3a081820c96ba23fc116fc7ae027eb9acd61cad026d014385017d9",
+      "data/seed/people/platform.yaml": "a6b09480889219d1c089a3a861fa004a5f8609f81c94ddb5eddf5b280a93138e",
+      "data/seed/people/security.yaml": "c347e31e1946d66c3f90ed9a38e36197936a8aace14ab2d002f13843d392b5e8",
+      "data/seed/people/sre.yaml": "79732d1c2778658ae2c73d2b5d5f5405ca24b0d39ab5252feac9a660f32f0cfa",
+      "data/seed/regulation_refs.yaml": "159ba1b0c12c53323501ddde04805885d42db5bc58a9ccc39a0a625f603106f7",
+      "data/seed/services.yaml": "bdd3a0028e5586a7c56c31b5e3d65c47704dc394a0c039e587f4d5e9b59c2bd7",
+      "data/seed/teams.yaml": "e3b0a207df5f1dd8f6b3d40d82c016f832649c92311c550096d5a4fc5e49eb7f"
+    },
+    "template_hashes": [
+      "31a4dc7f6042869c5791b1c287a09a20af547ef50254fecd57deef0f0cb7f55b",
+      "7f100b645ac20ef63657dd01c92a383d7ad19adee8f933331bcf0b2598f94ecb",
+      "99c2831f448b6f0a7d662f87e912755bd4718ec14ba6d67236010abdf667a182",
+      "b722233bd898f0e5c37da60a673eb16ed2615dbb0da36ba7a4dbc56047aa0503",
+      "c8dc3141a047cd79db52deddad14b18e6197cada3e0229d8facdaca4803126ef",
+      "febf140711117f35b6e187ef369b77ad7e4cfa3e6dda6f14c081124d2aa52da0"
+    ],
+    "validator_versions": [
+      3
+    ]
+  },
+  "repeated_sentences": {
+    "sentences_in_3_plus_docs": 10,
+    "top": [
+      {
+        "document_count": 7,
+        "sentence_prefix": "1."
+      },
+      {
+        "document_count": 7,
+        "sentence_prefix": "2."
+      },
+      {
+        "document_count": 6,
+        "sentence_prefix": "3."
+      },
+      {
+        "document_count": 6,
+        "sentence_prefix": "4."
+      },
+      {
+        "document_count": 5,
+        "sentence_prefix": "5."
+      },
+      {
+        "document_count": 3,
+        "sentence_prefix": "6."
+      },
+      {
+        "document_count": 3,
+        "sentence_prefix": "결정 사항"
+      },
+      {
+        "document_count": 3,
+        "sentence_prefix": "참석 맥락"
+      },
+      {
+        "document_count": 3,
+        "sentence_prefix": "회의 목적"
+      },
+      {
+        "document_count": 3,
+        "sentence_prefix": "후속 조치"
+      }
+    ]
+  },
+  "schema_version": 1,
+  "scope": {
+    "passed_documents": 10
+  },
+  "style": {
+    "by_type": {
+      "guide": {
+        "counts": {
+          "formal": 28,
+          "nominal": 1,
+          "other": 14,
+          "plain": 0
+        },
+        "ratios": {
+          "formal": 0.6512,
+          "nominal": 0.0233,
+          "other": 0.3256,
+          "plain": 0.0
+        },
+        "sentences": 43
+      },
+      "incident": {
+        "counts": {
+          "formal": 0,
+          "nominal": 0,
+          "other": 16,
+          "plain": 29
+        },
+        "ratios": {
+          "formal": 0.0,
+          "nominal": 0.0,
+          "other": 0.3556,
+          "plain": 0.6444
+        },
+        "sentences": 45
+      },
+      "meeting": {
+        "counts": {
+          "formal": 0,
+          "nominal": 4,
+          "other": 98,
+          "plain": 82
+        },
+        "ratios": {
+          "formal": 0.0,
+          "nominal": 0.0217,
+          "other": 0.5326,
+          "plain": 0.4457
+        },
+        "sentences": 184
+      },
+      "notice": {
+        "counts": {
+          "formal": 0,
+          "nominal": 0,
+          "other": 4,
+          "plain": 14
+        },
+        "ratios": {
+          "formal": 0.0,
+          "nominal": 0.0,
+          "other": 0.2222,
+          "plain": 0.7778
+        },
+        "sentences": 18
+      },
+      "runbook": {
+        "counts": {
+          "formal": 0,
+          "nominal": 0,
+          "other": 18,
+          "plain": 34
+        },
+        "ratios": {
+          "formal": 0.0,
+          "nominal": 0.0,
+          "other": 0.3462,
+          "plain": 0.6538
+        },
+        "sentences": 52
+      },
+      "weekly": {
+        "counts": {
+          "formal": 22,
+          "nominal": 2,
+          "other": 12,
+          "plain": 29
+        },
+        "ratios": {
+          "formal": 0.3385,
+          "nominal": 0.0308,
+          "other": 0.1846,
+          "plain": 0.4462
+        },
+        "sentences": 65
+      }
+    },
+    "overall": {
+      "counts": {
+        "formal": 50,
+        "nominal": 7,
+        "other": 162,
+        "plain": 188
+      },
+      "ratios": {
+        "formal": 0.1229,
+        "nominal": 0.0172,
+        "other": 0.398,
+        "plain": 0.4619
+      },
+      "sentences": 407
+    }
+  },
+  "unprompted_relative_time": {
+    "by_doc": {
+      "syn-meeting-001": {
+        "최근": 6
+      },
+      "syn-meeting-004": {
+        "최근": 5
+      }
+    },
+    "documents_with_warning": 2,
+    "terms": [
+      "최근",
+      "얼마 전",
+      "지난달",
+      "요즘",
+      "요새",
+      "근래"
+    ],
+    "total": 11
+  },
+  "validation": {
+    "exhausted": 0,
+    "failed": 0,
+    "failure_codes": {},
+    "generated": 10,
+    "not_generated": 190,
+    "pass_rate": 1.0,
+    "passed": 10,
+    "planned": 200
+  }
+}

@@ -232,3 +232,61 @@ def test_run_writes_rounded_metrics_for_passed_docs_and_normal_seed_facts(
         for section in metrics.values()
         for value in (section.values() if isinstance(section, dict) else [])
     )
+
+
+def test_unprompted_relative_time_counts_terms_not_given_as_time_phrases() -> None:
+    # Pilot 3: meeting-001·004 added "최근" on their own (rule 6), a warning only.
+    docs = [
+        _doc(
+            "doc-a",
+            body="# 최근 현황\n최근 장애가 있었다. 지난달 초 조치했다. 최근 재발했다.",
+        ),
+        _doc("doc-b", body="# B\n지난달 중순 배포했다. 요즘 안정적이다."),
+        _doc("doc-c", body="# C\n얼마 전 합의했다. 지난달에는 점검했다."),
+        _doc("doc-d", body="# D\n지난주 배포했다."),
+    ]
+    docs[0]["_fact_time_phrases"] = {"f-one": "지난달 초"}
+    docs[1]["_fact_time_phrases"] = {"f-one": "지난달 중순"}
+    docs[2]["_fact_time_phrases"] = {}
+
+    warning = compute(docs)["unprompted_relative_time"]
+
+    assert warning["by_doc"] == {
+        "doc-a": {"최근": 2},
+        "doc-b": {"요즘": 1},
+        "doc-c": {"얼마 전": 1, "지난달": 1},
+    }
+    assert warning["documents_with_warning"] == 3
+    assert warning["total"] == 5
+
+
+def test_run_takes_given_time_phrases_from_the_plan(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan = {
+        "doc_id": "doc-a",
+        "doc_type": "guide",
+        "team": "platform",
+        "access": {"level": "public", "teams": [], "min_grade": 1},
+        "style": {"length_target_chars": 40},
+        "fact_time_phrases": {"f-one": "지난달 중순"},
+    }
+    plan_path = tmp_path / "data/synthetic/plan.jsonl"
+    plan_path.parent.mkdir(parents=True, exist_ok=True)
+    plan_path.write_text(json.dumps(plan, ensure_ascii=False) + "\n", encoding="utf-8")
+    _write_json(
+        tmp_path / "data/manifest/synth_validation.json",
+        {"planned": 1, "generated": 1, "passed": 1, "failed": 0, "by_code": {}},
+    )
+    _write_json(
+        tmp_path / "data/synthetic/docs/doc-a.json",
+        _doc("doc-a", body="# A\n지난달 중순 배포했다. 최근 점검했다."),
+    )
+    monkeypatch.setattr(
+        synth_metrics, "load_seed", lambda _root: SimpleNamespace(facts={})
+    )
+
+    assert run(tmp_path) == 0
+
+    metrics = json.loads((tmp_path / METRICS_PATH).read_text(encoding="utf-8"))
+    assert metrics["unprompted_relative_time"]["by_doc"] == {"doc-a": {"최근": 1}}
