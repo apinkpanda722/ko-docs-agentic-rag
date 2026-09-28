@@ -1,0 +1,46 @@
+{
+  "project": "ko-docs-agentic-rag",
+  "phase": "m4-golden-set",
+  "steps": [
+    {
+      "step": 0,
+      "name": "design-docs",
+      "status": "pending"
+    },
+    {
+      "step": 1,
+      "name": "golden-schema",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "name": "synth-specs",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "name": "query-drafting",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "name": "lexical-overlap",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "name": "real-items",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "name": "split",
+      "status": "pending"
+    },
+    {
+      "step": 7,
+      "name": "review-packets",
+      "status": "pending"
+    }
+  ]
+}
