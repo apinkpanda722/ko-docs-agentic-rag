@@ -47,7 +47,16 @@
     {
       "step": 3,
       "name": "query-drafting",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-28T20:44:27+0900",
+      "summary": "Golden 질의 초안 Batch 상태 기계·결정론 검증·재시도·비용 기록을 구현했으며 make verify 799 passed, dry-run 180건·54,175 입력 토큰·예상 $0.0596(최대 $0.4556)로 AC를 통과했습니다.",
+      "completed_at": "2026-09-28T21:01:19+0900",
+      "usage": {
+        "input_tokens": 6245811,
+        "cached_input_tokens": 6087808,
+        "output_tokens": 39235,
+        "attempts": 1
+      }
     },
     {
       "step": 4,
