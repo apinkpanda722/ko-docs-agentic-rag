@@ -42,7 +42,7 @@ def main(argv=None) -> int: ...   # python -m kodocs.eval.golden_review {packets
 
 **패킷(`packets`)**
 - 입력: 합성은 `data/synthetic/queries/validated.jsonl`, 실제는 `data/interim/golden/real_drafts.jsonl`, Claude 판정은 `CLAUDE_VERDICTS`(`{question_id, q1, q2, q3, note}`, 없으면 판정 칸을 `(초안 없음)`으로 두고 경고).
-- 문항 1개 = Markdown 한 섹션: 질문, 질문자(팀·직급), 유형·태그·기준일, 기대 응답, 정답 구간(관련도 2는 앞뒤 ±200자 발췌 + 구간 `**굵게**`, 관련도 1은 문서 제목만), 미표시 후보 문서 ID, 어휘 겹침 수치, SQL이면 쿼리와 기대 값, 그리고 3항목의 Claude 판정(선채움). 실제 문항은 조문 발췌를 넣는다(그래서 `data/interim/`).
+- 문항 1개 = Markdown 한 섹션: 질문, 질문자(팀·직급), 유형·태그·기준일, 기대 응답, 정답 구간(관련도 2는 앞뒤 ±200자 발췌 + 구간 `**굵게**`, 관련도 1은 문서 제목만), 미표시 후보 문서 ID(`Question.unmarked_candidates`), 답 없음 확인 결과(`Question.no_answer_checks`와 step 5 요약의 `synthetic_no_answer_real_check`), 어휘 겹침 수치, SQL이면 쿼리와 기대 값, 그리고 3항목의 Claude 판정(선채움). 실제 문항은 조문 발췌를 넣는다(그래서 `data/interim/`).
 - `TEMPLATE_CSV`: 골드 50 + 실버 표본 30(+ 점검용 더미) 행. `claude_*`는 판정으로 채우고 **`reviewer`·`reviewed_on`·`disagree`·`correction`은 빈칸**. 이 CSV를 사람이 채워 `data/golden/m4_review/{검수일}-review.csv`로 저장한다(도구는 `data/golden/` 아래에 쓰지 않는다).
 - **점검용 더미(선택, `--attention-checks N`, 권장 3)**: 기존 합성 문항을 복제해 ID를 `chk-NNN`으로 바꾸고, 3항목 중 1개의 Claude 판정을 사실과 반대로 넣은 문항. 어떤 항목을 틀리게 했는지는 `ATTENTION_KEY`에만 기록. 패킷·CSV에서 일반 문항과 같은 형식으로 섞는다(순서는 결정론 셔플).
 
@@ -50,6 +50,7 @@ def main(argv=None) -> int: ...   # python -m kodocs.eval.golden_review {packets
 - 검수 CSV를 읽는다. **`reviewer`와 `reviewed_on`(YYYY-MM-DD)이 모두 있는 행만 검수된 행**이다. 빈 행은 수락이 아니라 "미검수"로 센다.
 - `disagree` 빈칸 = Claude 판정 수락. 값(`1`,`2`,`3` 쉼표 구분)이 있으면 해당 항목 불일치 + `correction` 필수(비면 그 행 무효). 한 문항이 여러 CSV에 있으면 `reviewed_on`이 가장 늦은 행.
 - 문항별 최종 판정 = Claude 판정에 사람 불일치를 반영한 값. 3항목이 모두 긍정인 문항만 확정한다. 정답 구간 보완(q2 불일치 + correction에 `add:doc_id` 또는 `add:fact_id`, `remove:...`)은 명시된 형식만 기계적으로 반영하고 형식이 아니면 그 문항을 "수정 필요"로 확정에서 뺀다.
+- unanswerable 문항은 답 없음 ③(실제 규정 검색)이 True로 기록되지 않았으면(합성: `data/manifest/golden_real.json`의 `synthetic_no_answer_real_check`, 실제: 투영의 `no_answer_checks.real`) 확정하지 않는다. 확정 파일에는 `no_answer_checks`를 ③ 결과까지 채워 쓴다.
 - 골드: 50문항 **전부** 검수·확정되어야 쓴다. 하나라도 미검수·수정 필요·부정이면 골드 파일을 쓰지 않고 목록을 출력하고 종료 코드 1. 확정 시 `golden_split.assign_split(..., GOLD_SPLIT_QUOTA)`로 split을 채우고 실제 문항은 투영(참조 답변 제거, `reference_sha256`) 형태로 쓴다.
 - 실버: 150문항 전부를 쓰되 표본 30의 검수 결과(표본 오류율 = 부정 판정 비율과 Wilson 95% 구간)를 요약에 기록하고, 표본에서 부정인 문항은 실버에서 뺀다. split은 실버 규칙(유형별 60/40).
 - **불변성(FP-020)**: `GOLD_PATH`가 이미 있고 새로 만들 내용과 다르면 덮어쓰지 않고 종료 코드 1("골드는 확정 후 수정하지 않는다"). 같으면 그대로 둔다.

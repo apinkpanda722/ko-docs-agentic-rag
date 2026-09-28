@@ -5,7 +5,7 @@
 먼저 아래 파일들을 읽고 프로젝트의 아키텍처와 설계 의도를 파악하라:
 
 - `AGENTS.md`, `docs/ADR.md`(ADR-016, ADR-024, **ADR-025**), `docs/EVAL.md`(질의셋 절)
-- step 1 산출물: `src/kodocs/eval/golden.py`(`Question`, `Qrel`, `SqlAnswer`, `Asker`, `can_read`, `validate_question`, `GOLD_QUOTA`, `SILVER_QUOTA`)
+- step 1 산출물: `src/kodocs/eval/golden.py`(`Question`, `Qrel`, `SqlAnswer`, `Asker`, `can_read`, `validate_question`, `GOLD_QUOTA`, `SILVER_QUOTA`). `Question`에는 명세 증거 필드 `unmarked_candidates: tuple[str, ...]`와 `no_answer_checks: Mapping[str, bool | None] | None`가 있고 `write_questions`/`load_questions`로 보존된다. `validate_question`은 `type_response_mismatch`(permission↔`indistinguishable_from_no_answer`, unanswerable↔`no_answer`, 나머지↔`answer`)와 `permission_empty_qrels`(permission인데 관련도 2 qrel 없음)도 검사한다
 - `src/kodocs/synth/seed.py` — `load_seed`, `Fact`(`subject`, `date`, `kind`, `value`), `surface_forms`, `Person`, `TEAMS`
 - `src/kodocs/synth/db.py` — `build_rows`, SQLite 스키마(tickets·approvals·incidents), `DB_PATH`
 - `src/kodocs/synth/identifiers.py` — `extract_identifiers`
@@ -38,7 +38,7 @@ def main(argv=None) -> int: ...   # python -m kodocs.eval.golden_specs
 **qrels 규칙**
 - 관련도 2: 답 사실 `fact_id`의 span을 가진 **모든** 통과 문서(한 문서에 span이 여러 개면 모두 qrel로).
 - 관련도 1: 답 사실과 같은 `subject`의 다른 사실 span은 있지만 답 사실 span은 없는 문서.
-- 미표시 언급: 원자 사실(`kind`가 text가 아닌 것)의 `surface_forms`가 표시 없이 본문에 나온 문서 ID를 명세의 `unmarked_candidates` 필드(요약·패킷용, qrels 아님)로 남긴다. qrels에 자동으로 넣지 마라. 사람이 검수에서 정한다.
+- 미표시 언급: 원자 사실(`kind`가 text가 아닌 것)의 `surface_forms`가 표시 없이 본문에 나온 문서 ID를 `Question.unmarked_candidates`(정렬, 요약·패킷용, qrels 아님)에 넣는다. qrels에 자동으로 넣지 마라. 사람이 검수에서 정한다.
 
 **질문자(asker)**: 시드 인물에서 결정론(`random.Random(random_seed + 문항 번호)`)으로 고른다. answer 문항은 관련도 2 문서 중 1개 이상을 읽을 수 있는 인물, permission 문항은 관련 문서(1·2 모두)를 하나도 읽을 수 없는 인물.
 
@@ -47,8 +47,8 @@ def main(argv=None) -> int: ...   # python -m kodocs.eval.golden_specs
 - semantic: 주어 = 서비스명 또는 인물(ID 없이). 답 = 서술 사실(결정·정책·원인·계획 등). 주어만으로 답 사실이 하나로 정해지지 않으면(같은 서비스·같은 속성 사실이 2개 이상) 그 후보는 쓰지 않는다.
 - multi_doc: 같은 subject 또는 같은 서비스의 사실 2개 이상. **어느 한 문서도 모든 답 사실 span을 갖지 않아야** 한다(검사 필수). qrels는 답 사실별 규칙의 합집합.
 - temporal(`temporal:as_of_event`): 주어 = 서비스 + `as_of`(일 단위 날짜). 답 = 그 날짜로만 특정되는 사건의 사실. **기준일을 빼면 후보 사건(같은 서비스·같은 속성)이 2개 이상**이어야 채택(검사 필수). 실버 temporal 20 = 사건 19 + 값 교체 1. 값 교체 1은 identity-api 담당자(2026-03-28 p-002 → 2026-05-09 p-133)처럼 **같은 서비스의 같은 속성 값이 날짜에 따라 바뀐** 경우를 시드에서 찾아 as_of를 두 날짜 사이로 둔다(시드에서 정확히 찾고, 없으면 실패로 멈춰라 — 추측해 만들지 마라).
-- permission: 답 사실의 모든 관련 문서가 질문자에게 보이지 않는 경우. `expected_response="indistinguishable_from_no_answer"`. 제한 문서의 카나리아 사실을 답으로 쓰면 태그 `canary`.
-- unanswerable: 존재하는 주어(서비스·장애)에 대해 시드에 없는 속성(예: 비용·영향 사용자 수처럼 시드 사실 종류에 없는 것)을 묻는 명세. `expected_response="no_answer"`, qrels 없음. 확인 ①(해당 subject에 그 속성 사실 없음)·②(통과 문서 전체 본문에서 속성 핵심어 + 주어 동시 등장 없음)을 수행하고 결과를 `no_answer_checks: {seed: bool, docs: bool, real: null}`로 남긴다(③ 실제 규정 검색은 step 5가 채운다).
+- permission: 답 사실의 모든 관련 문서가 질문자에게 보이지 않는 경우. `expected_response="indistinguishable_from_no_answer"`. qrels에는 숨겨진 관련 문서(관련도 2)를 **반드시** 넣는다(M7 누설 기준 (a) 판정용, `permission_empty_qrels`). 제한 문서의 카나리아 사실을 답으로 쓰면 태그 `canary`.
+- unanswerable: 존재하는 주어(서비스·장애)에 대해 시드에 없는 속성(예: 비용·영향 사용자 수처럼 시드 사실 종류에 없는 것)을 묻는 명세. `expected_response="no_answer"`, qrels 없음. 확인 ①(해당 subject에 그 속성 사실 없음)·②(통과 문서 전체 본문에서 속성 핵심어 + 주어 동시 등장 없음)을 수행하고 결과를 `Question.no_answer_checks = {"seed": bool, "docs": bool, "real": None}`로 남긴다(③ 실제 규정 검색은 step 5가 요약에 기록한다). ①② 중 하나라도 False인 후보는 채택하지 않는다.
 - sql(골드만 6): `db.build_rows(seed)`로 메모리 SQLite를 만들어 집계 SELECT(팀별·상태별·월별 건수, 결재 금액 합 등) 6개를 실행하고 기대 값을 기록. 쿼리는 코드에 템플릿으로 고정. `db_content_hash`는 `synth_db.json` 값.
 - 인젝션 문서가 관련도 2인 문항에는 태그 `injection`.
 
@@ -60,6 +60,8 @@ def main(argv=None) -> int: ...   # python -m kodocs.eval.golden_specs
 - 모든 명세를 `golden.validate_question`에 통과시킨다(질문 문장이 빈 상태는 허용하도록 이 단계에서만 `question=""`를 예외 처리). 오류가 하나라도 있으면 종료 코드 1.
 - `SPECS_PATH`: 명세 JSONL(키 정렬, id 정렬). `SUMMARY_PATH`: `{counts: {set: {type: n}}, tags: {...}, unmarked_candidate_questions: n, rejected_candidates: {reason: n}, inputs: {seed_files_sha256, docs_sha256(문서 JSON 해시들의 해시), db_content_hash}}`(시각 없음).
 - 같은 입력으로 두 번 실행 → 두 파일 바이트 동일(테스트 필수).
+- **명세 증거 필드 보존(테스트 필수)**: 실제 저장소로 만든 `specs.jsonl`에서 모든 unanswerable 행의 `no_answer_checks`가 `{"seed": true, "docs": true, "real": null}`이고, 모든 행에 `unmarked_candidates` 키가 있으며, 미표시 후보가 있는 문항 수가 요약의 `unmarked_candidate_questions`와 같음을 확인한다.
+- 명세마다 `rejected_candidates`의 사유별 수와 함께 **유형별 후보 수**(`candidates: {set: {type: n}}`, 할당 적용 전)를 요약에 기록한다.
 
 ### Makefile·AGENTS.md
 - `query-specs: uv run python -m kodocs.eval.golden_specs` (`.PHONY` 추가)

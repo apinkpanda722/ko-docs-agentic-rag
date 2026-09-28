@@ -81,6 +81,10 @@ GOLD_SPLIT_QUOTA = {
 }
 ATTENTION_CHECK_PREFIX = "chk-"
 
+_TYPE_RESPONSES = {
+    "permission": "indistinguishable_from_no_answer",
+    "unanswerable": "no_answer",
+}
 _LAW_DOC_ID_RE = re.compile(r"^law-(\d+)$")
 
 
@@ -129,6 +133,11 @@ class Question:
     reference_sha256: str | None
     summary80: str | None
     split: str | None
+    # Spec evidence carried to review packets and promote (step 2 writes them):
+    # docs where an atomic answer value appears without a fact marker, and the
+    # no-answer checks (seed, docs, real regulation text; None = not run).
+    unmarked_candidates: tuple[str, ...] = ()
+    no_answer_checks: Mapping[str, bool | None] | None = None
 
 
 def question_from_dict(d: Mapping[str, object]) -> Question:
@@ -183,6 +192,14 @@ def question_from_dict(d: Mapping[str, object]) -> Question:
         reference_sha256=d.get("reference_sha256"),  # type: ignore[arg-type]
         summary80=d.get("summary80"),  # type: ignore[arg-type]
         split=d.get("split"),  # type: ignore[arg-type]
+        unmarked_candidates=tuple(  # type: ignore[arg-type]
+            _sequence(d.get("unmarked_candidates", ()), "unmarked_candidates")
+        ),
+        no_answer_checks=(
+            None
+            if d.get("no_answer_checks") is None
+            else dict(_mapping(d["no_answer_checks"], "no_answer_checks"))  # type: ignore[arg-type]
+        ),
     )
 
 
@@ -227,6 +244,10 @@ def question_to_dict(q: Question) -> dict[str, object]:
         "reference_sha256": q.reference_sha256,
         "summary80": q.summary80,
         "split": q.split,
+        "unmarked_candidates": list(q.unmarked_candidates),
+        "no_answer_checks": (
+            None if q.no_answer_checks is None else dict(q.no_answer_checks)
+        ),
     }
     return _sorted_json_value(payload)  # type: ignore[return-value]
 
@@ -329,6 +350,10 @@ def validate_question(
         add("unknown_expected_response")
     if q.id.startswith(ATTENTION_CHECK_PREFIX):
         add("attention_check_id")
+    if q.type in QUESTION_TYPES and q.expected_response != _TYPE_RESPONSES.get(
+        q.type, "answer"
+    ):
+        add("type_response_mismatch")
 
     qrel_errors: set[str] = set()
     for qrel in q.qrels:
@@ -365,6 +390,12 @@ def validate_question(
         and accessible_relevant_docs(q, docs)
     ):
         add("permission_accessible")
+    # M7 leak criterion (a) needs the restricted doc IDs a permission item hides.
+    if (
+        q.expected_response == "indistinguishable_from_no_answer"
+        and not has_relevant_qrel
+    ):
+        add("permission_empty_qrels")
     if (
         q.expected_response == "answer"
         and q.source == "synthetic"

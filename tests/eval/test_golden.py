@@ -538,3 +538,115 @@ def _has_attention_check_id(value: object) -> bool:
     if isinstance(value, list):
         return any(_has_attention_check_id(item) for item in value)
     return False
+
+
+@pytest.mark.parametrize(
+    ("question_type", "expected_response"),
+    [
+        ("permission", "answer"),
+        ("permission", "no_answer"),
+        ("unanswerable", "answer"),
+        ("unanswerable", "indistinguishable_from_no_answer"),
+        ("semantic", "no_answer"),
+        ("identifier", "indistinguishable_from_no_answer"),
+    ],
+)
+def test_validate_question_reports_type_response_mismatch(
+    question_type: str,
+    expected_response: str,
+    docs: dict[str, dict[str, object]],
+    regulation_index: dict[str, object],
+    table_ids: set[str],
+) -> None:
+    question = _synthetic_question(
+        type=question_type, expected_response=expected_response
+    )
+
+    assert "type_response_mismatch" in _errors(
+        question,
+        docs=docs,
+        regulation_index=regulation_index,
+        table_ids=table_ids,
+    )
+
+
+def _permission_question(**changes: object) -> Question:
+    return _synthetic_question(
+        type="permission",
+        expected_response="indistinguishable_from_no_answer",
+        asker=Asker(team="platform", grade=3),
+        **changes,
+    )
+
+
+def _restrict(docs: dict[str, dict[str, object]]) -> None:
+    docs["syn-doc-001"]["access"] = {
+        "level": "restricted",
+        "teams": ["security"],
+        "min_grade": 4,
+    }
+
+
+def test_permission_question_with_hidden_restricted_answer_is_valid(
+    docs: dict[str, dict[str, object]],
+    regulation_index: dict[str, object],
+    table_ids: set[str],
+) -> None:
+    _restrict(docs)
+
+    assert not _errors(
+        _permission_question(),
+        docs=docs,
+        regulation_index=regulation_index,
+        table_ids=table_ids,
+    )
+
+
+@pytest.mark.parametrize("rel", [None, 1])
+def test_validate_question_reports_permission_empty_qrels(
+    rel: int | None,
+    docs: dict[str, dict[str, object]],
+    regulation_index: dict[str, object],
+    table_ids: set[str],
+) -> None:
+    # M7 leak criterion (a) needs the restricted doc IDs a permission item hides.
+    _restrict(docs)
+    qrels = () if rel is None else (replace(_synthetic_question().qrels[0], rel=rel),)
+
+    assert "permission_empty_qrels" in _errors(
+        _permission_question(qrels=qrels),
+        docs=docs,
+        regulation_index=regulation_index,
+        table_ids=table_ids,
+    )
+
+
+def test_spec_fields_survive_jsonl_round_trip(tmp_path: Path) -> None:
+    # Step 2 writes these on specs; later steps (packets, promote) read them back.
+    question = _synthetic_question(
+        type="unanswerable",
+        expected_response="no_answer",
+        qrels=(),
+        reference_answer=None,
+        unmarked_candidates=("syn-doc-002", "syn-doc-003"),
+        no_answer_checks={"seed": True, "docs": True, "real": None},
+    )
+    path = tmp_path / "specs.jsonl"
+
+    write_questions(path, [question])
+    [loaded] = load_questions(path)
+    row = json.loads(path.read_text(encoding="utf-8"))
+
+    assert loaded == question
+    assert row["unmarked_candidates"] == ["syn-doc-002", "syn-doc-003"]
+    assert row["no_answer_checks"] == {"docs": True, "real": None, "seed": True}
+
+
+def test_spec_fields_default_when_absent_from_older_rows() -> None:
+    row = question_to_dict(_synthetic_question())
+    del row["unmarked_candidates"], row["no_answer_checks"]
+
+    loaded = question_from_dict(row)
+
+    assert loaded.unmarked_candidates == ()
+    assert loaded.no_answer_checks is None

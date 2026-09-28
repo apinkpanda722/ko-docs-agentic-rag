@@ -58,6 +58,7 @@ def main(argv=None) -> int: ...   # python -m kodocs.eval.query_draft [--dry-run
 | `as_of_missing` | temporal 문항인데 기준일(`as_of`의 허용 날짜 표기 중 하나)이 질문에 없음 |
 | `prompt_artifact` | `p-NNN`, `fact`, `f-`로 시작하는 사실 ID, "명세", "주어 값" 같은 프롬프트 내부 표기 |
 
+- `validated.jsonl`에는 명세의 모든 필드(`unmarked_candidates`, `no_answer_checks` 포함)를 그대로 두고 `question`만 채워 `golden.write_questions`로 쓴다. 필드가 보존됨을 테스트로 확인한다.
 - 실패 문항은 `FAILURES_PATH`에 `{id, attempt, codes, ts}`로 append(키 `(id, attempt)`, 중복 추가 금지 — FP-032)하고 다음 실행에서 재시도 대상이 된다. 초안을 고쳐서 통과시키지 마라.
 - step 4가 이 검증에 `overlap_cap` 코드와 태그 부여를 추가한다. `validate_draft`는 추가 검사를 붙이기 쉬운 구조(검사 함수 목록)로 둔다.
 
