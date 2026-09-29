@@ -61,7 +61,16 @@
     {
       "step": 4,
       "name": "chunkers",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T01:26:44+0900",
+      "summary": "`src/kodocs/chunking/chunkers.py`에 `Chunk`·`chunk_structural`·`chunk_fixed`·`fixed_size_from_structural` 및 병합형 CLI를 구현하고, `data/manifest/m5_index.json`에 구조 청크 4,811개·중앙값 193자·고정 크기 200자/겹침 40자·고정 청크 9,967개를 기록했으며 `make verify` 1,018개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T01:38:04+0900",
+      "usage": {
+        "input_tokens": 3020985,
+        "cached_input_tokens": 2894080,
+        "output_tokens": 25306,
+        "attempts": 1
+      }
     },
     {
       "step": 5,
