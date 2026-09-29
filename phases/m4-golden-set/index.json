@@ -103,7 +103,16 @@
     {
       "step": 7,
       "name": "review-packets",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-29T13:09:26+0900",
+      "summary": "검수 패킷·서명 기반 확정·점검용 더미 격리·골드 불변성·고정 M4 보고서를 구현했으며 make verify 879 passed와 모든 AC를 통과했습니다.",
+      "completed_at": "2026-09-29T13:25:27+0900",
+      "usage": {
+        "input_tokens": 4378536,
+        "cached_input_tokens": 4217344,
+        "output_tokens": 43076,
+        "attempts": 1
+      }
     }
   ],
   "created_at": "2026-09-28T20:07:32+0900"
