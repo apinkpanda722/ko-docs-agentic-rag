@@ -659,3 +659,53 @@ def test_spec_fields_default_when_absent_from_older_rows() -> None:
 
     assert loaded.unmarked_candidates == ()
     assert loaded.no_answer_checks is None
+
+
+def test_document_level_qrels_are_valid_for_synthetic_questions() -> None:
+    from dataclasses import replace as _replace
+
+    from kodocs.eval.golden import Asker, Qrel, Question, validate_question
+
+    docs = {
+        "doc-a": {
+            "body": "가나다",
+            "access": {"level": "public", "teams": [], "min_grade": 1},
+            "fact_spans": [{"fact_id": "f-a", "start": 0, "end": 3}],
+        },
+        "doc-b": {"body": "라마", "access": {"level": "public"}, "fact_spans": []},
+    }
+    import hashlib
+
+    question = Question(
+        id="g-syn-001",
+        set="gold",
+        source="synthetic",
+        type="semantic",
+        tags=(),
+        question="질문?",
+        asker=Asker("platform", 1),
+        as_of=None,
+        qrels=(
+            Qrel(
+                "doc-a", 2, "f-a", 0, 3, hashlib.sha256("가나다".encode()).hexdigest()
+            ),
+            Qrel("doc-b", 1),
+        ),
+        anchor_values=("가",),
+        answer_values=("가나다",),
+        expected_response="answer",
+        sql=None,
+        reference_answer="가나다",
+        reference_sha256=None,
+        summary80=None,
+        split=None,
+    )
+
+    assert (
+        validate_question(question, docs=docs, regulation_index={}, table_ids=set())
+        == []
+    )
+    missing = _replace(question, qrels=(*question.qrels, Qrel("doc-x", 1)))
+    assert "unknown_doc" in validate_question(
+        missing, docs=docs, regulation_index={}, table_ids=set()
+    )

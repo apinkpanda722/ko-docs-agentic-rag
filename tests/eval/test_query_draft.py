@@ -1193,3 +1193,48 @@ def test_a_result_fact_that_is_not_an_effect_is_asked_as_work_done(
     )
 
     assert query_draft._asked_attribute(spec) == "진행한 작업"
+
+
+@pytest.mark.parametrize(
+    ("text", "flagged"),
+    [
+        ("DAI-1001을 도입하면 어떤 효과를 기대할 수 있나요?", True),
+        ("DAI-1001 처리로 예상되는 조치 내용은 무엇인가요?", True),
+        ("DAI-1001을 도입했을 때 무엇이 달라지나요?", True),
+        ("DAI-1001 처리 후 무엇이 개선됐나요?", False),
+    ],
+)
+def test_answer_questions_must_not_use_hypothetical_framing(
+    specs: Sequence[Question], seed: Seed, text: str, flagged: bool
+) -> None:
+    codes = validate_draft(
+        _by_id(specs, "g-syn-001"), text, seed=seed, people=seed.people
+    )
+
+    assert ("hypothetical_framing" in codes) is flagged
+
+
+def test_unanswerable_questions_may_ask_about_expected_costs(
+    specs: Sequence[Question], seed: Seed
+) -> None:
+    spec = replace(
+        _by_id(specs, "g-syn-001"),
+        type="unanswerable",
+        expected_response="no_answer",
+        qrels=(),
+        answer_values=(),
+    )
+    codes = validate_draft(
+        spec,
+        "DAI-1001 장애의 예상 복구 비용은 얼마인가요?",
+        seed=seed,
+        people=seed.people,
+    )
+
+    assert "hypothetical_framing" not in codes
+
+
+def test_system_prompt_forbids_hypothetical_questions_about_past_facts() -> None:
+    system = (query_draft.TEMPLATES_DIR / "system.md").read_text(encoding="utf-8")
+
+    assert "가정형" in system and "일어난 일" in system

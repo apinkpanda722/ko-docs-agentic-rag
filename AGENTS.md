@@ -77,7 +77,7 @@ make synth-metrics  # 합성 문서 중복·다양성·분포·사실 커버리�
 make synth-report   # M3 결과 문서 docs/results/2026-09-27-m3-synthetic.md(실행일과 관계없이 고정) 갱신 (네트워크 없음)
 make review-sample  # 검증 통과 문서에서 유형·권한 층화 표본 20건 + 검수 양식 → data/synthetic/review/ (네트워크 없음)
 make review-score   # data/golden/synthetic_review/*.csv 사람 검수 결과 집계 → data/manifest/synth_review.json·결과 문서 7절 (네트워크 없음)
-make query-specs    # 합성 문항 명세(골드 합성 30·실버 138) → data/synthetic/queries/specs.jsonl. 기존 명세가 있으면 선택은 고정하고 qrels·미표시 후보·답 없음 확인만 현재 문서로 재계산, 조건을 어긴 문항만 같은 id로 교체(옛 초안 무효화); 처음부터 다시 뽑으려면 `uv run python -m kodocs.eval.golden_specs --reselect` (네트워크 없음)
+make query-specs    # 합성 문항 명세(골드 합성 30·실버 138) → data/synthetic/queries/specs.jsonl. 기존 명세가 있으면 선택은 고정하고 qrels·미표시 후보·답 없음 확인만 현재 문서로 재계산, 조건을 어긴 문항만 같은 id로 교체(옛 초안 무효화), 커밋된 `data/synthetic/queries/qrels_overrides.jsonl`(사람이 확인한 문서 단위 qrel 보정, 대상 앵커 일치 필수)을 적용; 처음부터 다시 뽑으려면 `uv run python -m kodocs.eval.golden_specs --reselect` (네트워크 없음)
 make queries-dry   # 합성 문항 질문 문장 동기 호출 예상 토큰·비용(동기 단가, mode와 함께 data/manifest/golden_dry_runs.jsonl에 기록) — 네트워크 없음
 make queries       # 합성 문항 질문 문장 동기 생성(동시성 4) → 결정론 검증 → 실패 문항 재생성을 max_attempts까지 한 번에 — 실제 API 호출·과금, 사용자 실행
 make queries-batch-dry  # Batch 모드 예상 토큰·비용(대량용) — 네트워크 없음

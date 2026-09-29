@@ -486,6 +486,7 @@ def test_actual_repository_specs_meet_quotas_validate_and_are_deterministic(
     summary_path = tmp_path / "golden_specs.json"
     monkeypatch.setattr(golden_specs, "SPECS_PATH", specs_path)
     monkeypatch.setattr(golden_specs, "SUMMARY_PATH", summary_path)
+    monkeypatch.setattr(golden_specs, "OVERRIDES_PATH", tmp_path / "none.jsonl")
 
     assert golden_specs.run(ROOT, print_fn=lambda _: None) == 0
     first_specs = specs_path.read_bytes()
@@ -938,6 +939,7 @@ def test_run_keeps_existing_selections_and_reselect_rebuilds_them(
     summary_path = tmp_path / "golden_specs.json"
     monkeypatch.setattr(golden_specs, "SPECS_PATH", specs_path)
     monkeypatch.setattr(golden_specs, "SUMMARY_PATH", summary_path)
+    monkeypatch.setattr(golden_specs, "OVERRIDES_PATH", tmp_path / "none.jsonl")
     assert golden_specs.run(ROOT, print_fn=lambda _: None) == 0
     original = specs_path.read_bytes()
 
@@ -1539,3 +1541,146 @@ def test_sync_fills_a_raised_quota_with_new_ids_in_free_slots(
     assert [q.id for q in result.questions if q.id != "s-syn-002"] == [
         q.id for q in existing
     ]
+
+
+# ---------------------------------------------------------------------------
+# Committed qrels overrides applied by sync mode.
+# ---------------------------------------------------------------------------
+
+
+def _write_overrides(path: Path, rows: list[dict[str, object]]) -> None:
+    path.write_text(
+        "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+
+
+def test_overrides_add_document_level_qrels_deterministically(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]], tmp_path: Path
+) -> None:
+    existing = _silver_specs(tiny_seed, tiny_docs)
+    path = tmp_path / "overrides.jsonl"
+    _write_overrides(
+        path,
+        [
+            {
+                "id": "s-syn-001",
+                "add": [{"doc_id": "doc-unmarked", "rel": 1}],
+                "reason": "사건 ID와 원인 서술",
+            }
+        ],
+    )
+    overrides = golden_specs.load_overrides(path)
+
+    first = golden_specs.sync_specs(
+        existing,
+        tiny_seed,
+        tiny_docs,
+        db_rows=_EMPTY_ROWS,
+        db_content_hash="db-hash",
+        random_seed=7,
+        overrides=overrides,
+    )
+    second = golden_specs.sync_specs(
+        first.questions,
+        tiny_seed,
+        tiny_docs,
+        db_rows=_EMPTY_ROWS,
+        db_content_hash="db-hash",
+        random_seed=7,
+        overrides=overrides,
+    )
+
+    target = next(q for q in first.questions if q.id == "s-syn-001")
+    assert ("doc-unmarked", 1, None) in {
+        (x.doc_id, x.rel, x.fact_id) for x in target.qrels
+    }
+    assert first.questions == second.questions
+    assert second.qrels_changed == ()
+
+
+@pytest.mark.parametrize(
+    ("row", "match"),
+    [
+        (
+            {
+                "id": "s-syn-001",
+                "add": [{"doc_id": "doc-nope", "rel": 1}],
+                "reason": "x",
+            },
+            "doc-nope",
+        ),
+        (
+            {
+                "id": "chk-001",
+                "add": [{"doc_id": "doc-unmarked", "rel": 1}],
+                "reason": "x",
+            },
+            "chk-",
+        ),
+        (
+            {
+                "id": "s-syn-999",
+                "add": [{"doc_id": "doc-unmarked", "rel": 1}],
+                "reason": "x",
+            },
+            "s-syn-999",
+        ),
+        (
+            {
+                "id": "s-syn-001",
+                "add": [{"doc_id": "doc-unmarked", "rel": 3}],
+                "reason": "x",
+            },
+            "rel",
+        ),
+    ],
+)
+def test_invalid_overrides_fail(
+    tiny_seed: Seed,
+    tiny_docs: dict[str, dict[str, object]],
+    tmp_path: Path,
+    row: dict[str, object],
+    match: str,
+) -> None:
+    path = tmp_path / "overrides.jsonl"
+    _write_overrides(path, [row])
+
+    with pytest.raises((golden_specs.SpecBuildError, ValueError), match=match):
+        golden_specs.sync_specs(
+            _silver_specs(tiny_seed, tiny_docs),
+            tiny_seed,
+            tiny_docs,
+            db_rows=_EMPTY_ROWS,
+            db_content_hash="db-hash",
+            random_seed=7,
+            overrides=golden_specs.load_overrides(path),
+        )
+
+
+def test_override_refuses_a_question_whose_anchor_changed(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]], tmp_path: Path
+) -> None:
+    path = tmp_path / "overrides.jsonl"
+    _write_overrides(
+        path,
+        [
+            {
+                "id": "s-syn-001",
+                "anchor_values": ["다른 앵커"],
+                "add": [{"doc_id": "doc-unmarked", "rel": 1}],
+                "reason": "x",
+            }
+        ],
+    )
+
+    with pytest.raises(golden_specs.SpecBuildError, match="anchor"):
+        golden_specs.sync_specs(
+            _silver_specs(tiny_seed, tiny_docs),
+            tiny_seed,
+            tiny_docs,
+            db_rows=_EMPTY_ROWS,
+            db_content_hash="db-hash",
+            random_seed=7,
+            overrides=golden_specs.load_overrides(path),
+        )

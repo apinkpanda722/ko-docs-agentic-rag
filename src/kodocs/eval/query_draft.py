@@ -123,6 +123,7 @@ _ATTRIBUTE_LABELS = {
     "window": "적용 기간",
 }
 _SERVICE_OWNER_LABEL = "운영 담당 팀"
+_HYPOTHETICAL_RE = re.compile(r"기대|예상|도입하면|도입했을\s*때")
 _METHOD_RE = re.compile(r"방법|(?:확인|조회)할\s*수\s*있|알\s*수\s*있")
 
 PrintFn = Callable[..., object]
@@ -247,6 +248,7 @@ def validate_draft(
         ("as_of_missing", _as_of_missing),
         ("prompt_artifact", _prompt_artifact),
         ("asks_method", _asks_method),
+        ("hypothetical_framing", _hypothetical_framing),
     )
     codes = [
         code for code, check in checks if check(spec, candidate, seed, people_by_id)
@@ -689,6 +691,19 @@ def _fact_label(fact_id: str) -> str:
     if attribute == "owner" and fact_id.startswith("f-service-"):
         return _SERVICE_OWNER_LABEL
     return _ATTRIBUTE_LABELS.get(attribute, "관련 정보")
+
+
+def _hypothetical_framing(
+    spec: Question,
+    text: str,
+    _seed: Seed,
+    _people: Mapping[str, Person],
+) -> bool:
+    return (
+        spec.expected_response == "answer"
+        and spec.type != "unanswerable"
+        and _HYPOTHETICAL_RE.search(text) is not None
+    )
 
 
 def _asks_method(

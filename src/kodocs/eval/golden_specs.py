@@ -38,6 +38,7 @@ SUMMARY_PATH = Path("data/manifest/golden_specs.json")
 DOCS_PATH = Path("data/synthetic/docs")
 DB_MANIFEST_PATH = Path("data/manifest/synth_db.json")
 VALIDATED_PATH = Path("data/synthetic/queries/validated.jsonl")
+OVERRIDES_PATH = Path("data/synthetic/queries/qrels_overrides.jsonl")
 
 _NO_ANSWER_ATTRIBUTES = (
     ("cost", "비용", ("비용", "소요 금액"), frozenset({"amount", "cost", "budget"})),
@@ -282,6 +283,7 @@ def sync_specs(
     db_content_hash: str,
     random_seed: int,
     fill: bool = False,
+    overrides: Mapping[str, Override] | None = None,
 ) -> SyncResult:
     """Keep every existing selection; re-derive evidence for the current corpus.
 
@@ -430,6 +432,23 @@ def sync_specs(
         else:
             final[qid] = (recomputed[qid], resolved[qid])
 
+    overrides = overrides or {}
+    missing = sorted(set(overrides) - set(final))
+    if missing:
+        raise SpecBuildError(f"override target not in specs: {', '.join(missing)}")
+    for qid, extra in sorted(overrides.items()):
+        if qid in replacements:
+            raise SpecBuildError(f"override target was replaced: {qid}")
+        question, candidate = final[qid]
+        if (
+            extra.anchor_values is not None
+            and extra.anchor_values != question.anchor_values
+        ):
+            raise SpecBuildError(
+                f"override anchor mismatch for {qid}: {list(extra.anchor_values)}"
+            )
+        final[qid] = (_apply_override(question, extra.add, docs), candidate)
+
     validation_errors: list[str] = []
     for question, _ in final.values():
         errors = validate_question(
@@ -477,7 +496,7 @@ def sync_specs(
         sorted(
             qid
             for qid, question in by_id.items()
-            if qid not in reasons and recomputed[qid].qrels != question.qrels
+            if qid not in reasons and final[qid][0].qrels != question.qrels
         )
     )
     return SyncResult(
@@ -534,6 +553,80 @@ def _under_quota(questions: Sequence[Question]) -> list[Question]:
                     )
                 )
     return placeholders
+
+
+@dataclass(frozen=True)
+class Override:
+    add: tuple[Qrel, ...]
+    anchor_values: tuple[str, ...] | None = None
+
+
+def load_overrides(path: Path) -> dict[str, Override]:
+    """Read reviewed document-level qrel additions keyed by question id."""
+    overrides: dict[str, Override] = {}
+    if not Path(path).exists():
+        return overrides
+    for line_number, line in enumerate(
+        Path(path).read_text(encoding="utf-8").splitlines(), 1
+    ):
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        qid = row.get("id")
+        if not isinstance(qid, str) or not qid:
+            raise ValueError(f"override line {line_number}: id missing")
+        if qid.startswith("chk-"):
+            raise ValueError(f"override line {line_number}: chk- ids are not allowed")
+        if qid in overrides:
+            raise ValueError(f"override line {line_number}: duplicate id {qid}")
+        if not isinstance(row.get("reason"), str) or not row["reason"]:
+            raise ValueError(f"override line {line_number}: reason missing")
+        added: list[Qrel] = []
+        for item in row.get("add") or ():
+            doc_id, rel = item.get("doc_id"), item.get("rel")
+            if not isinstance(doc_id, str) or rel not in (1, 2):
+                raise ValueError(
+                    f"override line {line_number}: bad doc_id or rel {rel}"
+                )
+            added.append(Qrel(doc_id=doc_id, rel=rel))
+        if not added:
+            raise ValueError(f"override line {line_number}: add is empty")
+        anchors = row.get("anchor_values")
+        overrides[qid] = Override(
+            add=tuple(added),
+            anchor_values=None if anchors is None else tuple(anchors),
+        )
+    return overrides
+
+
+def _apply_override(
+    question: Question,
+    extra: Sequence[Qrel],
+    docs: Mapping[str, Mapping[str, object]],
+) -> Question:
+    present = {qrel.doc_id for qrel in question.qrels}
+    qrels = list(question.qrels)
+    for qrel in extra:
+        if qrel.doc_id not in docs:
+            raise SpecBuildError(f"override doc not found: {qrel.doc_id}")
+        if qrel.doc_id not in present:
+            qrels.append(qrel)
+            present.add(qrel.doc_id)
+    return replace(
+        question,
+        qrels=tuple(
+            sorted(
+                qrels,
+                key=lambda item: (
+                    item.doc_id,
+                    -item.rel,
+                    item.fact_id or "",
+                    item.start if item.start is not None else -1,
+                    item.end if item.end is not None else -1,
+                ),
+            )
+        ),
+    )
 
 
 def _over_quota(
@@ -1069,6 +1162,7 @@ def run(root: Path, *, reselect: bool = False, print_fn=print) -> int:
                 db_content_hash=db_content_hash,
                 random_seed=random_seed,
                 fill=True,
+                overrides=load_overrides(root / OVERRIDES_PATH),
             )
             result = sync.build
         else:

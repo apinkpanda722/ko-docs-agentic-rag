@@ -363,6 +363,8 @@ def validate_question(
             document = docs.get(qrel.doc_id)
             if document is None:
                 qrel_errors.add("unknown_doc")
+            elif _document_level(qrel):
+                pass
             elif not _span_matches(qrel, document):
                 qrel_errors.add("span_mismatch")
         elif q.source == "real":
@@ -445,6 +447,16 @@ def quota_report(
             "diff": actual - expected,
         }
     return report
+
+
+def _document_level(qrel: Qrel) -> bool:
+    """A reviewed whole-document judgement carries no span (qrels overrides)."""
+    return (
+        qrel.fact_id is None
+        and qrel.start is None
+        and qrel.end is None
+        and qrel.span_sha256 is None
+    )
 
 
 def _span_matches(qrel: Qrel, document: Mapping[str, object]) -> bool:

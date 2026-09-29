@@ -637,7 +637,12 @@ def _qrel_lines(
     for qrel in question.qrels:
         title = _document_title(qrel, docs=docs, laws=laws)
         if qrel.rel == 1:
-            lines.append(f"- 관련도 1: {title}")
+            marker = (
+                " (보정: qrels_overrides)"
+                if question.source == "synthetic" and qrel.fact_id is None
+                else ""
+            )
+            lines.append(f"- 관련도 1: {title}{marker}")
             continue
         excerpt = _qrel_excerpt(qrel, docs=docs, laws=laws, root=root)
         lines.append(f"- 관련도 2: {title} — {excerpt}")
