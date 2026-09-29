@@ -19,7 +19,16 @@
     {
       "step": 1,
       "name": "layer-guards",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T00:46:54+0900",
+      "summary": "`tests/test_architecture.py`에 상대·동적·지연 import를 처리하는 `find_forbidden_imports()` 계층 가드와 M5 LLM import 가드 및 자기검증 fixture를 추가했으며 `make verify`에서 977개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T00:53:20+0900",
+      "usage": {
+        "input_tokens": 985587,
+        "cached_input_tokens": 915456,
+        "output_tokens": 15326,
+        "attempts": 1
+      }
     },
     {
       "step": 2,
