@@ -33,7 +33,16 @@
     {
       "step": 2,
       "name": "annex-mapping",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T00:53:21+0900",
+      "summary": "`annex_regions`·`article_region_text`·`map_annex_tables`를 구현하고 115개 대상 전수 집계 및 골드 qrels 6/6 매핑 성공을 `data/manifest/m5_annex_mapping.json`에 기록했으며 `make verify`에서 990개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T01:09:08+0900",
+      "usage": {
+        "input_tokens": 6327094,
+        "cached_input_tokens": 6148608,
+        "output_tokens": 41968,
+        "attempts": 1
+      }
     },
     {
       "step": 3,
