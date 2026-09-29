@@ -87,7 +87,7 @@ make lexical-report  # 수거한 질의 초안의 어휘 겹침 분포·상한 �
 make golden-real-candidates  # 실제 규정 문항 후보(조 제목·확정 표·개정 쌍) → data/interim/golden/real_candidates.md (로컬 전용, 네트워크 없음)
 make golden-real-check       # data/interim/golden/real_drafts.jsonl 검증(할당·조 키·개정 쌍·답 없음 ③·본문 누출) → 커밋용 투영 data/synthetic/queries/real_projection.jsonl (네트워크 없음)
 make golden-split-preview    # dev/test 배정 미리보기(그룹·할당 차이·누수 문서·가설 판정 문항 수) → data/manifest/golden_split_preview.json (네트워크 없음)
-make golden-packets  # 골드 50·실버 표본 30 검수 패킷(Claude 판정 선채움, 점검용 더미 3) → data/interim/golden/ (로컬 전용, 네트워크 없음)
+make golden-packets  # 골드 50·실버 표본 28 검수 패킷(Claude 판정 선채움, 점검용 더미 3은 검수 대상이 아닌 실버에서). 패킷·CSV는 불투명한 검수 번호 r-NNN만 쓰고 대응표는 data/interim/golden/review_keys.json → data/interim/golden/ (로컬 전용, 네트워크 없음)
 make golden-promote  # data/golden/m4_review/*-review.csv 집계 → 확정 골드·실버 data/golden/queries/ + 결과 문서 — 사용자 실행
 make m4-report       # M4 결과 문서 docs/results/2026-09-28-m4-golden-set.md(고정) 갱신 (네트워크 없음)
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행

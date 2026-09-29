@@ -45,13 +45,14 @@ PACKETS_DIR = Path("data/interim/golden/packets")
 CLAUDE_VERDICTS = Path("data/interim/golden/claude_verdicts.jsonl")
 TEMPLATE_CSV = Path("data/interim/golden/review_template.csv")
 ATTENTION_KEY = Path("data/interim/golden/attention_checks.json")
+REVIEW_KEYS = Path("data/interim/golden/review_keys.json")
 REVIEW_GLOB = "data/golden/m4_review/*-review.csv"
 GOLD_PATH = Path("data/golden/queries/gold.jsonl")
 SILVER_PATH = Path("data/golden/queries/silver.jsonl")
 SUMMARY_PATH = Path("data/manifest/golden_review.json")
 REVIEW_ITEMS = ("q1_answerable", "q2_qrels_complete", "q3_labels_correct")
 CSV_COLUMNS = (
-    "question_id",
+    "review_key",
     "set",
     "type",
     "claude_q1",
@@ -78,6 +79,7 @@ _PACKET_SEED_OFFSET = 7_026
 _VERDICT_KEYS = ("q1", "q2", "q3")
 _CORRECTION_RE = re.compile(r"^(add|remove):([^,;\s]+)$")
 _LAW_ID_RE = re.compile(r"^law-(.+)$")
+_QUESTION_ID_RE = re.compile(r"(?<![\w-])(?:[gs]-(?:syn|real)|chk)-\d{3}")
 
 
 class GoldenReviewError(RuntimeError):
@@ -126,6 +128,7 @@ def build_packets(root: Path, *, attention_checks: int = 0) -> int:
         return 1
     try:
         synthetic, real_drafts, _, silver = _load_populations(root, drafts=True)
+        silver = [question for question in silver if question.set == "silver"]
         seed = _company_random_seed(root)
         sample = silver_sample(silver, random_seed=seed + _SAMPLE_SEED_OFFSET)
         gold = [question for question in synthetic if question.set == "gold"]
@@ -141,18 +144,46 @@ def build_packets(root: Path, *, attention_checks: int = 0) -> int:
         docs = _load_documents(root)
         real_summary = _load_optional_json(root / _REAL_SUMMARY_PATH)
         laws = _load_laws(root)
-        checks, check_verdicts, check_key = _attention_checks(
-            [q for q in [*gold, *sample] if q.source == "synthetic"],
-            verdicts,
-            count=attention_checks,
-            random_seed=seed + _PACKET_SEED_OFFSET,
-        )
-        all_verdicts = {**verdicts, **check_verdicts}
+        sample_ids = {question.id for question in sample}
+        unreviewed = [
+            q for q in silver if q.id not in sample_ids and q.source == "synthetic"
+        ]
+        reviewed = [q for q in [*gold, *sample] if q.source == "synthetic"]
+        try:
+            checks, check_verdicts, check_key = _attention_checks(
+                unreviewed,
+                verdicts,
+                count=attention_checks,
+                random_seed=seed + _PACKET_SEED_OFFSET,
+            )
+            source_pool = "unreviewed_silver"
+        except GoldenReviewError:
+            checks, check_verdicts, check_key = _attention_checks(
+                reviewed,
+                verdicts,
+                count=attention_checks,
+                random_seed=seed + _PACKET_SEED_OFFSET,
+            )
+            source_pool = "reviewed_fallback"
+            print(
+                "점검 원본 부족: 검수 대상이 아닌 실버에서 고르지 못해 검수 대상에서 골랐습니다.",
+                file=sys.stderr,
+            )
         questions = [*gold, *sample, *checks]
         rng = random.Random(seed + _PACKET_SEED_OFFSET)
         rng.shuffle(questions)
+        review_keys = {
+            f"r-{number:03d}": question.id
+            for number, question in enumerate(questions, start=1)
+        }
+        key_of = {qid: key for key, qid in review_keys.items()}
+        all_verdicts = {
+            qid: {**verdict, "note": _mask_ids(str(verdict.get("note", "")), key_of)}
+            for qid, verdict in {**verdicts, **check_verdicts}.items()
+        }
         packet = _render_packet(
             questions,
+            keys=key_of,
             verdicts=all_verdicts,
             docs=docs,
             laws=laws,
@@ -160,10 +191,12 @@ def build_packets(root: Path, *, attention_checks: int = 0) -> int:
             real_summary=real_summary,
         )
         _write_text_atomic(root / _PACKET_PATH, packet)
-        _write_template_csv(root / TEMPLATE_CSV, questions, all_verdicts)
+        _write_template_csv(root / TEMPLATE_CSV, questions, all_verdicts, key_of)
+        _write_json_atomic(root / REVIEW_KEYS, review_keys)
         _write_json_atomic(
             root / ATTENTION_KEY,
             {
+                "source_pool": source_pool,
                 "attention_checks": check_key,
                 "random_seed": seed + _PACKET_SEED_OFFSET,
                 "silver_sample_ids": [question.id for question in sample],
@@ -215,8 +248,9 @@ def promote(root: Path) -> int:
             )
         all_by_id = {question.id: question for question in [*gold, *sample]}
         allowed_ids = set(all_by_id) | set(attention_key)
+        review_keys = _load_review_keys(root / REVIEW_KEYS)
         rows, invalid_rows = _latest_review_rows(
-            root, review_paths, allowed_ids=allowed_ids
+            root, review_paths, allowed_ids=allowed_ids, review_keys=review_keys
         )
         decisions: dict[str, _Decision] = {}
         docs = _load_documents(root)
@@ -465,6 +499,11 @@ def _load_verdicts(
     return verdicts, False
 
 
+def _mask_ids(note: str, keys: Mapping[str, str]) -> str:
+    """Show other questions only by review key so no identifier leaks."""
+    return _QUESTION_ID_RE.sub(lambda m: keys.get(m.group(0), "다른 문항"), note)
+
+
 def _attention_checks(
     synthetic: Sequence[Question],
     verdicts: Mapping[str, Mapping[str, object]],
@@ -498,7 +537,7 @@ def _attention_checks(
         verdict[_VERDICT_KEYS[wrong_item - 1]] = not bool(
             verdict[_VERDICT_KEYS[wrong_item - 1]]
         )
-        verdict["note"] = "점검용 판정 초안"
+        verdict["note"] = str(original.get("note", ""))
         questions.append(replace(source, id=question_id))
         check_verdicts[question_id] = verdict
         key.append(
@@ -516,6 +555,7 @@ def _write_template_csv(
     path: Path,
     questions: Sequence[Question],
     verdicts: Mapping[str, Mapping[str, object]],
+    keys: Mapping[str, str],
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary: Path | None = None
@@ -535,7 +575,7 @@ def _write_template_csv(
                 verdict = verdicts.get(question.id)
                 writer.writerow(
                     {
-                        "question_id": question.id,
+                        "review_key": keys[question.id],
                         "set": question.set,
                         "type": question.type,
                         "claude_q1": _verdict_text(verdict, "q1"),
@@ -562,6 +602,7 @@ def _write_template_csv(
 def _render_packet(
     questions: Sequence[Question],
     *,
+    keys: Mapping[str, str],
     verdicts: Mapping[str, Mapping[str, object]],
     docs: Mapping[str, Mapping[str, object]],
     laws: Mapping[str, Mapping[str, object]],
@@ -577,7 +618,7 @@ def _render_packet(
         lines.extend(
             [
                 "",
-                f"## {question.id}",
+                f"## {keys[question.id]}",
                 "",
                 f"- 세트: `{question.set}`",
                 f"- 출처·유형: `{question.source}` / `{question.type}`",
@@ -765,11 +806,25 @@ def _overlap_text(
     )
 
 
+def _load_review_keys(path: Path) -> dict[str, str]:
+    if not path.is_file():
+        raise GoldenReviewError(
+            f"검수 번호 대응표가 없습니다: {REVIEW_KEYS.as_posix()}"
+        )
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, Mapping) or not all(
+        isinstance(k, str) and isinstance(v, str) for k, v in value.items()
+    ):
+        raise GoldenReviewError("검수 번호 대응표 형식 오류")
+    return dict(value)
+
+
 def _latest_review_rows(
     root: Path,
     paths: Sequence[Path],
     *,
     allowed_ids: set[str],
+    review_keys: Mapping[str, str],
 ) -> tuple[dict[str, dict[str, str]], list[dict[str, object]]]:
     candidates: dict[str, list[tuple[date, str, int, dict[str, str]]]] = defaultdict(
         list
@@ -785,13 +840,13 @@ def _latest_review_rows(
                 row = {
                     column: (raw.get(column) or "").strip() for column in CSV_COLUMNS
                 }
-                question_id = row["question_id"]
+                question_id = review_keys.get(row["review_key"], "")
                 if question_id not in allowed_ids:
                     invalid.append(
                         {
                             "source": source_name,
                             "row": row_number,
-                            "reason": "unknown_question_id",
+                            "reason": "unknown_review_key",
                         }
                     )
                     continue
