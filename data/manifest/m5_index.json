@@ -1,0 +1,29 @@
+{
+  "chunking": {
+    "calculated_at": "2026-09-30T01:35:19+09:00",
+    "composite_corpus_document_count": 300,
+    "fixed_chunk_count": 9967,
+    "fixed_overlap": 40,
+    "fixed_size": 200,
+    "structural_body_length_chars": {
+      "max": 26409,
+      "median": 193,
+      "min": 10,
+      "p90": 626
+    },
+    "structural_chunk_count": 4811,
+    "structural_chunk_count_by_document_type": {
+      "guide": 178,
+      "incident": 95,
+      "meeting": 58,
+      "notice": 92,
+      "regulation": 4057,
+      "runbook": 172,
+      "weekly": 159
+    },
+    "structural_chunk_count_by_source": {
+      "real": 4057,
+      "synthetic": 754
+    }
+  }
+}
