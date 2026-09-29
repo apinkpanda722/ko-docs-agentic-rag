@@ -1,0 +1,187 @@
+{
+  "cross_split_docs": {
+    "doc_ids": [],
+    "n": 0
+  },
+  "gold": {
+    "by_type": {
+      "identifier": {
+        "dev": 3,
+        "test": 4
+      },
+      "multi_doc": {
+        "dev": 3,
+        "test": 5
+      },
+      "permission": {
+        "dev": 2,
+        "test": 3
+      },
+      "semantic": {
+        "dev": 4,
+        "test": 5
+      },
+      "sql": {
+        "dev": 2,
+        "test": 4
+      },
+      "table": {
+        "dev": 2,
+        "test": 4
+      },
+      "temporal": {
+        "dev": 2,
+        "test": 3
+      },
+      "unanswerable": {
+        "dev": 2,
+        "test": 2
+      }
+    },
+    "cross_split_docs": {
+      "doc_ids": [],
+      "n": 0
+    },
+    "groups": {
+      "max_size": 3,
+      "n": 46,
+      "size_hist": {
+        "1": 43,
+        "2": 2,
+        "3": 1
+      }
+    },
+    "h5_bundle_test_n": 13,
+    "h7": {
+      "real_n": 5,
+      "synthetic_n": 9
+    },
+    "quota_diff": {
+      "dev": {
+        "identifier": 0,
+        "multi_doc": 0,
+        "permission": 0,
+        "semantic": 0,
+        "sql": 0,
+        "table": 0,
+        "temporal": 0,
+        "unanswerable": 0
+      },
+      "test": {
+        "identifier": 0,
+        "multi_doc": 0,
+        "permission": 0,
+        "semantic": 0,
+        "sql": 0,
+        "table": 0,
+        "temporal": 0,
+        "unanswerable": 0
+      }
+    },
+    "retrieval_test_n": 21,
+    "temporal_tags": {
+      "temporal:as_of_event": {
+        "dev": 0,
+        "test": 0
+      },
+      "temporal:revision": {
+        "dev": 2,
+        "test": 3
+      }
+    },
+    "warnings": []
+  },
+  "random_seed": 20250505,
+  "real_items": {
+    "n": 20,
+    "note": "실제 골드 투영을 포함함",
+    "status": "included"
+  },
+  "silver": {
+    "by_type": {
+      "identifier": {
+        "dev": 11,
+        "test": 14
+      },
+      "multi_doc": {
+        "dev": 14,
+        "test": 21
+      },
+      "permission": {
+        "dev": 6,
+        "test": 9
+      },
+      "semantic": {
+        "dev": 16,
+        "test": 24
+      },
+      "temporal": {
+        "dev": 8,
+        "test": 12
+      },
+      "unanswerable": {
+        "dev": 6,
+        "test": 9
+      }
+    },
+    "cross_split_docs": {
+      "doc_ids": [],
+      "n": 0
+    },
+    "groups": {
+      "max_size": 31,
+      "n": 30,
+      "size_hist": {
+        "1": 21,
+        "10": 1,
+        "11": 1,
+        "14": 1,
+        "17": 1,
+        "18": 1,
+        "2": 1,
+        "23": 1,
+        "3": 1,
+        "31": 1
+      }
+    },
+    "h5_bundle_test_n": 35,
+    "h7": {
+      "real_n": 0,
+      "synthetic_n": 59
+    },
+    "quota_diff": {
+      "dev": {
+        "identifier": 1,
+        "multi_doc": 0,
+        "permission": 0,
+        "semantic": 0,
+        "temporal": 0,
+        "unanswerable": 0
+      },
+      "test": {
+        "identifier": -1,
+        "multi_doc": 0,
+        "permission": 0,
+        "semantic": 0,
+        "temporal": 0,
+        "unanswerable": 0
+      }
+    },
+    "retrieval_test_n": 71,
+    "temporal_tags": {
+      "temporal:as_of_event": {
+        "dev": 8,
+        "test": 12
+      },
+      "temporal:revision": {
+        "dev": 0,
+        "test": 0
+      }
+    },
+    "warnings": [
+      "quota_not_exact:test.identifier=-1,dev.identifier=+1"
+    ]
+  },
+  "split_seed_offset": 404,
+  "test_share": 0.6
+}
