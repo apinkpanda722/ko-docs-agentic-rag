@@ -8,7 +8,7 @@ import json
 import random
 import sqlite3
 from collections import Counter, defaultdict
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from itertools import combinations
 from pathlib import Path
@@ -22,6 +22,7 @@ from kodocs.eval.golden import (
     Question,
     SqlAnswer,
     can_read,
+    load_questions,
     span_sha256,
     validate_question,
     write_questions,
@@ -34,6 +35,7 @@ SPECS_PATH = Path("data/synthetic/queries/specs.jsonl")
 SUMMARY_PATH = Path("data/manifest/golden_specs.json")
 DOCS_PATH = Path("data/synthetic/docs")
 DB_MANIFEST_PATH = Path("data/manifest/synth_db.json")
+VALIDATED_PATH = Path("data/synthetic/queries/validated.jsonl")
 
 _NO_ANSWER_ATTRIBUTES = (
     ("cost", "비용", ("비용", "소요 금액"), frozenset({"amount", "cost", "budget"})),
@@ -136,6 +138,14 @@ class _BuildResult:
     candidates: dict[str, dict[str, int]]
     rejected: Counter[str]
     diversity: dict[str, object]
+
+
+@dataclass(frozen=True)
+class SyncResult:
+    questions: list[Question]
+    qrels_changed: tuple[str, ...]
+    replaced: dict[str, tuple[str, ...]]
+    build: _BuildResult
 
 
 # Per-subject caps: (within one type, across all types of one set).
@@ -260,8 +270,490 @@ def build_specs(
     ).questions
 
 
-def run(root: Path, *, print_fn=print) -> int:
-    """Build and persist deterministic specifications and their summary."""
+def sync_specs(
+    existing: Sequence[Question],
+    seed: Seed,
+    docs: Mapping[str, Mapping[str, object]],
+    *,
+    db_rows: Mapping[str, Sequence[Mapping[str, object]]],
+    db_content_hash: str,
+    random_seed: int,
+) -> SyncResult:
+    """Keep every existing selection; re-derive evidence for the current corpus.
+
+    Question-defining fields (type, tags, asker, as_of, anchor/answer values,
+    expected response, sql) are never touched. qrels, unmarked candidates and
+    no-answer checks are recomputed, every condition is re-checked, and only
+    questions that break one are replaced (same id, stable per-candidate order).
+    """
+    ids = [question.id for question in existing]
+    if len(set(ids)) != len(ids):
+        raise SpecBuildError("duplicate question id in existing specs")
+    index = fact_index(docs)
+    eligible, rejected = _eligible_pools(
+        seed, docs, db_rows=db_rows, db_content_hash=db_content_hash
+    )
+    people = tuple(sorted(seed.people, key=lambda item: item.person_id))
+    context = _SyncContext(
+        seed=seed,
+        docs=docs,
+        index=index,
+        document_fact_ids=_document_fact_ids(docs),
+        people_by_id={person.person_id: person for person in seed.people},
+        facts_by_subject=_facts_by_subject(seed),
+    )
+
+    unclaimed: dict[tuple[object, ...], list[_Candidate]] = defaultdict(list)
+    for candidates in eligible.values():
+        for candidate in candidates:
+            unclaimed[_candidate_loose_key(candidate)].append(candidate)
+
+    by_id = {question.id: question for question in existing}
+    order = sorted(existing, key=lambda item: (item.set != "gold", item.id))
+    recomputed: dict[str, Question] = {}
+    resolved: dict[str, _Candidate] = {}
+    reasons: dict[str, list[str]] = {}
+    for question in order:
+        updated, found = _resync_question(question, context)
+        recomputed[question.id] = updated
+        claim = unclaimed.get(_question_loose_key(question))
+        if claim:
+            resolved[question.id] = claim.pop(0)
+        elif not found:
+            found = ["no_longer_valid_candidate"]
+        if found:
+            reasons[question.id] = found
+
+    used_keys = {candidate.key for candidate in resolved.values()}
+    type_counts: dict[tuple[str, str], Counter[str]] = defaultdict(Counter)
+    set_counts: dict[str, Counter[str]] = defaultdict(Counter)
+
+    def register(question: Question, candidate: _Candidate) -> None:
+        type_counts[(question.set, question.type)].update(candidate.subjects)
+        set_counts[question.set].update(candidate.subjects)
+
+    for question in order:
+        if question.id not in reasons:
+            register(question, resolved[question.id])
+
+    replacements: dict[str, tuple[Question, _Candidate]] = {}
+
+    def replace_all(kind: str) -> None:
+        pending = sorted(qid for qid in reasons if by_id[qid].set == kind)
+        for qid in pending:
+            if qid in replacements:
+                continue
+            original = by_id[qid]
+            candidate = _pick_replacement(
+                eligible.get(original.type, ()),
+                set_name=original.set,
+                question_type=original.type,
+                random_seed=random_seed,
+                used_keys=used_keys,
+                gold_answer_facts=frozenset(gold_facts()),
+                type_counts=type_counts[(original.set, original.type)],
+                set_counts=set_counts[original.set],
+            )
+            used_keys.add(candidate.key)
+            asker = _replacement_asker(
+                candidate, people, docs, random_seed=random_seed, qid=qid
+            )
+            fresh = _question_from_candidate(
+                candidate, qid=qid, set_name=original.set, asker=asker
+            )
+            replacements[qid] = (fresh, candidate)
+            type_counts[(original.set, original.type)].update(candidate.subjects)
+            set_counts[original.set].update(candidate.subjects)
+
+    def survivor_or_replacement(qid: str) -> _Candidate | None:
+        if qid in replacements:
+            return replacements[qid][1]
+        return None if qid in reasons else resolved[qid]
+
+    def gold_facts() -> set[str]:
+        facts: set[str] = set()
+        for qid, question in by_id.items():
+            if question.set != "gold":
+                continue
+            candidate = survivor_or_replacement(qid)
+            if candidate is not None:
+                facts.update(candidate.answer_fact_ids)
+        return facts
+
+    replace_all("gold")
+    shared = gold_facts()
+    for question in order:
+        if question.set != "silver" or question.id in reasons:
+            continue
+        if shared.intersection(resolved[question.id].answer_fact_ids):
+            reasons[question.id] = ["silver_shares_gold_fact"]
+            for counter in (
+                type_counts[(question.set, question.type)],
+                set_counts[question.set],
+            ):
+                counter.subtract(resolved[question.id].subjects)
+    replace_all("silver")
+
+    final: dict[str, tuple[Question, _Candidate]] = {}
+    for question in existing:
+        if question.id in replacements:
+            final[question.id] = replacements[question.id]
+        else:
+            final[question.id] = (recomputed[question.id], resolved[question.id])
+
+    validation_errors: list[str] = []
+    for question, _ in final.values():
+        errors = validate_question(
+            replace(question, question="명세 단계 빈 질문 허용"),
+            docs=docs,
+            regulation_index={},
+            table_ids=set(),
+        )
+        if errors:
+            validation_errors.append(f"{question.id}: {','.join(errors)}")
+    if validation_errors:
+        raise SpecBuildError("validation errors: " + "; ".join(validation_errors))
+
+    gold_by_type: dict[str, list[_Candidate]] = {}
+    silver_by_type: dict[str, list[_Candidate]] = {}
+    for question, candidate in final.values():
+        target = gold_by_type if question.set == "gold" else silver_by_type
+        target.setdefault(question.type, []).append(candidate)
+    gold_types = [t for t in QUESTION_TYPES if GOLD_QUOTA.get((t, "synthetic"), 0)]
+    gold_by_type = {t: gold_by_type.get(t, []) for t in gold_types}
+    silver_by_type = {t: silver_by_type.get(t, []) for t in SILVER_QUOTA}
+    selected_gold = [c for t in gold_by_type for c in gold_by_type[t]]
+    gold_keys = {candidate.key for candidate in selected_gold}
+    gold_answer_facts = {f for c in selected_gold for f in c.answer_fact_ids}
+    candidate_counts: dict[str, dict[str, int]] = {
+        "gold": {t: len(eligible.get(t, [])) for t in gold_types},
+        "silver": {
+            t: sum(
+                1
+                for c in eligible[t]
+                if c.key not in gold_keys
+                and gold_answer_facts.isdisjoint(c.answer_fact_ids)
+            )
+            for t in SILVER_QUOTA
+        },
+    }
+    build = _BuildResult(
+        [question for question, _ in final.values()],
+        candidate_counts,
+        rejected,
+        _diversity_summary(gold_by_type, silver_by_type),
+    )
+    qrels_changed = tuple(
+        sorted(
+            qid
+            for qid, question in by_id.items()
+            if qid not in reasons and recomputed[qid].qrels != question.qrels
+        )
+    )
+    return SyncResult(
+        questions=build.questions,
+        qrels_changed=qrels_changed,
+        replaced={qid: tuple(reasons[qid]) for qid in sorted(reasons)},
+        build=build,
+    )
+
+
+@dataclass(frozen=True)
+class _SyncContext:
+    seed: Seed
+    docs: Mapping[str, Mapping[str, object]]
+    index: Mapping[str, Sequence[tuple[str, int, int]]]
+    document_fact_ids: Mapping[str, frozenset[str]]
+    people_by_id: Mapping[str, Person]
+    facts_by_subject: Mapping[str, tuple[Fact, ...]]
+
+
+def _answer_fact_ids(question: Question) -> tuple[str, ...]:
+    if question.type in {"sql", "unanswerable"}:
+        return ()
+    if question.type == "permission":
+        return tuple(q.fact_id for q in question.qrels[:1] if q.fact_id)
+    return tuple(
+        sorted({q.fact_id for q in question.qrels if q.rel == 2 and q.fact_id})
+    )
+
+
+def _loose_key(
+    question_type: str,
+    anchor_values: tuple[str, ...],
+    fact_ids: Sequence[str],
+    as_of: str | None,
+    temporal_mode: str | None,
+    discriminator: str,
+) -> tuple[object, ...]:
+    keep = discriminator if question_type in {"permission", "sql"} else ""
+    return (
+        question_type,
+        anchor_values,
+        tuple(sorted(fact_ids)),
+        as_of or "",
+        temporal_mode or "",
+        keep,
+    )
+
+
+def _candidate_loose_key(candidate: _Candidate) -> tuple[object, ...]:
+    return _loose_key(
+        candidate.type,
+        candidate.anchor_values,
+        candidate.answer_fact_ids,
+        candidate.as_of,
+        candidate.temporal_mode,
+        candidate.discriminator,
+    )
+
+
+def _question_loose_key(question: Question) -> tuple[object, ...]:
+    if question.type == "permission":
+        discriminator = question.qrels[0].doc_id if question.qrels else ""
+    elif question.type == "sql":
+        discriminator = question.anchor_values[0] if question.anchor_values else ""
+    else:
+        discriminator = ""
+    return _loose_key(
+        question.type,
+        question.anchor_values,
+        _answer_fact_ids(question),
+        question.as_of,
+        "event" if question.type == "temporal" else None,
+        discriminator,
+    )
+
+
+def _resync_question(
+    question: Question, context: _SyncContext
+) -> tuple[Question, list[str]]:
+    """Recompute evidence for one question and re-check its conditions."""
+    seed, docs, index = context.seed, context.docs, context.index
+    reasons: list[str] = []
+    updated = question
+    fact_ids = _answer_fact_ids(question)
+    if question.type == "permission":
+        updated = _resync_permission(question, docs, reasons)
+    elif question.type == "unanswerable":
+        updated = _resync_unanswerable(question, context, reasons)
+    elif question.type != "sql":
+        unknown = [fact_id for fact_id in fact_ids if fact_id not in seed.facts]
+        if not fact_ids or unknown:
+            reasons.append("unknown_answer_fact")
+        else:
+            unmarked: set[str] = set()
+            for fact_id in fact_ids:
+                marked = {doc_id for doc_id, _, _ in index.get(fact_id, ())}
+                unmarked.update(
+                    unmarked_mentions(
+                        seed.facts[fact_id], docs, context.people_by_id, marked
+                    )
+                )
+            updated = replace(
+                question,
+                qrels=build_qrels(fact_ids, seed=seed, docs=docs, index=index),
+                unmarked_candidates=tuple(sorted(unmarked)),
+            )
+            reasons.extend(_fact_type_reasons(question, fact_ids, context))
+    errors = validate_question(
+        replace(updated, question="명세 단계 빈 질문 허용"),
+        docs=docs,
+        regulation_index={},
+        table_ids=set(),
+    )
+    reasons.extend(f"validate:{code}" for code in errors)
+    return updated, reasons
+
+
+def _resync_permission(
+    question: Question,
+    docs: Mapping[str, Mapping[str, object]],
+    reasons: list[str],
+) -> Question:
+    if not question.qrels:
+        reasons.append("permission_canary_missing")
+        return question
+    doc_id = question.qrels[0].doc_id
+    canary = docs.get(doc_id, {}).get("canary")
+    if not isinstance(canary, Mapping):
+        reasons.append("permission_canary_missing")
+        return question
+    fact_id, start, end = canary.get("fact_id"), canary.get("start"), canary.get("end")
+    if (
+        not isinstance(fact_id, str)
+        or not isinstance(start, int)
+        or not isinstance(end, int)
+    ):
+        reasons.append("permission_canary_invalid")
+        return question
+    return replace(question, qrels=(_span_qrel(doc_id, 2, fact_id, start, end, docs),))
+
+
+def _resync_unanswerable(
+    question: Question, context: _SyncContext, reasons: list[str]
+) -> Question:
+    subject = question.anchor_values[0] if question.anchor_values else ""
+    subject_facts = context.facts_by_subject.get(subject, ())
+    bodies = [
+        body
+        for document in context.docs.values()
+        if isinstance((body := document.get("body")), str)
+    ]
+    seed_any = docs_any = both_any = False
+    for _, _, keywords, seed_attributes in _NO_ANSWER_ATTRIBUTES:
+        seed_ok = not any(
+            fact.kind == "count" or _attribute(fact) in seed_attributes
+            for fact in subject_facts
+        )
+        docs_ok = not any(
+            subject in body and any(keyword in body for keyword in keywords)
+            for body in bodies
+        )
+        seed_any, docs_any = seed_any or seed_ok, docs_any or docs_ok
+        both_any = both_any or (seed_ok and docs_ok)
+    if not both_any:
+        reasons.append("unanswerable_now_answerable")
+    previous = question.no_answer_checks or {}
+    return replace(
+        question,
+        no_answer_checks={
+            "seed": seed_any,
+            "docs": docs_any,
+            "real": previous.get("real"),
+        },
+    )
+
+
+def _fact_type_reasons(
+    question: Question, fact_ids: tuple[str, ...], context: _SyncContext
+) -> list[str]:
+    reasons: list[str] = []
+    if question.type == "multi_doc" and any(
+        set(fact_ids).issubset(doc_facts)
+        for doc_facts in context.document_fact_ids.values()
+    ):
+        reasons.append("multi_doc_single_document")
+    if question.type == "semantic" and len(fact_ids) == 1:
+        anchor = question.anchor_values[0] if question.anchor_values else ""
+        if len(_semantic_group(anchor, _attribute_id(fact_ids[0]), context)) != 1:
+            reasons.append("semantic_ambiguous_subject_attribute")
+    if question.type == "temporal":
+        service = question.anchor_values[0] if question.anchor_values else ""
+        attribute = _attribute_id(fact_ids[0]) if len(fact_ids) == 1 else ""
+        group = [
+            fact
+            for fact in context.seed.facts.values()
+            if fact.kind == "text"
+            and fact.date is not None
+            and context.index.get(fact.fact_id)
+            and _service_for_subject(context.seed, fact.subject) == service
+            and _attribute(fact) == attribute
+        ]
+        if len(fact_ids) != 1 or len(group) < 2:
+            reasons.append("temporal_insufficient_candidates")
+        else:
+            date_of = context.seed.facts[fact_ids[0]].date
+            if sum(fact.date == date_of for fact in group) != 1:
+                reasons.append("temporal_date_not_unique")
+    return reasons
+
+
+def _semantic_group(anchor: str, attribute: str, context: _SyncContext) -> list[Fact]:
+    seed = context.seed
+    person_ids = {p.person_id for p in seed.people if p.name == anchor}
+    is_service = anchor in {service.name for service in seed.services}
+    group: list[Fact] = []
+    for fact in seed.facts.values():
+        if (
+            fact.kind != "text"
+            or not context.index.get(fact.fact_id)
+            or _attribute(fact) != attribute
+        ):
+            continue
+        if is_service:
+            member = _service_for_subject(seed, fact.subject) == anchor
+        else:
+            owners = _person_ids_for_subject(context.facts_by_subject[fact.subject])
+            member = bool(person_ids.intersection(owners))
+        if member:
+            group.append(fact)
+    return group
+
+
+def _rank_key(random_seed: int):
+    def rank(candidate: _Candidate) -> str:
+        material = f"{random_seed}:{candidate.key!r}"
+        return hashlib.sha256(material.encode("utf-8")).hexdigest()
+
+    return rank
+
+
+def _pick_replacement(
+    pool: Sequence[_Candidate],
+    *,
+    set_name: str,
+    question_type: str,
+    random_seed: int,
+    used_keys: set[tuple[object, ...]] | frozenset[tuple[object, ...]],
+    gold_answer_facts: frozenset[str],
+    type_counts: Counter[str],
+    set_counts: Counter[str],
+) -> _Candidate:
+    """Take the first candidate by per-candidate hash that fits every rule."""
+    type_cap, set_cap = DIVERSITY_CAPS[set_name]
+    for candidate in sorted(pool, key=_rank_key(random_seed)):
+        if candidate.key in used_keys:
+            continue
+        if set_name == "silver" and not gold_answer_facts.isdisjoint(
+            candidate.answer_fact_ids
+        ):
+            continue
+        if any(
+            type_counts[s] >= type_cap or set_counts[s] >= set_cap
+            for s in candidate.subjects
+        ):
+            continue
+        return candidate
+    raise SpecBuildError(
+        f"no replacement candidate: set={set_name} type={question_type}"
+    )
+
+
+def _replacement_asker(
+    candidate: _Candidate,
+    people: Sequence[Person],
+    docs: Mapping[str, Mapping[str, object]],
+    *,
+    random_seed: int,
+    qid: str,
+) -> Asker:
+    eligible = _eligible_people(candidate, people, docs)
+    if not eligible:
+        raise SpecBuildError(f"no eligible asker for candidate: {candidate.key}")
+    material = f"{random_seed}:asker:{qid}".encode()
+    person = random.Random(int(hashlib.sha256(material).hexdigest(), 16)).choice(
+        eligible
+    )
+    return Asker(team=person.team, grade=person.grade)
+
+
+def _invalidate_drafts(root: Path, ids: Iterable[str]) -> int:
+    """Drop validated drafts of replaced specs so drafting picks them up again."""
+    targets = set(ids)
+    path = root / VALIDATED_PATH
+    if not targets or not path.exists():
+        return 0
+    drafted = load_questions(path)
+    kept = [question for question in drafted if question.id not in targets]
+    removed = len(drafted) - len(kept)
+    if removed:
+        write_questions(path, kept)
+    return removed
+
+
+def run(root: Path, *, reselect: bool = False, print_fn=print) -> int:
+    """Sync existing specifications to the corpus, or select from scratch."""
     root = root.resolve()
     try:
         seed = load_seed(root)
@@ -271,21 +763,46 @@ def run(root: Path, *, print_fn=print) -> int:
         if not isinstance(db_content_hash, str) or not db_content_hash:
             raise SpecBuildError("synth_db manifest has no content_hash")
         rows = build_rows(seed)
-        result = _build_specs_result(
-            seed,
-            docs,
-            db_rows=rows,
-            db_content_hash=db_content_hash,
-            random_seed=int(seed.company["random_seed"]),
-        )
+        random_seed = int(seed.company["random_seed"])
         specs_path = root / SPECS_PATH
         summary_path = root / SUMMARY_PATH
+        sync: SyncResult | None = None
+        if specs_path.exists() and not reselect:
+            sync = sync_specs(
+                load_questions(specs_path),
+                seed,
+                docs,
+                db_rows=rows,
+                db_content_hash=db_content_hash,
+                random_seed=random_seed,
+            )
+            result = sync.build
+        else:
+            result = _build_specs_result(
+                seed,
+                docs,
+                db_rows=rows,
+                db_content_hash=db_content_hash,
+                random_seed=random_seed,
+            )
+        invalidated = _invalidate_drafts(root, sync.replaced) if sync else 0
         write_questions(specs_path, sorted(result.questions, key=lambda item: item.id))
         summary = _summary(root, result, docs, db_content_hash)
+        if sync is not None and (sync.qrels_changed or sync.replaced):
+            summary["sync"] = {
+                "qrels_changed": list(sync.qrels_changed),
+                "replaced": {qid: list(why) for qid, why in sync.replaced.items()},
+            }
         _write_json(summary_path, summary)
     except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
         print_fn(f"golden specs failed: {exc}")
         return 1
+    if sync is not None:
+        print_fn(f"qrels changed: {len(sync.qrels_changed)} {list(sync.qrels_changed)}")
+        print_fn(f"replaced: {len(sync.replaced)}")
+        for qid, why in sync.replaced.items():
+            print_fn(f"  {qid}: {', '.join(why)}")
+        print_fn(f"drafts invalidated: {invalidated}")
     print_fn(
         f"wrote {len(result.questions)} specifications to "
         f"{_display_path(specs_path, root)}"
@@ -297,8 +814,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     """CLI entry point for ``python -m kodocs.eval.golden_specs``."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
+    parser.add_argument(
+        "--reselect",
+        action="store_true",
+        help="ignore existing specs and select every question from scratch",
+    )
     args = parser.parse_args(argv)
-    return run(args.root)
+    return run(args.root, reselect=args.reselect)
 
 
 def _candidate_pools(
@@ -717,27 +1239,11 @@ def _build_specs_result(
     db_content_hash: str,
     random_seed: int,
 ) -> _BuildResult:
-    index = fact_index(docs)
-    pools, rejected = _candidate_pools(seed, docs, index)
-    pools["sql"] = _sql_candidates(db_rows, db_content_hash)
+    eligible, rejected = _eligible_pools(
+        seed, docs, db_rows=db_rows, db_content_hash=db_content_hash
+    )
     people = tuple(sorted(seed.people, key=lambda item: item.person_id))
-
-    eligible: dict[str, list[_Candidate]] = {}
-    for question_type, candidates in pools.items():
-        accepted: list[_Candidate] = []
-        for candidate in candidates:
-            if _eligible_people(candidate, people, docs):
-                accepted.append(candidate)
-            else:
-                rejected[f"{question_type}_no_eligible_asker"] += 1
-        eligible[question_type] = accepted
-
-    eligible = {
-        question_type: [_annotate_subjects(c, seed, docs) for c in candidates]
-        for question_type, candidates in eligible.items()
-    }
     candidate_counts: dict[str, dict[str, int]] = {"gold": {}, "silver": {}}
-    diversity: dict[str, dict[str, dict[str, int]]] = {"gold": {}, "silver": {}}
     totals: dict[str, Counter[str]] = {"gold": Counter(), "silver": Counter()}
 
     def by_scarcity(quotas: Mapping[str, int], pools: Mapping[str, list]) -> list[str]:
@@ -766,7 +1272,6 @@ def _build_specs_result(
             set_cap=set_cap,
             set_counts=totals["gold"],
         )
-        diversity["gold"][question_type] = _diversity(gold_by_type[question_type])
     selected_gold = [c for t in QUESTION_TYPES for c in gold_by_type.get(t, [])]
 
     gold_answer_facts = {
@@ -799,12 +1304,119 @@ def _build_specs_result(
             set_counts=totals["silver"],
             avoid=gold_subjects,
         )
-        diversity["silver"][question_type] = _diversity(silver_by_type[question_type])
     selected_silver = [c for t in SILVER_QUOTA for c in silver_by_type[t]]
+    diversity_summary = _diversity_summary(
+        {t: gold_by_type[t] for t in gold_by_type},
+        {t: silver_by_type[t] for t in SILVER_QUOTA},
+    )
+
+    questions: list[Question] = []
+    ordinal = 0
+    for set_name, selected, prefix in (
+        ("gold", selected_gold, "g-syn"),
+        ("silver", selected_silver, "s-syn"),
+    ):
+        for set_number, candidate in enumerate(selected, start=1):
+            ordinal += 1
+            asker = _choose_asker(
+                candidate,
+                people,
+                docs,
+                random_seed=random_seed,
+                ordinal=ordinal,
+            )
+            questions.append(
+                _question_from_candidate(
+                    candidate,
+                    qid=f"{prefix}-{set_number:03d}",
+                    set_name=set_name,
+                    asker=asker,
+                )
+            )
+
+    validation_errors: list[str] = []
+    for question in questions:
+        errors = validate_question(
+            replace(question, question="명세 단계 빈 질문 허용"),
+            docs=docs,
+            regulation_index={},
+            table_ids=set(),
+        )
+        if errors:
+            validation_errors.append(f"{question.id}: {','.join(errors)}")
+    if validation_errors:
+        raise SpecBuildError("validation errors: " + "; ".join(validation_errors))
+    return _BuildResult(questions, candidate_counts, rejected, diversity_summary)
+
+
+def _eligible_pools(
+    seed: Seed,
+    docs: Mapping[str, Mapping[str, object]],
+    *,
+    db_rows: Mapping[str, Sequence[Mapping[str, object]]],
+    db_content_hash: str,
+) -> tuple[dict[str, list[_Candidate]], Counter[str]]:
+    index = fact_index(docs)
+    pools, rejected = _candidate_pools(seed, docs, index)
+    pools["sql"] = _sql_candidates(db_rows, db_content_hash)
+    people = tuple(sorted(seed.people, key=lambda item: item.person_id))
+    eligible: dict[str, list[_Candidate]] = {}
+    for question_type, candidates in pools.items():
+        accepted: list[_Candidate] = []
+        for candidate in candidates:
+            if _eligible_people(candidate, people, docs):
+                accepted.append(_annotate_subjects(candidate, seed, docs))
+            else:
+                rejected[f"{question_type}_no_eligible_asker"] += 1
+        eligible[question_type] = accepted
+    return eligible, rejected
+
+
+def _question_from_candidate(
+    candidate: _Candidate, *, qid: str, set_name: str, asker: Asker
+) -> Question:
+    return Question(
+        id=qid,
+        set=set_name,
+        source="synthetic",
+        type=candidate.type,
+        tags=candidate.tags,
+        question="",
+        asker=asker,
+        as_of=candidate.as_of,
+        qrels=candidate.qrels,
+        anchor_values=candidate.anchor_values,
+        answer_values=candidate.answer_values,
+        expected_response=candidate.expected_response,
+        sql=candidate.sql,
+        reference_answer=candidate.reference_answer,
+        reference_sha256=None,
+        summary80=None,
+        split=None,
+        unmarked_candidates=candidate.unmarked_candidates,
+        no_answer_checks=candidate.no_answer_checks,
+    )
+
+
+def _diversity_summary(
+    gold_by_type: Mapping[str, Sequence[_Candidate]],
+    silver_by_type: Mapping[str, Sequence[_Candidate]],
+) -> dict[str, object]:
+    selected_gold = [c for t in QUESTION_TYPES for c in gold_by_type.get(t, ())]
+    selected_silver = [c for t in SILVER_QUOTA for c in silver_by_type.get(t, ())]
+    totals = {
+        "gold": Counter(s for c in selected_gold for s in c.subjects),
+        "silver": Counter(s for c in selected_silver for s in c.subjects),
+    }
+    gold_subjects = frozenset(s for c in selected_gold for s in c.subjects)
     silver_touching_gold = [
         c for c in selected_silver if gold_subjects.intersection(c.subjects)
     ]
-    diversity_summary: dict[str, object] = {
+    diversity = {
+        "gold": {t: _diversity(c) for t, c in gold_by_type.items()},
+        "silver": {t: _diversity(c) for t, c in silver_by_type.items()},
+    }
+    return {
         "diversity": {k: dict(sorted(v.items())) for k, v in diversity.items()},
         "diversity_totals": {
             set_name: {
@@ -824,59 +1436,6 @@ def _build_specs_result(
             "silver_questions": len(silver_touching_gold),
         },
     }
-
-    questions: list[Question] = []
-    ordinal = 0
-    for set_name, selected, prefix in (
-        ("gold", selected_gold, "g-syn"),
-        ("silver", selected_silver, "s-syn"),
-    ):
-        for set_number, candidate in enumerate(selected, start=1):
-            ordinal += 1
-            asker = _choose_asker(
-                candidate,
-                people,
-                docs,
-                random_seed=random_seed,
-                ordinal=ordinal,
-            )
-            questions.append(
-                Question(
-                    id=f"{prefix}-{set_number:03d}",
-                    set=set_name,
-                    source="synthetic",
-                    type=candidate.type,
-                    tags=candidate.tags,
-                    question="",
-                    asker=asker,
-                    as_of=candidate.as_of,
-                    qrels=candidate.qrels,
-                    anchor_values=candidate.anchor_values,
-                    answer_values=candidate.answer_values,
-                    expected_response=candidate.expected_response,
-                    sql=candidate.sql,
-                    reference_answer=candidate.reference_answer,
-                    reference_sha256=None,
-                    summary80=None,
-                    split=None,
-                    unmarked_candidates=candidate.unmarked_candidates,
-                    no_answer_checks=candidate.no_answer_checks,
-                )
-            )
-
-    validation_errors: list[str] = []
-    for question in questions:
-        errors = validate_question(
-            replace(question, question="명세 단계 빈 질문 허용"),
-            docs=docs,
-            regulation_index={},
-            table_ids=set(),
-        )
-        if errors:
-            validation_errors.append(f"{question.id}: {','.join(errors)}")
-    if validation_errors:
-        raise SpecBuildError("validation errors: " + "; ".join(validation_errors))
-    return _BuildResult(questions, candidate_counts, rejected, diversity_summary)
 
 
 def _fact_candidate(
@@ -1046,7 +1605,11 @@ def _person_ids_for_subject(facts: Sequence[Fact]) -> tuple[str, ...]:
 
 
 def _attribute(fact: Fact) -> str:
-    return fact.fact_id.rsplit("-", 1)[-1]
+    return _attribute_id(fact.fact_id)
+
+
+def _attribute_id(fact_id: str) -> str:
+    return fact_id.rsplit("-", 1)[-1]
 
 
 def _answer_forms(fact: Fact, people: Mapping[str, Person]) -> tuple[str, ...]:

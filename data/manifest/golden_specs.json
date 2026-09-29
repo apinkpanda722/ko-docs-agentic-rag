@@ -1,19 +1,19 @@
 {
   "candidates": {
     "gold": {
-      "identifier": 214,
-      "multi_doc": 4895,
+      "identifier": 215,
+      "multi_doc": 4909,
       "permission": 30,
-      "semantic": 93,
+      "semantic": 92,
       "sql": 6,
       "unanswerable": 67
     },
     "silver": {
-      "identifier": 202,
-      "multi_doc": 4314,
+      "identifier": 203,
+      "multi_doc": 4329,
       "permission": 25,
-      "semantic": 84,
-      "temporal": 87,
+      "semantic": 83,
+      "temporal": 89,
       "unanswerable": 64
     }
   },
@@ -76,7 +76,7 @@
         "max_per_subject": 1
       },
       "semantic": {
-        "distinct_subjects": 32,
+        "distinct_subjects": 31,
         "max_per_subject": 2
       },
       "temporal": {
@@ -115,7 +115,7 @@
   },
   "inputs": {
     "db_content_hash": "1d59c69de93c8923c3084b017335dfa0ec21840a0eac357b2ba4b61d5247f10e",
-    "docs_sha256": "1cef743dbcd167bcedf35d3010697c2f9b0cfec1165293237980adb145e57331",
+    "docs_sha256": "ad2dfaca9f6c80aaff3f335fd84db89a6a7a2771d88087082bb852d0b7eddb10",
     "seed_files_sha256": {
       "data/seed/banned_names.yaml": "8a41f838f46c85826b72157e6aa2aa8d7dcd62029046e85212be629dfa904231",
       "data/seed/company.yaml": "36c4f0caf022328db9e2cf80f23d03d681041b78f041d09c7141d7eab71e7dba",
@@ -169,10 +169,20 @@
     }
   },
   "rejected_candidates": {
-    "multi_doc_one_document_has_all_facts": 1430,
-    "semantic_ambiguous_subject_attribute": 185,
-    "temporal_without_multiple_candidates": 43,
+    "multi_doc_one_document_has_all_facts": 1450,
+    "semantic_ambiguous_subject_attribute": 189,
+    "temporal_without_multiple_candidates": 42,
     "unanswerable_docs_have_subject_and_keyword": 7
+  },
+  "sync": {
+    "qrels_changed": [
+      "g-syn-016"
+    ],
+    "replaced": {
+      "s-syn-049": [
+        "semantic_ambiguous_subject_attribute"
+      ]
+    }
   },
   "tags": {
     "canary": 20,

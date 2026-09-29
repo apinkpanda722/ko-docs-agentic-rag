@@ -628,7 +628,15 @@ def _date_forms(value: str) -> tuple[str, ...]:
 
 def _draft_history(root: Path) -> dict[str, dict[int, dict[str, object]]]:
     history: dict[str, dict[int, dict[str, object]]] = defaultdict(dict)
-    for record in load_records(root / DRAFT_LOG):
+    records = load_records(root / DRAFT_LOG)
+    stale = {
+        record.get("custom_id")
+        for record in records
+        if record.get("status") == "stale_spec"
+    }
+    for record in records:
+        if record.get("custom_id") in stale:
+            continue
         spec_id = record.get("id")
         attempt = record.get("attempt")
         if isinstance(spec_id, str) and isinstance(attempt, int) and attempt >= 1:
@@ -640,6 +648,8 @@ def _draft_history(root: Path) -> dict[str, dict[int, dict[str, object]]]:
         payload = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(payload, dict):
             raise TypeError(f"초안 캐시는 객체여야 합니다: {path}")
+        if payload.get("custom_id") in stale:
+            continue
         spec_id = payload.get("id")
         attempt = payload.get("attempt")
         if isinstance(spec_id, str) and isinstance(attempt, int) and attempt >= 1:
@@ -941,6 +951,26 @@ def _collect_batch(
                 if logged is not None and isinstance(logged.get("cache_key"), str)
                 else request.cache_key
             )
+            if (
+                logged is not None
+                and logged.get("prompt_sha256")
+                != _request_metadata(request, config=config)["prompt_sha256"]
+            ):
+                _append_draft_log(
+                    root,
+                    {
+                        **metadata,
+                        "id": spec_id,
+                        "attempt": attempt,
+                        "custom_id": result.custom_id,
+                        "cache_key": cache_key,
+                        "batch_id": batch_id,
+                        "status": "stale_spec",
+                        "ts": _utc_now(),
+                    },
+                )
+                _progress(print_fn, index, len(results), "결과 저장")
+                continue
             cache_path = root / DRAFTS_DIR / f"{result.custom_id}.json"
             if cache_path.exists():
                 cache = json.loads(cache_path.read_text(encoding="utf-8"))

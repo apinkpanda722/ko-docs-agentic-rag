@@ -717,3 +717,63 @@ def test_main_constructs_client_with_golden_only_manifest(
     assert captured["manifest_path"] != tmp_path / Path(
         "data/manifest/anthropic_batches.jsonl"
     )
+
+
+def test_draft_written_for_an_older_spec_is_stale_and_costs_no_attempt(
+    tmp_path: Path,
+    specs: Sequence[Question],
+    seed: Seed,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    old = _by_id(specs, "g-syn-010")
+    current = replace(old, anchor_values=("core-gateway",))
+    _write_specs(tmp_path, [current])
+    monkeypatch.setattr(query_draft, "load_seed", lambda _root: seed)
+    request = build_request(old, config=_config(), attempt=1)
+    query_draft._append_draft_log(
+        tmp_path,
+        {
+            **query_draft._request_metadata(request, config=_config()),
+            "id": old.id,
+            "attempt": 1,
+            "custom_id": request.custom_id,
+            "cache_key": request.cache_key,
+            "batch_id": "batch-old",
+            "status": "submitted",
+            "ts": "2026-09-28T00:00:00+00:00",
+        },
+    )
+    client = FakeClient(
+        opened=[{"batch_id": "batch-old"}],
+        statuses={"batch-old": _status("ended")},
+        results={
+            "batch-old": [
+                _result(f"{old.id}-a1", "analytics-hub의 담당 팀은 어디인가요?")
+            ]
+        },
+    )
+
+    assert (
+        run(
+            tmp_path,
+            client=client,  # type: ignore[arg-type]
+            config=_config(),
+            dry_run=False,
+            assume_yes=True,
+            limit=None,
+            print_fn=lambda *args, **kwargs: None,
+        )
+        == 0
+    )
+
+    log = [
+        json.loads(line)
+        for line in (tmp_path / DRAFT_LOG).read_text(encoding="utf-8").splitlines()
+    ]
+    assert [r["status"] for r in log] == ["submitted", "stale_spec"]
+    assert not (tmp_path / FAILURES_PATH).exists()
+    assert not (tmp_path / DRAFTS_DIR / f"{old.id}-a1.json").exists()
+    assert load_questions(tmp_path / VALIDATION_PATH) == []
+    assert client.mark_collected_calls == ["batch-old"]
+    pending = pending_specs(tmp_path, [current], config=_config())
+    assert [(spec.id, attempt) for spec, attempt in pending] == [(old.id, 1)]

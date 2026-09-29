@@ -16,6 +16,7 @@ from kodocs.eval.golden import (
     GOLD_QUOTA,
     SILVER_QUOTA,
     load_questions,
+    question_to_dict,
     validate_question,
 )
 from kodocs.synth.seed import Fact, Person, Seed, Service
@@ -588,3 +589,421 @@ def test_actual_repository_specs_meet_quotas_validate_and_are_deterministic(
         assert summary["diversity_totals"][set_name]["max_per_subject"] <= set_cap
     assert set(summary["gold_silver_overlap"]) == {"subjects", "silver_questions"}
     assert summary["rejected_candidates"]
+
+
+# ---------------------------------------------------------------------------
+# Sync mode: keep the committed 180 selections, recompute only derived fields.
+# ---------------------------------------------------------------------------
+
+_PRESERVED = (
+    "type",
+    "tags",
+    "asker",
+    "as_of",
+    "anchor_values",
+    "answer_values",
+    "expected_response",
+    "sql",
+)
+_EMPTY_ROWS = {"tickets": [], "approvals": []}
+
+
+def _pools(seed: Seed, docs: dict[str, dict[str, object]]):
+    index = golden_specs.fact_index(docs)
+    pools, _ = golden_specs._candidate_pools(seed, docs, index)
+    pools["sql"] = golden_specs._sql_candidates(_EMPTY_ROWS, "db-hash")
+    return pools
+
+
+def _spec(seed: Seed, docs, *, qid: str, set_name: str, qtype: str, pick) -> object:
+    """Build one existing spec from the first pool candidate matching ``pick``."""
+    people = tuple(sorted(seed.people, key=lambda item: item.person_id))
+    candidate = next(c for c in _pools(seed, docs)[qtype] if pick(c))
+    candidate = golden_specs._annotate_subjects(candidate, seed, docs)
+    asker = golden_specs._choose_asker(
+        candidate, people, docs, random_seed=7, ordinal=len(qid)
+    )
+    return golden_specs._question_from_candidate(
+        candidate, qid=qid, set_name=set_name, asker=asker
+    )
+
+
+def _sync(existing, seed: Seed, docs):
+    return golden_specs.sync_specs(
+        existing,
+        seed,
+        docs,
+        db_rows=_EMPTY_ROWS,
+        db_content_hash="db-hash",
+        random_seed=7,
+    )
+
+
+def _fixed_fields(question) -> str:
+    payload = question_to_dict(question)
+    return json.dumps({k: payload[k] for k in _PRESERVED}, sort_keys=True)
+
+
+def _silver_specs(seed: Seed, docs) -> list:
+    return [
+        _spec(
+            seed,
+            docs,
+            qid="s-syn-001",
+            set_name="silver",
+            qtype="identifier",
+            pick=lambda c: c.answer_fact_ids == ("f-inc-cause",),
+        ),
+        _spec(
+            seed,
+            docs,
+            qid="s-syn-002",
+            set_name="silver",
+            qtype="semantic",
+            pick=lambda c: c.answer_fact_ids == ("f-service-alpha-policy",),
+        ),
+        _spec(
+            seed,
+            docs,
+            qid="s-syn-003",
+            set_name="silver",
+            qtype="temporal",
+            pick=lambda c: c.as_of == "2026-02-01",
+        ),
+        _spec(
+            seed,
+            docs,
+            qid="s-syn-004",
+            set_name="silver",
+            qtype="permission",
+            pick=lambda c: True,
+        ),
+        _spec(
+            seed,
+            docs,
+            qid="s-syn-005",
+            set_name="silver",
+            qtype="unanswerable",
+            pick=lambda c: c.anchor_values == ("INC-2026-001",),
+        ),
+    ]
+
+
+def test_sync_adding_a_document_keeps_question_defining_fields_byte_identical(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    existing = _silver_specs(tiny_seed, tiny_docs)
+    docs = {
+        **tiny_docs,
+        "doc-new": _document("doc-new", [("f-inc-cause", "잠금 경합이 원인이었다.")]),
+    }
+
+    result = _sync(existing, tiny_seed, docs)
+
+    assert result.replaced == {}
+    assert [q.id for q in result.questions] == [q.id for q in existing]
+    before = {q.id: _fixed_fields(q) for q in existing}
+    assert {q.id: _fixed_fields(q) for q in result.questions} == before
+    # Only the question whose answer fact gained a span changes its qrels.
+    assert result.qrels_changed == ("s-syn-001",)
+    changed = next(q for q in result.questions if q.id == "s-syn-001")
+    assert ("doc-new", 2) in {(x.doc_id, x.rel) for x in changed.qrels}
+    for question in result.questions:
+        assert not validate_question(
+            replace(question, question="명세 단계 빈 질문 허용"),
+            docs=docs,
+            regulation_index={},
+            table_ids=set(),
+        )
+
+
+def test_sync_without_corpus_change_reproduces_the_existing_specs(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    existing = _silver_specs(tiny_seed, tiny_docs)
+
+    result = _sync(existing, tiny_seed, tiny_docs)
+
+    assert result.replaced == {}
+    assert result.qrels_changed == ()
+    assert result.questions == existing
+
+
+def test_sync_replaces_only_the_question_that_breaks_a_condition(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    pair = _spec(
+        tiny_seed,
+        tiny_docs,
+        qid="s-syn-006",
+        set_name="silver",
+        qtype="multi_doc",
+        pick=lambda c: set(c.answer_fact_ids) == {"f-inc-cause", "f-inc-action"},
+    )
+    existing = [*_silver_specs(tiny_seed, tiny_docs), pair]
+    docs = {
+        **tiny_docs,
+        "doc-together": _document(
+            "doc-together",
+            [
+                ("f-inc-cause", "잠금 경합이 원인이었다."),
+                ("f-inc-action", "잠금 범위를 줄였다."),
+            ],
+        ),
+    }
+
+    result = _sync(existing, tiny_seed, docs)
+
+    assert set(result.replaced) == {"s-syn-006"}
+    assert "multi_doc_single_document" in result.replaced["s-syn-006"]
+    by_id = {q.id: q for q in result.questions}
+    replacement = by_id["s-syn-006"]
+    assert replacement.type == "multi_doc"
+    assert {q.rel for q in replacement.qrels} >= {2}
+    answer_facts = {x.fact_id for x in replacement.qrels if x.rel == 2}
+    assert not any(
+        answer_facts <= facts
+        for facts in golden_specs._document_fact_ids(docs).values()
+    )
+    assert answer_facts != {"f-inc-cause", "f-inc-action"}
+    survivors = [q for q in existing if q.id != "s-syn-006"]
+    assert {q.id: _fixed_fields(by_id[q.id]) for q in survivors} == {
+        q.id: _fixed_fields(q) for q in survivors
+    }
+
+
+def test_sync_flags_an_unanswerable_question_that_became_answerable(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    existing = _silver_specs(tiny_seed, tiny_docs)
+    docs = {
+        **tiny_docs,
+        "doc-cost": _document("doc-cost", [])
+        | {"body": "INC-2026-001 처리 비용은 영향 사용자 수 기준으로 산정했다."},
+    }
+
+    result = _sync(existing, tiny_seed, docs)
+
+    assert set(result.replaced) == {"s-syn-005"}
+    assert "unanswerable_now_answerable" in result.replaced["s-syn-005"]
+    replacement = next(q for q in result.questions if q.id == "s-syn-005")
+    assert replacement.type == "unanswerable"
+    assert replacement.anchor_values != ("INC-2026-001",)
+    assert replacement.no_answer_checks == {"seed": True, "docs": True, "real": None}
+
+
+def test_sync_replaces_a_silver_question_that_shares_a_gold_answer_fact(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    gold = _spec(
+        tiny_seed,
+        tiny_docs,
+        qid="g-syn-001",
+        set_name="gold",
+        qtype="identifier",
+        pick=lambda c: c.answer_fact_ids == ("f-inc-cause",),
+    )
+    silver = _spec(
+        tiny_seed,
+        tiny_docs,
+        qid="s-syn-001",
+        set_name="silver",
+        qtype="semantic",
+        pick=lambda c: c.answer_fact_ids == ("f-inc-cause",),
+    )
+
+    result = _sync([gold, silver], tiny_seed, tiny_docs)
+
+    assert set(result.replaced) == {"s-syn-001"}
+    assert "silver_shares_gold_fact" in result.replaced["s-syn-001"]
+    by_id = {q.id: q for q in result.questions}
+    assert by_id["g-syn-001"] == gold
+    silver_facts = {x.fact_id for x in by_id["s-syn-001"].qrels if x.rel == 2}
+    assert "f-inc-cause" not in silver_facts
+
+
+def test_sync_is_deterministic_for_the_same_input(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    pair = _spec(
+        tiny_seed,
+        tiny_docs,
+        qid="s-syn-006",
+        set_name="silver",
+        qtype="multi_doc",
+        pick=lambda c: set(c.answer_fact_ids) == {"f-inc-cause", "f-inc-action"},
+    )
+    existing = [*_silver_specs(tiny_seed, tiny_docs), pair]
+    docs = {
+        **tiny_docs,
+        "doc-together": _document(
+            "doc-together",
+            [
+                ("f-inc-cause", "잠금 경합이 원인이었다."),
+                ("f-inc-action", "잠금 범위를 줄였다."),
+            ],
+        ),
+    }
+
+    first = _sync(existing, tiny_seed, docs)
+    second = _sync(existing, tiny_seed, docs)
+
+    assert first.questions == second.questions
+    assert first.replaced == second.replaced
+    assert first.qrels_changed == second.qrels_changed
+
+
+def test_replacement_order_is_a_stable_per_candidate_hash() -> None:
+    a, b, c = _cand("a", ("INC-A",)), _cand("b", ("INC-B",)), _cand("c", ("INC-C",))
+
+    def rank(pool):
+        return [x.discriminator for x in sorted(pool, key=golden_specs._rank_key(7))]
+
+    without_c = rank([a, b])
+    with_c = [x for x in rank([a, b, c]) if x != "c"]
+
+    assert without_c == with_c
+
+
+@pytest.mark.parametrize("blocked", ["INC-A", "INC-B"])
+def test_replacement_skips_candidates_over_the_diversity_cap(blocked: str) -> None:
+    pool = [_cand("a", ("INC-A",)), _cand("b", ("INC-B",), "svc-b")]
+
+    picked = golden_specs._pick_replacement(
+        pool,
+        set_name="gold",
+        question_type="semantic",
+        random_seed=7,
+        used_keys=set(),
+        gold_answer_facts=frozenset(),
+        type_counts=Counter({blocked: 1}),
+        set_counts=Counter({blocked: 1}),
+    )
+
+    assert picked.subjects != (blocked,)
+
+
+def test_replacement_skips_used_keys_and_reports_a_shortage() -> None:
+    only = _cand("only", ("INC-A",))
+
+    with pytest.raises(golden_specs.SpecBuildError, match="replacement"):
+        golden_specs._pick_replacement(
+            [only],
+            set_name="silver",
+            question_type="semantic",
+            random_seed=7,
+            used_keys={only.key},
+            gold_answer_facts=frozenset(),
+            type_counts=Counter(),
+            set_counts=Counter(),
+        )
+
+
+def test_invalidating_drafts_makes_replaced_specs_pending_again(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]], tmp_path: Path
+) -> None:
+    from types import SimpleNamespace
+
+    from kodocs.eval import query_draft
+    from kodocs.eval.golden import write_questions
+
+    kept, replaced = _silver_specs(tiny_seed, tiny_docs)[:2]
+    drafted = [
+        replace(kept, question="INC-2026-001의 원인은 무엇인가요?"),
+        replace(replaced, question="알파 서비스 배포 절차는 무엇인가요?"),
+    ]
+    validated = tmp_path / query_draft.VALIDATION_PATH
+    write_questions(validated, drafted)
+    config = SimpleNamespace(max_attempts=3)
+    assert query_draft.pending_specs(tmp_path, [kept, replaced], config=config) == []
+
+    removed = golden_specs._invalidate_drafts(tmp_path, {replaced.id})
+
+    assert removed == 1
+    assert [q.id for q in load_questions(validated)] == [kept.id]
+    pending = query_draft.pending_specs(tmp_path, [kept, replaced], config=config)
+    assert [spec.id for spec, _ in pending] == [replaced.id]
+
+
+def test_invalidating_drafts_without_a_validated_file_is_a_no_op(
+    tmp_path: Path,
+) -> None:
+    assert golden_specs._invalidate_drafts(tmp_path, {"s-syn-001"}) == 0
+
+
+def test_run_keeps_existing_selections_and_reselect_rebuilds_them(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    specs_path = tmp_path / "specs.jsonl"
+    summary_path = tmp_path / "golden_specs.json"
+    monkeypatch.setattr(golden_specs, "SPECS_PATH", specs_path)
+    monkeypatch.setattr(golden_specs, "SUMMARY_PATH", summary_path)
+    assert golden_specs.run(ROOT, print_fn=lambda _: None) == 0
+    original = specs_path.read_bytes()
+
+    from kodocs.eval.golden import write_questions
+
+    edited = [
+        replace(q, tags=(*q.tags, "lexical_mismatch")) if q.id == "g-syn-001" else q
+        for q in load_questions(specs_path)
+    ]
+    write_questions(specs_path, edited)
+    edited_bytes = specs_path.read_bytes()
+
+    assert golden_specs.run(ROOT, print_fn=lambda _: None) == 0
+    assert specs_path.read_bytes() == edited_bytes
+
+    assert golden_specs.run(ROOT, reselect=True, print_fn=lambda _: None) == 0
+    assert specs_path.read_bytes() == original
+
+
+def test_sync_names_the_ambiguity_when_a_semantic_subject_gains_a_twin_fact(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    existing = [
+        _spec(
+            tiny_seed,
+            tiny_docs,
+            qid="s-syn-001",
+            set_name="silver",
+            qtype="semantic",
+            pick=lambda c: c.answer_fact_ids == ("f-inc-cause",),
+        )
+    ]
+    twin = Fact(
+        "f-inc2-cause",
+        "text",
+        "디스크 포화가 원인이었다.",
+        "INC-2026-002",
+        date(2026, 3, 1),
+        "normal",
+        "fixture",
+    )
+    seed = replace(
+        tiny_seed,
+        facts=MappingProxyType({**tiny_seed.facts, twin.fact_id: twin}),
+        entities=MappingProxyType(
+            {
+                **tiny_seed.entities,
+                "INC-2026-002": {
+                    "id": "INC-2026-002",
+                    "date": "2026-03-01",
+                    "service": "alpha-api",
+                    "owner_team": "platform",
+                },
+            }
+        ),
+    )
+    docs = {
+        **tiny_docs,
+        "doc-twin": _document(
+            "doc-twin", [("f-inc2-cause", "디스크 포화가 원인이었다.")]
+        ),
+    }
+
+    result = _sync(existing, seed, docs)
+
+    assert result.replaced == {"s-syn-001": ("semantic_ambiguous_subject_attribute",)}
+    assert result.questions[0].type == "semantic"
+    assert result.questions[0].id == "s-syn-001"
+    assert result.questions[0].answer_values != existing[0].answer_values
