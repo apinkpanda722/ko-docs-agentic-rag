@@ -1,0 +1,258 @@
+{
+  "attention_checks": {
+    "detected": 1,
+    "missed_ids": [
+      "001",
+      "003"
+    ],
+    "n": 3
+  },
+  "gold": {
+    "acceptance_rate": 1.0,
+    "confirmed": 50,
+    "disagree_by_item": {
+      "q1_answerable": 0,
+      "q2_qrels_complete": 0,
+      "q3_labels_correct": 0
+    },
+    "reviewed": 50
+  },
+  "inputs": {
+    "data/golden/m4_review/2026-09-29-review.csv": "85aec951f4ccd15ad1975475f2f7aef93d62f5b400e29a67ba1dd4d085058fe7",
+    "data/interim/golden/attention_checks.json": "080fb7c14cebb4c52b09a6feb8cb1d9eccb1aadd2dc1cdf0460b1683dc1fe589",
+    "data/interim/golden/claude_verdicts.jsonl": "bb3f568a500f462b110caa46e904fd4dc119420e8f38c9eac4e548093b91a1e5",
+    "data/manifest/golden_real.json": "10c62fd91e6c12ba82d6dad208381406f761bf47a93b89e7114fc1762ac32188",
+    "data/synthetic/queries/real_projection.jsonl": "845fd01117cf8a9a66e714d4be31bf84e7ade8d29516eb0f3b0fb3f6424e3863",
+    "data/synthetic/queries/validated.jsonl": "339c13bd9f96f1c19216dfdf88d96bd5a5d550c8e63ce97484f09864a0ab6fba"
+  },
+  "invalid_review_rows": [],
+  "silver_sample": {
+    "error_rate": 0.0,
+    "n": 28,
+    "negative": 0,
+    "wilson95": [
+      0.0,
+      0.1206
+    ]
+  },
+  "split": {
+    "gold": {
+      "by_type": {
+        "identifier": {
+          "dev": 3,
+          "test": 4
+        },
+        "multi_doc": {
+          "dev": 3,
+          "test": 5
+        },
+        "permission": {
+          "dev": 2,
+          "test": 3
+        },
+        "semantic": {
+          "dev": 4,
+          "test": 5
+        },
+        "sql": {
+          "dev": 2,
+          "test": 4
+        },
+        "table": {
+          "dev": 2,
+          "test": 4
+        },
+        "temporal": {
+          "dev": 2,
+          "test": 3
+        },
+        "unanswerable": {
+          "dev": 2,
+          "test": 2
+        }
+      },
+      "cross_split_docs": {
+        "doc_ids": [],
+        "n": 0
+      },
+      "groups": {
+        "max_size": 3,
+        "n": 43,
+        "size_hist": {
+          "1": 37,
+          "2": 5,
+          "3": 1
+        }
+      },
+      "h5_bundle_test_n": 13,
+      "h7": {
+        "real_n": 6,
+        "synthetic_n": 8
+      },
+      "quota_diff": {
+        "dev": {
+          "identifier": 0,
+          "multi_doc": 0,
+          "permission": 0,
+          "semantic": 0,
+          "sql": 0,
+          "table": 0,
+          "temporal": 0,
+          "unanswerable": 0
+        },
+        "test": {
+          "identifier": 0,
+          "multi_doc": 0,
+          "permission": 0,
+          "semantic": 0,
+          "sql": 0,
+          "table": 0,
+          "temporal": 0,
+          "unanswerable": 0
+        }
+      },
+      "retrieval_test_n": 21,
+      "temporal_tags": {
+        "temporal:as_of_event": {
+          "dev": 0,
+          "test": 0
+        },
+        "temporal:revision": {
+          "dev": 2,
+          "test": 3
+        }
+      },
+      "warnings": []
+    },
+    "silver": {
+      "by_type": {
+        "identifier": {
+          "dev": 10,
+          "test": 15
+        },
+        "multi_doc": {
+          "dev": 9,
+          "test": 14
+        },
+        "permission": {
+          "dev": 6,
+          "test": 9
+        },
+        "semantic": {
+          "dev": 16,
+          "test": 24
+        },
+        "temporal": {
+          "dev": 8,
+          "test": 12
+        },
+        "unanswerable": {
+          "dev": 6,
+          "test": 9
+        }
+      },
+      "cross_split_docs": {
+        "doc_ids": [
+          "syn-guide-003",
+          "syn-guide-011",
+          "syn-guide-020",
+          "syn-guide-024",
+          "syn-incident-001",
+          "syn-incident-003",
+          "syn-incident-010",
+          "syn-incident-012",
+          "syn-incident-015",
+          "syn-incident-018",
+          "syn-incident-025",
+          "syn-meeting-010",
+          "syn-meeting-014",
+          "syn-meeting-019",
+          "syn-meeting-020",
+          "syn-meeting-025",
+          "syn-meeting-026",
+          "syn-meeting-035",
+          "syn-meeting-038",
+          "syn-notice-005"
+        ],
+        "n": 36
+      },
+      "groups": {
+        "max_size": 90,
+        "n": 26,
+        "size_hist": {
+          "1": 22,
+          "18": 1,
+          "2": 1,
+          "6": 1,
+          "90": 1
+        }
+      },
+      "h5_bundle_test_n": 29,
+      "h7": {
+        "real_n": 0,
+        "synthetic_n": 53
+      },
+      "quota_diff": {
+        "dev": {
+          "identifier": 0,
+          "multi_doc": 0,
+          "permission": 0,
+          "semantic": 0,
+          "temporal": 0,
+          "unanswerable": 0
+        },
+        "test": {
+          "identifier": 0,
+          "multi_doc": 0,
+          "permission": 0,
+          "semantic": 0,
+          "temporal": 0,
+          "unanswerable": 0
+        }
+      },
+      "retrieval_test_n": 65,
+      "temporal_tags": {
+        "temporal:as_of_event": {
+          "dev": 8,
+          "test": 12
+        },
+        "temporal:revision": {
+          "dev": 0,
+          "test": 0
+        }
+      },
+      "warnings": [
+        "oversized_group_split:size=90:left=1:right=89",
+        "oversized_group_split:size=89:left=88:right=1",
+        "oversized_group_split:size=88:left=87:right=1",
+        "oversized_group_split:size=87:left=1:right=86",
+        "oversized_group_split:size=86:left=85:right=1",
+        "oversized_group_split:size=85:left=84:right=1",
+        "oversized_group_split:size=84:left=83:right=1",
+        "oversized_group_split:size=83:left=1:right=82",
+        "oversized_group_split:size=82:left=81:right=1",
+        "oversized_group_split:size=81:left=1:right=80",
+        "oversized_group_split:size=80:left=1:right=79",
+        "oversized_group_split:size=79:left=78:right=1",
+        "oversized_group_split:size=78:left=1:right=77",
+        "oversized_group_split:size=77:left=76:right=1",
+        "oversized_group_split:size=76:left=1:right=75",
+        "oversized_group_split:size=75:left=1:right=74",
+        "oversized_group_split:size=74:left=73:right=1",
+        "oversized_group_split:size=73:left=72:right=1",
+        "oversized_group_split:size=72:left=71:right=1",
+        "oversized_group_split:size=71:left=1:right=70",
+        "oversized_group_split:size=70:left=68:right=2",
+        "oversized_group_split:size=68:left=1:right=67",
+        "oversized_group_split:size=67:left=1:right=66",
+        "oversized_group_split:size=66:left=65:right=1",
+        "oversized_group_split:size=65:left=1:right=64",
+        "oversized_group_split:size=64:left=1:right=63",
+        "oversized_group_split:size=63:left=62:right=1",
+        "oversized_group_split:size=62:left=61:right=1",
+        "oversized_group_split:size=61:left=60:right=1",
+        "oversized_group_split:size=60:left=1:right=59"
+      ]
+    }
+  }
+}

@@ -1,0 +1,1275 @@
+"""Contracts for resumable synthetic-question Batch drafting."""
+
+from __future__ import annotations
+
+import json
+import re
+from collections.abc import Mapping, Sequence
+from dataclasses import replace
+from pathlib import Path
+from types import SimpleNamespace
+
+import pytest
+
+from kodocs.eval import query_draft
+from kodocs.eval.golden import Question, load_questions, write_questions
+from kodocs.eval.query_draft import (
+    BATCHES_MANIFEST,
+    DRAFT_LOG,
+    DRAFTS_DIR,
+    FAILURES_PATH,
+    VALIDATION_PATH,
+    build_request,
+    pending_specs,
+    run,
+    validate_draft,
+)
+from kodocs.llm.anthropic_batch import BatchRequest, BatchResult
+from kodocs.llm.settings import GenerationConfig, load_generation_config
+from kodocs.synth.seed import Seed, load_seed
+
+REPO_ROOT = Path(__file__).parents[2]
+
+
+def _config(**overrides: object) -> GenerationConfig:
+    values: dict[str, object] = {
+        "model": "claude-sonnet-5",
+        "max_tokens": 400,
+        "thinking": "disabled",
+        "effort": None,
+        "temperature": None,
+        "max_attempts": 3,
+        "pilot_limit": 1,
+        "chars_per_token_estimate": 0.8,
+    }
+    values.update(overrides)
+    return GenerationConfig(**values)  # type: ignore[arg-type]
+
+
+@pytest.fixture(scope="module")
+def seed() -> Seed:
+    return load_seed(REPO_ROOT)
+
+
+@pytest.fixture(scope="module")
+def specs() -> list[Question]:
+    # Frozen copies of five step-2 specs so regenerating specs.jsonl (e.g. with
+    # new diversity rules) does not break drafts written against these specs.
+    return load_questions(Path(__file__).parent / "fixtures/query_draft_specs.jsonl")
+
+
+def _by_id(specs: Sequence[Question], question_id: str) -> Question:
+    return next(spec for spec in specs if spec.id == question_id)
+
+
+class FakeClient:
+    def __init__(
+        self,
+        *,
+        uncertain: Sequence[Mapping[str, object]] = (),
+        opened: Sequence[Mapping[str, object]] = (),
+        statuses: Mapping[str, object] | None = None,
+        results: Mapping[str, Sequence[BatchResult]] | None = None,
+    ) -> None:
+        self._uncertain = list(uncertain)
+        self._opened = list(opened)
+        self._statuses = dict(statuses or {})
+        self._results = {key: list(value) for key, value in (results or {}).items()}
+        self.submit_calls: list[list[BatchRequest]] = []
+        self.collect_calls: list[str] = []
+        self.mark_collected_calls: list[str] = []
+
+    def uncertain_submissions(self) -> list[Mapping[str, object]]:
+        return self._uncertain
+
+    def open_batches(self) -> list[Mapping[str, object]]:
+        return self._opened
+
+    def status(self, batch_id: str) -> object:
+        return self._statuses[batch_id]
+
+    def collect(self, batch_id: str) -> list[BatchResult]:
+        self.collect_calls.append(batch_id)
+        return self._results[batch_id]
+
+    def mark_collected(self, batch_id: str) -> None:
+        self.mark_collected_calls.append(batch_id)
+
+    def submit(self, requests: Sequence[BatchRequest]) -> str:
+        self.submit_calls.append(list(requests))
+        return "batch-new"
+
+
+def _status(value: str) -> object:
+    return SimpleNamespace(
+        processing_status=value,
+        request_counts={
+            "processing": int(value != "ended"),
+            "succeeded": int(value == "ended"),
+            "errored": 0,
+            "canceled": 0,
+            "expired": 0,
+        },
+        warnings=(),
+    )
+
+
+def _result(custom_id: str, text: str) -> BatchResult:
+    return BatchResult(
+        custom_id=custom_id,
+        result_type="succeeded",
+        text=text,
+        model="claude-sonnet-5",
+        stop_reason="end_turn",
+        usage={
+            "input_tokens": 20,
+            "output_tokens": 10,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0,
+        },
+        error=None,
+    )
+
+
+def _write_specs(root: Path, specs: Sequence[Question]) -> None:
+    write_questions(root / query_draft.SPECS_PATH, specs)
+
+
+def test_golden_query_config_records_unsupported_sampling_as_null() -> None:
+    config = load_generation_config(section="golden_queries")
+
+    assert config.model == "claude-sonnet-5"
+    assert config.max_tokens == 400
+    assert config.max_attempts == 3
+    assert config.chars_per_token_estimate == 0.8
+    assert config.request_params() == {
+        "model": "claude-sonnet-5",
+        "max_tokens": 400,
+        "thinking": {"type": "disabled"},
+    }
+    assert config.record()["temperature"] is None
+    assert config.record()["effort"] is None
+
+
+def test_all_requests_exclude_answer_evidence_and_internal_ids(
+    specs: Sequence[Question],
+) -> None:
+    config = _config()
+
+    for spec in specs:
+        request = build_request(spec, config=config, attempt=1)
+        assert request.custom_id == f"{spec.id}-a1"
+        assert all(anchor in request.user for anchor in spec.anchor_values)
+        assert "묻는 속성 이름:" in request.user
+        assert not re.search(r"(?<![A-Za-z0-9])p-\d{3}(?!\d)", request.user)
+        assert all(
+            qrel.fact_id not in request.user
+            for qrel in spec.qrels
+            if qrel.fact_id is not None
+        )
+        # A few multi-document specs have an answer fact whose value is also the
+        # required subject anchor. That permitted subject occurrence is not an
+        # answer disclosure; every non-anchor answer form must remain absent.
+        assert all(
+            value not in request.user
+            for value in spec.answer_values
+            if value not in spec.anchor_values
+        )
+        assert request.cache_key
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("", ["empty_or_multiline"]),
+        (
+            "DAI-1001의 조치 내용은 무엇인가요?\n답변은 쓰지 마세요.",
+            ["empty_or_multiline"],
+        ),
+        ("이 장애의 조치 내용은 무엇인가요?", ["anchor_missing"]),
+        (
+            "DAI-1001의 조치 내용은 무엇인가요? 자세히 알려주세요.",
+            ["empty_or_multiline"],
+        ),
+        ("DAI-1001의 조치 내용은 무엇인가요", ["empty_or_multiline"]),
+        ("DAI-1001의 조치 내용은 무엇인가요!", ["empty_or_multiline"]),
+        (
+            "DAI-1001은 심각한 장애입니다. 조치 내용을 알려주세요.",
+            ["empty_or_multiline"],
+        ),
+    ],
+)
+def test_validate_draft_basic_failure_codes(
+    specs: Sequence[Question], seed: Seed, text: str, expected: list[str]
+) -> None:
+    spec = _by_id(specs, "g-syn-001")
+    assert validate_draft(spec, text, seed=seed, people=seed.people) == expected
+
+
+def test_validate_draft_anchor_uses_nfc_and_whitespace_normalization(
+    specs: Sequence[Question], seed: Seed
+) -> None:
+    spec = replace(
+        _by_id(specs, "g-syn-001"),
+        anchor_values=("DAI-  1001",),
+        answer_values=(),
+        reference_answer=None,
+        qrels=(),
+    )
+    text = "ＤＡＩ가 아닌 DAI- 1001의 조치 내용을 알려주세요?"
+
+    assert validate_draft(spec, text, seed=seed, people=seed.people) == []
+
+
+def test_validate_draft_detects_atomic_answer_leak(
+    specs: Sequence[Question], seed: Seed
+) -> None:
+    spec = _by_id(specs, "g-syn-003")
+    text = "DAI-1001의 담당자가 오가안인가요?"
+
+    assert validate_draft(spec, text, seed=seed, people=seed.people) == ["answer_leak"]
+
+
+def test_validate_draft_detects_narrative_bigram_answer_leak(
+    specs: Sequence[Question], seed: Seed
+) -> None:
+    spec = _by_id(specs, "g-syn-001")
+    text = "DAI-1001에서 스키마 호환 검사를 추가하고 적재를 재실행했나요?"
+
+    assert validate_draft(spec, text, seed=seed, people=seed.people) == ["answer_leak"]
+
+
+def test_validate_draft_allows_identifier_subject_even_if_listed_as_answer(
+    specs: Sequence[Question], seed: Seed
+) -> None:
+    base = _by_id(specs, "g-syn-001")
+    spec = replace(
+        base,
+        answer_values=base.anchor_values,
+        reference_answer=None,
+        qrels=(),
+    )
+
+    assert (
+        validate_draft(
+            spec,
+            "DAI-1001의 후속 조치 내용을 알려주세요?",
+            seed=seed,
+            people=seed.people,
+        )
+        == []
+    )
+
+
+def test_validate_draft_does_not_treat_required_multi_doc_anchor_as_a_leak(
+    specs: Sequence[Question], seed: Seed
+) -> None:
+    # Step 2 intentionally produced a few linked-fact specs where the service
+    # subject is also one answer fact. The anchor is still mandatory prompt
+    # input, so that exact occurrence cannot make the draft impossible to pass.
+    spec = _by_id(specs, "s-syn-087")
+
+    assert (
+        validate_draft(
+            spec,
+            "analytics-hub와 연결된 다른 사건은 무엇인가요?",
+            seed=seed,
+            people=seed.people,
+        )
+        == []
+    )
+
+
+def test_validate_draft_requires_temporal_date_in_an_allowed_form(
+    specs: Sequence[Question], seed: Seed
+) -> None:
+    spec = replace(
+        _by_id(specs, "s-syn-101"),
+        answer_values=(),
+        reference_answer=None,
+        qrels=(),
+    )
+
+    assert validate_draft(
+        spec,
+        "analytics-hub의 해당 장애 심각도는 무엇인가요?",
+        seed=seed,
+        people=seed.people,
+    ) == ["as_of_missing"]
+    assert (
+        validate_draft(
+            spec,
+            "2025년 4월 10일 기준 analytics-hub의 해당 장애 심각도는 무엇인가요?",
+            seed=seed,
+            people=seed.people,
+        )
+        == []
+    )
+
+
+@pytest.mark.parametrize("artifact", ["p-123", "fact", "f-event-1", "명세", "주어 값"])
+def test_validate_draft_detects_prompt_artifacts(
+    specs: Sequence[Question], seed: Seed, artifact: str
+) -> None:
+    spec = replace(
+        _by_id(specs, "g-syn-001"),
+        answer_values=(),
+        reference_answer=None,
+        qrels=(),
+    )
+    text = f"DAI-1001의 {artifact} 관련 조치 내용을 알려주세요?"
+
+    assert validate_draft(spec, text, seed=seed, people=seed.people) == [
+        "prompt_artifact"
+    ]
+
+
+def test_pending_specs_counts_only_current_template_attempts_and_is_monotonic(
+    tmp_path: Path, specs: Sequence[Question]
+) -> None:
+    spec = _by_id(specs, "g-syn-001")
+    current_hash = query_draft.template_hash()
+    drafts = tmp_path / DRAFTS_DIR
+    drafts.mkdir(parents=True)
+    drafts.joinpath(f"{spec.id}-a1.json").write_text(
+        json.dumps(
+            {
+                "id": spec.id,
+                "attempt": 1,
+                "template_hash": "old-template",
+                "result_type": "errored",
+            }
+        ),
+        encoding="utf-8",
+    )
+    drafts.joinpath(f"{spec.id}-a2.json").write_text(
+        json.dumps(
+            {
+                "id": spec.id,
+                "attempt": 2,
+                "template_hash": current_hash,
+                "result_type": "succeeded",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert pending_specs(tmp_path, [spec], config=_config()) == [(spec, 3)]
+
+    for attempt in (3, 4):
+        drafts.joinpath(f"{spec.id}-a{attempt}.json").write_text(
+            json.dumps(
+                {
+                    "id": spec.id,
+                    "attempt": attempt,
+                    "template_hash": current_hash,
+                    "result_type": "errored",
+                }
+            ),
+            encoding="utf-8",
+        )
+    assert pending_specs(tmp_path, [spec], config=_config()) == []
+
+
+def test_pending_specs_skips_validated_question(
+    tmp_path: Path, specs: Sequence[Question]
+) -> None:
+    spec = replace(_by_id(specs, "g-syn-001"), question="유효한 질문?")
+    write_questions(tmp_path / VALIDATION_PATH, [spec])
+
+    assert pending_specs(tmp_path, [spec], config=_config()) == []
+
+
+def test_pending_specs_treats_append_only_submission_log_as_an_attempt(
+    tmp_path: Path, specs: Sequence[Question]
+) -> None:
+    spec = _by_id(specs, "g-syn-001")
+    request = build_request(spec, config=_config(), attempt=1)
+    path = tmp_path / DRAFT_LOG
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        json.dumps(
+            {
+                "id": spec.id,
+                "attempt": 1,
+                "custom_id": request.custom_id,
+                "cache_key": request.cache_key,
+                "batch_id": "batch-old",
+                "status": "submitted",
+                "generation": _config().record(),
+                "settings_hash": _config().settings_hash(),
+                "template_hash": query_draft.template_hash(),
+                "prompt_sha256": "a" * 64,
+                "ts": "2026-09-28T00:00:00+00:00",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    assert pending_specs(tmp_path, [spec], config=_config()) == [(spec, 2)]
+
+
+def test_dry_run_has_no_client_and_appends_estimate_manifest(
+    tmp_path: Path, specs: Sequence[Question], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    selected = [
+        replace(specs[(index - 1) % len(specs)], id=f"s-syn-{index:03d}")
+        for index in range(1, 22)
+    ]
+    _write_specs(tmp_path, selected)
+    monkeypatch.setenv("MONTHLY_BUDGET_USD", "45")
+    messages: list[tuple[str, dict[str, object]]] = []
+
+    def capture(message: str, **kwargs: object) -> None:
+        messages.append((message, kwargs))
+
+    assert (
+        run(
+            tmp_path,
+            client=None,
+            config=_config(),
+            dry_run=True,
+            assume_yes=False,
+            limit=None,
+            print_fn=capture,
+        )
+        == 0
+    )
+
+    output = "\n".join(message for message, _ in messages)
+    assert "대상 21건" in output
+    assert "추정 입력" in output
+    assert "예상 비용(Batch, VAT 포함)" in output
+    assert any(
+        "[20/21]" in message and kwargs.get("flush") is True
+        for message, kwargs in messages
+    )
+    records = [
+        json.loads(line)
+        for line in (tmp_path / query_draft.DRY_RUNS_PATH)
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    assert len(records) == 1
+    assert records[0]["n_requests"] == 21
+    assert records[0]["estimated_input_tokens"] > 0
+    assert records[0]["expected_cost_usd"] > 0
+
+
+def test_dry_run_never_touches_a_supplied_client(
+    tmp_path: Path, specs: Sequence[Question], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _write_specs(tmp_path, specs[:1])
+    monkeypatch.setenv("MONTHLY_BUDGET_USD", "45")
+
+    class ExplodingClient:
+        def uncertain_submissions(self) -> list[object]:
+            raise AssertionError("dry-run must not inspect remote state")
+
+    assert (
+        run(
+            tmp_path,
+            client=ExplodingClient(),  # type: ignore[arg-type]
+            config=_config(),
+            dry_run=True,
+            assume_yes=False,
+            limit=None,
+            print_fn=lambda *args, **kwargs: None,
+        )
+        == 0
+    )
+
+
+def test_dry_run_fails_when_guarded_maximum_exceeds_remaining_budget(
+    tmp_path: Path, specs: Sequence[Question], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _write_specs(tmp_path, specs[:1])
+    monkeypatch.setenv("MONTHLY_BUDGET_USD", "0")
+
+    assert (
+        run(
+            tmp_path,
+            client=None,
+            config=_config(),
+            dry_run=True,
+            assume_yes=False,
+            limit=None,
+            print_fn=lambda *args, **kwargs: None,
+        )
+        == 1
+    )
+
+
+def test_uncertain_submission_blocks_create_without_loading_specs() -> None:
+    client = FakeClient(uncertain=[{"submission_id": "sub-uncertain"}])
+
+    assert (
+        run(
+            Path("unused"),
+            client=client,  # type: ignore[arg-type]
+            config=_config(),
+            dry_run=False,
+            assume_yes=True,
+            limit=None,
+            print_fn=lambda *args, **kwargs: None,
+        )
+        == 2
+    )
+    assert client.submit_calls == []
+
+
+def test_open_batch_is_polled_without_new_submission(
+    tmp_path: Path,
+) -> None:
+    client = FakeClient(
+        opened=[{"batch_id": "batch-open"}],
+        statuses={"batch-open": _status("in_progress")},
+    )
+    messages: list[str] = []
+
+    assert (
+        run(
+            tmp_path,
+            client=client,  # type: ignore[arg-type]
+            config=_config(),
+            dry_run=False,
+            assume_yes=True,
+            limit=None,
+            print_fn=lambda message, **kwargs: messages.append(message),
+        )
+        == 0
+    )
+    assert client.submit_calls == []
+    assert any("make queries" in message for message in messages)
+
+
+def test_collection_preserves_every_spec_field_and_attempt_metadata(
+    tmp_path: Path,
+    specs: Sequence[Question],
+    seed: Seed,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    spec = _by_id(specs, "g-syn-010")
+    _write_specs(tmp_path, [spec])
+    monkeypatch.setattr(query_draft, "load_seed", lambda _root: seed)
+    client = FakeClient(
+        opened=[{"batch_id": "batch-done"}],
+        statuses={"batch-done": _status("ended")},
+        results={
+            "batch-done": [
+                _result(
+                    f"{spec.id}-a1",
+                    "analytics-hub의 운영 담당 팀은 어디인가요?",
+                )
+            ]
+        },
+    )
+
+    assert (
+        run(
+            tmp_path,
+            client=client,  # type: ignore[arg-type]
+            config=_config(),
+            dry_run=False,
+            assume_yes=True,
+            limit=None,
+            print_fn=lambda *args, **kwargs: None,
+        )
+        == 0
+    )
+
+    validated = load_questions(tmp_path / VALIDATION_PATH)
+    assert validated == [
+        replace(spec, question="analytics-hub의 운영 담당 팀은 어디인가요?")
+    ]
+    assert validated[0].unmarked_candidates == spec.unmarked_candidates
+    assert validated[0].no_answer_checks == spec.no_answer_checks
+    cache = json.loads(
+        (tmp_path / DRAFTS_DIR / f"{spec.id}-a1.json").read_text(encoding="utf-8")
+    )
+    assert cache["generation"] == _config().record()
+    assert cache["template_hash"] == query_draft.template_hash()
+    assert cache["batch_id"] == "batch-done"
+    assert client.mark_collected_calls == ["batch-done"]
+
+
+def test_validation_failure_is_append_only_and_deduplicated(
+    tmp_path: Path,
+    specs: Sequence[Question],
+    seed: Seed,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    spec = _by_id(specs, "g-syn-001")
+    _write_specs(tmp_path, [spec])
+    monkeypatch.setattr(query_draft, "load_seed", lambda _root: seed)
+    client = FakeClient(
+        opened=[{"batch_id": "batch-invalid"}],
+        statuses={"batch-invalid": _status("ended")},
+        results={
+            "batch-invalid": [
+                _result(
+                    f"{spec.id}-a1",
+                    "DAI-1001에서 스키마 호환 검사를 추가하고 적재를 재실행했나요?",
+                )
+            ]
+        },
+    )
+
+    for _ in range(2):
+        assert (
+            run(
+                tmp_path,
+                client=client,  # type: ignore[arg-type]
+                config=_config(),
+                dry_run=False,
+                assume_yes=True,
+                limit=None,
+                print_fn=lambda *args, **kwargs: None,
+            )
+            == 0
+        )
+
+    failures = [
+        json.loads(line)
+        for line in (tmp_path / FAILURES_PATH).read_text(encoding="utf-8").splitlines()
+    ]
+    assert failures == [
+        {
+            "attempt": 1,
+            "codes": ["answer_leak"],
+            "id": spec.id,
+            "ts": failures[0]["ts"],
+        }
+    ]
+    assert (
+        len(
+            [
+                json.loads(line)
+                for line in (tmp_path / DRAFT_LOG)
+                .read_text(encoding="utf-8")
+                .splitlines()
+                if json.loads(line).get("status") == "stored"
+            ]
+        )
+        == 2
+    )
+
+
+def test_submit_requires_confirmation_and_records_template_metadata(
+    tmp_path: Path, specs: Sequence[Question], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _by_id(specs, "g-syn-001")
+    _write_specs(tmp_path, [spec])
+    monkeypatch.setenv("MONTHLY_BUDGET_USD", "45")
+    client = FakeClient()
+
+    assert (
+        run(
+            tmp_path,
+            client=client,  # type: ignore[arg-type]
+            config=_config(),
+            dry_run=False,
+            assume_yes=False,
+            limit=None,
+            input_fn=lambda _prompt: "n",
+            print_fn=lambda *args, **kwargs: None,
+        )
+        == 0
+    )
+    assert client.submit_calls == []
+
+    assert (
+        run(
+            tmp_path,
+            client=client,  # type: ignore[arg-type]
+            config=_config(),
+            dry_run=False,
+            assume_yes=True,
+            limit=None,
+            print_fn=lambda *args, **kwargs: None,
+        )
+        == 0
+    )
+    assert len(client.submit_calls) == 1
+    log = json.loads((tmp_path / DRAFT_LOG).read_text(encoding="utf-8").splitlines()[0])
+    assert log["status"] == "submitted"
+    assert log["generation"] == _config().record()
+    assert log["template_hash"] == query_draft.template_hash()
+    assert log["batch_id"] == "batch-new"
+
+
+def test_main_constructs_client_with_golden_only_manifest(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    captured: dict[str, object] = {}
+
+    class Client:
+        def __init__(self, **kwargs: object) -> None:
+            captured.update(kwargs)
+
+        def uncertain_submissions(self) -> list[object]:
+            return []
+
+        def open_batches(self) -> list[object]:
+            return []
+
+    settings = SimpleNamespace(
+        monthly_budget_usd=45.0,
+        require_key=lambda _name: "test-key",
+    )
+    monkeypatch.setattr(query_draft, "load_settings", lambda *args, **kwargs: settings)
+    monkeypatch.setattr(query_draft, "anthropic_client_factory", lambda _key: object())
+    monkeypatch.setattr(query_draft, "AnthropicBatchClient", Client)
+
+    assert query_draft.main(["--root", str(tmp_path), "--status"]) == 0
+    assert captured["manifest_path"] == tmp_path / BATCHES_MANIFEST
+    assert captured["manifest_path"] != tmp_path / Path(
+        "data/manifest/anthropic_batches.jsonl"
+    )
+
+
+def test_draft_written_for_an_older_spec_is_stale_and_costs_no_attempt(
+    tmp_path: Path,
+    specs: Sequence[Question],
+    seed: Seed,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    old = _by_id(specs, "g-syn-010")
+    current = replace(old, anchor_values=("core-gateway",))
+    _write_specs(tmp_path, [current])
+    monkeypatch.setattr(query_draft, "load_seed", lambda _root: seed)
+    request = build_request(old, config=_config(), attempt=1)
+    query_draft._append_draft_log(
+        tmp_path,
+        {
+            **query_draft._request_metadata(request, config=_config()),
+            "id": old.id,
+            "attempt": 1,
+            "custom_id": request.custom_id,
+            "cache_key": request.cache_key,
+            "batch_id": "batch-old",
+            "status": "submitted",
+            "ts": "2026-09-28T00:00:00+00:00",
+        },
+    )
+    client = FakeClient(
+        opened=[{"batch_id": "batch-old"}],
+        statuses={"batch-old": _status("ended")},
+        results={
+            "batch-old": [
+                _result(f"{old.id}-a1", "analytics-hub의 담당 팀은 어디인가요?")
+            ]
+        },
+    )
+
+    assert (
+        run(
+            tmp_path,
+            client=client,  # type: ignore[arg-type]
+            config=_config(),
+            dry_run=False,
+            assume_yes=True,
+            limit=None,
+            print_fn=lambda *args, **kwargs: None,
+        )
+        == 0
+    )
+
+    log = [
+        json.loads(line)
+        for line in (tmp_path / DRAFT_LOG).read_text(encoding="utf-8").splitlines()
+    ]
+    assert [r["status"] for r in log] == ["submitted", "stale_spec"]
+    assert not (tmp_path / FAILURES_PATH).exists()
+    assert not (tmp_path / DRAFTS_DIR / f"{old.id}-a1.json").exists()
+    assert load_questions(tmp_path / VALIDATION_PATH) == []
+    assert client.mark_collected_calls == ["batch-old"]
+    pending = pending_specs(tmp_path, [current], config=_config())
+    assert [(spec.id, attempt) for spec, attempt in pending] == [(old.id, 1)]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "DAI-1001의 조치 내용을 알려주세요.",
+        "DAI-1001의 조치 내용은 무엇인가요?",
+        "2026. 5. 5. 기준으로 DAI-1001의 조치 내용을 알려주세요.",
+        "가용성 99.95% 기준에서 DAI-1001의 조치 내용을 알려주세요.",
+    ],
+)
+def test_bad_shape_accepts_one_sentence_ending_in_a_single_mark(text: str) -> None:
+    assert not query_draft._bad_shape(None, text, None, {})  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "",
+        "조치 내용을 알려주세요.\n감사합니다.",
+        "장애입니다. 조치 내용을 알려주세요.",
+        "조치 내용을 알려주세요",
+        "조치 내용을 알려주세요!",
+    ],
+)
+def test_bad_shape_rejects_empty_multiline_and_multi_sentence(text: str) -> None:
+    assert query_draft._bad_shape(None, text, None, {})  # type: ignore[arg-type]
+
+
+def test_revalidation_failures_are_recorded_once_with_their_source(
+    tmp_path: Path,
+    specs: Sequence[Question],
+    seed: Seed,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    spec = _by_id(specs, "g-syn-010")
+    _write_specs(tmp_path, [spec])
+    monkeypatch.setattr(query_draft, "load_seed", lambda _root: seed)
+    query_draft._write_json(
+        tmp_path / DRAFTS_DIR / f"{spec.id}-a1.json",
+        {
+            "id": spec.id,
+            "attempt": 1,
+            "custom_id": f"{spec.id}-a1",
+            "result_type": "succeeded",
+            "text": "저는 재무팀 담당자입니다. analytics-hub의 담당 팀은 어디인가요?",
+        },
+    )
+    query_draft._write_json(
+        tmp_path / DRAFTS_DIR / f"{spec.id}-a2.json",
+        {
+            "id": spec.id,
+            "attempt": 2,
+            "custom_id": f"{spec.id}-a2",
+            "result_type": "succeeded",
+            "text": "analytics-hub의 운영 담당 팀은 어디인가요?",
+        },
+    )
+
+    for _ in range(2):
+        assert query_draft.validate_only(tmp_path, print_fn=lambda *_: None) == 0
+
+    failures = [
+        json.loads(line)
+        for line in (tmp_path / FAILURES_PATH).read_text(encoding="utf-8").splitlines()
+    ]
+    assert [(f["id"], f["attempt"], f["codes"], f["source"]) for f in failures] == [
+        (spec.id, 1, ["empty_or_multiline"], "revalidate")
+    ]
+    assert [q.id for q in load_questions(tmp_path / VALIDATION_PATH)] == [spec.id]
+
+
+def _rel2(*fact_ids: str) -> tuple:
+    from kodocs.eval.golden import Qrel
+
+    return tuple(
+        Qrel(doc_id=f"doc-{i}", rel=2, fact_id=f) for i, f in enumerate(fact_ids)
+    )
+
+
+@pytest.mark.parametrize(
+    ("qid", "anchors", "fact_ids", "expected"),
+    [
+        ("g-syn-003", None, None, "담당자"),
+        ("g-syn-010", None, None, "운영 담당 팀"),
+        (
+            "s-syn-087",
+            ("INC-2025-003",),
+            ("f-inc-2025-003-service", "f-service-analytics-hub-slo"),
+            "해당 건이 발생한 서비스의 서비스 수준 목표",
+        ),
+        ("g-syn-001", None, ("f-evt-024-result",), "기능 배포 후 확인된 효과"),
+        ("g-syn-001", None, ("f-evt-049-decision",), "결정 사항"),
+    ],
+)
+def test_asked_attribute_names_the_specific_fact_kind(
+    specs: Sequence[Question],
+    qid: str,
+    anchors: tuple[str, ...] | None,
+    fact_ids: tuple[str, ...] | None,
+    expected: str,
+) -> None:
+    spec = _by_id(specs, qid)
+    if anchors is not None:
+        spec = replace(spec, anchor_values=anchors)
+    if fact_ids is not None:
+        spec = replace(spec, qrels=_rel2(*fact_ids))
+
+    assert query_draft._asked_attribute(spec) == expected
+
+
+def _sql_spec(specs: Sequence[Question]) -> Question:
+    from kodocs.eval.golden import SqlAnswer
+
+    return replace(
+        _by_id(specs, "g-syn-010"),
+        type="sql",
+        anchor_values=("월별 티켓 수",),
+        answer_values=('[{"month":"2026-01","count":3}]',),
+        qrels=(),
+        sql=SqlAnswer("SELECT 1", "h", [{"month": "2026-01", "count": 3}], "db"),
+    )
+
+
+def test_sql_attribute_asks_for_the_value(specs: Sequence[Question]) -> None:
+    attribute = query_draft._asked_attribute(_sql_spec(specs))
+
+    assert "월별 티켓 수" in attribute
+    assert "값" in attribute
+
+
+@pytest.mark.parametrize(
+    ("text", "flagged"),
+    [
+        ("월별 티켓 수는 어떻게 확인할 수 있나요?", True),
+        ("월별 티켓 수를 조회할 수 있을까요?", True),
+        ("월별 티켓 수를 조회하는 방법이 있나요?", True),
+        ("월별 티켓 수는 각각 몇 건인가요?", False),
+        ("월별 티켓 수가 어떻게 되나요?", False),
+    ],
+)
+def test_sql_draft_must_ask_for_values_not_methods(
+    specs: Sequence[Question], seed: Seed, text: str, flagged: bool
+) -> None:
+    codes = validate_draft(_sql_spec(specs), text, seed=seed, people=seed.people)
+
+    assert ("asks_method" in codes) is flagged
+
+
+def test_invalidated_drafts_are_stale_and_the_next_attempt_skips_old_caches(
+    tmp_path: Path,
+    specs: Sequence[Question],
+    seed: Seed,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    spec = _by_id(specs, "g-syn-010")
+    replaced = replace(spec, anchor_values=("feature-store",))
+    _write_specs(tmp_path, [spec])
+    monkeypatch.setattr(query_draft, "load_seed", lambda _root: seed)
+    request = build_request(spec, config=_config(), attempt=1)
+    query_draft._append_draft_log(
+        tmp_path,
+        {
+            **query_draft._request_metadata(request, config=_config()),
+            "id": spec.id,
+            "attempt": 1,
+            "custom_id": request.custom_id,
+            "cache_key": request.cache_key,
+            "batch_id": "batch-old",
+            "status": "submitted",
+            "ts": "2026-09-28T00:00:00+00:00",
+        },
+    )
+    query_draft._write_json(
+        tmp_path / DRAFTS_DIR / f"{spec.id}-a1.json",
+        {
+            "id": spec.id,
+            "attempt": 1,
+            "custom_id": f"{spec.id}-a1",
+            "batch_id": "batch-old",
+            "result_type": "succeeded",
+            "text": "analytics-hub의 운영 담당 팀은 어디인가요?",
+        },
+    )
+    assert query_draft.validate_only(tmp_path, print_fn=lambda *_: None) == 0
+    assert [q.id for q in load_questions(tmp_path / VALIDATION_PATH)] == [spec.id]
+
+    assert query_draft.invalidate_drafts(tmp_path, {spec.id}) == 1
+    _write_specs(tmp_path, [replaced])
+
+    assert query_draft.validate_only(tmp_path, print_fn=lambda *_: None) == 0
+    assert load_questions(tmp_path / VALIDATION_PATH) == []
+    assert not (tmp_path / FAILURES_PATH).exists()
+    pending = pending_specs(tmp_path, [replaced], config=_config())
+    assert [(s.id, attempt) for s, attempt in pending] == [(spec.id, 2)]
+    # A dropped spec's stale cache no longer breaks revalidation either.
+    _write_specs(tmp_path, [])
+    assert query_draft.validate_only(tmp_path, print_fn=lambda *_: None) == 0
+
+
+@pytest.mark.parametrize(
+    ("fact_ids", "expected"),
+    [
+        (
+            ("f-inc-2025-001-start", "f-inc-2025-003-start"),
+            "두 건 중 발생 시각이 더 이른 건(각 건의 발생 시각 포함)",
+        ),
+        (("f-inc-2025-001-cause", "f-inc-2025-003-cause"), "두 건 각각의 원인"),
+    ],
+)
+def test_comparison_attribute_names_both_incidents(
+    specs: Sequence[Question], fact_ids: tuple[str, str], expected: str
+) -> None:
+    spec = replace(
+        _by_id(specs, "s-syn-087"),
+        anchor_values=("INC-2025-001", "INC-2025-003"),
+        qrels=_rel2(*fact_ids),
+    )
+
+    assert query_draft._asked_attribute(spec) == expected
+
+
+def test_invalidate_cli_marks_drafts_stale_with_a_reason(
+    tmp_path: Path, specs: Sequence[Question]
+) -> None:
+    spec = _by_id(specs, "g-syn-010")
+    _write_specs(tmp_path, [spec])
+    write_questions(tmp_path / VALIDATION_PATH, [replace(spec, question="질문?")])
+    query_draft._write_json(
+        tmp_path / DRAFTS_DIR / f"{spec.id}-a1.json",
+        {"id": spec.id, "attempt": 1, "custom_id": f"{spec.id}-a1", "batch_id": "b1"},
+    )
+
+    code = query_draft.main(
+        [
+            "--root",
+            str(tmp_path),
+            "--invalidate",
+            spec.id,
+            "--reason",
+            "generic_attribute",
+        ]
+    )
+
+    assert code == 0
+    assert load_questions(tmp_path / VALIDATION_PATH) == []
+    log = [json.loads(x) for x in (tmp_path / DRAFT_LOG).read_text().splitlines()]
+    assert [(r["custom_id"], r["status"], r["reason"]) for r in log] == [
+        (f"{spec.id}-a1", "stale_spec", "generic_attribute")
+    ]
+    assert query_draft.main(["--root", str(tmp_path), "--invalidate", "g-nope"]) == 1
+
+
+# ---------------------------------------------------------------------------
+# Synchronous drafting (default): generate -> validate -> redraft in one run.
+# ---------------------------------------------------------------------------
+
+
+class FakeSyncClient:
+    """Scripted texts per spec id; the n-th call for an id returns texts[n]."""
+
+    run_id = "sync-fake"
+
+    def __init__(self, texts: Mapping[str, Sequence[str]]) -> None:
+        self.texts = {key: list(value) for key, value in texts.items()}
+        self.calls: list[list[str]] = []
+
+    def estimate(self, requests: Sequence[BatchRequest]) -> object:
+        from kodocs.llm.anthropic_messages import estimate_requests
+
+        return estimate_requests(requests, _config())
+
+    def create_many(self, requests: Sequence[BatchRequest]) -> list[BatchResult]:
+        self.calls.append([request.custom_id for request in requests])
+        results: list[BatchResult] = []
+        for request in requests:
+            spec_id = request.custom_id.rsplit("-a", 1)[0]
+            results.append(_result(request.custom_id, self.texts[spec_id].pop(0)))
+        return results
+
+
+def _run_sync(tmp_path: Path, client: FakeSyncClient, messages: list[str]) -> int:
+    return query_draft.run_sync(
+        tmp_path,
+        client=client,  # type: ignore[arg-type]
+        config=_config(),
+        dry_run=False,
+        assume_yes=True,
+        limit=None,
+        print_fn=lambda message, **kwargs: messages.append(message),
+    )
+
+
+def _jsonl(path: Path) -> list[dict[str, object]]:
+    return [json.loads(x) for x in path.read_text(encoding="utf-8").splitlines()]
+
+
+def test_sync_run_validates_and_redrafts_failures_in_one_run(
+    tmp_path: Path,
+    specs: Sequence[Question],
+    seed: Seed,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    good, retried = _by_id(specs, "g-syn-010"), _by_id(specs, "g-syn-001")
+    _write_specs(tmp_path, [good, retried])
+    monkeypatch.setattr(query_draft, "load_seed", lambda _root: seed)
+    client = FakeSyncClient(
+        {
+            good.id: ["analytics-hub의 운영 담당 팀은 어디인가요?"],
+            retried.id: [
+                "DAI-1001에서 스키마 호환 검사를 추가하고 적재를 재실행했나요?",
+                "DAI-1001의 조치 내용은 무엇인가요?",
+            ],
+        }
+    )
+    messages: list[str] = []
+
+    assert _run_sync(tmp_path, client, messages) == 0
+
+    assert client.calls == [
+        [f"{retried.id}-a1", f"{good.id}-a1"],
+        [f"{retried.id}-a2"],
+    ]
+    assert sorted(q.id for q in load_questions(tmp_path / VALIDATION_PATH)) == [
+        retried.id,
+        good.id,
+    ]
+    log = _jsonl(tmp_path / DRAFT_LOG)
+    assert {r["mode"] for r in log} == {"sync"}
+    assert [(r["custom_id"], r["status"]) for r in log if r["id"] == retried.id] == [
+        (f"{retried.id}-a1", "submitted"),
+        (f"{retried.id}-a1", "stored"),
+        (f"{retried.id}-a2", "submitted"),
+        (f"{retried.id}-a2", "stored"),
+    ]
+    failures = _jsonl(tmp_path / FAILURES_PATH)
+    assert [(f["id"], f["attempt"], f["codes"], f["mode"]) for f in failures] == [
+        (retried.id, 1, ["answer_leak"], "sync")
+    ]
+
+
+def test_sync_run_stops_after_max_attempts_and_counts_each_try(
+    tmp_path: Path,
+    specs: Sequence[Question],
+    seed: Seed,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    spec = _by_id(specs, "g-syn-001")
+    _write_specs(tmp_path, [spec])
+    monkeypatch.setattr(query_draft, "load_seed", lambda _root: seed)
+    leak = "DAI-1001에서 스키마 호환 검사를 추가하고 적재를 재실행했나요?"
+    client = FakeSyncClient({spec.id: [leak] * 5})
+    messages: list[str] = []
+
+    assert _run_sync(tmp_path, client, messages) == 0
+
+    assert client.calls == [[f"{spec.id}-a{n}"] for n in (1, 2, 3)]
+    assert [f["attempt"] for f in _jsonl(tmp_path / FAILURES_PATH)] == [1, 2, 3]
+    assert load_questions(tmp_path / VALIDATION_PATH) == []
+    assert pending_specs(tmp_path, [spec], config=_config()) == []
+    assert any("실패 1" in message for message in messages)
+
+
+def test_sync_dry_run_uses_sync_prices_and_records_the_mode(
+    tmp_path: Path, specs: Sequence[Question], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from kodocs.costs import estimate_usd
+
+    _write_specs(tmp_path, [_by_id(specs, "g-syn-010")])
+    monkeypatch.setenv("MONTHLY_BUDGET_USD", "45")
+    messages: list[str] = []
+
+    assert (
+        query_draft.run_sync(
+            tmp_path,
+            client=None,
+            config=_config(),
+            dry_run=True,
+            assume_yes=False,
+            limit=None,
+            print_fn=lambda message, **kwargs: messages.append(message),
+        )
+        == 0
+    )
+
+    [record] = _jsonl(tmp_path / query_draft.DRY_RUNS_PATH)
+    assert record["mode"] == "sync"
+    assert record["expected_cost_usd"] == pytest.approx(
+        estimate_usd(
+            "anthropic.claude-sonnet-5.input", record["estimated_input_tokens"]
+        )
+    )
+    assert any("예상 비용(동기, VAT 포함)" in message for message in messages)
+    assert not (tmp_path / DRAFT_LOG).exists()
+
+
+def test_a_result_fact_that_is_not_an_effect_is_asked_as_work_done(
+    specs: Sequence[Question],
+) -> None:
+    spec = replace(
+        _by_id(specs, "s-syn-101"),
+        anchor_values=("identity-api",),
+        qrels=_rel2("f-evt-038-result"),
+    )
+
+    assert query_draft._asked_attribute(spec) == "진행한 작업"
+
+
+@pytest.mark.parametrize(
+    ("text", "flagged"),
+    [
+        ("DAI-1001을 도입하면 어떤 효과를 기대할 수 있나요?", True),
+        ("DAI-1001 처리로 예상되는 조치 내용은 무엇인가요?", True),
+        ("DAI-1001을 도입했을 때 무엇이 달라지나요?", True),
+        ("DAI-1001 처리 후 무엇이 개선됐나요?", False),
+    ],
+)
+def test_answer_questions_must_not_use_hypothetical_framing(
+    specs: Sequence[Question], seed: Seed, text: str, flagged: bool
+) -> None:
+    codes = validate_draft(
+        _by_id(specs, "g-syn-001"), text, seed=seed, people=seed.people
+    )
+
+    assert ("hypothetical_framing" in codes) is flagged
+
+
+def test_unanswerable_questions_may_ask_about_expected_costs(
+    specs: Sequence[Question], seed: Seed
+) -> None:
+    spec = replace(
+        _by_id(specs, "g-syn-001"),
+        type="unanswerable",
+        expected_response="no_answer",
+        qrels=(),
+        answer_values=(),
+    )
+    codes = validate_draft(
+        spec,
+        "DAI-1001 장애의 예상 복구 비용은 얼마인가요?",
+        seed=seed,
+        people=seed.people,
+    )
+
+    assert "hypothetical_framing" not in codes
+
+
+def test_system_prompt_forbids_hypothetical_questions_about_past_facts() -> None:
+    system = (query_draft.TEMPLATES_DIR / "system.md").read_text(encoding="utf-8")
+
+    assert "가정형" in system and "일어난 일" in system
+
+
+@pytest.mark.parametrize(
+    ("text", "flagged"),
+    [
+        ("analytics-hub 도입으로 어떤 효과가 있었나요?", True),
+        ("analytics-hub에 품질 화면을 배포한 뒤 어떤 효과가 확인됐나요?", False),
+    ],
+)
+def test_result_questions_must_not_claim_an_introduction(
+    specs: Sequence[Question], seed: Seed, text: str, flagged: bool
+) -> None:
+    spec = replace(_by_id(specs, "g-syn-010"), qrels=_rel2("f-evt-019-result"))
+
+    codes = validate_draft(spec, text, seed=seed, people=seed.people)
+
+    assert ("result_introduction" in codes) is flagged
+
+
+@pytest.mark.parametrize(
+    ("text", "flagged"),
+    [
+        ("DAI-1001 처리로 얻을 수 있는 효과는 무엇인가요?", True),
+        ("DAI-1001 처리로 어떤 효과를 볼 수 있나요?", True),
+        ("DAI-1001 처리로 어떤 효과를 볼 수 있었나요?", False),
+    ],
+)
+def test_hypothetical_framing_covers_can_obtain_phrases(
+    specs: Sequence[Question], seed: Seed, text: str, flagged: bool
+) -> None:
+    codes = validate_draft(
+        _by_id(specs, "g-syn-001"), text, seed=seed, people=seed.people
+    )
+
+    assert ("hypothetical_framing" in codes) is flagged

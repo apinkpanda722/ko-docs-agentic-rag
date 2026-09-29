@@ -1,0 +1,120 @@
+{
+  "project": "ko-docs-agentic-rag",
+  "phase": "m4-golden-set",
+  "steps": [
+    {
+      "step": 0,
+      "name": "design-docs",
+      "status": "completed",
+      "started_at": "2026-09-28T20:07:32+0900",
+      "summary": "ADR-025/026, M4 가설 사전 등록, EVAL 설계, 고정 결과 템플릿을 작성하고 make verify(715 passed) 및 모든 AC를 통과했습니다.",
+      "completed_at": "2026-09-28T20:16:05+0900",
+      "usage": {
+        "input_tokens": 1252980,
+        "cached_input_tokens": 1155712,
+        "output_tokens": 19965,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 1,
+      "name": "golden-schema",
+      "status": "completed",
+      "started_at": "2026-09-28T20:16:06+0900",
+      "summary": "공통 golden 문항·qrels 스키마와 결정론적 JSONL I/O, 권한·정답 검증기, 할당 상수 및 16개 오류·비커밋 가드 테스트를 구현했으며 make verify(748 passed)와 AC를 통과했습니다.",
+      "completed_at": "2026-09-28T20:25:40+0900",
+      "usage": {
+        "input_tokens": 1866005,
+        "cached_input_tokens": 1767808,
+        "output_tokens": 24726,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 2,
+      "name": "synth-specs",
+      "status": "completed",
+      "started_at": "2026-09-28T20:30:34+0900",
+      "summary": "결정론적 합성 명세 180건을 생성했습니다: 골드 30건(식별자 5·의미 5·다중 6·권한 5·답없음 3·SQL 6), 실버 150건(식별자 25·의미 40·다중 35·시점 20·권한 15·답없음 15); make verify는 771 passed였습니다.",
+      "completed_at": "2026-09-28T20:44:26+0900",
+      "usage": {
+        "input_tokens": 2984113,
+        "cached_input_tokens": 2864384,
+        "output_tokens": 36425,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 3,
+      "name": "query-drafting",
+      "status": "completed",
+      "started_at": "2026-09-28T20:44:27+0900",
+      "summary": "Golden 질의 초안 Batch 상태 기계·결정론 검증·재시도·비용 기록을 구현했으며 make verify 799 passed, dry-run 180건·54,175 입력 토큰·예상 $0.0596(최대 $0.4556)로 AC를 통과했습니다.",
+      "completed_at": "2026-09-28T21:01:19+0900",
+      "usage": {
+        "input_tokens": 6245811,
+        "cached_input_tokens": 6087808,
+        "output_tokens": 39235,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 4,
+      "name": "lexical-overlap",
+      "status": "completed",
+      "started_at": "2026-09-28T21:18:48+0900",
+      "summary": "결정론적 어휘 겹침 측정·상한/lexical_mismatch 검증, 오프라인 재검증·무쓰기 보고 명령과 문서·템플릿을 구현하고 make verify(816 passed) 및 AC를 통과했습니다.",
+      "completed_at": "2026-09-28T21:31:10+0900",
+      "usage": {
+        "input_tokens": 3085740,
+        "cached_input_tokens": 2977280,
+        "output_tokens": 29538,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 5,
+      "name": "real-items",
+      "status": "completed",
+      "started_at": "2026-09-28T21:31:10+0900",
+      "summary": "실제 규정 후보 생성·초안 검증·안전 투영 도구와 13개 테스트, Make 명령을 구현했으며 모든 AC와 make verify(829 passed)를 통과했습니다.",
+      "completed_at": "2026-09-28T21:43:32+0900",
+      "usage": {
+        "input_tokens": 3416155,
+        "cached_input_tokens": 3286144,
+        "output_tokens": 33651,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 6,
+      "name": "split",
+      "status": "completed",
+      "started_at": "2026-09-29T12:56:59+0900",
+      "summary": "결정론적 그룹 단위 split과 미리보기 명령을 구현했습니다: 골드 46그룹(최대 3), 실버 30그룹(최대 31), 누수 문서 0개이며 make verify 871 passed 및 모든 AC를 통과했습니다.",
+      "completed_at": "2026-09-29T13:09:25+0900",
+      "usage": {
+        "input_tokens": 2689124,
+        "cached_input_tokens": 2371072,
+        "output_tokens": 30252,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 7,
+      "name": "review-packets",
+      "status": "completed",
+      "started_at": "2026-09-29T13:09:26+0900",
+      "summary": "검수 패킷·서명 기반 확정·점검용 더미 격리·골드 불변성·고정 M4 보고서를 구현했으며 make verify 879 passed와 모든 AC를 통과했습니다.",
+      "completed_at": "2026-09-29T13:25:27+0900",
+      "usage": {
+        "input_tokens": 4378536,
+        "cached_input_tokens": 4217344,
+        "output_tokens": 43076,
+        "attempts": 1
+      }
+    }
+  ],
+  "created_at": "2026-09-28T20:07:32+0900",
+  "completed_at": "2026-09-29T13:25:27+0900"
+}

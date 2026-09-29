@@ -77,5 +77,18 @@ make synth-metrics  # 합성 문서 중복·다양성·분포·사실 커버리�
 make synth-report   # M3 결과 문서 docs/results/2026-09-27-m3-synthetic.md(실행일과 관계없이 고정) 갱신 (네트워크 없음)
 make review-sample  # 검증 통과 문서에서 유형·권한 층화 표본 20건 + 검수 양식 → data/synthetic/review/ (네트워크 없음)
 make review-score   # data/golden/synthetic_review/*.csv 사람 검수 결과 집계 → data/manifest/synth_review.json·결과 문서 7절 (네트워크 없음)
+make query-specs    # 합성 문항 명세(골드 합성 30·실버 138) → data/synthetic/queries/specs.jsonl. 기존 명세가 있으면 선택은 고정하고 qrels·미표시 후보·답 없음 확인만 현재 문서로 재계산, 조건을 어긴 문항만 같은 id로 교체(옛 초안 무효화), 커밋된 `data/synthetic/queries/qrels_overrides.jsonl`(사람이 확인한 문서 단위 qrel 보정, 대상 앵커 일치 필수)을 적용; 처음부터 다시 뽑으려면 `uv run python -m kodocs.eval.golden_specs --reselect` (네트워크 없음)
+make queries-dry   # 합성 문항 질문 문장 동기 호출 예상 토큰·비용(동기 단가, mode와 함께 data/manifest/golden_dry_runs.jsonl에 기록) — 네트워크 없음
+make queries       # 합성 문항 질문 문장 동기 생성(동시성 4) → 결정론 검증 → 실패 문항 재생성을 max_attempts까지 한 번에 — 실제 API 호출·과금, 사용자 실행
+make queries-batch-dry  # Batch 모드 예상 토큰·비용(대량용) — 네트워크 없음
+make queries-batch      # Batch 제출/수거(수천 건 이상 등 대량일 때만, ADR-027) — 실제 API 호출·과금, 사용자 실행
+make query-validate  # 수거한 질의 초안 결정론 재검증(답 누수·어휘 겹침 상한·태그) → data/manifest/golden_query_validation.json (네트워크 없음)
+make lexical-report  # 수거한 질의 초안의 어휘 겹침 분포·상한 후보별 초과 수 출력(파일 쓰지 않음, 상한 확정용, 네트워크 없음)
+make golden-real-candidates  # 실제 규정 문항 후보(조 제목·확정 표·개정 쌍) → data/interim/golden/real_candidates.md (로컬 전용, 네트워크 없음)
+make golden-real-check       # data/interim/golden/real_drafts.jsonl 검증(할당·조 키·개정 쌍·답 없음 ③·본문 누출) → 커밋용 투영 data/synthetic/queries/real_projection.jsonl (네트워크 없음)
+make golden-split-preview    # dev/test 배정 미리보기(그룹·할당 차이·누수 문서·가설 판정 문항 수) → data/manifest/golden_split_preview.json (네트워크 없음)
+make golden-packets  # 골드 50·실버 표본 28 검수 패킷(Claude 판정 선채움, 점검용 더미 3은 검수 대상이 아닌 실버에서). 패킷·CSV는 불투명한 검수 번호 r-NNN만 쓰고 대응표는 data/interim/golden/review_keys.json → data/interim/golden/ (로컬 전용, 네트워크 없음)
+make golden-promote  # data/golden/m4_review/*-review.csv 집계 → 확정 골드·실버 data/golden/queries/ + 결과 문서 — 사용자 실행
+make m4-report       # M4 결과 문서 docs/results/2026-09-28-m4-golden-set.md(고정) 갱신 (네트워크 없음)
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)

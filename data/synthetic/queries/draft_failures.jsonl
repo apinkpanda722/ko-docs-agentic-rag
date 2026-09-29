@@ -1,0 +1,8 @@
+{"attempt": 1, "codes": ["empty_or_multiline"], "id": "s-syn-017", "ts": "2026-09-29T03:51:13.691616+00:00"}
+{"attempt": 1, "codes": ["empty_or_multiline"], "id": "s-syn-019", "ts": "2026-09-29T03:51:13.693251+00:00"}
+{"attempt": 1, "codes": ["empty_or_multiline"], "id": "s-syn-084", "ts": "2026-09-29T03:51:13.746029+00:00"}
+{"attempt": 1, "codes": ["empty_or_multiline"], "id": "s-syn-110", "ts": "2026-09-29T03:51:13.770245+00:00"}
+{"attempt": 1, "codes": ["empty_or_multiline"], "id": "s-syn-026", "source": "revalidate", "ts": "2026-09-29T04:36:46.321387+00:00"}
+{"attempt": 2, "codes": ["overlap_cap"], "id": "s-syn-071", "mode": "sync", "ts": "2026-09-29T08:25:56.906108+00:00"}
+{"attempt": 3, "codes": ["result_introduction"], "id": "s-syn-031", "mode": "sync", "ts": "2026-09-29T10:38:57.511941+00:00"}
+{"attempt": 4, "codes": ["result_introduction"], "id": "s-syn-055", "mode": "sync", "ts": "2026-09-29T10:38:57.515521+00:00"}
