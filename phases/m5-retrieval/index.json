@@ -1,0 +1,86 @@
+{
+  "project": "ko-docs-agentic-rag",
+  "phase": "m5-retrieval",
+  "steps": [
+    {
+      "step": 0,
+      "name": "design-docs",
+      "status": "pending"
+    },
+    {
+      "step": 1,
+      "name": "layer-guards",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "name": "annex-mapping",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "name": "corpus-loader",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "name": "chunkers",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "name": "index-schema",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "name": "embedder",
+      "status": "pending"
+    },
+    {
+      "step": 7,
+      "name": "index-build",
+      "status": "pending"
+    },
+    {
+      "step": 8,
+      "name": "authorized-search",
+      "status": "pending"
+    },
+    {
+      "step": 9,
+      "name": "authorized-lookup-sql",
+      "status": "pending"
+    },
+    {
+      "step": 10,
+      "name": "metrics-stats",
+      "status": "pending"
+    },
+    {
+      "step": 11,
+      "name": "eval-inputs",
+      "status": "pending"
+    },
+    {
+      "step": 12,
+      "name": "dev-tuning",
+      "status": "pending"
+    },
+    {
+      "step": 13,
+      "name": "analysis",
+      "status": "pending"
+    },
+    {
+      "step": 14,
+      "name": "test-run",
+      "status": "pending"
+    },
+    {
+      "step": 15,
+      "name": "report-wiring",
+      "status": "pending"
+    }
+  ]
+}
