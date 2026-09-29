@@ -89,7 +89,16 @@
     {
       "step": 6,
       "name": "split",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-29T12:56:59+0900",
+      "summary": "결정론적 그룹 단위 split과 미리보기 명령을 구현했습니다: 골드 46그룹(최대 3), 실버 30그룹(최대 31), 누수 문서 0개이며 make verify 871 passed 및 모든 AC를 통과했습니다.",
+      "completed_at": "2026-09-29T13:09:25+0900",
+      "usage": {
+        "input_tokens": 2689124,
+        "cached_input_tokens": 2371072,
+        "output_tokens": 30252,
+        "attempts": 1
+      }
     },
     {
       "step": 7,
