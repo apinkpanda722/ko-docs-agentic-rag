@@ -10,7 +10,7 @@ import os
 import re
 import unicodedata
 from collections import Counter, defaultdict
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import replace
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -99,31 +99,26 @@ _DRY_RUN_REQUIRED = frozenset(
 _ATTRIBUTE_LABELS = {
     "action": "후속 조치",
     "cause": "원인",
-    "decision": "결정 내용",
+    "decision": "결정 사항",
     "dependency": "의존 서비스",
     "incident": "관련 장애",
     "oncall": "당직 담당자",
-    "owner": "담당자 또는 운영 담당 팀",
-    "plan": "계획 내용",
-    "policy": "정책 내용",
+    "org": "새로 구성한 담당 역할",
+    "owner": "담당자",
+    "plan": "추진 계획",
+    "policy": "새로 정한 규칙",
     "restored": "복구 시각",
-    "result": "결과",
+    "result": "개선 효과",
     "service": "관련 서비스",
     "severity": "심각도",
     "slo": "서비스 수준 목표",
     "start": "발생 시각",
     "ticket": "관련 티켓",
-    "version": "변경 또는 배포 내용",
+    "version": "배포한 기능",
     "window": "적용 기간",
 }
-_SQL_ATTRIBUTE_LABELS = {
-    "tickets_by_team": "팀별 티켓 수",
-    "tickets_by_status": "상태별 티켓 수",
-    "tickets_by_month": "월별 티켓 수",
-    "approvals_by_team": "팀별 결재 수",
-    "approvals_by_status": "상태별 결재 수",
-    "approval_amount_by_team": "팀별 결재 금액 합계",
-}
+_SERVICE_OWNER_LABEL = "운영 담당 팀"
+_METHOD_RE = re.compile(r"방법|(?:확인|조회)할\s*수\s*있|알\s*수\s*있")
 
 PrintFn = Callable[..., object]
 DraftCheck = Callable[[Question, str, Seed, Mapping[str, Person]], bool]
@@ -206,6 +201,7 @@ def pending_specs(
         else set()
     )
     history = _draft_history(root)
+    cached = _cached_attempts(root)
     current_hash = template_hash()
     pending: list[tuple[Question, int]] = []
     for spec in sorted(specs, key=lambda item: item.id):
@@ -217,7 +213,7 @@ def pending_specs(
         )
         if current_attempts >= config.max_attempts:
             continue
-        next_attempt = max(attempts, default=0) + 1
+        next_attempt = max([*attempts, *cached.get(spec.id, ())], default=0) + 1
         pending.append((spec, next_attempt))
     return pending
 
@@ -245,6 +241,7 @@ def validate_draft(
         ("answer_leak", _answer_leak),
         ("as_of_missing", _as_of_missing),
         ("prompt_artifact", _prompt_artifact),
+        ("asks_method", _asks_method),
     )
     codes = [
         code for code, check in checks if check(spec, candidate, seed, people_by_id)
@@ -379,7 +376,26 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--yes", action="store_true")
     parser.add_argument("--status", action="store_true")
     parser.add_argument("--validate-only", action="store_true")
+    parser.add_argument(
+        "--invalidate",
+        nargs="+",
+        metavar="ID",
+        help="mark these specs' drafts stale so they are drafted again",
+    )
+    parser.add_argument("--reason", default="spec_replaced")
     args = parser.parse_args(argv)
+    if args.invalidate:
+        root = args.root.resolve()
+        known = {spec.id for spec in load_questions(root / SPECS_PATH)}
+        unknown = sorted(set(args.invalidate) - known)
+        if unknown:
+            print(f"명세에 없는 문항: {', '.join(unknown)}")
+            return 1
+        removed = invalidate_drafts(root, args.invalidate, reason=args.reason)
+        print(
+            f"초안 무효화: {len(args.invalidate)}문항, validated에서 {removed}건 제거"
+        )
+        return 0
     modes = sum((args.dry_run, args.status, args.validate_only))
     if modes > 1:
         parser.error("--dry-run, --status, --validate-only는 함께 쓸 수 없습니다")
@@ -477,16 +493,40 @@ def _asked_attribute(spec: Question) -> str:
     if spec.type == "unanswerable":
         return "비용 또는 영향 사용자 수 중 하나"
     if spec.type == "sql":
-        return _SQL_ATTRIBUTE_LABELS.get(spec.anchor_values[0], "집계 결과")
+        return f"{spec.anchor_values[0]}의 값(조회 방법이나 가능 여부가 아니라 집계 값 자체)"
+    fact_ids = list(
+        dict.fromkeys(q.fact_id for q in spec.qrels if q.rel == 2 and q.fact_id)
+    )
+    if spec.type == "multi_doc" and len(spec.anchor_values) == 2 and fact_ids:
+        label = _fact_label(fact_ids[0])
+        if fact_ids[0].rsplit("-", 1)[-1] in {"start", "restored"}:
+            return f"두 건 중 {label}이 더 이른 건(각 건의 {label} 포함)"
+        return f"두 건 각각의 {label}"
+    service_facts = [f for f in fact_ids if f.startswith("f-service-")]
+    if spec.type == "multi_doc" and len(fact_ids) == 2 and len(service_facts) == 1:
+        return f"해당 건이 발생한 서비스의 {_fact_label(service_facts[0])}"
     labels: list[str] = []
-    for qrel in spec.qrels:
-        if qrel.rel != 2 or qrel.fact_id is None:
-            continue
-        attribute = qrel.fact_id.rsplit("-", 1)[-1]
-        label = _ATTRIBUTE_LABELS.get(attribute, "관련 정보")
+    for fact_id in fact_ids:
+        label = _fact_label(fact_id)
         if label not in labels:
             labels.append(label)
     return " 및 ".join(labels) if labels else "관련 정보"
+
+
+def _fact_label(fact_id: str) -> str:
+    attribute = fact_id.rsplit("-", 1)[-1]
+    if attribute == "owner" and fact_id.startswith("f-service-"):
+        return _SERVICE_OWNER_LABEL
+    return _ATTRIBUTE_LABELS.get(attribute, "관련 정보")
+
+
+def _asks_method(
+    spec: Question,
+    text: str,
+    _seed: Seed,
+    _people: Mapping[str, Person],
+) -> bool:
+    return spec.type == "sql" and _METHOD_RE.search(text) is not None
 
 
 def _request_metadata(
@@ -644,35 +684,96 @@ def _date_forms(value: str) -> tuple[str, ...]:
     )
 
 
-def _draft_history(root: Path) -> dict[str, dict[int, dict[str, object]]]:
-    history: dict[str, dict[int, dict[str, object]]] = defaultdict(dict)
-    records = load_records(root / DRAFT_LOG)
-    stale = {
-        record.get("custom_id")
-        for record in records
+def _stale_keys(root: Path) -> set[tuple[object, object]]:
+    return {
+        (record.get("custom_id"), record.get("batch_id"))
+        for record in load_records(root / DRAFT_LOG)
         if record.get("status") == "stale_spec"
     }
-    for record in records:
-        if record.get("custom_id") in stale:
+
+
+def _cache_payloads(root: Path) -> list[tuple[Path, dict[str, object]]]:
+    directory = root / DRAFTS_DIR
+    payloads: list[tuple[Path, dict[str, object]]] = []
+    if not directory.exists():
+        return payloads
+    for path in sorted(directory.glob("*.json")):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise TypeError(f"초안 캐시는 객체여야 합니다: {path}")
+        payloads.append((path, payload))
+    return payloads
+
+
+def _draft_history(root: Path) -> dict[str, dict[int, dict[str, object]]]:
+    """Attempts that still count; drafts marked stale_spec are excluded."""
+    stale = _stale_keys(root)
+    history: dict[str, dict[int, dict[str, object]]] = defaultdict(dict)
+    for record in load_records(root / DRAFT_LOG):
+        if (record.get("custom_id"), record.get("batch_id")) in stale:
             continue
         spec_id = record.get("id")
         attempt = record.get("attempt")
         if isinstance(spec_id, str) and isinstance(attempt, int) and attempt >= 1:
             history[spec_id][attempt] = record
-    directory = root / DRAFTS_DIR
-    if not directory.exists():
-        return history
-    for path in sorted(directory.glob("*.json")):
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(payload, dict):
-            raise TypeError(f"초안 캐시는 객체여야 합니다: {path}")
-        if payload.get("custom_id") in stale:
+    for _, payload in _cache_payloads(root):
+        if (payload.get("custom_id"), payload.get("batch_id")) in stale:
             continue
         spec_id = payload.get("id")
         attempt = payload.get("attempt")
         if isinstance(spec_id, str) and isinstance(attempt, int) and attempt >= 1:
             history[spec_id][attempt] = payload
     return history
+
+
+def _cached_attempts(root: Path) -> dict[str, set[int]]:
+    """Attempt numbers that already own a cache file (stale or not)."""
+    cached: dict[str, set[int]] = defaultdict(set)
+    for _, payload in _cache_payloads(root):
+        spec_id, attempt = payload.get("id"), payload.get("attempt")
+        if isinstance(spec_id, str) and isinstance(attempt, int):
+            cached[spec_id].add(attempt)
+    return cached
+
+
+def invalidate_drafts(
+    root: Path, ids: Iterable[str], *, reason: str = "spec_replaced"
+) -> int:
+    """Drop validated drafts of changed specs and mark their drafts stale_spec."""
+    root = Path(root)
+    targets = set(ids)
+    if not targets:
+        return 0
+    removed = 0
+    path = root / VALIDATION_PATH
+    if path.exists():
+        drafted = load_questions(path)
+        kept = [question for question in drafted if question.id not in targets]
+        removed = len(drafted) - len(kept)
+        if removed:
+            write_questions(path, kept)
+    stale = _stale_keys(root)
+    sources: dict[tuple[object, object], Mapping[str, object]] = {}
+    for record in load_records(root / DRAFT_LOG):
+        if record.get("id") in targets:
+            sources[(record.get("custom_id"), record.get("batch_id"))] = record
+    for _, payload in _cache_payloads(root):
+        if payload.get("id") in targets:
+            key = (payload.get("custom_id"), payload.get("batch_id"))
+            sources.setdefault(key, payload)
+    for key, source in sorted(sources.items(), key=lambda item: str(item[0])):
+        if key in stale:
+            continue
+        _append_draft_log(
+            root,
+            {
+                **{field: source.get(field) for field in _DRAFT_LOG_REQUIRED},
+                "status": "stale_spec",
+                "reason": reason,
+                "ts": _utc_now(),
+            },
+        )
+    return removed
 
 
 def _write_validation_outputs(
@@ -685,11 +786,11 @@ def _write_validation_outputs(
     failing: list[tuple[str, int, list[str]]] | None = None,
 ) -> dict[str, object]:
     by_id = {spec.id: spec for spec in specs}
+    stale = _stale_keys(root)
     attempts: dict[str, list[dict[str, object]]] = defaultdict(list)
-    for path in sorted((root / DRAFTS_DIR).glob("*.json")):
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(payload, dict):
-            raise TypeError(f"초안 캐시는 객체여야 합니다: {path}")
+    for path, payload in _cache_payloads(root):
+        if (payload.get("custom_id"), payload.get("batch_id")) in stale:
+            continue
         spec_id = payload.get("id")
         attempt = payload.get("attempt")
         if not isinstance(spec_id, str) or spec_id not in by_id:

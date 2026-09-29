@@ -501,7 +501,7 @@ def test_actual_repository_specs_meet_quotas_validate_and_are_deterministic(
         if (payload := json.loads(path.read_text(encoding="utf-8")))
     }
     counts = Counter((question.set, question.type) for question in questions)
-    assert len(questions) == 180
+    assert len(questions) == 30 + sum(SILVER_QUOTA.values())
     assert {
         question_type: counts[("gold", question_type)]
         for question_type, source in GOLD_QUOTA
@@ -742,7 +742,7 @@ def test_sync_replaces_only_the_question_that_breaks_a_condition(
     )
     existing = [*_silver_specs(tiny_seed, tiny_docs), pair]
     docs = {
-        **tiny_docs,
+        **_with_bridge(tiny_docs),
         "doc-together": _document(
             "doc-together",
             [
@@ -835,7 +835,7 @@ def test_sync_is_deterministic_for_the_same_input(
     )
     existing = [*_silver_specs(tiny_seed, tiny_docs), pair]
     docs = {
-        **tiny_docs,
+        **_with_bridge(tiny_docs),
         "doc-together": _document(
             "doc-together",
             [
@@ -1007,3 +1007,535 @@ def test_sync_names_the_ambiguity_when_a_semantic_subject_gains_a_twin_fact(
     assert result.questions[0].type == "semantic"
     assert result.questions[0].id == "s-syn-001"
     assert result.questions[0].answer_values != existing[0].answer_values
+
+
+# ---------------------------------------------------------------------------
+# multi_doc: only (a) one subject's facts, or (b) incident -> service -> fact.
+# ---------------------------------------------------------------------------
+
+
+def _with_bridge(docs: dict[str, dict[str, object]]) -> dict[str, dict[str, object]]:
+    """Linked fixture where no single document holds the incident ID and answer."""
+    return {
+        **docs,
+        "doc-public-a": _document(
+            "doc-public-a",
+            [
+                ("f-inc-id", "INC-2026-001"),
+                ("f-inc-cause", "잠금 경합이 원인이었다."),
+                ("f-evt-old-plan", "구형 절차를 적용했다."),
+                ("f-evt-old-owner", "가온"),
+                ("f-evt-old-service", "alpha-api"),
+            ],
+        ),
+        "doc-policy": _document(
+            "doc-policy", [("f-service-alpha-policy", "배포 전 승인을 받는다.")]
+        ),
+        "doc-bridge": _document(
+            "doc-bridge",
+            [("f-inc-id", "INC-2026-001"), ("f-inc-service", "alpha-api")],
+        ),
+    }
+
+
+def test_multi_doc_candidates_are_same_subject_or_linked_only(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    docs = _with_bridge(tiny_docs)
+    pools, _ = golden_specs._candidate_pools(
+        tiny_seed, docs, golden_specs.fact_index(docs)
+    )
+    forms = {
+        (c.anchor_values, frozenset(c.answer_fact_ids)) for c in pools["multi_doc"]
+    }
+
+    assert (("INC-2026-001",), frozenset({"f-inc-cause", "f-inc-action"})) in forms
+    assert (
+        ("INC-2026-001",),
+        frozenset({"f-inc-service", "f-service-alpha-policy"}),
+    ) in forms
+    for candidate in pools["multi_doc"]:
+        subjects = {tiny_seed.facts[f].subject for f in candidate.answer_fact_ids}
+        assert candidate.anchor_values == ("INC-2026-001",)
+        assert subjects in ({"INC-2026-001"}, {"INC-2026-001", "alpha-api"})
+        assert not set(candidate.answer_values) & set(candidate.anchor_values)
+
+
+def test_multi_doc_never_bundles_different_events_under_a_service(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    docs = _with_bridge(tiny_docs)
+    pools, rejected = golden_specs._candidate_pools(
+        tiny_seed, docs, golden_specs.fact_index(docs)
+    )
+
+    assert not any(
+        {"f-evt-old-plan", "f-evt-new-plan"} <= set(c.answer_fact_ids)
+        or c.anchor_values == ("alpha-api",)
+        for c in pools["multi_doc"]
+    )
+    # evt-* IDs never appear in document bodies, so they cannot anchor a question.
+    assert rejected["multi_doc_anchor_not_in_docs"] >= 1
+
+
+def test_sync_rejects_a_service_bundle_like_g_syn_011(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    bundle = golden_specs._Candidate(
+        type="multi_doc",
+        anchor_values=("alpha-api",),
+        answer_values=("구형 절차를 적용했다.", "신형 절차를 적용했다."),
+        answer_fact_ids=("f-evt-old-plan", "f-evt-new-plan"),
+        qrels=golden_specs.build_qrels(
+            ["f-evt-old-plan", "f-evt-new-plan"],
+            seed=tiny_seed,
+            docs=tiny_docs,
+            index=golden_specs.fact_index(tiny_docs),
+        ),
+        reference_answer="구형 절차를 적용했다. 신형 절차를 적용했다.",
+    )
+    existing = golden_specs._question_from_candidate(
+        bundle,
+        qid="s-syn-001",
+        set_name="silver",
+        asker=golden_specs.Asker("platform", 1),
+    )
+
+    _, reasons = golden_specs._resync_question(
+        existing, golden_specs._sync_context(tiny_seed, tiny_docs)
+    )
+
+    assert "multi_doc_not_linked_form" in reasons
+
+
+def test_person_anchor_is_rejected_when_the_person_spans_several_subjects(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    extra = Fact(
+        "f-inc-owner", "person", "p-002", "INC-2026-001", None, "normal", "fixture"
+    )
+    seed = replace(
+        tiny_seed, facts=MappingProxyType({**tiny_seed.facts, extra.fact_id: extra})
+    )
+    docs = {**tiny_docs, "doc-owner": _document("doc-owner", [("f-inc-owner", "나래")])}
+
+    pools, rejected = golden_specs._candidate_pools(
+        seed, docs, golden_specs.fact_index(docs)
+    )
+
+    assert not any(c.anchor_values == ("나래",) for c in pools["semantic"])
+    assert rejected["semantic_person_multiple_subjects"] >= 1
+
+
+# ---------------------------------------------------------------------------
+# SQL: natural-language anchors and permission-filtered expected values.
+# ---------------------------------------------------------------------------
+
+_LEDGER = {
+    "tickets": [
+        {
+            "owner_team": "platform",
+            "status": "open",
+            "created_at": "2026-01-02T10:00:00+09:00",
+            "access_level": "public",
+            "access_teams": "",
+            "access_min_grade": 1,
+        },
+        {
+            "owner_team": "security",
+            "status": "open",
+            "created_at": "2026-01-03T10:00:00+09:00",
+            "access_level": "team",
+            "access_teams": "security",
+            "access_min_grade": 1,
+        },
+        {
+            "owner_team": "security",
+            "status": "closed",
+            "created_at": "2026-02-03T10:00:00+09:00",
+            "access_level": "restricted",
+            "access_teams": "security",
+            "access_min_grade": 4,
+        },
+    ],
+    "approvals": [
+        {
+            "owner_team": "finance",
+            "status": "approved",
+            "submitted_at": "2026-01-04T10:00:00+09:00",
+            "amount_krw": 300,
+            "access_level": "team",
+            "access_teams": "finance",
+            "access_min_grade": 1,
+        }
+    ],
+}
+
+
+def test_sql_anchors_are_natural_language_not_query_names() -> None:
+    candidates = golden_specs._sql_candidates(_LEDGER, "db-hash")
+
+    anchors = {c.anchor_values[0] for c in candidates}
+    assert "월별 티켓 수" in anchors
+    assert not any("_" in anchor for anchor in anchors)
+
+
+def test_sql_expected_value_counts_only_rows_the_asker_can_read() -> None:
+    by_team = next(
+        c
+        for c in golden_specs._sql_candidates(_LEDGER, "db-hash")
+        if c.anchor_values == ("팀별 티켓 수",)
+    )
+
+    outsider = golden_specs._bind_sql(
+        by_team, golden_specs.Asker("platform", 5), _LEDGER, "db-hash"
+    )
+    junior = golden_specs._bind_sql(
+        by_team, golden_specs.Asker("security", 1), _LEDGER, "db-hash"
+    )
+    senior = golden_specs._bind_sql(
+        by_team, golden_specs.Asker("security", 4), _LEDGER, "db-hash"
+    )
+
+    assert outsider.sql.expected == [{"owner_team": "platform", "count": 1}]
+    assert junior.sql.expected == [
+        {"owner_team": "platform", "count": 1},
+        {"owner_team": "security", "count": 1},
+    ]
+    assert senior.sql.expected[-1] == {"owner_team": "security", "count": 2}
+    assert outsider.answer_values != senior.answer_values
+
+
+def test_sync_replaces_sql_specs_with_query_name_anchors_or_unfiltered_values(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    fresh = next(
+        c
+        for c in golden_specs._sql_candidates(_LEDGER, "db-hash")
+        if c.anchor_values == ("팀별 티켓 수",)
+    )
+    legacy = replace(fresh, anchor_values=("tickets_by_team",))
+    asker = golden_specs.Asker("platform", 5)
+    old_name = golden_specs._question_from_candidate(
+        golden_specs._bind_sql(legacy, asker, _LEDGER, "db-hash"),
+        qid="g-syn-025",
+        set_name="gold",
+        asker=asker,
+    )
+    unfiltered = golden_specs._question_from_candidate(
+        fresh, qid="g-syn-026", set_name="gold", asker=asker
+    )
+    context = golden_specs._sync_context(tiny_seed, tiny_docs, db_rows=_LEDGER)
+
+    assert (
+        "sql_anchor_not_natural" in golden_specs._resync_question(old_name, context)[1]
+    )
+    assert (
+        "sql_expected_not_filtered"
+        in golden_specs._resync_question(unfiltered, context)[1]
+    )
+
+
+def test_sync_drops_questions_above_a_lowered_quota_violating_first(
+    tiny_seed: Seed,
+    tiny_docs: dict[str, dict[str, object]],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    existing = _silver_specs(tiny_seed, tiny_docs)
+    monkeypatch.setitem(golden_specs.SILVER_QUOTA, "semantic", 0)
+
+    result = _sync(existing, tiny_seed, tiny_docs)
+
+    assert result.dropped == ("s-syn-002",)
+    assert "s-syn-002" not in {q.id for q in result.questions}
+    assert len(result.questions) == len(existing) - 1
+
+
+def test_gold_replacement_prefers_facts_no_surviving_silver_question_uses() -> None:
+    shared = replace(_cand("shared", ("INC-A",)), answer_fact_ids=("f-silver",))
+    free = replace(_cand("free", ("INC-B",), "svc-b"), answer_fact_ids=("f-free",))
+
+    def pick(avoid: frozenset[str]):
+        return golden_specs._pick_replacement(
+            [shared, free],
+            set_name="gold",
+            question_type="semantic",
+            random_seed=7,
+            used_keys=set(),
+            gold_answer_facts=frozenset(),
+            type_counts=Counter(),
+            set_counts=Counter(),
+            avoid_facts=avoid,
+        )
+
+    assert pick(frozenset({"f-silver"})) is free
+    assert pick(frozenset({"f-silver", "f-free"})) in (shared, free)
+
+
+def test_sync_names_the_person_rule_for_a_person_anchored_semantic_spec(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    existing = [
+        _spec(
+            tiny_seed,
+            tiny_docs,
+            qid="s-syn-001",
+            set_name="silver",
+            qtype="semantic",
+            pick=lambda c: c.anchor_values == ("가온",),
+        )
+    ]
+    extra = Fact(
+        "f-inc-owner", "person", "p-001", "INC-2026-001", None, "normal", "fixture"
+    )
+    seed = replace(
+        tiny_seed, facts=MappingProxyType({**tiny_seed.facts, extra.fact_id: extra})
+    )
+    docs = {**tiny_docs, "doc-owner": _document("doc-owner", [("f-inc-owner", "가온")])}
+
+    _, reasons = golden_specs._resync_question(
+        existing[0], golden_specs._sync_context(seed, docs)
+    )
+
+    assert "semantic_person_multiple_subjects" in reasons
+
+
+def test_linked_multi_doc_rejects_an_answer_the_incident_itself_states(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    owner = Fact("f-inc-owner", "person", "p-001", "INC-2026-001", None, "normal", "x")
+    oncall = Fact(
+        "f-service-alpha-oncall", "person", "p-001", "alpha-api", None, "normal", "x"
+    )
+    seed = replace(
+        tiny_seed,
+        facts=MappingProxyType(
+            {**tiny_seed.facts, owner.fact_id: owner, oncall.fact_id: oncall}
+        ),
+    )
+    docs = {
+        **_with_bridge(tiny_docs),
+        "doc-owner": _document("doc-owner", [("f-inc-owner", "가온")]),
+        "doc-oncall": _document("doc-oncall", [("f-service-alpha-oncall", "가온")]),
+    }
+    context = golden_specs._sync_context(seed, docs)
+
+    assert "multi_doc_answer_in_anchor_subject" in golden_specs._multi_doc_reasons(
+        ("INC-2026-001",), ("f-inc-service", "f-service-alpha-oncall"), context
+    )
+    assert not golden_specs._multi_doc_reasons(
+        ("INC-2026-001",), ("f-inc-service", "f-service-alpha-policy"), context
+    )
+
+
+# ---------------------------------------------------------------------------
+# Strict multi_doc check and comparison multi_doc.
+# ---------------------------------------------------------------------------
+
+
+def _team_seed(seed: Seed) -> Seed:
+    owner = Fact(
+        "f-service-alpha-owner",
+        "text",
+        "플랫폼개발 팀이 운영을 맡는다.",
+        "alpha-api",
+        None,
+        "normal",
+        "x",
+    )
+    return replace(seed, facts=MappingProxyType({**seed.facts, owner.fact_id: owner}))
+
+
+@pytest.mark.parametrize(
+    ("body", "fact_id"),
+    [
+        # like syn-weekly-002: incident ID and the final answer sentence together
+        (
+            "INC-2026-001 이후에도 배포 전 승인을 받는다 는 원칙을 지켰다",
+            "f-service-alpha-policy",
+        ),
+        # like syn-incident-013: incident ID and the owning team, any spelling
+        ("INC-2026-001은 플랫폼개발팀이 대응했다", "f-service-alpha-owner"),
+        ("INC-2026-001 대응: 플랫폼개발", "f-service-alpha-owner"),
+    ],
+)
+def test_strict_check_rejects_a_document_holding_anchor_and_final_answer(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]], body: str, fact_id: str
+) -> None:
+    seed = _team_seed(tiny_seed)
+    docs = {
+        **_with_bridge(tiny_docs),
+        "doc-owner": _document(
+            "doc-owner", [("f-service-alpha-owner", "플랫폼개발 팀이 운영을 맡는다.")]
+        ),
+    }
+    clean = golden_specs._sync_context(seed, docs)
+    assert "multi_doc_one_document_answers" not in golden_specs._multi_doc_reasons(
+        ("INC-2026-001",), ("f-inc-service", fact_id), clean
+    )
+
+    leaky = golden_specs._sync_context(
+        seed, {**docs, "doc-leak": _document("doc-leak", []) | {"body": body}}
+    )
+    assert "multi_doc_one_document_answers" in golden_specs._multi_doc_reasons(
+        ("INC-2026-001",), ("f-inc-service", fact_id), leaky
+    )
+
+
+def _two_incidents(
+    seed: Seed, docs: dict[str, dict[str, object]], second_start: str
+) -> tuple[Seed, dict[str, dict[str, object]]]:
+    first = Fact(
+        "f-inc-start",
+        "datetime",
+        "2026-01-10T09:00",
+        "INC-2026-001",
+        date(2026, 1, 10),
+        "normal",
+        "x",
+    )
+    second = Fact(
+        "f-inc2-start",
+        "datetime",
+        second_start,
+        "INC-2026-002",
+        date(2026, 3, 1),
+        "normal",
+        "x",
+    )
+    ident = Fact("f-inc2-id", "id", "INC-2026-002", "INC-2026-002", None, "normal", "x")
+    seed = replace(
+        seed,
+        facts=MappingProxyType(
+            {
+                **seed.facts,
+                first.fact_id: first,
+                second.fact_id: second,
+                ident.fact_id: ident,
+            }
+        ),
+    )
+    docs = {
+        **docs,
+        "doc-start-1": _document(
+            "doc-start-1",
+            [("f-inc-id", "INC-2026-001"), ("f-inc-start", "2026-01-10 09:00")],
+        ),
+        "doc-start-2": _document(
+            "doc-start-2",
+            [
+                ("f-inc2-id", "INC-2026-002"),
+                ("f-inc2-start", second_start.replace("T", " ")),
+            ],
+        ),
+    }
+    return seed, docs
+
+
+def test_comparison_multi_doc_names_both_incidents_and_computes_the_answer(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    seed, docs = _two_incidents(tiny_seed, tiny_docs, "2026-03-01T10:00")
+    pools, _ = golden_specs._candidate_pools(seed, docs, golden_specs.fact_index(docs))
+
+    pair = next(
+        c
+        for c in pools["multi_doc"]
+        if set(c.answer_fact_ids) == {"f-inc-start", "f-inc2-start"}
+    )
+    assert pair.anchor_values == ("INC-2026-001", "INC-2026-002")
+    assert set(pair.subjects or ()) <= {"INC-2026-001", "INC-2026-002"}
+    assert "INC-2026-001" in (pair.reference_answer or "").split("먼저")[0]
+    assert {q.doc_id for q in pair.qrels if q.rel == 2} >= {
+        "doc-start-1",
+        "doc-start-2",
+    }
+    assert not golden_specs._multi_doc_reasons(
+        pair.anchor_values, pair.answer_fact_ids, golden_specs._sync_context(seed, docs)
+    )
+    annotated = golden_specs._annotate_subjects(pair, seed, docs)
+    assert annotated.subjects == ("INC-2026-001", "INC-2026-002")
+
+
+def test_comparison_skips_ties_and_documents_holding_both_answers(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    seed, docs = _two_incidents(tiny_seed, tiny_docs, "2026-01-10T09:00")
+    pools, _ = golden_specs._candidate_pools(seed, docs, golden_specs.fact_index(docs))
+    assert not any(
+        set(c.answer_fact_ids) == {"f-inc-start", "f-inc2-start"}
+        for c in pools["multi_doc"]
+    )
+
+    seed, docs = _two_incidents(tiny_seed, tiny_docs, "2026-03-01T10:00")
+    docs["doc-both"] = _document("doc-both", []) | {
+        "body": "INC-2026-001은 2026-01-10 09:00, INC-2026-002는 2026-03-01 10:00에 시작"
+    }
+    reasons = golden_specs._multi_doc_reasons(
+        ("INC-2026-001", "INC-2026-002"),
+        ("f-inc-start", "f-inc2-start"),
+        golden_specs._sync_context(seed, docs),
+    )
+    assert "multi_doc_one_document_answers" in reasons
+
+
+def test_sync_flags_a_multi_doc_asker_who_cannot_read_every_answer(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    seed, docs = _two_incidents(tiny_seed, tiny_docs, "2026-03-01T10:00")
+    docs["doc-start-2"] = docs["doc-start-2"] | {
+        "access": {"level": "team", "teams": ["security"], "min_grade": 1}
+    }
+    pools, _ = golden_specs._candidate_pools(seed, docs, golden_specs.fact_index(docs))
+    pair = next(
+        c
+        for c in pools["multi_doc"]
+        if set(c.answer_fact_ids) == {"f-inc-start", "f-inc2-start"}
+    )
+    people = tuple(seed.people)
+    assert [p.team for p in golden_specs._eligible_people(pair, people, docs)] == [
+        "security"
+    ]
+    outsider = golden_specs._question_from_candidate(
+        pair,
+        qid="s-syn-001",
+        set_name="silver",
+        asker=golden_specs.Asker("platform", 1),
+    )
+
+    _, reasons = golden_specs._resync_question(
+        outsider, golden_specs._sync_context(seed, docs)
+    )
+
+    assert "multi_doc_answer_inaccessible" in reasons
+
+
+def test_sync_fills_a_raised_quota_with_new_ids_in_free_slots(
+    tiny_seed: Seed,
+    tiny_docs: dict[str, dict[str, object]],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    existing = [q for q in _silver_specs(tiny_seed, tiny_docs) if q.id != "s-syn-002"]
+    for question_type in golden_specs.SILVER_QUOTA:
+        monkeypatch.setitem(golden_specs.SILVER_QUOTA, question_type, 0)
+    for q in existing:
+        monkeypatch.setitem(golden_specs.SILVER_QUOTA, q.type, 1)
+    monkeypatch.setitem(golden_specs.SILVER_QUOTA, "semantic", 1)
+    monkeypatch.setattr(golden_specs, "GOLD_QUOTA", {})
+
+    result = golden_specs.sync_specs(
+        existing,
+        tiny_seed,
+        _with_bridge(tiny_docs),
+        db_rows=_EMPTY_ROWS,
+        db_content_hash="db-hash",
+        random_seed=7,
+        fill=True,
+    )
+
+    added = next(q for q in result.questions if q.id == "s-syn-002")
+    assert added.type == "semantic"
+    assert result.replaced["s-syn-002"] == ("filled_to_quota",)
+    assert [q.id for q in result.questions if q.id != "s-syn-002"] == [
+        q.id for q in existing
+    ]

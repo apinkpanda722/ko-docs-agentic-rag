@@ -281,10 +281,21 @@ def test_silver_sample_is_deterministic_stratified_twenty_percent() -> None:
     second = golden_review.silver_sample(list(reversed(silver)), random_seed=77)
 
     assert [question.id for question in first] == [question.id for question in second]
-    assert len(first) == 30
-    assert Counter(question.type for question in first) == {
-        question_type: count // 5 for question_type, count in SILVER_QUOTA.items()
+    expected = {
+        question_type: golden_review.sample_size(count)
+        for question_type, count in SILVER_QUOTA.items()
     }
+    assert Counter(question.type for question in first) == expected
+    assert len(first) == sum(expected.values()) == 28
+
+
+@pytest.mark.parametrize(
+    ("population", "size"), [(25, 5), (18, 4), (17, 3), (13, 3), (12, 2), (3, 1)]
+)
+def test_silver_sample_size_is_twenty_percent_rounded_half_up(
+    population: int, size: int
+) -> None:
+    assert golden_review.sample_size(population) == size
 
 
 def test_packets_prefill_only_claude_fields_and_keep_human_fields_blank(
@@ -293,7 +304,7 @@ def test_packets_prefill_only_claude_fields_and_keep_human_fields_blank(
     _prepare_root(tmp_path)
 
     rows = _review_rows(tmp_path)
-    assert len(rows) == 83
+    assert len(rows) == 50 + 28 + 3
     assert all(
         row[field] == ""
         for row in rows
@@ -316,7 +327,11 @@ def test_unsigned_gold_row_is_unreviewed_and_blocks_gold_write(
     _prepare_root(tmp_path)
     rows = _review_rows(tmp_path)
     _sign(rows)
-    unsigned = next(row for row in rows if row["set"] == "gold")
+    unsigned = next(
+        row
+        for row in rows
+        if row["set"] == "gold" and not row["question_id"].startswith("chk-")
+    )
     unsigned["reviewer"] = ""
     unsigned["reviewed_on"] = ""
     _write_review(tmp_path, rows)
@@ -409,9 +424,9 @@ def test_negative_silver_sample_item_is_removed_and_wilson_interval_reported(
     promoted = (tmp_path / golden_review.SILVER_PATH).read_text(encoding="utf-8")
     assert silver["question_id"] not in promoted
     summary = json.loads((tmp_path / golden_review.SUMMARY_PATH).read_text())
-    assert summary["silver_sample"]["n"] == 30
+    assert summary["silver_sample"]["n"] == 28
     assert summary["silver_sample"]["negative"] == 1
-    assert summary["silver_sample"]["error_rate"] == pytest.approx(1 / 30, abs=1e-4)
+    assert summary["silver_sample"]["error_rate"] == pytest.approx(1 / 28, abs=1e-4)
     assert len(summary["silver_sample"]["wilson95"]) == 2
 
 
@@ -469,3 +484,54 @@ def test_m4_report_uses_one_fixed_path_and_preserves_manual_regions(
     assert "2026-09-29" in text
     assert "커밋" in text and "측정 환경" in text
     assert list((tmp_path / "docs/results").glob("*-m4-golden-set.md")) == [destination]
+
+
+def test_attention_check_sources_are_only_all_yes_gold_or_sampled_items(
+    tmp_path: Path,
+) -> None:
+    _prepare_root(tmp_path)
+    key = json.loads((tmp_path / golden_review.ATTENTION_KEY).read_text())
+    sample_ids = set(key["silver_sample_ids"])
+    rows = [
+        json.loads(line)
+        for line in (tmp_path / golden_review.CLAUDE_VERDICTS)
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    reviewed = [
+        row
+        for row in rows
+        if row["question_id"].startswith("g-") or row["question_id"] in sample_ids
+    ]
+    eligible = {row["question_id"] for row in reviewed[:4]}
+    for row in reviewed[4:]:
+        row["q1"] = False
+    _write_jsonl(tmp_path / golden_review.CLAUDE_VERDICTS, rows)
+
+    assert golden_review.build_packets(tmp_path, attention_checks=3) == 0
+    first = json.loads((tmp_path / golden_review.ATTENTION_KEY).read_text())
+    assert golden_review.build_packets(tmp_path, attention_checks=3) == 0
+    second = json.loads((tmp_path / golden_review.ATTENTION_KEY).read_text())
+
+    sources = [item["source_question_id"] for item in first["attention_checks"]]
+    assert set(sources) <= eligible
+    assert all(not source.startswith("g-real") for source in sources)
+    assert first == second
+    # The flipped item is therefore always a real disagreement.
+    for item in first["attention_checks"]:
+        assert list(item["verdict"].values()).count(False) == 1
+
+
+def test_attention_checks_fail_without_enough_all_yes_items(tmp_path: Path) -> None:
+    _prepare_root(tmp_path)
+    rows = [
+        json.loads(line)
+        for line in (tmp_path / golden_review.CLAUDE_VERDICTS)
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    for row in rows:
+        row["q2"] = False
+    _write_jsonl(tmp_path / golden_review.CLAUDE_VERDICTS, rows)
+
+    assert golden_review.build_packets(tmp_path, attention_checks=3) == 1

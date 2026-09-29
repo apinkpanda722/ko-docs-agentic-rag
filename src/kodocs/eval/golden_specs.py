@@ -6,7 +6,9 @@ import argparse
 import hashlib
 import json
 import random
+import re
 import sqlite3
+import unicodedata
 from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
@@ -29,7 +31,7 @@ from kodocs.eval.golden import (
 )
 from kodocs.ingest.manifest import sha256_file
 from kodocs.synth.db import build_rows
-from kodocs.synth.seed import Fact, Person, Seed, load_seed, surface_forms
+from kodocs.synth.seed import TEAMS, Fact, Person, Seed, load_seed, surface_forms
 
 SPECS_PATH = Path("data/synthetic/queries/specs.jsonl")
 SUMMARY_PATH = Path("data/manifest/golden_specs.json")
@@ -49,42 +51,42 @@ _NO_ANSWER_ATTRIBUTES = (
 
 _SQL_QUERIES = (
     (
-        "tickets_by_team",
+        "팀별 티켓 수",
         (
             "SELECT owner_team, COUNT(*) AS count FROM tickets "
             "GROUP BY owner_team ORDER BY owner_team"
         ),
     ),
     (
-        "tickets_by_status",
+        "상태별 티켓 수",
         (
             "SELECT status, COUNT(*) AS count FROM tickets "
             "GROUP BY status ORDER BY status"
         ),
     ),
     (
-        "tickets_by_month",
+        "월별 티켓 수",
         (
             "SELECT substr(created_at, 1, 7) AS month, COUNT(*) AS count "
             "FROM tickets GROUP BY month ORDER BY month"
         ),
     ),
     (
-        "approvals_by_team",
+        "팀별 결재 건수",
         (
             "SELECT owner_team, COUNT(*) AS count FROM approvals "
             "GROUP BY owner_team ORDER BY owner_team"
         ),
     ),
     (
-        "approvals_by_status",
+        "상태별 결재 건수",
         (
             "SELECT status, COUNT(*) AS count FROM approvals "
             "GROUP BY status ORDER BY status"
         ),
     ),
     (
-        "approval_amount_by_team",
+        "팀별 결재 금액 합계",
         (
             "SELECT owner_team, SUM(amount_krw) AS amount_krw FROM approvals "
             "GROUP BY owner_team ORDER BY owner_team"
@@ -146,6 +148,7 @@ class SyncResult:
     qrels_changed: tuple[str, ...]
     replaced: dict[str, tuple[str, ...]]
     build: _BuildResult
+    dropped: tuple[str, ...] = ()
 
 
 # Per-subject caps: (within one type, across all types of one set).
@@ -278,6 +281,7 @@ def sync_specs(
     db_rows: Mapping[str, Sequence[Mapping[str, object]]],
     db_content_hash: str,
     random_seed: int,
+    fill: bool = False,
 ) -> SyncResult:
     """Keep every existing selection; re-derive evidence for the current corpus.
 
@@ -294,13 +298,12 @@ def sync_specs(
         seed, docs, db_rows=db_rows, db_content_hash=db_content_hash
     )
     people = tuple(sorted(seed.people, key=lambda item: item.person_id))
-    context = _SyncContext(
-        seed=seed,
-        docs=docs,
+    context = _sync_context(
+        seed,
+        docs,
         index=index,
-        document_fact_ids=_document_fact_ids(docs),
-        people_by_id={person.person_id: person for person in seed.people},
-        facts_by_subject=_facts_by_subject(seed),
+        db_rows=db_rows,
+        db_content_hash=db_content_hash,
     )
 
     unclaimed: dict[tuple[object, ...], list[_Candidate]] = defaultdict(list)
@@ -323,6 +326,18 @@ def sync_specs(
             found = ["no_longer_valid_candidate"]
         if found:
             reasons[question.id] = found
+
+    dropped = _over_quota(existing, reasons)
+    for qid in dropped:
+        by_id.pop(qid)
+        recomputed.pop(qid)
+        resolved.pop(qid, None)
+        reasons.pop(qid, None)
+    order = [question for question in order if question.id in by_id]
+    fills = _under_quota(list(by_id.values())) if fill else []
+    for placeholder in fills:
+        by_id[placeholder.id] = placeholder
+        reasons[placeholder.id] = ["filled_to_quota"]
 
     used_keys = {candidate.key for candidate in resolved.values()}
     type_counts: dict[tuple[str, str], Counter[str]] = defaultdict(Counter)
@@ -353,11 +368,15 @@ def sync_specs(
                 gold_answer_facts=frozenset(gold_facts()),
                 type_counts=type_counts[(original.set, original.type)],
                 set_counts=set_counts[original.set],
+                avoid_facts=frozenset(silver_facts())
+                if kind == "gold"
+                else frozenset(),
             )
             used_keys.add(candidate.key)
             asker = _replacement_asker(
                 candidate, people, docs, random_seed=random_seed, qid=qid
             )
+            candidate = _bind_sql(candidate, asker, db_rows, db_content_hash)
             fresh = _question_from_candidate(
                 candidate, qid=qid, set_name=original.set, asker=asker
             )
@@ -369,6 +388,14 @@ def sync_specs(
         if qid in replacements:
             return replacements[qid][1]
         return None if qid in reasons else resolved[qid]
+
+    def silver_facts() -> set[str]:
+        return {
+            fact_id
+            for qid, question in by_id.items()
+            if question.set == "silver" and qid not in reasons
+            for fact_id in resolved[qid].answer_fact_ids
+        }
 
     def gold_facts() -> set[str]:
         facts: set[str] = set()
@@ -395,11 +422,13 @@ def sync_specs(
     replace_all("silver")
 
     final: dict[str, tuple[Question, _Candidate]] = {}
-    for question in existing:
-        if question.id in replacements:
-            final[question.id] = replacements[question.id]
+    for qid in [*(question.id for question in existing), *(q.id for q in fills)]:
+        if qid not in by_id:
+            continue
+        if qid in replacements:
+            final[qid] = replacements[qid]
         else:
-            final[question.id] = (recomputed[question.id], resolved[question.id])
+            final[qid] = (recomputed[qid], resolved[qid])
 
     validation_errors: list[str] = []
     for question, _ in final.values():
@@ -414,6 +443,7 @@ def sync_specs(
     if validation_errors:
         raise SpecBuildError("validation errors: " + "; ".join(validation_errors))
 
+    _check_sql_depends_on_asker([question for question, _ in final.values()], db_rows)
     gold_by_type: dict[str, list[_Candidate]] = {}
     silver_by_type: dict[str, list[_Candidate]] = {}
     for question, candidate in final.values():
@@ -455,7 +485,72 @@ def sync_specs(
         qrels_changed=qrels_changed,
         replaced={qid: tuple(reasons[qid]) for qid in sorted(reasons)},
         build=build,
+        dropped=dropped,
     )
+
+
+def _quotas() -> dict[str, dict[str, int]]:
+    return {
+        "gold": {t: GOLD_QUOTA.get((t, "synthetic"), 0) for t in QUESTION_TYPES},
+        "silver": dict(SILVER_QUOTA),
+    }
+
+
+def _under_quota(questions: Sequence[Question]) -> list[Question]:
+    """Placeholders for a raised quota, numbered into the lowest free ids."""
+    counts = Counter((question.set, question.type) for question in questions)
+    used: dict[str, set[int]] = defaultdict(set)
+    for question in questions:
+        used[question.set].add(int(question.id.rsplit("-", 1)[-1]))
+    placeholders: list[Question] = []
+    for set_name, quotas in _quotas().items():
+        prefix = "g-syn" if set_name == "gold" else "s-syn"
+        number = 0
+        for question_type, quota in quotas.items():
+            for _ in range(quota - counts[(set_name, question_type)]):
+                number += 1
+                while number in used[set_name]:
+                    number += 1
+                used[set_name].add(number)
+                placeholders.append(
+                    Question(
+                        id=f"{prefix}-{number:03d}",
+                        set=set_name,
+                        source="synthetic",
+                        type=question_type,
+                        tags=(),
+                        question="",
+                        asker=Asker(team="", grade=0),
+                        as_of=None,
+                        qrels=(),
+                        anchor_values=(),
+                        answer_values=(),
+                        expected_response="answer",
+                        sql=None,
+                        reference_answer=None,
+                        reference_sha256=None,
+                        summary80=None,
+                        split=None,
+                    )
+                )
+    return placeholders
+
+
+def _over_quota(
+    existing: Sequence[Question], reasons: Mapping[str, object]
+) -> tuple[str, ...]:
+    """Drop questions above a lowered quota: violating ones first, highest id first."""
+    quotas = _quotas()
+    groups: dict[tuple[str, str], list[str]] = defaultdict(list)
+    for question in existing:
+        groups[(question.set, question.type)].append(question.id)
+    dropped: list[str] = []
+    for (set_name, question_type), qids in sorted(groups.items()):
+        excess = len(qids) - quotas.get(set_name, {}).get(question_type, 0)
+        if excess > 0:
+            ranked = sorted(qids, key=lambda qid: (qid in reasons, qid), reverse=True)
+            dropped.extend(ranked[:excess])
+    return tuple(sorted(dropped))
 
 
 @dataclass(frozen=True)
@@ -466,6 +561,157 @@ class _SyncContext:
     document_fact_ids: Mapping[str, frozenset[str]]
     people_by_id: Mapping[str, Person]
     facts_by_subject: Mapping[str, tuple[Fact, ...]]
+    bodies: tuple[str, ...] = ()
+    norm_bodies: tuple[str, ...] = ()
+    db_rows: Mapping[str, Sequence[Mapping[str, object]]] | None = None
+    db_content_hash: str = ""
+
+
+def _sync_context(
+    seed: Seed,
+    docs: Mapping[str, Mapping[str, object]],
+    *,
+    index: Mapping[str, Sequence[tuple[str, int, int]]] | None = None,
+    db_rows: Mapping[str, Sequence[Mapping[str, object]]] | None = None,
+    db_content_hash: str = "",
+) -> _SyncContext:
+    return _SyncContext(
+        seed=seed,
+        docs=docs,
+        index=fact_index(docs) if index is None else index,
+        document_fact_ids=_document_fact_ids(docs),
+        people_by_id={person.person_id: person for person in seed.people},
+        facts_by_subject=_facts_by_subject(seed),
+        bodies=tuple(
+            body
+            for document in docs.values()
+            if isinstance((body := document.get("body")), str)
+        ),
+        norm_bodies=tuple(
+            _norm(body)
+            for document in docs.values()
+            if isinstance((body := document.get("body")), str)
+        ),
+        db_rows=db_rows,
+        db_content_hash=db_content_hash,
+    )
+
+
+def _visible(identifier: str, context: _SyncContext) -> bool:
+    return any(identifier in body for body in context.bodies)
+
+
+_COMPARED_ATTRIBUTES = frozenset({"start", "restored"})
+_SLO_NUMBER_RE = re.compile(r"\d+(?:\.\d+)?\s*(?:%|분|시간|일|건)")
+
+
+def _norm(text: str) -> str:
+    return re.sub(r"[\s.]+", "", unicodedata.normalize("NFC", text))
+
+
+def _strict_forms(fact: Fact, context: _SyncContext) -> set[str]:
+    """Every accepted spelling of a final answer, normalized for substring checks."""
+    forms = {_norm(form) for form in _answer_forms(fact, context.people_by_id)}
+    attribute = _attribute(fact)
+    service = next((x for x in context.seed.services if x.name == fact.subject), None)
+    if service is not None and attribute == "owner":
+        team = TEAMS.get(service.owner_team)
+        if team is not None:
+            forms.update({_norm(team.name_ko), _norm(team.name_ko + "팀")})
+    if attribute == "slo":
+        forms.update(_norm(m) for m in _SLO_NUMBER_RE.findall(str(fact.value)))
+    return {form for form in forms if form}
+
+
+def _multi_doc_form(
+    anchor_values: tuple[str, ...], facts: Sequence[Fact]
+) -> tuple[str | None, list[Fact]]:
+    """Return (form, final-answer facts) for same_subject, linked or comparison."""
+    if len(anchor_values) == 1:
+        anchor = anchor_values[0]
+        if len(facts) >= 2 and {fact.subject for fact in facts} == {anchor}:
+            return "same_subject", list(facts)
+        if len(facts) == 2:
+            for bridge, target in (facts, facts[::-1]):
+                if (
+                    bridge.subject == anchor
+                    and bridge.kind == "service"
+                    and _attribute(bridge) == "service"
+                    and target.subject == str(bridge.value)
+                ):
+                    return "linked", [target]
+    if (
+        len(anchor_values) == 2
+        and len(facts) == 2
+        and {fact.subject for fact in facts} == set(anchor_values)
+        and len(set(anchor_values)) == 2
+        and _attribute(facts[0]) == _attribute(facts[1])
+        and all(fact.kind != "id" and _attribute(fact) != "service" for fact in facts)
+    ):
+        return "comparison", list(facts)
+    return None, []
+
+
+def _multi_doc_reasons(
+    anchor_values: tuple[str, ...], fact_ids: Sequence[str], context: _SyncContext
+) -> list[str]:
+    """Allow same-subject, linked (incident -> service -> fact) or comparison pairs.
+
+    Strict check: no document may hold every anchor together with every final
+    answer (any accepted spelling), so one document can never answer alone.
+    """
+    seed = context.seed
+    reasons: list[str] = []
+    facts = [seed.facts[fact_id] for fact_id in fact_ids if fact_id in seed.facts]
+    form, finals = _multi_doc_form(anchor_values, facts)
+    if form is None:
+        reasons.append("multi_doc_not_linked_form")
+    if form == "linked":
+        anchor = anchor_values[0]
+        own = {
+            answer
+            for fact in context.facts_by_subject.get(anchor, ())
+            for answer in _answer_forms(fact, context.people_by_id)
+        }
+        if own.intersection(_answer_forms(finals[0], context.people_by_id)):
+            reasons.append("multi_doc_answer_in_anchor_subject")
+    if (
+        form == "comparison"
+        and _attribute(finals[0]) in _COMPARED_ATTRIBUTES
+        and str(finals[0].value) == str(finals[1].value)
+    ):
+        reasons.append("multi_doc_comparison_tie")
+    if not anchor_values or not all(_visible(a, context) for a in anchor_values):
+        reasons.append("multi_doc_anchor_not_in_docs")
+    if any(
+        set(fact_ids).issubset(doc_facts)
+        for doc_facts in context.document_fact_ids.values()
+    ):
+        reasons.append("multi_doc_single_document")
+    if any(
+        anchor in _answer_forms(fact, context.people_by_id)
+        for fact in facts
+        for anchor in anchor_values
+    ):
+        reasons.append("multi_doc_answer_is_anchor")
+    if finals:
+        anchors = [_norm(anchor) for anchor in anchor_values]
+        answers = [_strict_forms(fact, context) for fact in finals]
+        if any(
+            all(anchor in body for anchor in anchors)
+            and all(any(form in body for form in options) for options in answers)
+            for body in context.norm_bodies
+        ):
+            reasons.append("multi_doc_one_document_answers")
+    return reasons
+
+
+def _comparison_reference(facts: Sequence[Fact], people: Mapping[str, Person]) -> str:
+    parts = [f"{fact.subject}: {_answer_forms(fact, people)[0]}" for fact in facts]
+    if _attribute(facts[0]) in _COMPARED_ATTRIBUTES:
+        early, late = sorted(facts, key=lambda fact: str(fact.value))
+        return f"{early.subject}이(가) {late.subject}보다 먼저다 ({' / '.join(parts)})"
+    return " / ".join(parts)
 
 
 def _answer_fact_ids(question: Question) -> tuple[str, ...]:
@@ -537,6 +783,8 @@ def _resync_question(
         updated = _resync_permission(question, docs, reasons)
     elif question.type == "unanswerable":
         updated = _resync_unanswerable(question, context, reasons)
+    elif question.type == "sql":
+        reasons.extend(_sql_reasons(question, context))
     elif question.type != "sql":
         unknown = [fact_id for fact_id in fact_ids if fact_id not in seed.facts]
         if not fact_ids or unknown:
@@ -625,17 +873,62 @@ def _resync_unanswerable(
     )
 
 
+def _sql_reasons(question: Question, context: _SyncContext) -> list[str]:
+    reasons: list[str] = []
+    if question.anchor_values[:1] not in {(anchor,) for anchor, _ in _SQL_QUERIES}:
+        reasons.append("sql_anchor_not_natural")
+    if question.sql is None:
+        reasons.append("sql_missing")
+    elif context.db_rows is not None and question.sql.expected != _run_sql(
+        question.sql.query, context.db_rows, question.asker
+    ):
+        reasons.append("sql_expected_not_filtered")
+    return reasons
+
+
+def _check_sql_depends_on_asker(
+    questions: Sequence[Question],
+    db_rows: Mapping[str, Sequence[Mapping[str, object]]],
+) -> None:
+    """At least two SQL answers must differ from the unfiltered aggregate."""
+    sql = [question for question in questions if question.sql is not None]
+    dependent = sum(
+        question.sql.expected != _run_sql(question.sql.query, db_rows, None)
+        for question in sql
+        if question.sql is not None
+    )
+    if sql and dependent < min(2, len(sql)):
+        raise SpecBuildError(
+            f"SQL questions whose value depends on the asker: {dependent} < 2"
+        )
+
+
 def _fact_type_reasons(
     question: Question, fact_ids: tuple[str, ...], context: _SyncContext
 ) -> list[str]:
     reasons: list[str] = []
-    if question.type == "multi_doc" and any(
-        set(fact_ids).issubset(doc_facts)
-        for doc_facts in context.document_fact_ids.values()
-    ):
-        reasons.append("multi_doc_single_document")
+    if question.type == "multi_doc":
+        reasons.extend(_multi_doc_reasons(question.anchor_values, fact_ids, context))
+        readable: dict[str, bool] = defaultdict(bool)
+        for qrel in question.qrels:
+            if qrel.rel == 2 and qrel.fact_id:
+                access = context.docs.get(qrel.doc_id, {}).get("access")
+                readable[qrel.fact_id] |= isinstance(access, Mapping) and can_read(
+                    question.asker, access
+                )
+        if not all(readable.values()):
+            reasons.append("multi_doc_answer_inaccessible")
+
     if question.type == "semantic" and len(fact_ids) == 1:
         anchor = question.anchor_values[0] if question.anchor_values else ""
+        person_ids = {p.person_id for p in context.seed.people if p.name == anchor}
+        involved = {
+            subject
+            for subject, facts in context.facts_by_subject.items()
+            if person_ids.intersection(_person_ids_for_subject(facts))
+        }
+        if person_ids and len(involved) > 1:
+            reasons.append("semantic_person_multiple_subjects")
         if len(_semantic_group(anchor, _attribute_id(fact_ids[0]), context)) != 1:
             reasons.append("semantic_ambiguous_subject_attribute")
     if question.type == "temporal":
@@ -699,10 +992,17 @@ def _pick_replacement(
     gold_answer_facts: frozenset[str],
     type_counts: Counter[str],
     set_counts: Counter[str],
+    avoid_facts: frozenset[str] = frozenset(),
 ) -> _Candidate:
-    """Take the first candidate by per-candidate hash that fits every rule."""
+    """Take the first candidate by per-candidate hash that fits every rule.
+
+    Candidates touching ``avoid_facts`` are tried only after all others, so a
+    gold replacement does not knock out a surviving silver question.
+    """
     type_cap, set_cap = DIVERSITY_CAPS[set_name]
-    for candidate in sorted(pool, key=_rank_key(random_seed)):
+    ranked = sorted(pool, key=_rank_key(random_seed))
+    ranked.sort(key=lambda item: not avoid_facts.isdisjoint(item.answer_fact_ids))
+    for candidate in ranked:
         if candidate.key in used_keys:
             continue
         if set_name == "silver" and not gold_answer_facts.isdisjoint(
@@ -739,17 +1039,10 @@ def _replacement_asker(
 
 
 def _invalidate_drafts(root: Path, ids: Iterable[str]) -> int:
-    """Drop validated drafts of replaced specs so drafting picks them up again."""
-    targets = set(ids)
-    path = root / VALIDATED_PATH
-    if not targets or not path.exists():
-        return 0
-    drafted = load_questions(path)
-    kept = [question for question in drafted if question.id not in targets]
-    removed = len(drafted) - len(kept)
-    if removed:
-        write_questions(path, kept)
-    return removed
+    """Replaced or dropped specs lose their drafts and are drafted again."""
+    from kodocs.eval.query_draft import invalidate_drafts
+
+    return invalidate_drafts(root, ids)
 
 
 def run(root: Path, *, reselect: bool = False, print_fn=print) -> int:
@@ -775,6 +1068,7 @@ def run(root: Path, *, reselect: bool = False, print_fn=print) -> int:
                 db_rows=rows,
                 db_content_hash=db_content_hash,
                 random_seed=random_seed,
+                fill=True,
             )
             result = sync.build
         else:
@@ -785,13 +1079,16 @@ def run(root: Path, *, reselect: bool = False, print_fn=print) -> int:
                 db_content_hash=db_content_hash,
                 random_seed=random_seed,
             )
-        invalidated = _invalidate_drafts(root, sync.replaced) if sync else 0
+        invalidated = (
+            _invalidate_drafts(root, [*sync.replaced, *sync.dropped]) if sync else 0
+        )
         write_questions(specs_path, sorted(result.questions, key=lambda item: item.id))
         summary = _summary(root, result, docs, db_content_hash)
-        if sync is not None and (sync.qrels_changed or sync.replaced):
+        if sync is not None and (sync.qrels_changed or sync.replaced or sync.dropped):
             summary["sync"] = {
                 "qrels_changed": list(sync.qrels_changed),
                 "replaced": {qid: list(why) for qid, why in sync.replaced.items()},
+                "dropped": list(sync.dropped),
             }
         _write_json(summary_path, summary)
     except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
@@ -802,6 +1099,7 @@ def run(root: Path, *, reselect: bool = False, print_fn=print) -> int:
         print_fn(f"replaced: {len(sync.replaced)}")
         for qid, why in sync.replaced.items():
             print_fn(f"  {qid}: {', '.join(why)}")
+        print_fn(f"dropped (over quota): {len(sync.dropped)} {list(sync.dropped)}")
         print_fn(f"drafts invalidated: {invalidated}")
     print_fn(
         f"wrote {len(result.questions)} specifications to "
@@ -886,9 +1184,16 @@ def _candidate_pools(
         )
         if candidate is not None:
             semantic_by_fact[fact.fact_id] = candidate
+    person_subjects: dict[str, set[str]] = defaultdict(set)
+    for subject, facts in facts_by_subject.items():
+        for person_id in _person_ids_for_subject(facts):
+            person_subjects[person_id].add(subject)
     for (person_id, _), facts in sorted(person_semantic_groups.items()):
         if len(facts) != 1:
             rejected["semantic_ambiguous_subject_attribute"] += len(facts)
+            continue
+        if len(person_subjects[person_id]) > 1:
+            rejected["semantic_person_multiple_subjects"] += 1
             continue
         fact = facts[0]
         if fact.fact_id in semantic_by_fact:
@@ -908,43 +1213,45 @@ def _candidate_pools(
             semantic_by_fact[fact.fact_id] = candidate
     pools["semantic"] = sorted(semantic_by_fact.values(), key=lambda item: item.key)
 
-    pair_groups: dict[tuple[str, str], tuple[Fact, ...]] = {}
-    for subject, facts in facts_by_subject.items():
-        usable = tuple(fact for fact in facts if index.get(fact.fact_id))
-        if len(usable) >= 2:
-            pair_groups[("subject", subject)] = usable
-    facts_by_service: dict[str, list[Fact]] = defaultdict(list)
-    for fact in seed.facts.values():
-        service = _service_for_subject(seed, fact.subject)
-        if service is not None and index.get(fact.fact_id):
-            facts_by_service[service].append(fact)
-    for service, facts in facts_by_service.items():
-        if len(facts) >= 2:
-            pair_groups[("service", service)] = tuple(facts)
-
-    seen_pairs: set[tuple[str, str]] = set()
-    for (group_kind, group_value), facts in sorted(pair_groups.items()):
-        for left, right in combinations(
-            sorted(facts, key=lambda item: item.fact_id), 2
-        ):
-            pair = tuple(sorted((left.fact_id, right.fact_id)))
-            if pair in seen_pairs:
-                continue
-            seen_pairs.add(pair)
-            if any(
-                set(pair).issubset(doc_facts)
-                for doc_facts in document_fact_ids.values()
-            ):
-                rejected["multi_doc_one_document_has_all_facts"] += 1
-                continue
-            anchor = (
-                (_service_for_subject(seed, group_value) or group_value,)
-                if group_kind == "subject"
-                else (group_value,)
+    context = _sync_context(seed, docs, index=index)
+    service_names = {service.name for service in seed.services}
+    for subject, facts in sorted(facts_by_subject.items()):
+        usable = sorted(
+            (fact for fact in facts if index.get(fact.fact_id)),
+            key=lambda item: item.fact_id,
+        )
+        if subject in service_names or not usable:
+            continue
+        if not _visible(subject, context):
+            rejected["multi_doc_anchor_not_in_docs"] += 1
+            continue
+        pairs = list(combinations(usable, 2))
+        bridges = [
+            fact
+            for fact in usable
+            if fact.kind == "service" and _attribute(fact) == "service"
+        ]
+        if len(bridges) == 1:
+            bridge = bridges[0]
+            pairs.extend(
+                (bridge, fact)
+                for fact in facts_by_subject.get(str(bridge.value), ())
+                if index.get(fact.fact_id)
             )
+        for left, right in pairs:
+            reasons = _multi_doc_reasons(
+                (subject,), (left.fact_id, right.fact_id), context
+            )
+            if reasons:
+                rejected[
+                    "multi_doc_one_document_has_all_facts"
+                    if "multi_doc_single_document" in reasons
+                    else reasons[0]
+                ] += 1
+                continue
             candidate = _fact_candidate(
                 "multi_doc",
-                anchor,
+                (subject,),
                 (left, right),
                 seed=seed,
                 docs=docs,
@@ -954,6 +1261,46 @@ def _candidate_pools(
             )
             if candidate is not None:
                 pools["multi_doc"].append(candidate)
+
+    by_attribute: dict[str, list[Fact]] = defaultdict(list)
+    for subject, facts in sorted(facts_by_subject.items()):
+        if subject in service_names or not _visible(subject, context):
+            continue
+        per_attribute: dict[str, list[Fact]] = defaultdict(list)
+        for fact in facts:
+            if index.get(fact.fact_id) and fact.kind != "id":
+                per_attribute[_attribute(fact)].append(fact)
+        for attribute, group in per_attribute.items():
+            if len(group) == 1 and attribute != "service":
+                by_attribute[attribute].append(group[0])
+    for _attribute_name, group in sorted(by_attribute.items()):
+        for left, right in combinations(sorted(group, key=lambda f: f.subject), 2):
+            anchors = (left.subject, right.subject)
+            reasons = _multi_doc_reasons(
+                anchors, (left.fact_id, right.fact_id), context
+            )
+            if reasons:
+                rejected[
+                    f"multi_doc_comparison_{reasons[0].removeprefix('multi_doc_')}"
+                ] += 1
+                continue
+            candidate = _fact_candidate(
+                "multi_doc",
+                anchors,
+                (left, right),
+                seed=seed,
+                docs=docs,
+                index=index,
+                people=people,
+                document_fact_ids=document_fact_ids,
+            )
+            if candidate is not None:
+                pools["multi_doc"].append(
+                    replace(
+                        candidate,
+                        reference_answer=_comparison_reference((left, right), people),
+                    )
+                )
 
     temporal_groups: dict[tuple[str, str], list[Fact]] = defaultdict(list)
     for fact in seed.facts.values():
@@ -1070,6 +1417,76 @@ def _sql_candidates(
     db_rows: Mapping[str, Sequence[Mapping[str, object]]],
     db_content_hash: str,
 ) -> list[_Candidate]:
+    """Pool entries per fixed query; the value is bound per asker by _bind_sql."""
+    return [
+        _sql_candidate(anchor, query, _run_sql(query, db_rows, None), db_content_hash)
+        for anchor, query in _SQL_QUERIES
+    ]
+
+
+def _bind_sql(
+    candidate: _Candidate,
+    asker: Asker | None,
+    db_rows: Mapping[str, Sequence[Mapping[str, object]]],
+    db_content_hash: str,
+) -> _Candidate:
+    """Recompute the expected value over the rows the asker may read."""
+    if candidate.sql is None:
+        return candidate
+    bound = _sql_candidate(
+        candidate.anchor_values[0],
+        candidate.sql.query,
+        _run_sql(candidate.sql.query, db_rows, asker),
+        db_content_hash,
+    )
+    return replace(
+        candidate,
+        sql=bound.sql,
+        answer_values=bound.answer_values,
+        reference_answer=bound.reference_answer,
+    )
+
+
+def _sql_candidate(
+    anchor: str, query: str, expected: list[dict[str, object]], db_content_hash: str
+) -> _Candidate:
+    compact = json.dumps(expected, ensure_ascii=False, separators=(",", ":"))
+    return _Candidate(
+        type="sql",
+        anchor_values=(anchor,),
+        answer_values=(compact,),
+        answer_fact_ids=(),
+        qrels=(),
+        reference_answer=compact,
+        sql=SqlAnswer(
+            query=query,
+            query_sha256=hashlib.sha256(query.encode("utf-8")).hexdigest(),
+            expected=expected,
+            db_content_hash=db_content_hash,
+        ),
+        discriminator=anchor,
+    )
+
+
+def _row_readable(row: Mapping[str, object], asker: Asker | None) -> bool:
+    if asker is None or "access_level" not in row:
+        return True
+    teams = str(row.get("access_teams") or "")
+    return can_read(
+        asker,
+        {
+            "level": row["access_level"],
+            "teams": [team for team in teams.split(",") if team],
+            "min_grade": row.get("access_min_grade"),
+        },
+    )
+
+
+def _run_sql(
+    query: str,
+    db_rows: Mapping[str, Sequence[Mapping[str, object]]],
+    asker: Asker | None,
+) -> list[dict[str, object]]:
     connection = sqlite3.connect(":memory:")
     connection.row_factory = sqlite3.Row
     try:
@@ -1090,36 +1507,14 @@ def _sql_candidates(
         )
         connection.executemany(
             "INSERT INTO tickets VALUES (:owner_team, :status, :created_at)",
-            db_rows.get("tickets", ()),
+            [r for r in db_rows.get("tickets", ()) if _row_readable(r, asker)],
         )
         connection.executemany(
             "INSERT INTO approvals VALUES "
             "(:owner_team, :status, :submitted_at, :amount_krw)",
-            db_rows.get("approvals", ()),
+            [r for r in db_rows.get("approvals", ()) if _row_readable(r, asker)],
         )
-        candidates: list[_Candidate] = []
-        for name, query in _SQL_QUERIES:
-            expected = [dict(row) for row in connection.execute(query).fetchall()]
-            sql = SqlAnswer(
-                query=query,
-                query_sha256=hashlib.sha256(query.encode("utf-8")).hexdigest(),
-                expected=expected,
-                db_content_hash=db_content_hash,
-            )
-            compact = json.dumps(expected, ensure_ascii=False, separators=(",", ":"))
-            candidates.append(
-                _Candidate(
-                    type="sql",
-                    anchor_values=(name,),
-                    answer_values=(compact,),
-                    answer_fact_ids=(),
-                    qrels=(),
-                    reference_answer=compact,
-                    sql=sql,
-                    discriminator=name,
-                )
-            )
-        return candidates
+        return [dict(row) for row in connection.execute(query).fetchall()]
     finally:
         connection.close()
 
@@ -1325,6 +1720,7 @@ def _build_specs_result(
                 random_seed=random_seed,
                 ordinal=ordinal,
             )
+            candidate = _bind_sql(candidate, asker, db_rows, db_content_hash)
             questions.append(
                 _question_from_candidate(
                     candidate,
@@ -1346,6 +1742,7 @@ def _build_specs_result(
             validation_errors.append(f"{question.id}: {','.join(errors)}")
     if validation_errors:
         raise SpecBuildError("validation errors: " + "; ".join(validation_errors))
+    _check_sql_depends_on_asker(questions, db_rows)
     return _BuildResult(questions, candidate_counts, rejected, diversity_summary)
 
 
@@ -1511,6 +1908,19 @@ def _eligible_people(
             )
         ]
     rel_two_docs = {qrel.doc_id for qrel in candidate.qrels if qrel.rel == 2}
+    if candidate.type == "multi_doc":
+        by_fact: dict[str, set[str]] = defaultdict(set)
+        for qrel in candidate.qrels:
+            if qrel.rel == 2 and qrel.fact_id:
+                by_fact[qrel.fact_id].add(qrel.doc_id)
+        return [
+            person
+            for person in people
+            if all(
+                any(_person_can_read(person, docs[doc_id]) for doc_id in doc_ids)
+                for doc_ids in by_fact.values()
+            )
+        ]
     return [
         person
         for person in people

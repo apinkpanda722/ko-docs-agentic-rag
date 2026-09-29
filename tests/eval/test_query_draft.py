@@ -857,3 +857,184 @@ def test_revalidation_failures_are_recorded_once_with_their_source(
         (spec.id, 1, ["empty_or_multiline"], "revalidate")
     ]
     assert [q.id for q in load_questions(tmp_path / VALIDATION_PATH)] == [spec.id]
+
+
+def _rel2(*fact_ids: str) -> tuple:
+    from kodocs.eval.golden import Qrel
+
+    return tuple(
+        Qrel(doc_id=f"doc-{i}", rel=2, fact_id=f) for i, f in enumerate(fact_ids)
+    )
+
+
+@pytest.mark.parametrize(
+    ("qid", "anchors", "fact_ids", "expected"),
+    [
+        ("g-syn-003", None, None, "담당자"),
+        ("g-syn-010", None, None, "운영 담당 팀"),
+        (
+            "s-syn-087",
+            ("INC-2025-003",),
+            ("f-inc-2025-003-service", "f-service-analytics-hub-slo"),
+            "해당 건이 발생한 서비스의 서비스 수준 목표",
+        ),
+        ("g-syn-001", None, ("f-evt-024-result",), "개선 효과"),
+        ("g-syn-001", None, ("f-evt-049-decision",), "결정 사항"),
+    ],
+)
+def test_asked_attribute_names_the_specific_fact_kind(
+    specs: Sequence[Question],
+    qid: str,
+    anchors: tuple[str, ...] | None,
+    fact_ids: tuple[str, ...] | None,
+    expected: str,
+) -> None:
+    spec = _by_id(specs, qid)
+    if anchors is not None:
+        spec = replace(spec, anchor_values=anchors)
+    if fact_ids is not None:
+        spec = replace(spec, qrels=_rel2(*fact_ids))
+
+    assert query_draft._asked_attribute(spec) == expected
+
+
+def _sql_spec(specs: Sequence[Question]) -> Question:
+    from kodocs.eval.golden import SqlAnswer
+
+    return replace(
+        _by_id(specs, "g-syn-010"),
+        type="sql",
+        anchor_values=("월별 티켓 수",),
+        answer_values=('[{"month":"2026-01","count":3}]',),
+        qrels=(),
+        sql=SqlAnswer("SELECT 1", "h", [{"month": "2026-01", "count": 3}], "db"),
+    )
+
+
+def test_sql_attribute_asks_for_the_value(specs: Sequence[Question]) -> None:
+    attribute = query_draft._asked_attribute(_sql_spec(specs))
+
+    assert "월별 티켓 수" in attribute
+    assert "값" in attribute
+
+
+@pytest.mark.parametrize(
+    ("text", "flagged"),
+    [
+        ("월별 티켓 수는 어떻게 확인할 수 있나요?", True),
+        ("월별 티켓 수를 조회할 수 있을까요?", True),
+        ("월별 티켓 수를 조회하는 방법이 있나요?", True),
+        ("월별 티켓 수는 각각 몇 건인가요?", False),
+        ("월별 티켓 수가 어떻게 되나요?", False),
+    ],
+)
+def test_sql_draft_must_ask_for_values_not_methods(
+    specs: Sequence[Question], seed: Seed, text: str, flagged: bool
+) -> None:
+    codes = validate_draft(_sql_spec(specs), text, seed=seed, people=seed.people)
+
+    assert ("asks_method" in codes) is flagged
+
+
+def test_invalidated_drafts_are_stale_and_the_next_attempt_skips_old_caches(
+    tmp_path: Path,
+    specs: Sequence[Question],
+    seed: Seed,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    spec = _by_id(specs, "g-syn-010")
+    replaced = replace(spec, anchor_values=("feature-store",))
+    _write_specs(tmp_path, [spec])
+    monkeypatch.setattr(query_draft, "load_seed", lambda _root: seed)
+    request = build_request(spec, config=_config(), attempt=1)
+    query_draft._append_draft_log(
+        tmp_path,
+        {
+            **query_draft._request_metadata(request, config=_config()),
+            "id": spec.id,
+            "attempt": 1,
+            "custom_id": request.custom_id,
+            "cache_key": request.cache_key,
+            "batch_id": "batch-old",
+            "status": "submitted",
+            "ts": "2026-09-28T00:00:00+00:00",
+        },
+    )
+    query_draft._write_json(
+        tmp_path / DRAFTS_DIR / f"{spec.id}-a1.json",
+        {
+            "id": spec.id,
+            "attempt": 1,
+            "custom_id": f"{spec.id}-a1",
+            "batch_id": "batch-old",
+            "result_type": "succeeded",
+            "text": "analytics-hub의 운영 담당 팀은 어디인가요?",
+        },
+    )
+    assert query_draft.validate_only(tmp_path, print_fn=lambda *_: None) == 0
+    assert [q.id for q in load_questions(tmp_path / VALIDATION_PATH)] == [spec.id]
+
+    assert query_draft.invalidate_drafts(tmp_path, {spec.id}) == 1
+    _write_specs(tmp_path, [replaced])
+
+    assert query_draft.validate_only(tmp_path, print_fn=lambda *_: None) == 0
+    assert load_questions(tmp_path / VALIDATION_PATH) == []
+    assert not (tmp_path / FAILURES_PATH).exists()
+    pending = pending_specs(tmp_path, [replaced], config=_config())
+    assert [(s.id, attempt) for s, attempt in pending] == [(spec.id, 2)]
+    # A dropped spec's stale cache no longer breaks revalidation either.
+    _write_specs(tmp_path, [])
+    assert query_draft.validate_only(tmp_path, print_fn=lambda *_: None) == 0
+
+
+@pytest.mark.parametrize(
+    ("fact_ids", "expected"),
+    [
+        (
+            ("f-inc-2025-001-start", "f-inc-2025-003-start"),
+            "두 건 중 발생 시각이 더 이른 건(각 건의 발생 시각 포함)",
+        ),
+        (("f-inc-2025-001-cause", "f-inc-2025-003-cause"), "두 건 각각의 원인"),
+    ],
+)
+def test_comparison_attribute_names_both_incidents(
+    specs: Sequence[Question], fact_ids: tuple[str, str], expected: str
+) -> None:
+    spec = replace(
+        _by_id(specs, "s-syn-087"),
+        anchor_values=("INC-2025-001", "INC-2025-003"),
+        qrels=_rel2(*fact_ids),
+    )
+
+    assert query_draft._asked_attribute(spec) == expected
+
+
+def test_invalidate_cli_marks_drafts_stale_with_a_reason(
+    tmp_path: Path, specs: Sequence[Question]
+) -> None:
+    spec = _by_id(specs, "g-syn-010")
+    _write_specs(tmp_path, [spec])
+    write_questions(tmp_path / VALIDATION_PATH, [replace(spec, question="질문?")])
+    query_draft._write_json(
+        tmp_path / DRAFTS_DIR / f"{spec.id}-a1.json",
+        {"id": spec.id, "attempt": 1, "custom_id": f"{spec.id}-a1", "batch_id": "b1"},
+    )
+
+    code = query_draft.main(
+        [
+            "--root",
+            str(tmp_path),
+            "--invalidate",
+            spec.id,
+            "--reason",
+            "generic_attribute",
+        ]
+    )
+
+    assert code == 0
+    assert load_questions(tmp_path / VALIDATION_PATH) == []
+    log = [json.loads(x) for x in (tmp_path / DRAFT_LOG).read_text().splitlines()]
+    assert [(r["custom_id"], r["status"], r["reason"]) for r in log] == [
+        (f"{spec.id}-a1", "stale_spec", "generic_attribute")
+    ]
+    assert query_draft.main(["--root", str(tmp_path), "--invalidate", "g-nope"]) == 1

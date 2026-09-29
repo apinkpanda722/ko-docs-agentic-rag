@@ -2,18 +2,18 @@
   "candidates": {
     "gold": {
       "identifier": 215,
-      "multi_doc": 4909,
+      "multi_doc": 1787,
       "permission": 30,
-      "semantic": 92,
+      "semantic": 66,
       "sql": 6,
       "unanswerable": 67
     },
     "silver": {
-      "identifier": 203,
-      "multi_doc": 4329,
+      "identifier": 201,
+      "multi_doc": 1601,
       "permission": 25,
-      "semantic": 83,
-      "temporal": 89,
+      "semantic": 59,
+      "temporal": 90,
       "unanswerable": 64
     }
   },
@@ -28,7 +28,7 @@
     },
     "silver": {
       "identifier": 25,
-      "multi_doc": 35,
+      "multi_doc": 23,
       "permission": 15,
       "semantic": 40,
       "temporal": 20,
@@ -68,7 +68,7 @@
         "max_per_subject": 2
       },
       "multi_doc": {
-        "distinct_subjects": 48,
+        "distinct_subjects": 28,
         "max_per_subject": 2
       },
       "permission": {
@@ -76,7 +76,7 @@
         "max_per_subject": 1
       },
       "semantic": {
-        "distinct_subjects": 31,
+        "distinct_subjects": 27,
         "max_per_subject": 2
       },
       "temporal": {
@@ -101,17 +101,17 @@
   },
   "diversity_totals": {
     "gold": {
-      "distinct_subjects": 34,
+      "distinct_subjects": 32,
       "max_per_subject": 2
     },
     "silver": {
-      "distinct_subjects": 77,
+      "distinct_subjects": 80,
       "max_per_subject": 4
     }
   },
   "gold_silver_overlap": {
-    "silver_questions": 0,
-    "subjects": 0
+    "silver_questions": 37,
+    "subjects": 17
   },
   "inputs": {
     "db_content_hash": "1d59c69de93c8923c3084b017335dfa0ec21840a0eac357b2ba4b61d5247f10e",
@@ -169,25 +169,21 @@
     }
   },
   "rejected_candidates": {
-    "multi_doc_one_document_has_all_facts": 1450,
+    "multi_doc_anchor_not_in_docs": 60,
+    "multi_doc_answer_in_anchor_subject": 22,
+    "multi_doc_comparison_single_document": 2,
+    "multi_doc_no_eligible_asker": 41,
+    "multi_doc_one_document_answers": 38,
+    "multi_doc_one_document_has_all_facts": 710,
     "semantic_ambiguous_subject_attribute": 189,
+    "semantic_person_multiple_subjects": 36,
     "temporal_without_multiple_candidates": 42,
     "unanswerable_docs_have_subject_and_keyword": 7
   },
-  "sync": {
-    "qrels_changed": [
-      "g-syn-016"
-    ],
-    "replaced": {
-      "s-syn-049": [
-        "semantic_ambiguous_subject_attribute"
-      ]
-    }
-  },
   "tags": {
     "canary": 20,
-    "injection": 30,
+    "injection": 24,
     "temporal:as_of_event": 20
   },
-  "unmarked_candidate_questions": 46
+  "unmarked_candidate_questions": 25
 }

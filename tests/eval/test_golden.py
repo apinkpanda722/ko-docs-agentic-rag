@@ -208,7 +208,7 @@ def test_quota_constants_match_adr_025() -> None:
     assert SILVER_QUOTA == {
         "identifier": 25,
         "semantic": 40,
-        "multi_doc": 35,
+        "multi_doc": 23,
         "temporal": 20,
         "permission": 15,
         "unanswerable": 15,

@@ -84,8 +84,13 @@ class GoldenReviewError(RuntimeError):
     """Review inputs or human rows violate the M4 contract."""
 
 
+def sample_size(population: int) -> int:
+    """20% of a type's silver questions, rounded half up, at least one."""
+    return max(1, math.floor(population * 0.2 + 0.5))
+
+
 def silver_sample(silver: Sequence[Question], *, random_seed: int) -> list[Question]:
-    """Return a deterministic per-type 20% sample (30 of 150 questions)."""
+    """Return a deterministic per-type sample of ``sample_size`` questions each."""
     if isinstance(random_seed, bool) or not isinstance(random_seed, int):
         raise TypeError("random_seed는 정수여야 합니다.")
     by_type: dict[str, list[Question]] = defaultdict(list)
@@ -105,7 +110,7 @@ def silver_sample(silver: Sequence[Question], *, random_seed: int) -> list[Quest
                 f"실버 {question_type} 수량 불일치: {len(candidates)}/{expected}"
             )
         rng.shuffle(candidates)
-        selected.extend(candidates[: expected // 5])
+        selected.extend(candidates[: sample_size(expected)])
     return sorted(selected, key=lambda item: item.id)
 
 
@@ -137,7 +142,7 @@ def build_packets(root: Path, *, attention_checks: int = 0) -> int:
         real_summary = _load_optional_json(root / _REAL_SUMMARY_PATH)
         laws = _load_laws(root)
         checks, check_verdicts, check_key = _attention_checks(
-            synthetic,
+            [q for q in [*gold, *sample] if q.source == "synthetic"],
             verdicts,
             count=attention_checks,
             random_seed=seed + _PACKET_SEED_OFFSET,
@@ -467,9 +472,17 @@ def _attention_checks(
     count: int,
     random_seed: int,
 ) -> tuple[list[Question], dict[str, dict[str, object]], list[dict[str, object]]]:
-    if count > len(synthetic):
-        raise ValueError(f"점검용 더미 수가 합성 문항 수보다 큽니다: {count}")
-    candidates = sorted(synthetic, key=lambda question: question.id)
+    # A flipped verdict is a guaranteed mistake only if every item was judged Y.
+    eligible = [
+        question
+        for question in synthetic
+        if all(verdicts.get(question.id, {}).get(key) is True for key in _VERDICT_KEYS)
+    ]
+    if count > len(eligible):
+        raise GoldenReviewError(
+            f"점검용 더미 원본(Claude 판정 3항목 모두 Y) 부족: {len(eligible)}/{count}"
+        )
+    candidates = sorted(eligible, key=lambda question: question.id)
     rng = random.Random(random_seed)
     rng.shuffle(candidates)
     questions: list[Question] = []

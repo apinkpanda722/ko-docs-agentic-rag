@@ -1,7 +1,28 @@
 {
   "cross_split_docs": {
-    "doc_ids": [],
-    "n": 0
+    "doc_ids": [
+      "syn-guide-003",
+      "syn-guide-011",
+      "syn-guide-020",
+      "syn-guide-024",
+      "syn-incident-001",
+      "syn-incident-003",
+      "syn-incident-010",
+      "syn-incident-012",
+      "syn-incident-015",
+      "syn-incident-018",
+      "syn-incident-025",
+      "syn-meeting-010",
+      "syn-meeting-014",
+      "syn-meeting-019",
+      "syn-meeting-020",
+      "syn-meeting-025",
+      "syn-meeting-026",
+      "syn-meeting-035",
+      "syn-meeting-038",
+      "syn-notice-005"
+    ],
+    "n": 36
   },
   "gold": {
     "by_type": {
@@ -44,17 +65,17 @@
     },
     "groups": {
       "max_size": 3,
-      "n": 46,
+      "n": 43,
       "size_hist": {
-        "1": 43,
-        "2": 2,
+        "1": 37,
+        "2": 5,
         "3": 1
       }
     },
     "h5_bundle_test_n": 13,
     "h7": {
-      "real_n": 5,
-      "synthetic_n": 9
+      "real_n": 6,
+      "synthetic_n": 8
     },
     "quota_diff": {
       "dev": {
@@ -100,12 +121,12 @@
   "silver": {
     "by_type": {
       "identifier": {
-        "dev": 11,
-        "test": 14
+        "dev": 10,
+        "test": 15
       },
       "multi_doc": {
-        "dev": 14,
-        "test": 21
+        "dev": 9,
+        "test": 14
       },
       "permission": {
         "dev": 6,
@@ -125,33 +146,49 @@
       }
     },
     "cross_split_docs": {
-      "doc_ids": [],
-      "n": 0
+      "doc_ids": [
+        "syn-guide-003",
+        "syn-guide-011",
+        "syn-guide-020",
+        "syn-guide-024",
+        "syn-incident-001",
+        "syn-incident-003",
+        "syn-incident-010",
+        "syn-incident-012",
+        "syn-incident-015",
+        "syn-incident-018",
+        "syn-incident-025",
+        "syn-meeting-010",
+        "syn-meeting-014",
+        "syn-meeting-019",
+        "syn-meeting-020",
+        "syn-meeting-025",
+        "syn-meeting-026",
+        "syn-meeting-035",
+        "syn-meeting-038",
+        "syn-notice-005"
+      ],
+      "n": 36
     },
     "groups": {
-      "max_size": 31,
-      "n": 30,
+      "max_size": 90,
+      "n": 26,
       "size_hist": {
-        "1": 21,
-        "10": 1,
-        "11": 1,
-        "14": 1,
-        "17": 1,
+        "1": 22,
         "18": 1,
         "2": 1,
-        "23": 1,
-        "3": 1,
-        "31": 1
+        "6": 1,
+        "90": 1
       }
     },
-    "h5_bundle_test_n": 35,
+    "h5_bundle_test_n": 29,
     "h7": {
       "real_n": 0,
-      "synthetic_n": 59
+      "synthetic_n": 53
     },
     "quota_diff": {
       "dev": {
-        "identifier": 1,
+        "identifier": 0,
         "multi_doc": 0,
         "permission": 0,
         "semantic": 0,
@@ -159,7 +196,7 @@
         "unanswerable": 0
       },
       "test": {
-        "identifier": -1,
+        "identifier": 0,
         "multi_doc": 0,
         "permission": 0,
         "semantic": 0,
@@ -167,7 +204,7 @@
         "unanswerable": 0
       }
     },
-    "retrieval_test_n": 71,
+    "retrieval_test_n": 65,
     "temporal_tags": {
       "temporal:as_of_event": {
         "dev": 8,
@@ -179,7 +216,36 @@
       }
     },
     "warnings": [
-      "quota_not_exact:test.identifier=-1,dev.identifier=+1"
+      "oversized_group_split:size=90:left=1:right=89",
+      "oversized_group_split:size=89:left=88:right=1",
+      "oversized_group_split:size=88:left=87:right=1",
+      "oversized_group_split:size=87:left=1:right=86",
+      "oversized_group_split:size=86:left=85:right=1",
+      "oversized_group_split:size=85:left=84:right=1",
+      "oversized_group_split:size=84:left=83:right=1",
+      "oversized_group_split:size=83:left=1:right=82",
+      "oversized_group_split:size=82:left=81:right=1",
+      "oversized_group_split:size=81:left=1:right=80",
+      "oversized_group_split:size=80:left=1:right=79",
+      "oversized_group_split:size=79:left=78:right=1",
+      "oversized_group_split:size=78:left=1:right=77",
+      "oversized_group_split:size=77:left=76:right=1",
+      "oversized_group_split:size=76:left=1:right=75",
+      "oversized_group_split:size=75:left=1:right=74",
+      "oversized_group_split:size=74:left=73:right=1",
+      "oversized_group_split:size=73:left=72:right=1",
+      "oversized_group_split:size=72:left=71:right=1",
+      "oversized_group_split:size=71:left=1:right=70",
+      "oversized_group_split:size=70:left=68:right=2",
+      "oversized_group_split:size=68:left=1:right=67",
+      "oversized_group_split:size=67:left=1:right=66",
+      "oversized_group_split:size=66:left=65:right=1",
+      "oversized_group_split:size=65:left=1:right=64",
+      "oversized_group_split:size=64:left=1:right=63",
+      "oversized_group_split:size=63:left=62:right=1",
+      "oversized_group_split:size=62:left=61:right=1",
+      "oversized_group_split:size=61:left=60:right=1",
+      "oversized_group_split:size=60:left=1:right=59"
     ]
   },
   "split_seed_offset": 404,
