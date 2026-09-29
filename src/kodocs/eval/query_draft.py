@@ -437,13 +437,34 @@ def validate_only(root: Path, *, print_fn: PrintFn = print) -> int:
     specs = load_questions(root / SPECS_PATH)
     seed = load_seed(root)
     docs = load_documents(root / DOCS_PATH)
+    failing: list[tuple[str, int, list[str]]] = []
     summary = _write_validation_outputs(
         root,
         specs=specs,
         seed=seed,
         people={person.person_id: person for person in seed.people},
         docs=docs,
+        failing=failing,
     )
+    recorded = {
+        (record.get("id"), record.get("attempt"))
+        for record in load_records(root / FAILURES_PATH)
+    }
+    for spec_id, attempt, codes in failing:
+        if (spec_id, attempt) in recorded:
+            continue
+        append_record(
+            root / FAILURES_PATH,
+            {
+                "id": spec_id,
+                "attempt": attempt,
+                "codes": codes,
+                "source": "revalidate",
+                "ts": _utc_now(),
+            },
+            required=_FAILURE_REQUIRED,
+        )
+        recorded.add((spec_id, attempt))
     print_fn(
         f"질문 초안 재검증 완료: 통과 {summary['validated']} 실패 {summary['failed']}"
     )
@@ -661,6 +682,7 @@ def _write_validation_outputs(
     seed: Seed,
     people: Mapping[str, Person],
     docs: Mapping[str, Mapping[str, object]],
+    failing: list[tuple[str, int, list[str]]] | None = None,
 ) -> dict[str, object]:
     by_id = {spec.id: spec for spec in specs}
     attempts: dict[str, list[dict[str, object]]] = defaultdict(list)
@@ -696,6 +718,8 @@ def _write_validation_outputs(
             )
         else:
             codes = [f"batch_{payload.get('result_type', 'missing')}"]
+        if codes and failing is not None:
+            failing.append((spec_id, attempt, list(codes)))
         attempts[spec_id].append(
             {
                 "attempt": attempt,

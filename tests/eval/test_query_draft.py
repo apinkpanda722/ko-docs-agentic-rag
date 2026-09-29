@@ -814,3 +814,46 @@ def test_bad_shape_accepts_one_sentence_ending_in_a_single_mark(text: str) -> No
 )
 def test_bad_shape_rejects_empty_multiline_and_multi_sentence(text: str) -> None:
     assert query_draft._bad_shape(None, text, None, {})  # type: ignore[arg-type]
+
+
+def test_revalidation_failures_are_recorded_once_with_their_source(
+    tmp_path: Path,
+    specs: Sequence[Question],
+    seed: Seed,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    spec = _by_id(specs, "g-syn-010")
+    _write_specs(tmp_path, [spec])
+    monkeypatch.setattr(query_draft, "load_seed", lambda _root: seed)
+    query_draft._write_json(
+        tmp_path / DRAFTS_DIR / f"{spec.id}-a1.json",
+        {
+            "id": spec.id,
+            "attempt": 1,
+            "custom_id": f"{spec.id}-a1",
+            "result_type": "succeeded",
+            "text": "저는 재무팀 담당자입니다. analytics-hub의 담당 팀은 어디인가요?",
+        },
+    )
+    query_draft._write_json(
+        tmp_path / DRAFTS_DIR / f"{spec.id}-a2.json",
+        {
+            "id": spec.id,
+            "attempt": 2,
+            "custom_id": f"{spec.id}-a2",
+            "result_type": "succeeded",
+            "text": "analytics-hub의 운영 담당 팀은 어디인가요?",
+        },
+    )
+
+    for _ in range(2):
+        assert query_draft.validate_only(tmp_path, print_fn=lambda *_: None) == 0
+
+    failures = [
+        json.loads(line)
+        for line in (tmp_path / FAILURES_PATH).read_text(encoding="utf-8").splitlines()
+    ]
+    assert [(f["id"], f["attempt"], f["codes"], f["source"]) for f in failures] == [
+        (spec.id, 1, ["empty_or_multiline"], "revalidate")
+    ]
+    assert [q.id for q in load_questions(tmp_path / VALIDATION_PATH)] == [spec.id]
