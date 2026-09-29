@@ -2,7 +2,7 @@
   "distribution": {
     "by_access": {
       "public": {
-        "passed": 89,
+        "passed": 90,
         "planned": 90
       },
       "restricted": {
@@ -20,7 +20,7 @@
         "planned": 23
       },
       "finance": {
-        "passed": 24,
+        "passed": 25,
         "planned": 25
       },
       "hr": {
@@ -54,7 +54,7 @@
         "planned": 30
       },
       "incident": {
-        "passed": 24,
+        "passed": 25,
         "planned": 25
       },
       "meeting": {
@@ -81,37 +81,36 @@
     "between_type": {
       "max": 0.1157,
       "mean": 0.0263,
-      "p95": 0.0466
+      "p95": 0.0465
     },
     "near_duplicates": [],
     "overall": {
       "max": 0.21,
       "mean": 0.0319,
-      "p95": 0.0683
+      "p95": 0.0684
     },
-    "pair_count": 19701,
+    "pair_count": 19900,
     "shingle_n": 5,
     "threshold": 0.5,
     "within_type": {
       "max": 0.21,
-      "mean": 0.0584,
-      "p95": 0.0901
+      "mean": 0.0585,
+      "p95": 0.0902
     }
   },
   "fact_coverage": {
-    "coverage_rate": 0.9974,
-    "covered_facts": 391,
+    "coverage_rate": 1.0,
+    "covered_facts": 392,
     "documents_per_fact_distribution": {
-      "0": 1,
-      "1": 102,
-      "2": 97,
-      "3": 93,
-      "4": 53,
+      "1": 99,
+      "2": 100,
+      "3": 92,
+      "4": 55,
       "5": 32,
       "6": 12,
       "7": 2
     },
-    "facts_in_2_plus_documents": 289,
+    "facts_in_2_plus_documents": 293,
     "normal_facts_total": 392
   },
   "length": {
@@ -127,14 +126,14 @@
         "target_ratio": 0.9095
       },
       "incident": {
-        "coefficient_of_variation": 0.2218,
-        "documents": 24,
+        "coefficient_of_variation": 0.2236,
+        "documents": 25,
         "max_chars": 2639,
-        "mean_chars": 1893.5417,
+        "mean_chars": 1876.68,
         "min_chars": 864,
-        "stddev_chars": 419.8945,
-        "target_mean_chars": 2925.0,
-        "target_ratio": 0.6474
+        "stddev_chars": 419.6219,
+        "target_mean_chars": 2896.0,
+        "target_ratio": 0.648
       },
       "meeting": {
         "coefficient_of_variation": 0.1486,
@@ -186,9 +185,9 @@
         "unique_bigrams": 3798
       },
       "incident": {
-        "distinct_2": 0.0768,
-        "total_bigrams": 44156,
-        "unique_bigrams": 3390
+        "distinct_2": 0.0751,
+        "total_bigrams": 45580,
+        "unique_bigrams": 3424
       },
       "meeting": {
         "distinct_2": 0.0506,
@@ -286,7 +285,7 @@
         "6d6499ecfc15e0355caba0a70fac1f1a5d7f041fd2cb8c8522b70fbc1c51a67e": 29
       },
       "incident": {
-        "ea60cea81c224af1be7e699121b98779a236895d21b8d0548c666a49fbc46210": 24
+        "ea60cea81c224af1be7e699121b98779a236895d21b8d0548c666a49fbc46210": 25
       },
       "meeting": {
         "0e4a2386f8efccee8a5214861b45d7811efb4c00979270144191d472316630c5": 4,
@@ -365,7 +364,7 @@
   },
   "schema_version": 1,
   "scope": {
-    "passed_documents": 199
+    "passed_documents": 200
   },
   "style": {
     "by_type": {
@@ -387,17 +386,17 @@
       "incident": {
         "counts": {
           "formal": 53,
-          "nominal": 1,
-          "other": 278,
-          "plain": 532
+          "nominal": 5,
+          "other": 292,
+          "plain": 549
         },
         "ratios": {
-          "formal": 0.0613,
-          "nominal": 0.0012,
-          "other": 0.3218,
-          "plain": 0.6157
+          "formal": 0.059,
+          "nominal": 0.0056,
+          "other": 0.3248,
+          "plain": 0.6107
         },
-        "sentences": 864
+        "sentences": 899
       },
       "meeting": {
         "counts": {
@@ -463,17 +462,17 @@
     "overall": {
       "counts": {
         "formal": 845,
-        "nominal": 125,
-        "other": 2897,
-        "plain": 3613
+        "nominal": 129,
+        "other": 2911,
+        "plain": 3630
       },
       "ratios": {
-        "formal": 0.113,
-        "nominal": 0.0167,
-        "other": 0.3873,
+        "formal": 0.1124,
+        "nominal": 0.0172,
+        "other": 0.3874,
         "plain": 0.483
       },
-      "sentences": 7480
+      "sentences": 7515
     }
   },
   "style_warnings": {
@@ -485,7 +484,7 @@
         },
         "incident": {
           "documents": 0,
-          "population": 24
+          "population": 25
         },
         "meeting": {
           "documents": 0,
@@ -506,20 +505,20 @@
       },
       "documents": 2,
       "occurrences": 4,
-      "population": 199,
-      "rate": 0.0101
+      "population": 200,
+      "rate": 0.01
     },
     "incident_ticket_as_doc_number": {
       "by_type": {
         "incident": {
           "documents": 5,
-          "population": 24
+          "population": 25
         }
       },
       "documents": 5,
       "occurrences": 5,
-      "population": 24,
-      "rate": 0.2083
+      "population": 25,
+      "rate": 0.2
     },
     "narrative_request_phrases": {
       "by_type": {
@@ -529,7 +528,7 @@
         },
         "incident": {
           "documents": 2,
-          "population": 24
+          "population": 25
         },
         "meeting": {
           "documents": 0,
@@ -550,8 +549,8 @@
       },
       "documents": 60,
       "occurrences": 169,
-      "population": 199,
-      "rate": 0.3015
+      "population": 200,
+      "rate": 0.3
     },
     "sentence_seam": {
       "by_type": {
@@ -561,7 +560,7 @@
         },
         "incident": {
           "documents": 1,
-          "population": 24
+          "population": 25
         },
         "meeting": {
           "documents": 13,
@@ -582,8 +581,8 @@
       },
       "documents": 32,
       "occurrences": 50,
-      "population": 199,
-      "rate": 0.1608
+      "population": 200,
+      "rate": 0.16
     },
     "surface_form_list_leak": {
       "by_type": {
@@ -593,7 +592,7 @@
         },
         "incident": {
           "documents": 0,
-          "population": 24
+          "population": 25
         },
         "meeting": {
           "documents": 1,
@@ -614,7 +613,7 @@
       },
       "documents": 1,
       "occurrences": 3,
-      "population": 199,
+      "population": 200,
       "rate": 0.005
     }
   },
@@ -802,15 +801,12 @@
   },
   "validation": {
     "exhausted": 0,
-    "failed": 1,
-    "failure_codes": {
-      "fact_missing": 1,
-      "marker_malformed": 1
-    },
+    "failed": 0,
+    "failure_codes": {},
     "generated": 200,
     "not_generated": 0,
-    "pass_rate": 0.995,
-    "passed": 199,
+    "pass_rate": 1.0,
+    "passed": 200,
     "planned": 200
   }
 }
