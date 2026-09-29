@@ -245,7 +245,7 @@ def test_overlap_without_comparable_rel_two_target_is_excluded() -> None:
 def test_summarize_excludes_none_from_every_ratio_denominator() -> None:
     rows = [
         {"type": "semantic", "containment": None, "lcs": None},
-        {"type": "identifier", "containment": 0.2, "lcs": 2},
+        {"type": "identifier", "containment": lexical.MISMATCH_MAX, "lcs": 2},
         {"type": "semantic", "containment": 0.8, "lcs": 13},
     ]
 

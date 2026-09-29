@@ -15,7 +15,7 @@ from kodocs.synth.identifiers import extract_identifiers
 
 CONTAINMENT_CAP = 0.6
 LCS_CAP = 12
-MISMATCH_MAX = 0.2
+MISMATCH_MAX = 0.07
 
 DOCS_PATH = Path("data/synthetic/docs")
 SPECS_PATH = Path("data/synthetic/queries/specs.jsonl")

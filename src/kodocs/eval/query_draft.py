@@ -65,6 +65,7 @@ TEMPLATES_DIR = Path(__file__).parent / "templates" / "query_draft"
 
 _CUSTOM_ID_RE = re.compile(r"^(?P<id>[A-Za-z0-9_-]+)-a(?P<attempt>[1-9]\d*)$")
 _PERSON_ID_RE = re.compile(r"(?<![A-Za-z0-9])p-\d{3}(?!\d)", re.IGNORECASE)
+_SENTENCE_END_RE = re.compile(r"\?|(?<![0-9])\.(?=\s|$)|(?<=[0-9])\.$")
 _FACT_ID_RE = re.compile(r"(?<![A-Za-z0-9])f-[a-z0-9]", re.IGNORECASE)
 _FACT_WORD_RE = re.compile(r"(?<![A-Za-z0-9])fact(?![A-Za-z0-9])", re.IGNORECASE)
 _DRAFT_LOG_REQUIRED = frozenset(
@@ -486,14 +487,10 @@ def _bad_shape(
     _seed: Seed,
     _people: Mapping[str, Person],
 ) -> bool:
-    return (
-        not text
-        or "\n" in text
-        or "\r" in text
-        or not text.endswith("?")
-        or text.count("?") != 1
-        or "!" in text
-    )
+    if not text or "\n" in text or "\r" in text or "!" in text:
+        return True
+    ends = [m.start() for m in _SENTENCE_END_RE.finditer(text)]
+    return ends != [len(text) - 1]
 
 
 def _anchor_missing(

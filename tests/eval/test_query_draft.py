@@ -187,6 +187,16 @@ def test_all_requests_exclude_answer_evidence_and_internal_ids(
             ["empty_or_multiline"],
         ),
         ("이 장애의 조치 내용은 무엇인가요?", ["anchor_missing"]),
+        (
+            "DAI-1001의 조치 내용은 무엇인가요? 자세히 알려주세요.",
+            ["empty_or_multiline"],
+        ),
+        ("DAI-1001의 조치 내용은 무엇인가요", ["empty_or_multiline"]),
+        ("DAI-1001의 조치 내용은 무엇인가요!", ["empty_or_multiline"]),
+        (
+            "DAI-1001은 심각한 장애입니다. 조치 내용을 알려주세요.",
+            ["empty_or_multiline"],
+        ),
     ],
 )
 def test_validate_draft_basic_failure_codes(
@@ -777,3 +787,30 @@ def test_draft_written_for_an_older_spec_is_stale_and_costs_no_attempt(
     assert client.mark_collected_calls == ["batch-old"]
     pending = pending_specs(tmp_path, [current], config=_config())
     assert [(spec.id, attempt) for spec, attempt in pending] == [(old.id, 1)]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "DAI-1001의 조치 내용을 알려주세요.",
+        "DAI-1001의 조치 내용은 무엇인가요?",
+        "2026. 5. 5. 기준으로 DAI-1001의 조치 내용을 알려주세요.",
+        "가용성 99.95% 기준에서 DAI-1001의 조치 내용을 알려주세요.",
+    ],
+)
+def test_bad_shape_accepts_one_sentence_ending_in_a_single_mark(text: str) -> None:
+    assert not query_draft._bad_shape(None, text, None, {})  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "",
+        "조치 내용을 알려주세요.\n감사합니다.",
+        "장애입니다. 조치 내용을 알려주세요.",
+        "조치 내용을 알려주세요",
+        "조치 내용을 알려주세요!",
+    ],
+)
+def test_bad_shape_rejects_empty_multiline_and_multi_sentence(text: str) -> None:
+    assert query_draft._bad_shape(None, text, None, {})  # type: ignore[arg-type]
