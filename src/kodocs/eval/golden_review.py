@@ -12,14 +12,16 @@ import sys
 import tempfile
 from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from datetime import date
 from pathlib import Path
+from types import MappingProxyType
 
 import yaml
 
 from kodocs.eval.golden import (
     ATTENTION_CHECK_PREFIX,
+    EXPECTED_RESPONSES,
     GOLD_QUOTA,
     GOLD_SPLIT_QUOTA,
     SILVER_QUOTA,
@@ -75,7 +77,7 @@ _TABLES_DIR = Path("data/golden/tables")
 _COMPANY_PATH = Path("data/seed/company.yaml")
 _PACKET_PATH = PACKETS_DIR / "review_packet.md"
 _SAMPLE_SEED_OFFSET = 7_025
-_PACKET_SEED_OFFSET = 7_026
+_PACKET_SEED_OFFSET = 7_031
 _VERDICT_KEYS = ("q1", "q2", "q3")
 _CORRECTION_RE = re.compile(r"^(add|remove):([^,;\s]+)$")
 _LAW_ID_RE = re.compile(r"^law-(.+)$")
@@ -150,7 +152,7 @@ def build_packets(root: Path, *, attention_checks: int = 0) -> int:
         ]
         reviewed = [q for q in [*gold, *sample] if q.source == "synthetic"]
         try:
-            checks, check_verdicts, check_key = _attention_checks(
+            checks, check_verdicts, defects, check_key = _attention_checks(
                 unreviewed,
                 verdicts,
                 count=attention_checks,
@@ -158,7 +160,7 @@ def build_packets(root: Path, *, attention_checks: int = 0) -> int:
             )
             source_pool = "unreviewed_silver"
         except GoldenReviewError:
-            checks, check_verdicts, check_key = _attention_checks(
+            checks, check_verdicts, defects, check_key = _attention_checks(
                 reviewed,
                 verdicts,
                 count=attention_checks,
@@ -185,6 +187,7 @@ def build_packets(root: Path, *, attention_checks: int = 0) -> int:
             questions,
             keys=key_of,
             verdicts=all_verdicts,
+            defects=defects,
             docs=docs,
             laws=laws,
             root=root,
@@ -504,51 +507,94 @@ def _mask_ids(note: str, keys: Mapping[str, str]) -> str:
     return _QUESTION_ID_RE.sub(lambda m: keys.get(m.group(0), "다른 문항"), note)
 
 
+@dataclass(frozen=True)
+class _AttentionDefect:
+    """A content flaw injected into one dummy's rendering (never its record)."""
+
+    kind: int
+    removed_anchor: str | None = None
+    removed_doc_id: str | None = None
+    false_expected_response: str | None = None
+
+
+def _defect_ok(kind: int, question: Question) -> bool:
+    if kind == 2:
+        return any(qrel.rel == 2 for qrel in question.qrels)
+    return True
+
+
+def _build_defect(kind: int, question: Question) -> _AttentionDefect:
+    if kind == 1:
+        anchor = next(
+            (a for a in reversed(question.anchor_values) if a in question.question),
+            question.anchor_values[-1],
+        )
+        return _AttentionDefect(kind=1, removed_anchor=anchor)
+    if kind == 2:
+        doc_id = max(q.doc_id for q in question.qrels if q.rel == 2)
+        return _AttentionDefect(kind=2, removed_doc_id=doc_id)
+    fake = next(r for r in EXPECTED_RESPONSES if r != question.expected_response)
+    return _AttentionDefect(kind=3, false_expected_response=fake)
+
+
 def _attention_checks(
     synthetic: Sequence[Question],
     verdicts: Mapping[str, Mapping[str, object]],
     *,
     count: int,
     random_seed: int,
-) -> tuple[list[Question], dict[str, dict[str, object]], list[dict[str, object]]]:
-    # A flipped verdict is a guaranteed mistake only if every item was judged Y.
+) -> tuple[
+    list[Question],
+    dict[str, dict[str, object]],
+    dict[str, _AttentionDefect],
+    list[dict[str, object]],
+]:
+    # Every dummy source must already read as fully correct (Claude judged
+    # all three items Y); the defect, not the verdict, is what is wrong.
     eligible = [
         question
         for question in synthetic
         if all(verdicts.get(question.id, {}).get(key) is True for key in _VERDICT_KEYS)
     ]
-    if count > len(eligible):
-        raise GoldenReviewError(
-            f"점검용 더미 원본(Claude 판정 3항목 모두 Y) 부족: {len(eligible)}/{count}"
-        )
-    candidates = sorted(eligible, key=lambda question: question.id)
+    pool = sorted(eligible, key=lambda question: question.id)
     rng = random.Random(random_seed)
-    rng.shuffle(candidates)
+    rng.shuffle(pool)
+    remaining = list(pool)
     questions: list[Question] = []
     check_verdicts: dict[str, dict[str, object]] = {}
+    defects: dict[str, _AttentionDefect] = {}
     key: list[dict[str, object]] = []
-    for index, source in enumerate(candidates[:count], start=1):
-        question_id = f"{ATTENTION_CHECK_PREFIX}{index:03d}"
-        wrong_item = (index - 1) % len(REVIEW_ITEMS) + 1
+    for position in range(1, count + 1):
+        kind = ((position - 1) % len(REVIEW_ITEMS)) + 1
+        index = next((i for i, q in enumerate(remaining) if _defect_ok(kind, q)), None)
+        if index is None:
+            raise GoldenReviewError(
+                f"점검용 더미 원본(kind={kind} 조건 충족, Claude 판정 3항목 모두 Y) 부족"
+            )
+        source = remaining.pop(index)
+        question_id = f"{ATTENTION_CHECK_PREFIX}{position:03d}"
         original = verdicts.get(
             source.id, {"q1": True, "q2": True, "q3": True, "note": ""}
         )
-        verdict = {key: original[key] for key in _VERDICT_KEYS}
-        verdict[_VERDICT_KEYS[wrong_item - 1]] = not bool(
-            verdict[_VERDICT_KEYS[wrong_item - 1]]
-        )
+        verdict = {k: original[k] for k in _VERDICT_KEYS}
         verdict["note"] = str(original.get("note", ""))
+        defect = _build_defect(kind, source)
         questions.append(replace(source, id=question_id))
         check_verdicts[question_id] = verdict
+        defects[question_id] = defect
         key.append(
             {
                 "question_id": question_id,
                 "source_question_id": source.id,
-                "wrong_item": wrong_item,
+                "kind": kind,
+                "wrong_item": kind,
+                "removed_anchor": defect.removed_anchor,
+                "removed_doc_id": defect.removed_doc_id,
+                "false_expected_response": defect.false_expected_response,
                 "verdict": verdict,
             }
         )
-    return questions, check_verdicts, key
+    return questions, check_verdicts, defects, key
 
 
 def _write_template_csv(
@@ -608,6 +654,7 @@ def _render_packet(
     laws: Mapping[str, Mapping[str, object]],
     root: Path,
     real_summary: Mapping[str, object],
+    defects: Mapping[str, _AttentionDefect] = MappingProxyType({}),
 ) -> str:
     lines = [
         "# M4 골드·실버 사람 검수 패킷",
@@ -615,6 +662,13 @@ def _render_packet(
         "Claude 판정은 초안이다. 동의하지 않는 항목만 CSV의 disagree와 correction에 적는다. reviewer와 reviewed_on은 실제 검수자가 직접 적어야 한다.",
     ]
     for question in questions:
+        defect = defects.get(question.id)
+        question_text = _apply_q1_defect(question.question, defect)
+        expected_response = (
+            defect.false_expected_response
+            if defect is not None and defect.kind == 3
+            else question.expected_response
+        )
         lines.extend(
             [
                 "",
@@ -625,15 +679,15 @@ def _render_packet(
                 f"- 태그: {', '.join(question.tags) or '(없음)'}",
                 f"- 기준일: {question.as_of or '(없음)'}",
                 f"- 질문자: {question.asker.team} / {question.asker.grade}급",
-                f"- 기대 응답: `{question.expected_response}`",
+                f"- 기대 응답: `{expected_response}`",
                 "",
                 "### 질문",
                 "",
-                question.question,
+                question_text,
                 "",
                 "### 정답 구간",
                 "",
-                *_qrel_lines(question, docs=docs, laws=laws, root=root),
+                *_qrel_lines(question, docs=docs, laws=laws, root=root, defect=defect),
                 "",
                 "### 보조 검수 정보",
                 "",
@@ -671,11 +725,19 @@ def _qrel_lines(
     docs: Mapping[str, Mapping[str, object]],
     laws: Mapping[str, Mapping[str, object]],
     root: Path,
+    defect: _AttentionDefect | None = None,
 ) -> list[str]:
     if not question.qrels:
         return ["- (정답 구간 없음)"]
     lines: list[str] = []
     for qrel in question.qrels:
+        if (
+            defect is not None
+            and defect.kind == 2
+            and qrel.rel == 2
+            and qrel.doc_id == defect.removed_doc_id
+        ):
+            continue
         title = _document_title(qrel, docs=docs, laws=laws)
         if qrel.rel == 1:
             marker = (
@@ -687,7 +749,14 @@ def _qrel_lines(
             continue
         excerpt = _qrel_excerpt(qrel, docs=docs, laws=laws, root=root)
         lines.append(f"- 관련도 2: {title} — {excerpt}")
-    return lines
+    return lines or ["- (정답 구간 없음, 보정 표시 문서 제외)"]
+
+
+def _apply_q1_defect(question_text: str, defect: _AttentionDefect | None) -> str:
+    if defect is None or defect.kind != 1 or defect.removed_anchor is None:
+        return question_text
+    stripped = question_text.replace(defect.removed_anchor, "", 1)
+    return re.sub(r"\s{2,}", " ", stripped).strip()
 
 
 def _document_title(

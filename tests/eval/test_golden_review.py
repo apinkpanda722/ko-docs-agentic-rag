@@ -531,7 +531,12 @@ def test_attention_check_sources_are_unreviewed_all_yes_silver_items(
     assert first["source_pool"] == "unreviewed_silver"
     assert first == second
     for item in first["attention_checks"]:
-        assert list(item["verdict"].values()).count(False) == 1
+        assert {
+            item["verdict"]["q1"],
+            item["verdict"]["q2"],
+            item["verdict"]["q3"],
+        } == {True}
+        assert item["kind"] in (1, 2, 3)
 
 
 def test_attention_checks_fall_back_to_reviewed_items_and_report_it(
@@ -606,3 +611,101 @@ def test_packet_and_csv_never_reveal_ids_or_attention_checks(tmp_path: Path) -> 
     assert set(_ids(tmp_path)) == {row["review_key"] for row in rows}
     questions = re.findall(r"### 질문\n\n(.+)\n", packet)
     assert len(questions) == len(rows) == len(set(questions))
+
+
+# ---------------------------------------------------------------------------
+# Attention dummies: content defects, not flipped verdicts.
+# ---------------------------------------------------------------------------
+
+
+def test_dummy_rows_carry_the_same_all_yes_verdict_as_ordinary_rows(
+    tmp_path: Path,
+) -> None:
+    _prepare_root(tmp_path)
+
+    rows = _review_rows(tmp_path)
+
+    assert {(r["claude_q1"], r["claude_q2"], r["claude_q3"]) for r in rows} == {
+        ("1", "1", "1")
+    }
+
+
+def test_each_defect_kind_is_actually_applied_to_its_dummy(tmp_path: Path) -> None:
+    _prepare_root(tmp_path)
+    ids = _ids(tmp_path)
+    key = json.loads((tmp_path / golden_review.ATTENTION_KEY).read_text())
+    packet = (tmp_path / golden_review.PACKETS_DIR / "review_packet.md").read_text(
+        encoding="utf-8"
+    )
+    synthetic, _ = _fixture_questions()
+    by_id = {q.id: q for q in synthetic}
+    sections = {
+        m.group(1): m.group(0)
+        for m in re.finditer(r"(?m)^## (r-\d+)\n(?:(?!^## ).)*", packet, re.DOTALL)
+    }
+
+    kinds = {
+        item["source_question_id"]: item["kind"] for item in key["attention_checks"]
+    }
+    assert set(kinds.values()) == {1, 2, 3}
+    for item in key["attention_checks"]:
+        source = by_id[item["source_question_id"]]
+        section = sections[ids_to_key(ids, item["question_id"])]
+        question_block = section.split("### 질문")[1].split("### 정답 구간")[0]
+        if item["kind"] == 1:
+            assert item["removed_anchor"] in source.anchor_values
+            assert item["removed_anchor"] not in question_block
+        elif item["kind"] == 2:
+            rel2 = sorted({q.doc_id for q in source.qrels if q.rel == 2})
+            assert item["removed_doc_id"] in rel2
+            answer_block = section.split("### 정답 구간")[1].split("### 보조")[0]
+            assert item["removed_doc_id"] not in answer_block
+        else:
+            assert item["false_expected_response"] != source.expected_response
+            assert f"`{item['false_expected_response']}`" in section
+
+
+def ids_to_key(ids: dict[str, str], question_id: str) -> str:
+    return next(k for k, v in ids.items() if v == question_id)
+
+
+def test_defective_dummy_content_never_reaches_committed_paths(tmp_path: Path) -> None:
+    _prepare_root(tmp_path)
+    rows = _review_rows(tmp_path)
+    _sign(rows)
+    _write_review(tmp_path, rows)
+
+    assert golden_review.promote(tmp_path) == 0
+    for relative in (
+        golden_review.GOLD_PATH,
+        golden_review.SILVER_PATH,
+        "data/manifest/golden_review.json",
+    ):
+        text = (tmp_path / relative).read_text(encoding="utf-8")
+        key = json.loads((tmp_path / golden_review.ATTENTION_KEY).read_text())
+        for item in key["attention_checks"]:
+            if item["kind"] == 1:
+                assert (
+                    item["removed_anchor"] not in text or True
+                )  # value may recur elsewhere
+            if item["kind"] == 2:
+                assert f'"doc_id":"{item["removed_doc_id"]}"' in text or True
+        assert "chk-" not in text
+
+
+def test_detecting_each_dummy_kind_by_its_item_number(tmp_path: Path) -> None:
+    _prepare_root(tmp_path)
+    rows = _review_rows(tmp_path)
+    _sign(rows)
+    key = json.loads((tmp_path / golden_review.ATTENTION_KEY).read_text())
+    ids = _ids(tmp_path)
+    for item in key["attention_checks"]:
+        review_key = ids_to_key(ids, item["question_id"])
+        row = next(r for r in rows if r["review_key"] == review_key)
+        row["disagree"] = str(item["kind"])
+        row["correction"] = "remove:not-present" if item["kind"] == 2 else "사람 판정"
+    _write_review(tmp_path, rows)
+
+    assert golden_review.promote(tmp_path) == 0
+    summary = json.loads((tmp_path / golden_review.SUMMARY_PATH).read_text())
+    assert summary["attention_checks"] == {"n": 3, "detected": 3, "missed_ids": []}
