@@ -1,4 +1,4 @@
-.PHONY: verify up down logs test-integration collect-law collect-alio match-versions convert-hwp parse-targets parse-pypdf docling-models parse-docling parse-upstage-dry parse-upstage parse-upstage-direct-dry parse-upstage-direct parse-score table-drafts table-golden table-score parse-report reg-index seed-names build-db plan-docs generate-dry generate-pilot generate-pilot-rerun generate synth-validate synth-metrics synth-report review-sample review-score query-specs queries-dry queries query-validate lexical-report golden-real-candidates golden-real-check golden-split-preview golden-packets golden-promote m4-report
+.PHONY: verify up down logs test-integration collect-law collect-alio match-versions convert-hwp parse-targets parse-pypdf docling-models parse-docling parse-upstage-dry parse-upstage parse-upstage-direct-dry parse-upstage-direct parse-score table-drafts table-golden table-score parse-report reg-index seed-names build-db plan-docs generate-dry generate-pilot generate-pilot-rerun generate synth-validate synth-metrics synth-report review-sample review-score query-specs queries-dry queries queries-batch-dry queries-batch query-validate lexical-report golden-real-candidates golden-real-check golden-split-preview golden-packets golden-promote m4-report
 
 # 하네스의 단일 검증 진입점. Stop hook, scripts/execute.py, step AC가 모두 이 타깃을 호출한다.
 verify:
@@ -120,6 +120,12 @@ queries-dry:
 
 queries:
 	uv run python -m kodocs.eval.query_draft
+
+queries-batch-dry:
+	uv run python -m kodocs.eval.query_draft --batch --dry-run
+
+queries-batch:
+	uv run python -m kodocs.eval.query_draft --batch
 
 query-validate:
 	uv run python -m kodocs.eval.query_draft --validate-only

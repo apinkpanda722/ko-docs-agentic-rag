@@ -39,9 +39,14 @@ from kodocs.llm.anthropic_batch import (
     SERVICE_PREFIX,
     AnthropicBatchClient,
     BatchRequest,
+    BatchResult,
     SubmitRejectedError,
     SubmitUncertainError,
     anthropic_client_factory,
+)
+from kodocs.llm.anthropic_messages import (
+    SYNC_SERVICE_PREFIX,
+    AnthropicMessagesClient,
 )
 from kodocs.llm.settings import GenerationConfig, load_generation_config
 from kodocs.synth.seed import (
@@ -367,6 +372,125 @@ def run(
     return 0
 
 
+def run_sync(
+    root: Path,
+    *,
+    client: AnthropicMessagesClient | None,
+    config: GenerationConfig,
+    dry_run: bool,
+    assume_yes: bool,
+    limit: int | None,
+    print_fn: PrintFn = print,
+    input_fn: Callable[[str], str] = input,
+) -> int:
+    """Draft synchronously: generate, validate, redraft up to max_attempts."""
+    root = Path(root)
+    if limit is not None and limit < 1:
+        raise ValueError("limit는 1 이상이어야 합니다")
+    specs = load_questions(root / SPECS_PATH)
+    targets = pending_specs(root, specs, config=config)
+    if limit is not None:
+        targets = targets[:limit]
+    if not targets:
+        print_fn("질문 초안 대상 0건: 검증 통과했거나 현재 템플릿 시도를 소진했습니다.")
+        return 0
+    selected = {spec.id for spec, _ in targets}
+    first = [build_request(spec, config=config, attempt=a) for spec, a in targets]
+    estimates = _cost_estimates(first, config, prefix=SYNC_SERVICE_PREFIX)
+    settings = load_settings(os.environ)
+    month_total = CostLedger(root / DEFAULT_LEDGER_PATH).month_total_usd()
+    remaining = settings.monthly_budget_usd - month_total
+    remaining_after = remaining - float(estimates["budget_maximum_cost_usd"])
+    _print_plan(
+        targets,
+        estimates=estimates,
+        month_total=month_total,
+        monthly_budget_usd=settings.monthly_budget_usd,
+        remaining_after=remaining_after,
+        print_fn=print_fn,
+        mode_label="동기",
+    )
+    if dry_run:
+        _append_dry_run(
+            root,
+            targets=targets,
+            estimates=estimates,
+            month_total=month_total,
+            monthly_budget_usd=settings.monthly_budget_usd,
+            remaining_after=remaining_after,
+            mode="sync",
+        )
+    if float(estimates["budget_maximum_cost_usd"]) > remaining:
+        print_fn("예산 초과: 여유를 포함한 최대 비용이 이번 달 남은 예산을 넘습니다.")
+        return 1
+    if dry_run:
+        return 0
+    if client is None:
+        print_fn("Anthropic 클라이언트가 없어 실행할 수 없습니다.")
+        return 2
+    if not assume_yes and input_fn("계속하려면 y 입력: ").strip().casefold() != "y":
+        print_fn("사용자가 질문 초안 생성을 취소했습니다.")
+        return 0
+
+    seed = load_seed(root)
+    people = {person.person_id: person for person in seed.people}
+    docs = load_documents(root / DOCS_PATH)
+    extra = {"mode": "sync"}
+    summary: Mapping[str, object] = {}
+    for round_number in range(1, config.max_attempts + 1):
+        if not targets:
+            break
+        requests: list[BatchRequest] = []
+        for spec, attempt in targets:
+            request = build_request(spec, config=config, attempt=attempt)
+            requests.append(request)
+            _append_draft_log(
+                root,
+                {
+                    **_request_metadata(request, config=config),
+                    **extra,
+                    "id": spec.id,
+                    "attempt": attempt,
+                    "custom_id": request.custom_id,
+                    "cache_key": request.cache_key,
+                    "batch_id": client.run_id,
+                    "status": "submitted",
+                    "ts": _utc_now(),
+                },
+            )
+        print_fn(f"동기 호출 {round_number}회차: {len(requests)}건")
+        try:
+            results = client.create_many(requests)
+        except BudgetExceededError as exc:
+            print_fn(f"예산 초과로 중단: {_first_line(str(exc))}")
+            return 2
+        _store_results(
+            root,
+            results,
+            specs=specs,
+            batch_id=client.run_id,
+            config=config,
+            seed=seed,
+            people=people,
+            docs=docs,
+            print_fn=print_fn,
+            extra=extra,
+            check_stale=False,
+        )
+        summary = _write_validation_outputs(
+            root, specs=specs, seed=seed, people=people, docs=docs
+        )
+        targets = [
+            (spec, attempt)
+            for spec, attempt in pending_specs(root, specs, config=config)
+            if spec.id in selected
+        ]
+    print_fn(
+        f"동기 초안 완료: 통과 {summary.get('validated')} 실패 {summary.get('failed')}"
+    )
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """CLI entry point; paid calls require a key and user confirmation."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -376,6 +500,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--yes", action="store_true")
     parser.add_argument("--status", action="store_true")
     parser.add_argument("--validate-only", action="store_true")
+    parser.add_argument(
+        "--batch",
+        action="store_true",
+        help="use the Message Batches API (bulk only; default is synchronous)",
+    )
     parser.add_argument(
         "--invalidate",
         nargs="+",
@@ -405,6 +534,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.validate_only:
             return validate_only(root)
         config = load_generation_config(section="golden_queries")
+        if not args.batch and not args.status:
+            return _main_sync(root, args, config)
         if args.dry_run:
             return run(
                 root,
@@ -442,6 +573,40 @@ def main(argv: Sequence[str] | None = None) -> int:
     except (OSError, TypeError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
         print(f"질문 초안 실행 실패: {_first_line(str(exc))}")
         return 1
+
+
+def _main_sync(root: Path, args: argparse.Namespace, config: GenerationConfig) -> int:
+    if args.dry_run:
+        return run_sync(
+            root,
+            client=None,
+            config=config,
+            dry_run=True,
+            assume_yes=args.yes,
+            limit=args.limit,
+        )
+    settings = load_settings()
+    try:
+        api_key = settings.require_key("ANTHROPIC_API_KEY")
+    except MissingAPIKeyError as exc:
+        print(str(exc))
+        return 2
+    ledger = CostLedger(root / DEFAULT_LEDGER_PATH)
+    client = AnthropicMessagesClient(
+        client_factory=anthropic_client_factory(api_key),
+        config=config,
+        ledger=ledger,
+        guard=BudgetGuard(ledger, settings.monthly_budget_usd),
+        run_id=f"sync-{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}",
+    )
+    return run_sync(
+        root,
+        client=client,
+        config=config,
+        dry_run=False,
+        assume_yes=args.yes,
+        limit=args.limit,
+    )
 
 
 def validate_only(root: Path, *, print_fn: PrintFn = print) -> int:
@@ -513,7 +678,13 @@ def _asked_attribute(spec: Question) -> str:
     return " 및 ".join(labels) if labels else "관련 정보"
 
 
+# Facts whose value does not fit their attribute's generic label.
+_FACT_LABEL_OVERRIDES = {"f-evt-038-result": "진행한 작업"}
+
+
 def _fact_label(fact_id: str) -> str:
+    if fact_id in _FACT_LABEL_OVERRIDES:
+        return _FACT_LABEL_OVERRIDES[fact_id]
     attribute = fact_id.rsplit("-", 1)[-1]
     if attribute == "owner" and fact_id.startswith("f-service-"):
         return _SERVICE_OWNER_LABEL
@@ -908,7 +1079,10 @@ def _other_template(record: Mapping[str, object], current_hash: str) -> bool:
 
 
 def _cost_estimates(
-    requests: Sequence[BatchRequest], config: GenerationConfig
+    requests: Sequence[BatchRequest],
+    config: GenerationConfig,
+    *,
+    prefix: str = SERVICE_PREFIX,
 ) -> dict[str, int | float]:
     input_tokens = sum(
         math.ceil(
@@ -917,13 +1091,13 @@ def _cost_estimates(
         for request in requests
     )
     maximum_output_tokens = len(requests) * config.max_tokens
-    expected_cost = estimate_usd(f"{SERVICE_PREFIX}.input", input_tokens)
+    expected_cost = estimate_usd(f"{prefix}.input", input_tokens)
     maximum_cost = expected_cost + estimate_usd(
-        f"{SERVICE_PREFIX}.output", maximum_output_tokens
+        f"{prefix}.output", maximum_output_tokens
     )
     budget_maximum = budget_estimate_usd(
-        f"{SERVICE_PREFIX}.input", input_tokens
-    ) + budget_estimate_usd(f"{SERVICE_PREFIX}.output", maximum_output_tokens)
+        f"{prefix}.input", input_tokens
+    ) + budget_estimate_usd(f"{prefix}.output", maximum_output_tokens)
     return {
         "estimated_input_tokens": input_tokens,
         "maximum_output_tokens": maximum_output_tokens,
@@ -941,13 +1115,14 @@ def _print_plan(
     monthly_budget_usd: float,
     remaining_after: float,
     print_fn: PrintFn,
+    mode_label: str = "Batch",
 ) -> None:
     type_counts = dict(sorted(Counter(spec.type for spec, _ in targets).items()))
     print_fn(f"질문 초안 대상 {len(targets)}건 / 유형별 {type_counts}")
     print_fn(
         f"추정 입력 {int(estimates['estimated_input_tokens']):,}토큰 / 최대 출력 "
         f"{int(estimates['maximum_output_tokens']):,}토큰 / "
-        "예상 비용(Batch, VAT 포함) "
+        f"예상 비용({mode_label}, VAT 포함) "
         f"${float(estimates['expected_cost_usd']):.4f} / 최대 "
         f"${float(estimates['maximum_cost_usd']):.4f} / 이번 달 누적 "
         f"${month_total:.2f} / 상한 ${monthly_budget_usd:.2f} / "
@@ -963,11 +1138,13 @@ def _append_dry_run(
     month_total: float,
     monthly_budget_usd: float,
     remaining_after: float,
+    mode: str = "batch",
 ) -> None:
     append_record(
         root / DRY_RUNS_PATH,
         {
             "ts": _utc_now(),
+            "mode": mode,
             "n_requests": len(targets),
             "type_counts": dict(
                 sorted(Counter(spec.type for spec, _ in targets).items())
@@ -1032,10 +1209,53 @@ def _collect_batch(
     print_fn: PrintFn,
 ) -> bool:
     specs = load_questions(root / SPECS_PATH)
-    by_id = {spec.id: spec for spec in specs}
     seed = load_seed(root)
     people = {person.person_id: person for person in seed.people}
     docs = load_documents(root / DOCS_PATH)
+    results = client.collect(batch_id)
+    save_failed = not _store_results(
+        root,
+        results,
+        specs=specs,
+        batch_id=batch_id,
+        config=config,
+        seed=seed,
+        people=people,
+        docs=docs,
+        print_fn=print_fn,
+        extra={},
+        check_stale=True,
+    )
+    _write_validation_outputs(
+        root,
+        specs=specs,
+        seed=seed,
+        people=people,
+        docs=docs,
+    )
+    if not save_failed:
+        client.mark_collected(batch_id)
+    else:
+        print_fn("저장 실패가 있어 Batch를 collected로 표시하지 않았습니다.")
+    return not save_failed
+
+
+def _store_results(
+    root: Path,
+    results: Sequence[BatchResult],
+    *,
+    specs: Sequence[Question],
+    batch_id: str,
+    config: GenerationConfig,
+    seed: Seed,
+    people: Mapping[str, Person],
+    docs: Mapping[str, Mapping[str, object]],
+    print_fn: PrintFn,
+    extra: Mapping[str, object],
+    check_stale: bool,
+) -> bool:
+    """Cache, validate and log every result; returns False if any save failed."""
+    by_id = {spec.id: spec for spec in specs}
     log_by_custom_id = {
         str(record.get("custom_id")): record
         for record in load_records(root / DRAFT_LOG)
@@ -1045,8 +1265,7 @@ def _collect_batch(
         (record.get("id"), record.get("attempt"))
         for record in load_records(root / FAILURES_PATH)
     }
-    results = client.collect(batch_id)
-    save_failed = False
+    ok = True
     for index, result in enumerate(results, start=1):
         try:
             spec_id, attempt = _parse_custom_id(result.custom_id)
@@ -1074,7 +1293,8 @@ def _collect_batch(
                 else request.cache_key
             )
             if (
-                logged is not None
+                check_stale
+                and logged is not None
                 and logged.get("prompt_sha256")
                 != _request_metadata(request, config=config)["prompt_sha256"]
             ):
@@ -1082,6 +1302,7 @@ def _collect_batch(
                     root,
                     {
                         **metadata,
+                        **extra,
                         "id": spec_id,
                         "attempt": attempt,
                         "custom_id": result.custom_id,
@@ -1112,6 +1333,7 @@ def _collect_batch(
                     "usage": dict(result.usage) if result.usage is not None else None,
                     "error": result.error,
                     **metadata,
+                    **extra,
                     "collected_at": _utc_now(),
                 }
                 _write_json(cache_path, cache)
@@ -1121,10 +1343,9 @@ def _collect_batch(
                 text = cache.get("text")
                 if not isinstance(text, str):
                     raise ValueError("succeeded 초안에 text가 없습니다")
-                question = text.strip()
                 codes = validate_draft(
                     spec,
-                    question,
+                    text.strip(),
                     seed=seed,
                     people=people,
                     docs=docs,
@@ -1138,6 +1359,7 @@ def _collect_batch(
                         "id": spec_id,
                         "attempt": attempt,
                         "codes": codes,
+                        **extra,
                         "ts": _utc_now(),
                     },
                     required=_FAILURE_REQUIRED,
@@ -1147,6 +1369,7 @@ def _collect_batch(
                 root,
                 {
                     **metadata,
+                    **extra,
                     "id": spec_id,
                     "attempt": attempt,
                     "custom_id": result.custom_id,
@@ -1159,23 +1382,12 @@ def _collect_batch(
                 },
             )
         except Exception as exc:  # noqa: BLE001 - isolate each persisted result
-            save_failed = True
+            ok = False
             print_fn(
                 f"결과 저장 실패: {result.custom_id} ({type(exc).__name__}) — 계속 진행합니다."
             )
         _progress(print_fn, index, len(results), "결과 저장")
-    _write_validation_outputs(
-        root,
-        specs=specs,
-        seed=seed,
-        people=people,
-        docs=docs,
-    )
-    if not save_failed:
-        client.mark_collected(batch_id)
-    else:
-        print_fn("저장 실패가 있어 Batch를 collected로 표시하지 않았습니다.")
-    return not save_failed
+    return ok
 
 
 def _append_draft_log(root: Path, record: Mapping[str, object]) -> None:

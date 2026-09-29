@@ -1038,3 +1038,158 @@ def test_invalidate_cli_marks_drafts_stale_with_a_reason(
         (f"{spec.id}-a1", "stale_spec", "generic_attribute")
     ]
     assert query_draft.main(["--root", str(tmp_path), "--invalidate", "g-nope"]) == 1
+
+
+# ---------------------------------------------------------------------------
+# Synchronous drafting (default): generate -> validate -> redraft in one run.
+# ---------------------------------------------------------------------------
+
+
+class FakeSyncClient:
+    """Scripted texts per spec id; the n-th call for an id returns texts[n]."""
+
+    run_id = "sync-fake"
+
+    def __init__(self, texts: Mapping[str, Sequence[str]]) -> None:
+        self.texts = {key: list(value) for key, value in texts.items()}
+        self.calls: list[list[str]] = []
+
+    def estimate(self, requests: Sequence[BatchRequest]) -> object:
+        from kodocs.llm.anthropic_messages import estimate_requests
+
+        return estimate_requests(requests, _config())
+
+    def create_many(self, requests: Sequence[BatchRequest]) -> list[BatchResult]:
+        self.calls.append([request.custom_id for request in requests])
+        results: list[BatchResult] = []
+        for request in requests:
+            spec_id = request.custom_id.rsplit("-a", 1)[0]
+            results.append(_result(request.custom_id, self.texts[spec_id].pop(0)))
+        return results
+
+
+def _run_sync(tmp_path: Path, client: FakeSyncClient, messages: list[str]) -> int:
+    return query_draft.run_sync(
+        tmp_path,
+        client=client,  # type: ignore[arg-type]
+        config=_config(),
+        dry_run=False,
+        assume_yes=True,
+        limit=None,
+        print_fn=lambda message, **kwargs: messages.append(message),
+    )
+
+
+def _jsonl(path: Path) -> list[dict[str, object]]:
+    return [json.loads(x) for x in path.read_text(encoding="utf-8").splitlines()]
+
+
+def test_sync_run_validates_and_redrafts_failures_in_one_run(
+    tmp_path: Path,
+    specs: Sequence[Question],
+    seed: Seed,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    good, retried = _by_id(specs, "g-syn-010"), _by_id(specs, "g-syn-001")
+    _write_specs(tmp_path, [good, retried])
+    monkeypatch.setattr(query_draft, "load_seed", lambda _root: seed)
+    client = FakeSyncClient(
+        {
+            good.id: ["analytics-hub의 운영 담당 팀은 어디인가요?"],
+            retried.id: [
+                "DAI-1001에서 스키마 호환 검사를 추가하고 적재를 재실행했나요?",
+                "DAI-1001의 조치 내용은 무엇인가요?",
+            ],
+        }
+    )
+    messages: list[str] = []
+
+    assert _run_sync(tmp_path, client, messages) == 0
+
+    assert client.calls == [
+        [f"{retried.id}-a1", f"{good.id}-a1"],
+        [f"{retried.id}-a2"],
+    ]
+    assert sorted(q.id for q in load_questions(tmp_path / VALIDATION_PATH)) == [
+        retried.id,
+        good.id,
+    ]
+    log = _jsonl(tmp_path / DRAFT_LOG)
+    assert {r["mode"] for r in log} == {"sync"}
+    assert [(r["custom_id"], r["status"]) for r in log if r["id"] == retried.id] == [
+        (f"{retried.id}-a1", "submitted"),
+        (f"{retried.id}-a1", "stored"),
+        (f"{retried.id}-a2", "submitted"),
+        (f"{retried.id}-a2", "stored"),
+    ]
+    failures = _jsonl(tmp_path / FAILURES_PATH)
+    assert [(f["id"], f["attempt"], f["codes"], f["mode"]) for f in failures] == [
+        (retried.id, 1, ["answer_leak"], "sync")
+    ]
+
+
+def test_sync_run_stops_after_max_attempts_and_counts_each_try(
+    tmp_path: Path,
+    specs: Sequence[Question],
+    seed: Seed,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    spec = _by_id(specs, "g-syn-001")
+    _write_specs(tmp_path, [spec])
+    monkeypatch.setattr(query_draft, "load_seed", lambda _root: seed)
+    leak = "DAI-1001에서 스키마 호환 검사를 추가하고 적재를 재실행했나요?"
+    client = FakeSyncClient({spec.id: [leak] * 5})
+    messages: list[str] = []
+
+    assert _run_sync(tmp_path, client, messages) == 0
+
+    assert client.calls == [[f"{spec.id}-a{n}"] for n in (1, 2, 3)]
+    assert [f["attempt"] for f in _jsonl(tmp_path / FAILURES_PATH)] == [1, 2, 3]
+    assert load_questions(tmp_path / VALIDATION_PATH) == []
+    assert pending_specs(tmp_path, [spec], config=_config()) == []
+    assert any("실패 1" in message for message in messages)
+
+
+def test_sync_dry_run_uses_sync_prices_and_records_the_mode(
+    tmp_path: Path, specs: Sequence[Question], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from kodocs.costs import estimate_usd
+
+    _write_specs(tmp_path, [_by_id(specs, "g-syn-010")])
+    monkeypatch.setenv("MONTHLY_BUDGET_USD", "45")
+    messages: list[str] = []
+
+    assert (
+        query_draft.run_sync(
+            tmp_path,
+            client=None,
+            config=_config(),
+            dry_run=True,
+            assume_yes=False,
+            limit=None,
+            print_fn=lambda message, **kwargs: messages.append(message),
+        )
+        == 0
+    )
+
+    [record] = _jsonl(tmp_path / query_draft.DRY_RUNS_PATH)
+    assert record["mode"] == "sync"
+    assert record["expected_cost_usd"] == pytest.approx(
+        estimate_usd(
+            "anthropic.claude-sonnet-5.input", record["estimated_input_tokens"]
+        )
+    )
+    assert any("예상 비용(동기, VAT 포함)" in message for message in messages)
+    assert not (tmp_path / DRAFT_LOG).exists()
+
+
+def test_a_result_fact_that_is_not_an_effect_is_asked_as_work_done(
+    specs: Sequence[Question],
+) -> None:
+    spec = replace(
+        _by_id(specs, "s-syn-101"),
+        anchor_values=("identity-api",),
+        qrels=_rel2("f-evt-038-result"),
+    )
+
+    assert query_draft._asked_attribute(spec) == "진행한 작업"
