@@ -47,7 +47,16 @@
     {
       "step": 3,
       "name": "corpus-loader",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T01:09:08+0900",
+      "summary": "`src/kodocs/chunking/corpus.py`에 `load_corpus`·`normalize_regulation_ref`·`write_prior_versions_manifest`·`--check` CLI를 구현하고 `data/manifest/m5_prior_versions.json`을 생성했으며, 합성 qrel 1,216건 불일치 0건 및 `make verify` 1,001개 테스트 통과를 확인했습니다.",
+      "completed_at": "2026-09-30T01:26:44+0900",
+      "usage": {
+        "input_tokens": 6657739,
+        "cached_input_tokens": 6473984,
+        "output_tokens": 45028,
+        "attempts": 1
+      }
     },
     {
       "step": 4,
