@@ -1,10 +1,10 @@
 {
   "by_access": {
     "public": {
-      "failed": 1,
+      "failed": 0,
       "generated": 90,
       "not_generated": 0,
-      "passed": 89,
+      "passed": 90,
       "planned": 90
     },
     "restricted": {
@@ -22,10 +22,7 @@
       "planned": 80
     }
   },
-  "by_code": {
-    "fact_missing": 1,
-    "marker_malformed": 1
-  },
+  "by_code": {},
   "by_type": {
     "guide": {
       "failed": 0,
@@ -35,10 +32,10 @@
       "planned": 30
     },
     "incident": {
-      "failed": 1,
+      "failed": 0,
       "generated": 25,
       "not_generated": 0,
-      "passed": 24,
+      "passed": 25,
       "planned": 25
     },
     "meeting": {
@@ -77,7 +74,7 @@
   },
   "exhausted": 0,
   "exhausted_docs": [],
-  "failed": 1,
+  "failed": 0,
   "generated": 200,
   "injections": {
     "expected": 12,
@@ -85,7 +82,7 @@
   },
   "invalidated": 0,
   "not_generated": 0,
-  "passed": 199,
+  "passed": 200,
   "planned": 200,
   "regressed": 0,
   "warnings": {
