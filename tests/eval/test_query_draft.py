@@ -878,7 +878,7 @@ def _rel2(*fact_ids: str) -> tuple:
             ("f-inc-2025-003-service", "f-service-analytics-hub-slo"),
             "해당 건이 발생한 서비스의 서비스 수준 목표",
         ),
-        ("g-syn-001", None, ("f-evt-024-result",), "개선 효과"),
+        ("g-syn-001", None, ("f-evt-024-result",), "기능 배포 후 확인된 효과"),
         ("g-syn-001", None, ("f-evt-049-decision",), "결정 사항"),
     ],
 )
@@ -1238,3 +1238,38 @@ def test_system_prompt_forbids_hypothetical_questions_about_past_facts() -> None
     system = (query_draft.TEMPLATES_DIR / "system.md").read_text(encoding="utf-8")
 
     assert "가정형" in system and "일어난 일" in system
+
+
+@pytest.mark.parametrize(
+    ("text", "flagged"),
+    [
+        ("analytics-hub 도입으로 어떤 효과가 있었나요?", True),
+        ("analytics-hub에 품질 화면을 배포한 뒤 어떤 효과가 확인됐나요?", False),
+    ],
+)
+def test_result_questions_must_not_claim_an_introduction(
+    specs: Sequence[Question], seed: Seed, text: str, flagged: bool
+) -> None:
+    spec = replace(_by_id(specs, "g-syn-010"), qrels=_rel2("f-evt-019-result"))
+
+    codes = validate_draft(spec, text, seed=seed, people=seed.people)
+
+    assert ("result_introduction" in codes) is flagged
+
+
+@pytest.mark.parametrize(
+    ("text", "flagged"),
+    [
+        ("DAI-1001 처리로 얻을 수 있는 효과는 무엇인가요?", True),
+        ("DAI-1001 처리로 어떤 효과를 볼 수 있나요?", True),
+        ("DAI-1001 처리로 어떤 효과를 볼 수 있었나요?", False),
+    ],
+)
+def test_hypothetical_framing_covers_can_obtain_phrases(
+    specs: Sequence[Question], seed: Seed, text: str, flagged: bool
+) -> None:
+    codes = validate_draft(
+        _by_id(specs, "g-syn-001"), text, seed=seed, people=seed.people
+    )
+
+    assert ("hypothetical_framing" in codes) is flagged

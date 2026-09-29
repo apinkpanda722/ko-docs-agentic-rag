@@ -1684,3 +1684,111 @@ def test_override_refuses_a_question_whose_anchor_changed(
             random_seed=7,
             overrides=golden_specs.load_overrides(path),
         )
+
+
+# ---------------------------------------------------------------------------
+# Result facts are anchored with the deployed feature of the same event.
+# ---------------------------------------------------------------------------
+
+
+def _result_seed(
+    seed: Seed, docs: dict[str, dict[str, object]], *, with_version: bool = True
+) -> tuple[Seed, dict[str, dict[str, object]]]:
+    facts = {
+        "f-evt-x-service": Fact(
+            "f-evt-x-service",
+            "service",
+            "alpha-api",
+            "evt-x",
+            date(2026, 5, 1),
+            "normal",
+            "x",
+        ),
+        "f-evt-x-result": Fact(
+            "f-evt-x-result",
+            "text",
+            "확인 시간이 단축되었다.",
+            "evt-x",
+            date(2026, 5, 1),
+            "normal",
+            "x",
+        ),
+    }
+    if with_version:
+        facts["f-evt-x-version"] = Fact(
+            "f-evt-x-version",
+            "text",
+            "검토 기한 화면을 배포했다.",
+            "evt-x",
+            date(2026, 5, 1),
+            "normal",
+            "x",
+        )
+    seed = replace(
+        seed,
+        facts=MappingProxyType({**seed.facts, **facts}),
+        entities=MappingProxyType(
+            {
+                **seed.entities,
+                "evt-x": {"id": "evt-x", "date": "2026-05-01", "service": "alpha-api"},
+            }
+        ),
+    )
+    docs = {
+        **docs,
+        "doc-result": _document(
+            "doc-result", [("f-evt-x-result", "확인 시간이 단축되었다.")]
+        ),
+    }
+    return seed, docs
+
+
+def test_result_semantic_candidates_name_the_deployed_feature(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    seed, docs = _result_seed(tiny_seed, tiny_docs)
+    pools, _ = golden_specs._candidate_pools(seed, docs, golden_specs.fact_index(docs))
+
+    result = next(
+        c for c in pools["semantic"] if c.answer_fact_ids == ("f-evt-x-result",)
+    )
+
+    assert result.anchor_values == ("alpha-api", "검토 기한 화면")
+
+
+def test_result_semantic_without_a_version_keeps_the_service_anchor(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    seed, docs = _result_seed(tiny_seed, tiny_docs, with_version=False)
+    pools, _ = golden_specs._candidate_pools(seed, docs, golden_specs.fact_index(docs))
+
+    result = next(
+        c for c in pools["semantic"] if c.answer_fact_ids == ("f-evt-x-result",)
+    )
+
+    assert result.anchor_values == ("alpha-api",)
+
+
+def test_sync_rewrites_a_result_anchor_in_place_and_keeps_the_fact(
+    tiny_seed: Seed, tiny_docs: dict[str, dict[str, object]]
+) -> None:
+    seed, docs = _result_seed(tiny_seed, tiny_docs)
+    fresh = _spec(
+        seed,
+        docs,
+        qid="s-syn-001",
+        set_name="silver",
+        qtype="semantic",
+        pick=lambda c: c.answer_fact_ids == ("f-evt-x-result",),
+    )
+    legacy = replace(fresh, anchor_values=("alpha-api",))
+
+    result = _sync([legacy], seed, docs)
+
+    [question] = result.questions
+    assert result.rewritten == ("s-syn-001",)
+    assert result.replaced == {}
+    assert question.anchor_values == ("alpha-api", "검토 기한 화면")
+    assert question.answer_values == legacy.answer_values
+    assert question.asker == legacy.asker
+    assert _sync(result.questions, seed, docs).rewritten == ()

@@ -113,7 +113,7 @@ _ATTRIBUTE_LABELS = {
     "plan": "추진 계획",
     "policy": "새로 정한 규칙",
     "restored": "복구 시각",
-    "result": "개선 효과",
+    "result": "기능 배포 후 확인된 효과",
     "service": "관련 서비스",
     "severity": "심각도",
     "slo": "서비스 수준 목표",
@@ -123,7 +123,9 @@ _ATTRIBUTE_LABELS = {
     "window": "적용 기간",
 }
 _SERVICE_OWNER_LABEL = "운영 담당 팀"
-_HYPOTHETICAL_RE = re.compile(r"기대|예상|도입하면|도입했을\s*때")
+_HYPOTHETICAL_RE = re.compile(
+    r"기대|예상|도입하면|도입했을\s*때|얻을\s*수\s*있(?!었)|볼\s*수\s*있(?!었)"
+)
 _METHOD_RE = re.compile(r"방법|(?:확인|조회)할\s*수\s*있|알\s*수\s*있")
 
 PrintFn = Callable[..., object]
@@ -249,6 +251,7 @@ def validate_draft(
         ("prompt_artifact", _prompt_artifact),
         ("asks_method", _asks_method),
         ("hypothetical_framing", _hypothetical_framing),
+        ("result_introduction", _result_introduction),
     )
     codes = [
         code for code, check in checks if check(spec, candidate, seed, people_by_id)
@@ -703,6 +706,19 @@ def _hypothetical_framing(
         spec.expected_response == "answer"
         and spec.type != "unanswerable"
         and _HYPOTHETICAL_RE.search(text) is not None
+    )
+
+
+def _result_introduction(
+    spec: Question,
+    text: str,
+    _seed: Seed,
+    _people: Mapping[str, Person],
+) -> bool:
+    """A result fact follows a feature deployment, never a service introduction."""
+    return "도입" in text and any(
+        qrel.rel == 2 and (qrel.fact_id or "").endswith("-result")
+        for qrel in spec.qrels
     )
 
 

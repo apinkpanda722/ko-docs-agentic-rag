@@ -150,6 +150,7 @@ class SyncResult:
     replaced: dict[str, tuple[str, ...]]
     build: _BuildResult
     dropped: tuple[str, ...] = ()
+    rewritten: tuple[str, ...] = ()
 
 
 # Per-subject caps: (within one type, across all types of one set).
@@ -318,7 +319,12 @@ def sync_specs(
     recomputed: dict[str, Question] = {}
     resolved: dict[str, _Candidate] = {}
     reasons: dict[str, list[str]] = {}
-    for question in order:
+    rewritten: list[str] = []
+    for index_, question in enumerate(order):
+        migrated = _migrate_result_anchor(question, context)
+        if migrated is not question:
+            rewritten.append(question.id)
+            question = order[index_] = migrated
         updated, found = _resync_question(question, context)
         recomputed[question.id] = updated
         claim = unclaimed.get(_question_loose_key(question))
@@ -505,6 +511,7 @@ def sync_specs(
         replaced={qid: tuple(reasons[qid]) for qid in sorted(reasons)},
         build=build,
         dropped=dropped,
+        rewritten=tuple(sorted(q for q in rewritten if q not in reasons)),
     )
 
 
@@ -692,6 +699,46 @@ def _sync_context(
 
 def _visible(identifier: str, context: _SyncContext) -> bool:
     return any(identifier in body for body in context.bodies)
+
+
+_FEATURE_RE = re.compile(r"^(.+?)[을를]\s*배포했다\.?$")
+
+
+def _feature_name(seed: Seed, fact: Fact) -> str | None:
+    """The deployed feature of a result fact's event, as a short noun phrase."""
+    if _attribute(fact) != "result":
+        return None
+    versions = sorted(
+        str(other.value)
+        for other in seed.facts.values()
+        if other.subject == fact.subject and _attribute(other) == "version"
+    )
+    if len(versions) != 1:
+        return None
+    match = _FEATURE_RE.match(versions[0].strip())
+    return match.group(1).strip() if match else versions[0].strip().rstrip(".")
+
+
+def _semantic_anchor(seed: Seed, service: str, fact: Fact) -> tuple[str, ...]:
+    feature = _feature_name(seed, fact)
+    return (service, feature) if feature else (service,)
+
+
+def _migrate_result_anchor(question: Question, context: _SyncContext) -> Question:
+    """Add the deployed feature to a service-anchored result question."""
+    fact_ids = _answer_fact_ids(question)
+    if question.type != "semantic" or len(fact_ids) != 1:
+        return question
+    fact = context.seed.facts.get(fact_ids[0])
+    if fact is None or len(question.anchor_values) != 1:
+        return question
+    service = question.anchor_values[0]
+    if service not in {s.name for s in context.seed.services}:
+        return question
+    anchors = _semantic_anchor(context.seed, service, fact)
+    if anchors == question.anchor_values:
+        return question
+    return replace(question, anchor_values=anchors)
 
 
 _COMPARED_ATTRIBUTES = frozenset({"start", "restored"})
@@ -1174,7 +1221,9 @@ def run(root: Path, *, reselect: bool = False, print_fn=print) -> int:
                 random_seed=random_seed,
             )
         invalidated = (
-            _invalidate_drafts(root, [*sync.replaced, *sync.dropped]) if sync else 0
+            _invalidate_drafts(root, [*sync.replaced, *sync.dropped, *sync.rewritten])
+            if sync
+            else 0
         )
         write_questions(specs_path, sorted(result.questions, key=lambda item: item.id))
         summary = _summary(root, result, docs, db_content_hash)
@@ -1194,6 +1243,7 @@ def run(root: Path, *, reselect: bool = False, print_fn=print) -> int:
         for qid, why in sync.replaced.items():
             print_fn(f"  {qid}: {', '.join(why)}")
         print_fn(f"dropped (over quota): {len(sync.dropped)} {list(sync.dropped)}")
+        print_fn(f"anchor rewritten: {len(sync.rewritten)} {list(sync.rewritten)}")
         print_fn(f"drafts invalidated: {invalidated}")
     print_fn(
         f"wrote {len(result.questions)} specifications to "
@@ -1268,7 +1318,7 @@ def _candidate_pools(
         fact = facts[0]
         candidate = _fact_candidate(
             "semantic",
-            (service,),
+            _semantic_anchor(seed, service, fact),
             (fact,),
             seed=seed,
             docs=docs,
