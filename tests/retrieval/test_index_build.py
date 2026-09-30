@@ -534,3 +534,31 @@ def test_bge_dry_run_preparation_loads_only_the_cached_tokenizer(
     assert embedder.count_tokens(["가나다"]) == [5]
     assert embedder.settings["device"] == "tokenizer-only"
     assert embedder.settings["revision"] == revision
+
+
+def test_index_name_override_isolates_all_requests_from_the_real_index(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """통합 테스트가 실측 인덱스를 지운 사고(FP-046)의 회귀 방지."""
+    root = _manifest_root(tmp_path)
+    _install_corpus(monkeypatch, [_doc("syn-iso", "가나다라마바사아자차")])
+    server = MockOpenSearch()
+    override = "kodocs-m5-integration-abc123"
+
+    report = build_index(
+        IndexSpec("composite", "structural"),
+        client=_client(server),
+        embedder=RecordingEmbedder(max_seq_length=64),
+        root=root,
+        index_name_override=override,
+    )
+
+    assert report.index_name == override
+    requests = [
+        f"{request.method} {request.url.path} {request.content.decode()}"
+        for request in server.requests
+    ]
+    assert any(f"/{override}" in line for line in requests)
+    assert not any("kodocs-m5-composite-structural" in line for line in requests)
+    assert override in _manifest(root)["indexes"]
+    assert "kodocs-m5-composite-structural" not in _manifest(root)["indexes"]

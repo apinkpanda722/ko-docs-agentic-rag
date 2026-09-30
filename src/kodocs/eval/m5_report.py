@@ -19,6 +19,18 @@ REPORT_PATH = Path("docs/results/2026-09-30-m5-retrieval.md")
 BEGIN, END = "<!-- BEGIN generated -->", "<!-- END generated -->"
 
 _PLACEHOLDER = "(실행 후 기록)"
+_NOT_APPLICABLE = "해당 없음"
+_RUN_NOTES_PATH = Path("data/manifest/m5_test_run_notes.json")
+
+
+class _NotApplicable:
+    """값이 없어서가 아니라 정의상 해당하지 않는 칸(예: 첫 단계의 이전 대비 Δ)."""
+
+    def __repr__(self) -> str:
+        return _NOT_APPLICABLE
+
+
+NA = _NotApplicable()
 _MANIFEST_DIR = Path("data/manifest")
 _CONFIG_PATH = _MANIFEST_DIR / "m5_config.json"
 _DEV_PATH = _MANIFEST_DIR / "m5_dev.json"
@@ -106,6 +118,7 @@ def _render_tables(root: Path, *, run_date: date | None) -> str:
     eval_inputs = _load_optional_json(root / _EVAL_INPUTS_PATH)
     prior_versions = _load_optional_json(root / _PRIOR_VERSIONS_PATH)
     run_records = _load_optional_jsonl(root / _RUNS_PATH)
+    notes = _load_optional_json(root / _RUN_NOTES_PATH)
     results = _load_results(root / _RESULTS_DIR)
     latest = max(results, key=_sequence_number, default={})
     return "\n\n".join(
@@ -115,7 +128,7 @@ def _render_tables(root: Path, *, run_date: date | None) -> str:
             _retrieval_results_section(latest),
             _hypotheses_section(latest),
             _auxiliary_section(latest),
-            _run_history_section(run_records, results),
+            _run_history_section(run_records, results, notes),
             _dev_section(dev),
         )
     )
@@ -463,8 +476,8 @@ def _ladder_section(title: str, value: object) -> str:
                     stage.get("id"),
                     stage.get("mean_recall10"),
                     stage.get("mean_ndcg10"),
-                    _ci_text(delta.get("recall10")),
-                    _ci_text(delta.get("ndcg10")),
+                    _ci_text(delta.get("recall10")) or NA,
+                    _ci_text(delta.get("ndcg10")) or NA,
                 )
             )
     if not rows:
@@ -539,7 +552,9 @@ def _full_grid_section(value: object) -> str:
                     row.get("method"),
                     row.get("analyzer"),
                     row.get("candidate_chunks"),
-                    row.get("bm25_weight"),
+                    row.get("bm25_weight")
+                    if row.get("bm25_weight") is not None
+                    else NA,
                     row.get("selected_hybrid"),
                     row.get("mean_recall10"),
                     row.get("mean_ndcg10"),
@@ -595,18 +610,18 @@ def _hypotheses_section(latest: Mapping[str, object]) -> str:
                 count,
                 value.get("comparison"),
                 _ci_text(statistic),
-                _hypothesis_reason(value),
+                _hypothesis_reason(value, count),
             )
         )
     rows.extend(
         (
-            ("H5", "M6·M7 대상", 13, "Agentic RAG - 단순 RAG", None, "M5 판정 범위 밖"),
+            ("H5", "M6·M7 대상", 13, "Agentic RAG - 단순 RAG", NA, "M5 판정 범위 밖"),
             (
                 "H6",
                 "M6·M7 대상",
                 "200 이상",
                 "관측 누설률 0%",
-                None,
+                NA,
                 "M7 보안 테스트셋 대상",
             ),
         )
@@ -624,13 +639,13 @@ def _hypotheses_section(latest: Mapping[str, object]) -> str:
                     source,
                     value.get("n"),
                     value.get("metric_n"),
-                    _mapping(value.get("structural")).get("mean"),
-                    _mapping(value.get("fixed")).get("mean"),
-                    difference.get("mean"),
-                    difference.get("sd"),
-                    difference.get("median"),
-                    difference.get("min"),
-                    difference.get("max"),
+                    _stat(_mapping(value.get("structural")), "mean"),
+                    _stat(_mapping(value.get("fixed")), "mean"),
+                    _stat(difference, "mean"),
+                    _stat(difference, "sd"),
+                    _stat(difference, "median"),
+                    _stat(difference, "min"),
+                    _stat(difference, "max"),
                     _mapping(value.get("excluded_no_span")).get("n"),
                 )
             )
@@ -677,7 +692,7 @@ def _hypotheses_section(latest: Mapping[str, object]) -> str:
     )
 
 
-def _hypothesis_reason(value: Mapping[str, object]) -> str | None:
+def _hypothesis_reason(value: Mapping[str, object], count: object) -> str | None:
     note = value.get("note")
     if note:
         return str(note)
@@ -687,8 +702,8 @@ def _hypothesis_reason(value: Mapping[str, object]) -> str | None:
     if not verdict_value:
         return None
     if verdict_value == "판정 보류(차이 입증 못 함)":
-        return f"95% CI가 0을 포함; n={_display(value.get('n'))}"
-    return f"95% CI={_interval(low, high)}; n={_display(value.get('n'))}"
+        return f"95% CI가 0을 포함; n={_display(count)}"
+    return f"95% CI={_interval(low, high)}; n={_display(count)}"
 
 
 def _auxiliary_section(latest: Mapping[str, object]) -> str:
@@ -722,11 +737,11 @@ def _h2_breakdown_section(value: object) -> str:
                         source,
                         repeated,
                         stats.get("n"),
-                        stats.get("mean"),
-                        stats.get("sd"),
-                        stats.get("median"),
-                        stats.get("min"),
-                        stats.get("max"),
+                        _stat(stats, "mean"),
+                        _stat(stats, "sd"),
+                        _stat(stats, "median"),
+                        _stat(stats, "min"),
+                        _stat(stats, "max"),
                     )
                 )
     return "\n".join(
@@ -901,20 +916,26 @@ def _parser_section(value: object) -> str:
 def _run_history_section(
     records: Sequence[Mapping[str, object]],
     results: Sequence[Mapping[str, object]],
+    notes: Mapping[str, object] | None = None,
 ) -> str:
-    history_rows = [
-        (
-            record.get("seq"),
-            record.get("ran_at"),
-            record.get("status"),
-            record.get("rerun_reason"),
-            record.get("previous_result_sha256"),
-            record.get("result_sha256"),
+    notes = notes or {}
+    ordered = sorted(records, key=lambda record: str(record.get("ran_at") or ""))
+    history_rows = []
+    for attempt, record in enumerate(ordered, start=1):
+        note = notes.get(str(record.get("ran_at")))
+        history_rows.append(
+            (
+                attempt,
+                record.get("seq"),
+                record.get("ran_at"),
+                record.get("status"),
+                note or record.get("rerun_reason") or NA,
+                record.get("previous_result_sha256") or NA,
+                record.get("result_sha256") or NA,
+            )
         )
-        for record in sorted(records, key=_sequence_number)
-    ]
     if not history_rows:
-        history_rows = [(None,) * 6]
+        history_rows = [(None,) * 7]
     core_rows = []
     for result in sorted(results, key=_sequence_number):
         hypotheses = _mapping(_mapping(result.get("analysis")).get("hypotheses"))
@@ -941,9 +962,21 @@ def _run_history_section(
                     "## 첫 실행과 재실행",
                     "",
                     _table(
-                        ("seq", "시각", "상태", "사유", "이전 결과 해시", "결과 해시"),
+                        (
+                            "시도",
+                            "seq",
+                            "시각",
+                            "상태",
+                            "사유",
+                            "이전 결과 해시",
+                            "결과 해시",
+                        ),
                         history_rows,
                     ),
+                    "",
+                    "시도는 실행 시각 순서이고 seq는 결과 번호다. 실패한 시도는 결과 파일을 "
+                    "만들지 않고 잠금을 소모하지 않는다(ADR-028 11번), 그래서 성공한 실행과 "
+                    "같은 seq로 보일 수 있다.",
                 )
             ),
             "\n".join(
@@ -967,7 +1000,9 @@ def _dev_section(dev: Mapping[str, object]) -> str:
                 (
                     row.get("method"),
                     row.get("candidate_chunks"),
-                    row.get("bm25_weight"),
+                    row.get("bm25_weight")
+                    if row.get("bm25_weight") is not None
+                    else NA,
                     row.get("gold_dev_mean_ndcg10"),
                     row.get("silver_dev_mean_ndcg10"),
                     row.get("selection_score"),
@@ -976,6 +1011,16 @@ def _dev_section(dev: Mapping[str, object]) -> str:
     if not rows:
         rows = [(None,) * 6]
     selected = _mapping(dev.get("selected"))
+    selected_score = selected.get("selection_score")
+    if selected_score is None and isinstance(values, Sequence):
+        for value in values:
+            row = _mapping(value)
+            if all(
+                row.get(key) == selected.get(key)
+                for key in ("method", "candidate_chunks", "bm25_weight")
+            ):
+                selected_score = row.get("selection_score")
+                break
     return "\n".join(
         (
             "## dev 튜닝",
@@ -1000,7 +1045,7 @@ def _dev_section(dev: Mapping[str, object]) -> str:
                     ("방식", selected.get("method")),
                     ("후보 청크", selected.get("candidate_chunks")),
                     ("BM25 가중치", selected.get("bm25_weight")),
-                    ("선택 점수", selected.get("selection_score")),
+                    ("선택 점수", selected_score),
                 ),
             ),
         )
@@ -1053,10 +1098,13 @@ def _table(headers: Sequence[str], rows: Sequence[Sequence[object]]) -> str:
 
 
 def _display(value: object) -> str:
+    if isinstance(value, _NotApplicable):
+        return _NOT_APPLICABLE
     if value is None or value == "":
         return _PLACEHOLDER
     if isinstance(value, float):
-        return f"{value:.6f}".rstrip("0").rstrip(".")
+        text = f"{value:.3f}".rstrip("0").rstrip(".")
+        return "0" if text in {"-0", ""} else text
     return str(value)
 
 
@@ -1066,6 +1114,14 @@ def _markdown(value: object) -> str:
 
 def _mapping(value: object) -> Mapping[str, object]:
     return value if isinstance(value, Mapping) else {}
+
+
+def _stat(stats: Mapping[str, object], key: str) -> object:
+    """그룹이 비었거나 표본이 1개라 정의되지 않는 통계는 해당 없음으로 둔다."""
+    value = stats.get(key)
+    if value is None and _is_number(stats.get("n")):
+        return NA
+    return value
 
 
 def _is_number(value: object) -> bool:

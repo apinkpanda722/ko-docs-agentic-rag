@@ -444,8 +444,132 @@ def test_first_and_rerun_records_and_core_results_are_all_reported(
 
     rendered = render_tables(tmp_path)
 
-    assert "| 1 | 2026-09-30T11:00:00+09:00 | completed |" in rendered
-    assert "| 2 | 2026-09-30T12:00:00+09:00 | completed |" in rendered
+    assert "| 1 | 1 | 2026-09-30T11:00:00+09:00 | completed |" in rendered
+    assert "| 2 | 2 | 2026-09-30T12:00:00+09:00 | completed |" in rendered
     assert "재기동 후 재측정" in rendered
     assert "| 1 | H1 | 채택 | 0.1 |" in rendered
     assert "| 2 | H1 | 채택 | 0.2 |" in rendered
+
+
+def test_numbers_are_rounded_to_three_decimals_including_intervals(
+    tmp_path: Path,
+) -> None:
+    _index_fixture(tmp_path)
+    _write_json(
+        tmp_path / "data/manifest/m5_test_results/run-01.json",
+        _result_fixture(1, 0.123456),
+    )
+
+    rendered = render_tables(tmp_path)
+
+    assert "0.123 [0.113, 0.133]" in rendered
+    assert "0.123456" not in rendered
+
+
+def test_not_applicable_cells_say_so_and_known_values_are_filled(
+    tmp_path: Path,
+) -> None:
+    _index_fixture(tmp_path)
+    result = _result_fixture(1, 0.1)
+    analysis = result["analysis"]
+    empty = {"n": 0, "mean": None, "sd": None, "median": None, "min": None, "max": None}
+    analysis["h3_breakdown"]["silver_test"]["real"] = {
+        "n": 0,
+        "metric_n": 0,
+        "structural": empty,
+        "fixed": empty,
+        "difference": empty,
+        "excluded_no_span": {"n": 0, "qids": []},
+    }
+    _write_json(tmp_path / "data/manifest/m5_test_results/run-01.json", result)
+    _write_json(
+        tmp_path / "data/manifest/m5_dev.json",
+        {
+            "grid": [
+                {
+                    "method": "hybrid_weighted",
+                    "candidate_chunks": 50,
+                    "bm25_weight": 0.7,
+                    "gold_dev_mean_ndcg10": 0.6,
+                    "silver_dev_mean_ndcg10": 0.4,
+                    "selection_score": 0.523545,
+                },
+                {
+                    "method": "hybrid_rrf",
+                    "candidate_chunks": 50,
+                    "bm25_weight": None,
+                    "gold_dev_mean_ndcg10": 0.6,
+                    "silver_dev_mean_ndcg10": 0.3,
+                    "selection_score": 0.45,
+                },
+            ],
+            "selected": {
+                "method": "hybrid_weighted",
+                "candidate_chunks": 50,
+                "bm25_weight": 0.7,
+            },
+        },
+    )
+
+    rendered = render_tables(tmp_path)
+
+    # 사다리 첫 행은 이전 단계가 없어 해당 없음
+    assert "| standard_bm25_fixed | 0.5 | 0.4 | 해당 없음 | 해당 없음 |" in rendered
+    # BM25 가중치가 적용되지 않는 방식
+    assert "| 50 | 해당 없음 | False |" in rendered
+    assert "| hybrid_rrf | 50 | 해당 없음 |" in rendered
+    # 빈 그룹의 통계
+    assert (
+        "| silver_test | real | 0 | 0 | 해당 없음 | 해당 없음 | 해당 없음 |" in rendered
+    )
+    # 값이 있는데 비어 있던 칸: H7 n, dev 선택 점수
+    assert "n=합성=8, 실제=6" in rendered
+    assert "| 선택 점수 | 0.524 |" in rendered
+
+
+def test_run_history_separates_attempts_and_annotates_failed_attempt(
+    tmp_path: Path,
+) -> None:
+    _index_fixture(tmp_path)
+    _write_json(
+        tmp_path / "data/manifest/m5_test_results/run-01.json",
+        _result_fixture(1, 0.1),
+    )
+    failed_at = "2026-09-30T18:35:04+09:00"
+    completed_at = "2026-09-30T18:38:02+09:00"
+    records = [
+        {
+            "seq": 1,
+            "ran_at": failed_at,
+            "status": "failed",
+            "error": "QuestionRunError: index_not_found_exception",
+            "rerun_reason": None,
+            "previous_result_sha256": None,
+            "result_sha256": None,
+        },
+        {
+            "seq": 1,
+            "ran_at": completed_at,
+            "status": "completed",
+            "rerun_reason": None,
+            "previous_result_sha256": None,
+            "result_sha256": "result-sha-1",
+        },
+    ]
+    (tmp_path / "data/manifest/m5_test_runs.jsonl").write_text(
+        "\n".join(json.dumps(record) for record in records) + "\n", encoding="utf-8"
+    )
+    note = "통합 테스트가 실측 인덱스를 삭제해 결과 없이 실패, 재색인 후 재실행"
+    _write_json(tmp_path / "data/manifest/m5_test_run_notes.json", {failed_at: note})
+
+    rendered = render_tables(tmp_path)
+
+    assert "| 시도 | seq | 시각 | 상태 | 사유 |" in rendered
+    assert (
+        f"| 1 | 1 | {failed_at} | failed | {note} | 해당 없음 | 해당 없음 |" in rendered
+    )
+    assert (
+        f"| 2 | 1 | {completed_at} | completed | 해당 없음 | 해당 없음 | result-sha-1 |"
+        in rendered
+    )
+    assert "실패한 시도는 결과 파일을 만들지 않고 잠금을 소모하지 않는다" in rendered

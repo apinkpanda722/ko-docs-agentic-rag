@@ -292,7 +292,7 @@ def test_index_builder_indexes_small_fixture_and_count_matches(
     )
     http_client = httpx.Client(timeout=10.0)
     client = OpenSearchClient(OPENSEARCH_URL, client=http_client)
-    index = "kodocs-m5-composite-structural"
+    index = f"kodocs-m5-integration-{uuid.uuid4().hex}"
     try:
         report = build_index(
             IndexSpec("composite", "structural"),
@@ -300,6 +300,7 @@ def test_index_builder_indexes_small_fixture_and_count_matches(
             embedder=FakeEmbedder(dim=8),
             root=tmp_path,
             answer_ranges_by_set={"gold": {}, "silver": {}},
+            index_name_override=index,
         )
         assert report.success is True
         counted = client.request("GET", f"/{index}/_count")

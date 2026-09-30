@@ -143,8 +143,14 @@ def build_index(
     recreate: bool = True,
     answer_ranges_by_set: Mapping[str, Mapping[str, Sequence[tuple[int, int]]]]
     | None = None,
+    index_name_override: str | None = None,
 ) -> BuildReport:
-    """Load, chunk, audit, embed, and bulk-index one deterministic variant."""
+    """Load, chunk, audit, embed, and bulk-index one deterministic variant.
+
+    ``index_name_override`` exists so integration tests can build into a
+    temporary index; ``recreate`` deletes the target, so tests must never target
+    the real ``kodocs-m5-*`` measurement index names (FP-046).
+    """
     _validate_spec(spec)
     prepared = _prepare_index(
         spec,
@@ -153,7 +159,7 @@ def build_index(
         answer_ranges_by_set=answer_ranges_by_set,
         tokenizer_only=False,
     )
-    name = index_name(spec.condition, spec.chunking)
+    name = index_name_override or index_name(spec.condition, spec.chunking)
     failures = list(prepared.failures)
 
     if not prepared.chunks:

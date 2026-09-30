@@ -1,0 +1,1442 @@
+{
+  "analysis": {
+    "ablation": {
+      "final": {
+        "configuration": "nori_hybrid_structural",
+        "mean_ndcg10": 0.7177274074779123,
+        "mean_recall10": 0.7738095238095238
+      },
+      "n": 21,
+      "removals": [
+        {
+          "configuration": "nori_hybrid_fixed",
+          "delta_final_minus_removed": {
+            "ndcg10": {
+              "ci_high": -0.014548794731690753,
+              "ci_low": -0.11551606296612775,
+              "mean_diff": -0.05932752479058133,
+              "n": 21,
+              "n_boot": 10000,
+              "seed": 20260930
+            },
+            "recall10": {
+              "ci_high": 0.0,
+              "ci_low": -0.0653061224489796,
+              "mean_diff": -0.029081632653061226,
+              "n": 21,
+              "n_boot": 10000,
+              "seed": 20260930
+            }
+          },
+          "element": "structural",
+          "mean_ndcg10": 0.7770549322684936,
+          "mean_recall10": 0.8028911564625849
+        },
+        {
+          "configuration": "nori_bm25_structural",
+          "delta_final_minus_removed": {
+            "ndcg10": {
+              "ci_high": 0.06371754533352499,
+              "ci_low": 0.006521471126323143,
+              "mean_diff": 0.033480871860327964,
+              "n": 21,
+              "n_boot": 10000,
+              "seed": 20260930
+            },
+            "recall10": {
+              "ci_high": 0.12414965986394558,
+              "ci_low": 0.0,
+              "mean_diff": 0.05470521541950113,
+              "n": 21,
+              "n_boot": 10000,
+              "seed": 20260930
+            }
+          },
+          "element": "hybrid",
+          "mean_ndcg10": 0.6842465356175844,
+          "mean_recall10": 0.7191043083900227
+        },
+        {
+          "configuration": "standard_hybrid_structural",
+          "delta_final_minus_removed": {
+            "ndcg10": {
+              "ci_high": 0.18541376430457987,
+              "ci_low": 0.05710367710619653,
+              "mean_diff": 0.1180861989011152,
+              "n": 21,
+              "n_boot": 10000,
+              "seed": 20260930
+            },
+            "recall10": {
+              "ci_high": 0.12698412698412698,
+              "ci_low": -0.0031746031746031763,
+              "mean_diff": 0.05793650793650793,
+              "n": 21,
+              "n_boot": 10000,
+              "seed": 20260930
+            }
+          },
+          "element": "nori",
+          "mean_ndcg10": 0.5996412085767971,
+          "mean_recall10": 0.7158730158730159
+        }
+      ]
+    },
+    "corpus_v2_rule": {
+      "ci_low": -0.04637161291814107,
+      "comparison": "반복 아님 - 반복",
+      "decision": "판정 불가(표본 부족) — 코퍼스 v2 미착수, 한계로 기록",
+      "group_sizes": {
+        "not_repeated": 6,
+        "repeated": 59
+      },
+      "not_repeated": {
+        "max": 0.07611499137376171,
+        "mean": 0.004948788981024392,
+        "median": 0.004732342465852052,
+        "min": -0.07064171895532001,
+        "n": 6,
+        "sd": 0.0467847945084762
+      },
+      "repeated": {
+        "max": 0.38009376671593426,
+        "mean": 0.004129886967619032,
+        "median": 0.0,
+        "min": -0.5693234419266069,
+        "n": 59,
+        "sd": 0.12887360066188416
+      },
+      "statistic": {
+        "ci_high": 0.04776909973268609,
+        "ci_low": -0.04637161291814107,
+        "mean_diff": 0.00081890201340536,
+        "n": 65,
+        "n_boot": 10000,
+        "seed": 20260930
+      }
+    },
+    "full_grid": {
+      "n": 21,
+      "rows": [
+        {
+          "analyzer": "standard",
+          "bm25_weight": null,
+          "candidate_chunks": 50,
+          "chunking": "fixed",
+          "condition": "composite",
+          "mean_ndcg10": 0.5636195367629011,
+          "mean_recall10": 0.6889455782312925,
+          "method": "bm25",
+          "n": 21,
+          "selected_hybrid": false,
+          "span_hit_rate": 0.5714285714285714,
+          "span_n": 21,
+          "top1_hit_rate": 0.47619047619047616
+        },
+        {
+          "analyzer": "nori",
+          "bm25_weight": null,
+          "candidate_chunks": 50,
+          "chunking": "fixed",
+          "condition": "composite",
+          "mean_ndcg10": 0.7568107264461779,
+          "mean_recall10": 0.7938208616780045,
+          "method": "bm25",
+          "n": 21,
+          "selected_hybrid": false,
+          "span_hit_rate": 0.7142857142857143,
+          "span_n": 21,
+          "top1_hit_rate": 0.6666666666666666
+        },
+        {
+          "analyzer": "standard",
+          "bm25_weight": null,
+          "candidate_chunks": 50,
+          "chunking": "structural",
+          "condition": "composite",
+          "mean_ndcg10": 0.5261580119073423,
+          "mean_recall10": 0.6345238095238095,
+          "method": "bm25",
+          "n": 21,
+          "selected_hybrid": false,
+          "span_hit_rate": 0.47619047619047616,
+          "span_n": 21,
+          "top1_hit_rate": 0.38095238095238093
+        },
+        {
+          "analyzer": "nori",
+          "bm25_weight": null,
+          "candidate_chunks": 50,
+          "chunking": "structural",
+          "condition": "composite",
+          "mean_ndcg10": 0.6842465356175844,
+          "mean_recall10": 0.7191043083900227,
+          "method": "bm25",
+          "n": 21,
+          "selected_hybrid": false,
+          "span_hit_rate": 0.8095238095238095,
+          "span_n": 21,
+          "top1_hit_rate": 0.6666666666666666
+        },
+        {
+          "analyzer": "standard",
+          "bm25_weight": null,
+          "candidate_chunks": 50,
+          "chunking": "fixed",
+          "condition": "composite",
+          "mean_ndcg10": 0.6742735083848187,
+          "mean_recall10": 0.73781179138322,
+          "method": "hybrid_rrf",
+          "n": 21,
+          "selected_hybrid": false,
+          "span_hit_rate": 0.7142857142857143,
+          "span_n": 21,
+          "top1_hit_rate": 0.5238095238095238
+        },
+        {
+          "analyzer": "nori",
+          "bm25_weight": null,
+          "candidate_chunks": 50,
+          "chunking": "fixed",
+          "condition": "composite",
+          "mean_ndcg10": 0.7544145530347809,
+          "mean_recall10": 0.7933673469387754,
+          "method": "hybrid_rrf",
+          "n": 21,
+          "selected_hybrid": false,
+          "span_hit_rate": 0.8095238095238095,
+          "span_n": 21,
+          "top1_hit_rate": 0.7619047619047619
+        },
+        {
+          "analyzer": "standard",
+          "bm25_weight": null,
+          "candidate_chunks": 50,
+          "chunking": "structural",
+          "condition": "composite",
+          "mean_ndcg10": 0.6696314200190709,
+          "mean_recall10": 0.7658730158730158,
+          "method": "hybrid_rrf",
+          "n": 21,
+          "selected_hybrid": false,
+          "span_hit_rate": 0.7619047619047619,
+          "span_n": 21,
+          "top1_hit_rate": 0.5238095238095238
+        },
+        {
+          "analyzer": "nori",
+          "bm25_weight": null,
+          "candidate_chunks": 50,
+          "chunking": "structural",
+          "condition": "composite",
+          "mean_ndcg10": 0.7268874766302743,
+          "mean_recall10": 0.7976190476190477,
+          "method": "hybrid_rrf",
+          "n": 21,
+          "selected_hybrid": false,
+          "span_hit_rate": 0.9047619047619048,
+          "span_n": 21,
+          "top1_hit_rate": 0.6666666666666666
+        },
+        {
+          "analyzer": "standard",
+          "bm25_weight": 0.7,
+          "candidate_chunks": 50,
+          "chunking": "fixed",
+          "condition": "composite",
+          "mean_ndcg10": 0.6216846785479392,
+          "mean_recall10": 0.7255102040816327,
+          "method": "hybrid_weighted",
+          "n": 21,
+          "selected_hybrid": true,
+          "span_hit_rate": 0.6666666666666666,
+          "span_n": 21,
+          "top1_hit_rate": 0.47619047619047616
+        },
+        {
+          "analyzer": "nori",
+          "bm25_weight": 0.7,
+          "candidate_chunks": 50,
+          "chunking": "fixed",
+          "condition": "composite",
+          "mean_ndcg10": 0.7770549322684936,
+          "mean_recall10": 0.8028911564625849,
+          "method": "hybrid_weighted",
+          "n": 21,
+          "selected_hybrid": true,
+          "span_hit_rate": 0.8095238095238095,
+          "span_n": 21,
+          "top1_hit_rate": 0.7619047619047619
+        },
+        {
+          "analyzer": "standard",
+          "bm25_weight": 0.7,
+          "candidate_chunks": 50,
+          "chunking": "structural",
+          "condition": "composite",
+          "mean_ndcg10": 0.5996412085767971,
+          "mean_recall10": 0.7158730158730159,
+          "method": "hybrid_weighted",
+          "n": 21,
+          "selected_hybrid": true,
+          "span_hit_rate": 0.6666666666666666,
+          "span_n": 21,
+          "top1_hit_rate": 0.42857142857142855
+        },
+        {
+          "analyzer": "nori",
+          "bm25_weight": 0.7,
+          "candidate_chunks": 50,
+          "chunking": "structural",
+          "condition": "composite",
+          "mean_ndcg10": 0.7177274074779123,
+          "mean_recall10": 0.7738095238095238,
+          "method": "hybrid_weighted",
+          "n": 21,
+          "selected_hybrid": true,
+          "span_hit_rate": 0.8571428571428571,
+          "span_n": 21,
+          "top1_hit_rate": 0.6666666666666666
+        },
+        {
+          "analyzer": "nori",
+          "bm25_weight": null,
+          "candidate_chunks": 50,
+          "chunking": "fixed",
+          "condition": "composite",
+          "mean_ndcg10": 0.713630353499709,
+          "mean_recall10": 0.7715419501133787,
+          "method": "knn",
+          "n": 21,
+          "selected_hybrid": false,
+          "span_hit_rate": 0.8571428571428571,
+          "span_n": 21,
+          "top1_hit_rate": 0.6666666666666666
+        },
+        {
+          "analyzer": "nori",
+          "bm25_weight": null,
+          "candidate_chunks": 50,
+          "chunking": "structural",
+          "condition": "composite",
+          "mean_ndcg10": 0.7138059174609385,
+          "mean_recall10": 0.7738095238095238,
+          "method": "knn",
+          "n": 21,
+          "selected_hybrid": false,
+          "span_hit_rate": 0.9047619047619048,
+          "span_n": 21,
+          "top1_hit_rate": 0.6666666666666666
+        }
+      ]
+    },
+    "h2_breakdown": {
+      "gold_test": {
+        "by_source_and_answer_repeated": {
+          "real": {
+            "not_repeated": {
+              "max": 0.22629438553091674,
+              "mean": 0.017407260425455134,
+              "median": 0.0,
+              "min": 0.0,
+              "n": 13,
+              "sd": 0.06276277002933359
+            },
+            "repeated": {
+              "max": null,
+              "mean": null,
+              "median": null,
+              "min": null,
+              "n": 0,
+              "sd": null
+            }
+          },
+          "synthetic": {
+            "not_repeated": {
+              "max": 0.1137704181007881,
+              "mean": 0.1137704181007881,
+              "median": 0.1137704181007881,
+              "min": 0.1137704181007881,
+              "n": 1,
+              "sd": null
+            },
+            "repeated": {
+              "max": 0.09840868313161094,
+              "mean": 0.012151931233846872,
+              "median": 0.0,
+              "min": -0.03331426905591922,
+              "n": 7,
+              "sd": 0.04539580786115277
+            }
+          }
+        },
+        "n": 21
+      },
+      "label": "기술 통계",
+      "silver_test": {
+        "by_source_and_answer_repeated": {
+          "real": {
+            "not_repeated": {
+              "max": null,
+              "mean": null,
+              "median": null,
+              "min": null,
+              "n": 0,
+              "sd": null
+            },
+            "repeated": {
+              "max": null,
+              "mean": null,
+              "median": null,
+              "min": null,
+              "n": 0,
+              "sd": null
+            }
+          },
+          "synthetic": {
+            "not_repeated": {
+              "max": 0.07611499137376171,
+              "mean": 0.004948788981024392,
+              "median": 0.004732342465852052,
+              "min": -0.07064171895532001,
+              "n": 6,
+              "sd": 0.0467847945084762
+            },
+            "repeated": {
+              "max": 0.38009376671593426,
+              "mean": 0.004129886967619032,
+              "median": 0.0,
+              "min": -0.5693234419266069,
+              "n": 59,
+              "sd": 0.12887360066188416
+            }
+          }
+        },
+        "n": 65
+      }
+    },
+    "h3_breakdown": {
+      "gold_test": {
+        "real": {
+          "difference": {
+            "max": 1.0,
+            "mean": 0.07692307692307693,
+            "median": 0.0,
+            "min": 0.0,
+            "n": 13,
+            "sd": 0.2773500981126146
+          },
+          "excluded_no_span": {
+            "n": 0,
+            "qids": []
+          },
+          "fixed": {
+            "max": 1.0,
+            "mean": 0.9230769230769231,
+            "median": 1.0,
+            "min": 0.0,
+            "n": 13,
+            "sd": 0.2773500981126146
+          },
+          "metric_n": 13,
+          "n": 13,
+          "structural": {
+            "max": 1.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "min": 1.0,
+            "n": 13,
+            "sd": 0.0
+          }
+        },
+        "synthetic": {
+          "difference": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "min": 0.0,
+            "n": 8,
+            "sd": 0.0
+          },
+          "excluded_no_span": {
+            "n": 0,
+            "qids": []
+          },
+          "fixed": {
+            "max": 1.0,
+            "mean": 0.625,
+            "median": 1.0,
+            "min": 0.0,
+            "n": 8,
+            "sd": 0.5175491695067657
+          },
+          "metric_n": 8,
+          "n": 8,
+          "structural": {
+            "max": 1.0,
+            "mean": 0.625,
+            "median": 1.0,
+            "min": 0.0,
+            "n": 8,
+            "sd": 0.5175491695067657
+          }
+        }
+      },
+      "label": "기술 통계",
+      "silver_test": {
+        "real": {
+          "difference": {
+            "max": null,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "n": 0,
+            "sd": null
+          },
+          "excluded_no_span": {
+            "n": 0,
+            "qids": []
+          },
+          "fixed": {
+            "max": null,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "n": 0,
+            "sd": null
+          },
+          "metric_n": 0,
+          "n": 0,
+          "structural": {
+            "max": null,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "n": 0,
+            "sd": null
+          }
+        },
+        "synthetic": {
+          "difference": {
+            "max": 1.0,
+            "mean": 0.03076923076923077,
+            "median": 0.0,
+            "min": -1.0,
+            "n": 65,
+            "sd": 0.558156305651438
+          },
+          "excluded_no_span": {
+            "n": 0,
+            "qids": []
+          },
+          "fixed": {
+            "max": 1.0,
+            "mean": 0.7230769230769231,
+            "median": 1.0,
+            "min": 0.0,
+            "n": 65,
+            "sd": 0.4509605133660647
+          },
+          "metric_n": 65,
+          "n": 65,
+          "structural": {
+            "max": 1.0,
+            "mean": 0.7538461538461538,
+            "median": 1.0,
+            "min": 0.0,
+            "n": 65,
+            "sd": 0.4341215710622296
+          }
+        }
+      }
+    },
+    "hypotheses": {
+      "H1": {
+        "comparison": "nori BM25 고정 - standard BM25 고정",
+        "left_mean": 0.7938208616780045,
+        "metric": "recall10",
+        "n": 21,
+        "right_mean": 0.6889455782312925,
+        "statistic": {
+          "ci_high": 0.18424036281179137,
+          "ci_low": 0.03571428571428571,
+          "mean_diff": 0.10487528344671203,
+          "n": 21,
+          "n_boot": 10000,
+          "seed": 20260930
+        },
+        "verdict": "채택"
+      },
+      "H2": {
+        "comparison": "nori hybrid 고정 - nori BM25 고정",
+        "left_mean": 0.7770549322684936,
+        "metric": "ndcg10",
+        "n": 21,
+        "right_mean": 0.7568107264461779,
+        "statistic": {
+          "ci_high": 0.047136744427847,
+          "ci_low": -0.00048565843442183176,
+          "mean_diff": 0.020244205822315856,
+          "n": 21,
+          "n_boot": 10000,
+          "seed": 20260930
+        },
+        "verdict": "판정 보류(차이 입증 못 함)"
+      },
+      "H3": {
+        "comparison": "nori hybrid 구조 - nori hybrid 고정",
+        "excluded_no_span": {
+          "n": 0,
+          "qids": []
+        },
+        "fixed_mean": 0.8095238095238095,
+        "metric": "span_hit",
+        "n": 21,
+        "statistic": {
+          "ci_high": 0.14285714285714285,
+          "ci_low": 0.0,
+          "mean_diff": 0.047619047619047616,
+          "n": 21,
+          "n_boot": 10000,
+          "seed": 20260930
+        },
+        "structural_mean": 0.8571428571428571,
+        "verdict": "판정 보류(차이 입증 못 함)"
+      },
+      "H4": {
+        "body_top1_rate": 0.5,
+        "comparison": "keyword - 최종 구성 본문 검색",
+        "keyword_top1_rate": 0.75,
+        "metric": "top1_hit",
+        "n": 4,
+        "note": "표본 4문항이라 CI가 넓어 사실상 판정 불가",
+        "silver_test_direction": {
+          "body_top1_rate": 0.4666666666666667,
+          "difference": {
+            "max": 1.0,
+            "mean": 0.2,
+            "median": 0.0,
+            "min": 0.0,
+            "n": 15,
+            "sd": 0.4140393356054125
+          },
+          "keyword_top1_rate": 0.6666666666666666,
+          "label": "기술 통계",
+          "n": 15
+        },
+        "statistic": {
+          "ci_high": 0.75,
+          "ci_low": 0.0,
+          "mean_diff": 0.25,
+          "n": 4,
+          "n_boot": 10000,
+          "seed": 20260930
+        },
+        "verdict": "판정 보류(차이 입증 못 함)"
+      },
+      "H7": {
+        "all_types_descriptive": {
+          "real": {
+            "max": 1.0,
+            "mean": 0.9615384615384616,
+            "median": 1.0,
+            "min": 0.5,
+            "n": 13,
+            "sd": 0.1386750490563073
+          },
+          "synthetic": {
+            "max": 1.0,
+            "mean": 0.46875,
+            "median": 0.41666666666666663,
+            "min": 0.0,
+            "n": 8,
+            "sd": 0.3982538773115094
+          }
+        },
+        "comparison": "합성 - 실제",
+        "metric": "recall10",
+        "n_real": 6,
+        "n_synthetic": 8,
+        "real": {
+          "max": 1.0,
+          "mean": 0.9166666666666666,
+          "median": 1.0,
+          "min": 0.5,
+          "n": 6,
+          "sd": 0.2041241452319315
+        },
+        "statistic": {
+          "ci_high": -0.14583333333333326,
+          "ci_low": -0.7291666666666667,
+          "mean_diff": -0.44791666666666663,
+          "n": 14,
+          "n_boot": 10000,
+          "seed": 20260930
+        },
+        "synthetic": {
+          "max": 1.0,
+          "mean": 0.46875,
+          "median": 0.41666666666666663,
+          "min": 0.0,
+          "n": 8,
+          "sd": 0.3982538773115094
+        },
+        "verdict": "기각(반대 방향)"
+      }
+    },
+    "ladder": {
+      "n": 21,
+      "stages": [
+        {
+          "delta_from_previous": null,
+          "id": "standard_bm25_fixed",
+          "mean_ndcg10": 0.5636195367629011,
+          "mean_recall10": 0.6889455782312925
+        },
+        {
+          "delta_from_previous": {
+            "ndcg10": {
+              "ci_high": 0.3013127496004355,
+              "ci_low": 0.09693601335714451,
+              "mean_diff": 0.1931911896832767,
+              "n": 21,
+              "n_boot": 10000,
+              "seed": 20260930
+            },
+            "recall10": {
+              "ci_high": 0.18424036281179137,
+              "ci_low": 0.03571428571428571,
+              "mean_diff": 0.10487528344671203,
+              "n": 21,
+              "n_boot": 10000,
+              "seed": 20260930
+            }
+          },
+          "id": "nori_bm25_fixed",
+          "mean_ndcg10": 0.7568107264461779,
+          "mean_recall10": 0.7938208616780045
+        },
+        {
+          "delta_from_previous": {
+            "ndcg10": {
+              "ci_high": 0.047136744427847,
+              "ci_low": -0.00048565843442183176,
+              "mean_diff": 0.020244205822315856,
+              "n": 21,
+              "n_boot": 10000,
+              "seed": 20260930
+            },
+            "recall10": {
+              "ci_high": 0.047619047619047616,
+              "ci_low": -0.02040816326530612,
+              "mean_diff": 0.009070294784580499,
+              "n": 21,
+              "n_boot": 10000,
+              "seed": 20260930
+            }
+          },
+          "id": "nori_hybrid_fixed",
+          "mean_ndcg10": 0.7770549322684936,
+          "mean_recall10": 0.8028911564625849
+        },
+        {
+          "delta_from_previous": {
+            "ndcg10": {
+              "ci_high": -0.014548794731690753,
+              "ci_low": -0.11551606296612775,
+              "mean_diff": -0.05932752479058133,
+              "n": 21,
+              "n_boot": 10000,
+              "seed": 20260930
+            },
+            "recall10": {
+              "ci_high": 0.0,
+              "ci_low": -0.0653061224489796,
+              "mean_diff": -0.029081632653061226,
+              "n": 21,
+              "n_boot": 10000,
+              "seed": 20260930
+            }
+          },
+          "id": "nori_hybrid_structural",
+          "mean_ndcg10": 0.7177274074779123,
+          "mean_recall10": 0.7738095238095238
+        }
+      ]
+    },
+    "lexical_mismatch_subset": {
+      "gold_test": {
+        "bm25": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "n": 1,
+          "sd": null
+        },
+        "difference": {
+          "max": 0.1137704181007881,
+          "mean": 0.1137704181007881,
+          "median": 0.1137704181007881,
+          "min": 0.1137704181007881,
+          "n": 1,
+          "sd": null
+        },
+        "hybrid": {
+          "max": 0.1137704181007881,
+          "mean": 0.1137704181007881,
+          "median": 0.1137704181007881,
+          "min": 0.1137704181007881,
+          "n": 1,
+          "sd": null
+        },
+        "n": 1
+      },
+      "label": "기술 통계",
+      "silver_test": {
+        "bm25": {
+          "max": 0.9502344167898356,
+          "mean": 0.5134494505536746,
+          "median": 0.47798979896686344,
+          "min": 0.07328439752622513,
+          "n": 16,
+          "sd": 0.2889424621425497
+        },
+        "difference": {
+          "max": 0.1068482181757236,
+          "mean": -0.004770931747239947,
+          "median": 0.0,
+          "min": -0.12087725636872715,
+          "n": 16,
+          "sd": 0.06027365847062032
+        },
+        "hybrid": {
+          "max": 0.9794653631264242,
+          "mean": 0.5086785188064347,
+          "median": 0.48119841927101964,
+          "min": 0.07117026412480269,
+          "n": 16,
+          "sd": 0.28459568284196757
+        },
+        "n": 16
+      }
+    },
+    "parser_comparison": {
+      "label": "탐색적 비교(사전 등록 가설 아님)",
+      "subsets": {
+        "real_all_19": {
+          "conditions": {
+            "composite": {
+              "ndcg10": {
+                "max": 1.0,
+                "mean": 0.9213650764989384,
+                "median": 1.0,
+                "min": 0.6131471927654584,
+                "n": 19,
+                "sd": 0.15649069233510743
+              },
+              "recall10": {
+                "max": 1.0,
+                "mean": 0.9736842105263158,
+                "median": 1.0,
+                "min": 0.5,
+                "n": 19,
+                "sd": 0.11470786693528089
+              }
+            },
+            "pypdf": {
+              "ndcg10": {
+                "max": 1.0,
+                "mean": 0.940789826310967,
+                "median": 1.0,
+                "min": 0.6131471927654584,
+                "n": 19,
+                "sd": 0.1405287118479257
+              },
+              "recall10": {
+                "max": 1.0,
+                "mean": 0.9736842105263158,
+                "median": 1.0,
+                "min": 0.5,
+                "n": 19,
+                "sd": 0.11470786693528089
+              }
+            },
+            "upstage": {
+              "ndcg10": {
+                "max": 1.0,
+                "mean": 0.9602145761229955,
+                "median": 1.0,
+                "min": 0.6131471927654584,
+                "n": 19,
+                "sd": 0.11920878559990757
+              },
+              "recall10": {
+                "max": 1.0,
+                "mean": 0.9736842105263158,
+                "median": 1.0,
+                "min": 0.5,
+                "n": 19,
+                "sd": 0.11470786693528089
+              }
+            }
+          },
+          "n": 19,
+          "paired_comparisons": {
+            "composite_minus_pypdf": {
+              "ndcg10": {
+                "ci_high": 0.0,
+                "ci_low": -0.058274249436085654,
+                "mean_diff": -0.01942474981202855,
+                "n": 19,
+                "n_boot": 10000,
+                "seed": 20260930
+              },
+              "recall10": {
+                "ci_high": 0.0,
+                "ci_low": 0.0,
+                "mean_diff": 0.0,
+                "n": 19,
+                "n_boot": 10000,
+                "seed": 20260930
+              }
+            },
+            "composite_minus_upstage": {
+              "ndcg10": {
+                "ci_high": 0.0,
+                "ci_low": -0.09712374906014276,
+                "mean_diff": -0.0388494996240571,
+                "n": 19,
+                "n_boot": 10000,
+                "seed": 20260930
+              },
+              "recall10": {
+                "ci_high": 0.0,
+                "ci_low": 0.0,
+                "mean_diff": 0.0,
+                "n": 19,
+                "n_boot": 10000,
+                "seed": 20260930
+              }
+            },
+            "pypdf_minus_upstage": {
+              "ndcg10": {
+                "ci_high": 0.0,
+                "ci_low": -0.058274249436085654,
+                "mean_diff": -0.01942474981202855,
+                "n": 19,
+                "n_boot": 10000,
+                "seed": 20260930
+              },
+              "recall10": {
+                "ci_high": 0.0,
+                "ci_low": 0.0,
+                "mean_diff": 0.0,
+                "n": 19,
+                "n_boot": 10000,
+                "seed": 20260930
+              }
+            }
+          }
+        },
+        "real_test_13": {
+          "conditions": {
+            "composite": {
+              "ndcg10": {
+                "max": 1.0,
+                "mean": 0.9418520727951474,
+                "median": 1.0,
+                "min": 0.6131471927654584,
+                "n": 13,
+                "sd": 0.1419837380850355
+              },
+              "recall10": {
+                "max": 1.0,
+                "mean": 0.9615384615384616,
+                "median": 1.0,
+                "min": 0.5,
+                "n": 13,
+                "sd": 0.1386750490563073
+              }
+            },
+            "pypdf": {
+              "ndcg10": {
+                "max": 1.0,
+                "mean": 0.9418520727951474,
+                "median": 1.0,
+                "min": 0.6131471927654584,
+                "n": 13,
+                "sd": 0.1419837380850355
+              },
+              "recall10": {
+                "max": 1.0,
+                "mean": 0.9615384615384616,
+                "median": 1.0,
+                "min": 0.5,
+                "n": 13,
+                "sd": 0.1386750490563073
+              }
+            },
+            "upstage": {
+              "ndcg10": {
+                "max": 1.0,
+                "mean": 0.9418520727951474,
+                "median": 1.0,
+                "min": 0.6131471927654584,
+                "n": 13,
+                "sd": 0.1419837380850355
+              },
+              "recall10": {
+                "max": 1.0,
+                "mean": 0.9615384615384616,
+                "median": 1.0,
+                "min": 0.5,
+                "n": 13,
+                "sd": 0.1386750490563073
+              }
+            }
+          },
+          "n": 13,
+          "paired_comparisons": {
+            "composite_minus_pypdf": {
+              "ndcg10": {
+                "ci_high": 0.0,
+                "ci_low": 0.0,
+                "mean_diff": 0.0,
+                "n": 13,
+                "n_boot": 10000,
+                "seed": 20260930
+              },
+              "recall10": {
+                "ci_high": 0.0,
+                "ci_low": 0.0,
+                "mean_diff": 0.0,
+                "n": 13,
+                "n_boot": 10000,
+                "seed": 20260930
+              }
+            },
+            "composite_minus_upstage": {
+              "ndcg10": {
+                "ci_high": 0.0,
+                "ci_low": 0.0,
+                "mean_diff": 0.0,
+                "n": 13,
+                "n_boot": 10000,
+                "seed": 20260930
+              },
+              "recall10": {
+                "ci_high": 0.0,
+                "ci_low": 0.0,
+                "mean_diff": 0.0,
+                "n": 13,
+                "n_boot": 10000,
+                "seed": 20260930
+              }
+            },
+            "pypdf_minus_upstage": {
+              "ndcg10": {
+                "ci_high": 0.0,
+                "ci_low": 0.0,
+                "mean_diff": 0.0,
+                "n": 13,
+                "n_boot": 10000,
+                "seed": 20260930
+              },
+              "recall10": {
+                "ci_high": 0.0,
+                "ci_low": 0.0,
+                "mean_diff": 0.0,
+                "n": 13,
+                "n_boot": 10000,
+                "seed": 20260930
+              }
+            }
+          }
+        }
+      }
+    },
+    "silver_direction": {
+      "all": {
+        "H1": {
+          "comparison": "nori BM25 고정 - standard BM25 고정",
+          "left_mean": 0.544053724053724,
+          "metric": "recall10",
+          "n": 65,
+          "right_mean": 0.3923260073260073,
+          "statistic": {
+            "ci_high": 0.2273015873015873,
+            "ci_low": 0.07976190476190476,
+            "mean_diff": 0.15172771672771673,
+            "n": 65,
+            "n_boot": 10000,
+            "seed": 20260930
+          }
+        },
+        "H2": {
+          "comparison": "nori hybrid 고정 - nori BM25 고정",
+          "left_mean": 0.5029525983050793,
+          "metric": "ndcg10",
+          "n": 65,
+          "right_mean": 0.4987471203823768,
+          "statistic": {
+            "ci_high": 0.033380461577834655,
+            "ci_low": -0.026002945505639422,
+            "mean_diff": 0.0042054779227026036,
+            "n": 65,
+            "n_boot": 10000,
+            "seed": 20260930
+          }
+        },
+        "H3": {
+          "comparison": "nori hybrid 구조 - nori hybrid 고정",
+          "excluded_no_span": {
+            "n": 0,
+            "qids": []
+          },
+          "fixed_mean": 0.7230769230769231,
+          "metric": "span_hit",
+          "n": 65,
+          "statistic": {
+            "ci_high": 0.16923076923076924,
+            "ci_low": -0.1076923076923077,
+            "mean_diff": 0.03076923076923077,
+            "n": 65,
+            "n_boot": 10000,
+            "seed": 20260930
+          },
+          "structural_mean": 0.7538461538461538
+        },
+        "ladder": {
+          "n": 65,
+          "stages": [
+            {
+              "delta_from_previous": null,
+              "id": "standard_bm25_fixed",
+              "mean_ndcg10": 0.36319324547836773,
+              "mean_recall10": 0.3923260073260073
+            },
+            {
+              "delta_from_previous": {
+                "ndcg10": {
+                  "ci_high": 0.1980779475698885,
+                  "ci_low": 0.07571655149042612,
+                  "mean_diff": 0.135553874904009,
+                  "n": 65,
+                  "n_boot": 10000,
+                  "seed": 20260930
+                },
+                "recall10": {
+                  "ci_high": 0.2273015873015873,
+                  "ci_low": 0.07976190476190476,
+                  "mean_diff": 0.15172771672771673,
+                  "n": 65,
+                  "n_boot": 10000,
+                  "seed": 20260930
+                }
+              },
+              "id": "nori_bm25_fixed",
+              "mean_ndcg10": 0.4987471203823768,
+              "mean_recall10": 0.544053724053724
+            },
+            {
+              "delta_from_previous": {
+                "ndcg10": {
+                  "ci_high": 0.033380461577834655,
+                  "ci_low": -0.026002945505639422,
+                  "mean_diff": 0.0042054779227026036,
+                  "n": 65,
+                  "n_boot": 10000,
+                  "seed": 20260930
+                },
+                "recall10": {
+                  "ci_high": 0.023376068376068378,
+                  "ci_low": -0.013162393162393161,
+                  "mean_diff": 0.004658119658119658,
+                  "n": 65,
+                  "n_boot": 10000,
+                  "seed": 20260930
+                }
+              },
+              "id": "nori_hybrid_fixed",
+              "mean_ndcg10": 0.5029525983050793,
+              "mean_recall10": 0.5487118437118438
+            },
+            {
+              "delta_from_previous": {
+                "ndcg10": {
+                  "ci_high": -0.037160685971498214,
+                  "ci_low": -0.12323901846845593,
+                  "mean_diff": -0.07920464654132978,
+                  "n": 65,
+                  "n_boot": 10000,
+                  "seed": 20260930
+                },
+                "recall10": {
+                  "ci_high": -0.03487179487179487,
+                  "ci_low": -0.11608058608058608,
+                  "mean_diff": -0.07465201465201465,
+                  "n": 65,
+                  "n_boot": 10000,
+                  "seed": 20260930
+                }
+              },
+              "id": "nori_hybrid_structural",
+              "mean_ndcg10": 0.4237479517637495,
+              "mean_recall10": 0.4740598290598291
+            }
+          ]
+        },
+        "n": 65
+      },
+      "label": "방향 확인용",
+      "temporal_tags": {
+        "temporal:as_of_event": {
+          "H1": {
+            "comparison": "nori BM25 고정 - standard BM25 고정",
+            "left_mean": 0.8206349206349207,
+            "metric": "recall10",
+            "n": 12,
+            "right_mean": 0.578968253968254,
+            "statistic": {
+              "ci_high": 0.4583333333333333,
+              "ci_low": 0.041666666666666664,
+              "mean_diff": 0.24166666666666667,
+              "n": 12,
+              "n_boot": 10000,
+              "seed": 20260930
+            }
+          },
+          "H2": {
+            "comparison": "nori hybrid 고정 - nori BM25 고정",
+            "left_mean": 0.6449049545917701,
+            "metric": "ndcg10",
+            "n": 12,
+            "right_mean": 0.675877231814041,
+            "statistic": {
+              "ci_high": 0.046061063130214686,
+              "ci_low": -0.14348160864027873,
+              "mean_diff": -0.03097227722227078,
+              "n": 12,
+              "n_boot": 10000,
+              "seed": 20260930
+            }
+          },
+          "H3": {
+            "comparison": "nori hybrid 구조 - nori hybrid 고정",
+            "excluded_no_span": {
+              "n": 0,
+              "qids": []
+            },
+            "fixed_mean": 0.5833333333333334,
+            "metric": "span_hit",
+            "n": 12,
+            "statistic": {
+              "ci_high": 0.5833333333333334,
+              "ci_low": -0.25,
+              "mean_diff": 0.16666666666666666,
+              "n": 12,
+              "n_boot": 10000,
+              "seed": 20260930
+            },
+            "structural_mean": 0.75
+          },
+          "ladder": {
+            "n": 12,
+            "stages": [
+              {
+                "delta_from_previous": null,
+                "id": "standard_bm25_fixed",
+                "mean_ndcg10": 0.5609348100930686,
+                "mean_recall10": 0.578968253968254
+              },
+              {
+                "delta_from_previous": {
+                  "ndcg10": {
+                    "ci_high": 0.2595551211328198,
+                    "ci_low": -0.023432781564076733,
+                    "mean_diff": 0.11494242172097242,
+                    "n": 12,
+                    "n_boot": 10000,
+                    "seed": 20260930
+                  },
+                  "recall10": {
+                    "ci_high": 0.4583333333333333,
+                    "ci_low": 0.041666666666666664,
+                    "mean_diff": 0.24166666666666667,
+                    "n": 12,
+                    "n_boot": 10000,
+                    "seed": 20260930
+                  }
+                },
+                "id": "nori_bm25_fixed",
+                "mean_ndcg10": 0.675877231814041,
+                "mean_recall10": 0.8206349206349207
+              },
+              {
+                "delta_from_previous": {
+                  "ndcg10": {
+                    "ci_high": 0.046061063130214686,
+                    "ci_low": -0.14348160864027873,
+                    "mean_diff": -0.03097227722227078,
+                    "n": 12,
+                    "n_boot": 10000,
+                    "seed": 20260930
+                  },
+                  "recall10": {
+                    "ci_high": 0.0,
+                    "ci_low": 0.0,
+                    "mean_diff": 0.0,
+                    "n": 12,
+                    "n_boot": 10000,
+                    "seed": 20260930
+                  }
+                },
+                "id": "nori_hybrid_fixed",
+                "mean_ndcg10": 0.6449049545917701,
+                "mean_recall10": 0.8206349206349207
+              },
+              {
+                "delta_from_previous": {
+                  "ndcg10": {
+                    "ci_high": 0.034656039338345664,
+                    "ci_low": -0.19787068762574886,
+                    "mean_diff": -0.09065848124383735,
+                    "n": 12,
+                    "n_boot": 10000,
+                    "seed": 20260930
+                  },
+                  "recall10": {
+                    "ci_high": -0.037500000000000006,
+                    "ci_low": -0.24583333333333335,
+                    "mean_diff": -0.13273809523809524,
+                    "n": 12,
+                    "n_boot": 10000,
+                    "seed": 20260930
+                  }
+                },
+                "id": "nori_hybrid_structural",
+                "mean_ndcg10": 0.5542464733479328,
+                "mean_recall10": 0.6878968253968254
+              }
+            ]
+          },
+          "n": 12
+        },
+        "temporal:revision": {
+          "n": 0
+        }
+      }
+    },
+    "temporal_prior_vs_current": {
+      "by_split": {
+        "dev": {
+          "n": 2,
+          "prior_above_current_count": 1
+        },
+        "test": {
+          "n": 3,
+          "prior_above_current_count": 1
+        }
+      },
+      "label": "기술 통계",
+      "rows": [
+        {
+          "current_doc_id": "law-2200000149159",
+          "current_rank": 2,
+          "prior_above_current": true,
+          "prior_doc_id": "law-2200000148343",
+          "prior_rank": 1,
+          "qid": "g-real-015",
+          "split": "dev"
+        },
+        {
+          "current_doc_id": "law-2200000148347",
+          "current_rank": 1,
+          "prior_above_current": false,
+          "prior_doc_id": "law-2200000111035",
+          "prior_rank": 2,
+          "qid": "g-real-016",
+          "split": "dev"
+        },
+        {
+          "current_doc_id": "law-2200000151831",
+          "current_rank": 1,
+          "prior_above_current": false,
+          "prior_doc_id": "law-2200000136721",
+          "prior_rank": 2,
+          "qid": "g-real-017",
+          "split": "test"
+        },
+        {
+          "current_doc_id": "law-2200000151397",
+          "current_rank": 1,
+          "prior_above_current": false,
+          "prior_doc_id": "law-2200000139795",
+          "prior_rank": 7,
+          "qid": "g-real-018",
+          "split": "test"
+        },
+        {
+          "current_doc_id": "law-2200000151803",
+          "current_rank": 2,
+          "prior_above_current": true,
+          "prior_doc_id": "law-2200000151393",
+          "prior_rank": 1,
+          "qid": "g-real-019",
+          "split": "test"
+        }
+      ]
+    }
+  },
+  "config_hash": "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d",
+  "counting_units": {
+    "document_metrics": "ranked unique doc_id; top 10 documents",
+    "lookup_top1": "first authorized exact-identifier document has rel >= 1",
+    "retrieval": "unique question_id with at least one visible rel >= 1 document",
+    "span_metric": "any top-10 chunk overlaps a visible rel >= 1 answer range"
+  },
+  "environment": {
+    "bootstrap": {
+      "interval": "percentile 95%",
+      "resamples": 10000,
+      "seed": 20260930
+    },
+    "code_commit": "1a5fe91700b2dd7ff1ce96a37e5b5df63a8a9f22",
+    "config_hash": "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d",
+    "embedder": {
+      "device": "mps",
+      "init_s": 3.307677250002598,
+      "model_id": "BAAI/bge-m3",
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "settings_hash": "a66f36873302"
+    },
+    "opensearch": {
+      "heap": "-Xms2g -Xmx2g",
+      "version": "3.8.0"
+    },
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "ran_at": "2026-09-30T18:38:02+09:00"
+  },
+  "fixed_configuration": {
+    "bm25_weight": 0.7,
+    "candidate_chunks": 50,
+    "combination_count": 14,
+    "hybrid_method": "hybrid_weighted",
+    "rank_constant": 60
+  },
+  "previous_result_sha256": null,
+  "question_counts": {
+    "gold_identifier_test": 4,
+    "gold_test": 21,
+    "real_gold_all": 19,
+    "real_gold_dev": 6,
+    "real_gold_test": 13,
+    "silver_identifier_test": 15,
+    "silver_test": 65
+  },
+  "ran_at": "2026-09-30T18:38:02+09:00",
+  "rerun_reason": null,
+  "run_id": "m5-test-01",
+  "seq": 1
+}

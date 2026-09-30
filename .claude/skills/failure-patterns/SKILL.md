@@ -199,6 +199,13 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **강제 수단**: `tests/retrieval/test_embedding.py`(`test_resolve_local_snapshot_pins_revision_and_patterns_offline`, `test_resolve_local_snapshot_failure_keeps_original_cause_in_message`), `tests/test_m5_make_targets.py`(`test_embed_models_is_declared_but_not_installed_by_make`)
 - **출처**: M5 실측 (`make m5-index-dry`)
 
+### FP-046 통합 테스트가 실측 인덱스 이름을 써서 실측 인덱스를 삭제
+- **증상**: M5 실측 중 `make test-integration`의 `build_index` 테스트가 실측 인덱스 `kodocs-m5-composite-structural`로 인덱스를 만들고 `finally`에서 DELETE해, `make m5-test`가 인덱스 누락(HTTP 404)으로 실패했다. 해당 인덱스만 재색인(청크 4811)한 뒤 재실행했다.
+- **원인**: `build_index`가 인덱스 이름을 `IndexSpec`에서만 계산해 테스트가 임시 이름을 주입할 수 없었다. `recreate=True`는 대상 인덱스를 먼저 삭제한다.
+- **규칙**: 실서비스·실측 리소스를 만들고 지우는 코드는 **이름을 주입할 수 있게** 하고, 통합 테스트는 uuid 붙은 임시 이름만 쓴다. 파괴적 동작(DELETE)을 하는 테스트는 실측 이름을 쓸 수 없게 가드 테스트로 막는다.
+- **강제 수단**: `tests/test_integration_index_names.py`(통합 테스트가 `kodocs-m5-(composite|pypdf|upstage)-(fixed|structural)`를 쓰면 실패, `build_index` 호출은 `index_name_override=` 필수), `tests/retrieval/test_index_build.py::test_index_name_override_isolates_all_requests_from_the_real_index`
+- **출처**: M5 실측 (`make test-integration` → `make m5-test` 실패)
+
 ## F. 이후 phase에 미리 적용할 것
 
 ### FP-050 식별자가 분석기에 쪼개짐 (M5)
