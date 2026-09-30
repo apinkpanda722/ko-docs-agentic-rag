@@ -268,7 +268,7 @@ class Bge3Embedder:
                 "모델은 별도로 다운로드해야 합니다: "
                 f"{type(exc).__name__}: {_first_line(str(exc))}"
             ) from exc
-        actual_dim = model.get_sentence_embedding_dimension()
+        actual_dim = _sentence_embedding_dimension(model)
         if actual_dim != self.dim:
             raise RuntimeError(
                 f"BGE-M3 dense dimension must be {self.dim}, got {actual_dim}"
@@ -786,6 +786,13 @@ def _normalize_vector(vector: Sequence[float]) -> list[float]:
     if not math.isfinite(norm) or norm == 0.0:
         raise ValueError("embedding vector must have a finite non-zero norm")
     return [float(value / norm) for value in vector]
+
+
+def _sentence_embedding_dimension(model: object) -> int | None:
+    get_dimension = getattr(model, "get_embedding_dimension", None)
+    if callable(get_dimension):
+        return get_dimension()
+    return model.get_sentence_embedding_dimension()  # type: ignore[attr-defined]
 
 
 def _checked_vector(vector: object, *, dim: int) -> list[float]:

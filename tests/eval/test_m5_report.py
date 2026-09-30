@@ -6,7 +6,7 @@ import json
 from datetime import date
 from pathlib import Path
 
-from kodocs.eval.m5_report import BEGIN, END, render_tables, write_report
+from kodocs.eval.m5_report import BEGIN, END, TEMPLATE_PATH, render_tables, write_report
 
 
 def _write_json(path: Path, value: object) -> None:
@@ -369,6 +369,12 @@ def test_missing_run_results_create_a_placeholder_draft_with_static_sections(
     assert "n-gram 분석기 제외" in report
     assert "## 실행 순서(사용자 실행)" in report
     assert "## 첫 실행과 재실행" in report
+
+
+def test_template_does_not_claim_synthetic_questions_are_easier() -> None:
+    template = TEMPLATE_PATH.read_text(encoding="utf-8")
+
+    assert "합성 문항은 실제 문항보다 쉽다" not in template
 
 
 def test_result_fixture_renders_ladder_hypotheses_and_exploratory_tables(

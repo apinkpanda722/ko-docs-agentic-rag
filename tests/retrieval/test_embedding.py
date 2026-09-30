@@ -8,6 +8,7 @@ import importlib
 import json
 import math
 import sys
+import warnings
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 
@@ -78,6 +79,29 @@ class FakeSentenceTransformer:
             vector[-1] = 4.0
             vectors.append(vector)
         return vectors
+
+
+class NewDimensionOnlyModel:
+    def get_embedding_dimension(self) -> int:
+        return 1024
+
+
+class LegacyDimensionOnlyModel:
+    def get_sentence_embedding_dimension(self) -> int:
+        return 1024
+
+
+class BothDimensionMethodsModel:
+    def __init__(self) -> None:
+        self.legacy_called = False
+
+    def get_embedding_dimension(self) -> int:
+        return 1024
+
+    def get_sentence_embedding_dimension(self) -> int:
+        self.legacy_called = True
+        warnings.warn("legacy dimension method called", FutureWarning, stacklevel=2)
+        return 1
 
 
 def _snapshot(tmp_path: Path, *, max_seq_length: int = 12) -> tuple[Path, str]:
@@ -262,6 +286,33 @@ def test_prepare_reads_snapshot_limit_revision_and_records_device(
     assert embedder.settings["device"] == "cpu"
     assert embedder.settings["max_seq_length"] == 10
     assert embedder.settings["normalize"] is True
+
+
+def test_embedding_dimension_uses_new_method_when_it_is_the_only_method() -> None:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        actual = embedding._sentence_embedding_dimension(NewDimensionOnlyModel())
+
+    assert actual == 1024
+
+
+def test_embedding_dimension_falls_back_to_legacy_method_without_warning() -> None:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        actual = embedding._sentence_embedding_dimension(LegacyDimensionOnlyModel())
+
+    assert actual == 1024
+
+
+def test_embedding_dimension_prefers_new_method_without_calling_legacy() -> None:
+    model = BothDimensionMethodsModel()
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        actual = embedding._sentence_embedding_dimension(model)
+
+    assert actual == 1024
+    assert model.legacy_called is False
 
 
 def test_prepare_uses_supported_max_and_rejects_missing_or_excess_limit(
