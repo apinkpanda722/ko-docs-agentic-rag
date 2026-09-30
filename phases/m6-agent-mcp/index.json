@@ -5,7 +5,16 @@
     {
       "step": 0,
       "name": "design-docs",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T19:14:49+0900",
+      "summary": "ADR-029, M6 판정 규칙 1~23, `src/kodocs/tools/`·`run_tool` 계층 계약과 EVAL·AGENTS 보완을 문서화했으며 `make verify`가 1,199개 테스트로 통과했습니다.",
+      "completed_at": "2026-09-30T19:29:05+0900",
+      "usage": {
+        "input_tokens": 1613386,
+        "cached_input_tokens": 1504640,
+        "output_tokens": 15193,
+        "attempts": 1
+      }
     },
     {
       "step": 1,
@@ -62,5 +71,6 @@
       "name": "m6-report",
       "status": "pending"
     }
-  ]
+  ],
+  "created_at": "2026-09-30T19:14:49+0900"
 }
