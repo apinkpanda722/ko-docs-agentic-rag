@@ -1,0 +1,232 @@
+{
+  "project": "ko-docs-agentic-rag",
+  "phase": "m5-retrieval",
+  "steps": [
+    {
+      "step": 0,
+      "name": "design-docs",
+      "status": "completed",
+      "started_at": "2026-09-30T00:40:16+0900",
+      "summary": "`docs/ADR.md`에 ADR-028·ADR-007 변경 기록, `docs/results/hypotheses.md`에 M5 판정 규칙, `docs/EVAL.md`에 14조합 설명을 추가했으며 `make verify`에서 960개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T00:46:54+0900",
+      "usage": {
+        "input_tokens": 1507262,
+        "cached_input_tokens": 1422336,
+        "output_tokens": 14842,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 1,
+      "name": "layer-guards",
+      "status": "completed",
+      "started_at": "2026-09-30T00:46:54+0900",
+      "summary": "`tests/test_architecture.py`에 상대·동적·지연 import를 처리하는 `find_forbidden_imports()` 계층 가드와 M5 LLM import 가드 및 자기검증 fixture를 추가했으며 `make verify`에서 977개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T00:53:20+0900",
+      "usage": {
+        "input_tokens": 985587,
+        "cached_input_tokens": 915456,
+        "output_tokens": 15326,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 2,
+      "name": "annex-mapping",
+      "status": "completed",
+      "started_at": "2026-09-30T00:53:21+0900",
+      "summary": "`annex_regions`·`article_region_text`·`map_annex_tables`를 구현하고 115개 대상 전수 집계 및 골드 qrels 6/6 매핑 성공을 `data/manifest/m5_annex_mapping.json`에 기록했으며 `make verify`에서 990개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T01:09:08+0900",
+      "usage": {
+        "input_tokens": 6327094,
+        "cached_input_tokens": 6148608,
+        "output_tokens": 41968,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 3,
+      "name": "corpus-loader",
+      "status": "completed",
+      "started_at": "2026-09-30T01:09:08+0900",
+      "summary": "`src/kodocs/chunking/corpus.py`에 `load_corpus`·`normalize_regulation_ref`·`write_prior_versions_manifest`·`--check` CLI를 구현하고 `data/manifest/m5_prior_versions.json`을 생성했으며, 합성 qrel 1,216건 불일치 0건 및 `make verify` 1,001개 테스트 통과를 확인했습니다.",
+      "completed_at": "2026-09-30T01:26:44+0900",
+      "usage": {
+        "input_tokens": 6657739,
+        "cached_input_tokens": 6473984,
+        "output_tokens": 45028,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 4,
+      "name": "chunkers",
+      "status": "completed",
+      "started_at": "2026-09-30T01:26:44+0900",
+      "summary": "`src/kodocs/chunking/chunkers.py`에 `Chunk`·`chunk_structural`·`chunk_fixed`·`fixed_size_from_structural` 및 병합형 CLI를 구현하고, `data/manifest/m5_index.json`에 구조 청크 4,811개·중앙값 193자·고정 크기 200자/겹침 40자·고정 청크 9,967개를 기록했으며 `make verify` 1,018개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T01:38:04+0900",
+      "usage": {
+        "input_tokens": 3020985,
+        "cached_input_tokens": 2894080,
+        "output_tokens": 25306,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 5,
+      "name": "index-schema",
+      "status": "completed",
+      "started_at": "2026-09-30T10:31:54+0900",
+      "summary": "`OpenSearchClient`·bulk 오류 수집(`retrieval/opensearch.py`)과 M5 인덱스 스키마·RRF/가중 파이프라인(`retrieval/index_schema.py`), 단위·통합 테스트를 추가했으며 `make verify` 1,024개 테스트가 통과했습니다(6개 integration 제외, 로컬 Docker 데몬 부재로 실응답 확인 미실행).",
+      "completed_at": "2026-09-30T10:40:57+0900",
+      "usage": {
+        "input_tokens": 1699524,
+        "cached_input_tokens": 1606528,
+        "output_tokens": 20688,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 6,
+      "name": "embedder",
+      "status": "completed",
+      "started_at": "2026-09-30T10:40:57+0900",
+      "summary": "`retrieval/embedding.py`에 `Embedder`, `FakeEmbedder`, `Bge3Embedder`, `CachedEmbedder`, `embedder_settings_hash`를 구현하고 테스트를 추가했으며 `make verify`에서 1,038개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T11:01:00+0900",
+      "usage": {
+        "input_tokens": 1380051,
+        "cached_input_tokens": 1247872,
+        "output_tokens": 23309,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 7,
+      "name": "index-build",
+      "status": "completed",
+      "started_at": "2026-09-30T11:01:00+0900",
+      "summary": "`retrieval/index_build.py`의 `IndexSpec`·`m5_index_specs`·`build_index`·dry-run CLI와 토크나이저 전용/명시적 잘림 임베딩 경로, 단위·OpenSearch 통합 테스트를 구현했으며 `make verify`에서 1,050개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T11:18:09+0900",
+      "usage": {
+        "input_tokens": 4543497,
+        "cached_input_tokens": 4374656,
+        "output_tokens": 44093,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 8,
+      "name": "authorized-search",
+      "status": "completed",
+      "started_at": "2026-09-30T11:18:09+0900",
+      "summary": "`retrieval/access.py`의 `UserContext`·`access_filter`·`can_read_doc`와 `retrieval/search.py`의 4종 pre-filter 검색·결정론적 문서 묶음을 구현하고 단위·통합 테스트를 추가했으며, `make verify`에서 1,084개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T11:30:52+0900",
+      "usage": {
+        "input_tokens": 2072361,
+        "cached_input_tokens": 1914752,
+        "output_tokens": 19766,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 9,
+      "name": "authorized-lookup-sql",
+      "status": "completed",
+      "started_at": "2026-09-30T11:30:52+0900",
+      "summary": "`retrieval/lookup.py`의 `extract_query_identifiers`·`authorized_lookup_id`와 `retrieval/sql.py`의 `authorized_run_sql`을 구현하고 단위·OpenSearch 통합 테스트를 추가했으며, `make verify`에서 1,121개 테스트가 통과했습니다(12개 integration 제외).",
+      "completed_at": "2026-09-30T11:46:07+0900",
+      "usage": {
+        "input_tokens": 4327342,
+        "cached_input_tokens": 4197504,
+        "output_tokens": 37750,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 10,
+      "name": "metrics-stats",
+      "status": "completed",
+      "started_at": "2026-09-30T11:46:07+0900",
+      "summary": "`m5_metrics.py`의 문서·구간 검색 지표와 `m5_stats.py`의 결정론적 부트스트랩·기술통계·방향성 판정을 구현하고 테스트를 추가했으며, `make verify`에서 1,137개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T11:52:23+0900",
+      "usage": {
+        "input_tokens": 1055034,
+        "cached_input_tokens": 908032,
+        "output_tokens": 12675,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 11,
+      "name": "eval-inputs",
+      "status": "completed",
+      "started_at": "2026-09-30T12:21:56+0900",
+      "summary": "`m5_inputs.py`의 평가 문항·권한·정답 구간·answer_repeated 로더와 `answer_ranges_by_doc`를 구현하고 `m5_eval_inputs.json`을 생성했습니다(제외 305쌍/92문항, silver test 반복 59/비반복 6, 실패 0, `make verify` 1,147개 통과).",
+      "completed_at": "2026-09-30T12:33:16+0900",
+      "usage": {
+        "input_tokens": 3489373,
+        "cached_input_tokens": 3368448,
+        "output_tokens": 28972,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 12,
+      "name": "dev-tuning",
+      "status": "completed",
+      "started_at": "2026-09-30T12:33:16+0900",
+      "summary": "`m5_runner.py`의 14조합·권한별 `run_questions`와 `m5_dev.py`의 18설정 dev 튜닝·`freeze_config`·`verify_config`를 테스트와 함께 구현했으며 `make verify`에서 1,159개 테스트가 통과했습니다(통합 12개 제외).",
+      "completed_at": "2026-09-30T12:45:54+0900",
+      "usage": {
+        "input_tokens": 3204323,
+        "cached_input_tokens": 3059456,
+        "output_tokens": 29128,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 13,
+      "name": "analysis",
+      "status": "completed",
+      "started_at": "2026-09-30T12:45:54+0900",
+      "summary": "`m5_analysis.py`에 RunKey·QuestionMeta와 사다리·제거·14조합·H1/H2/H3/H4/H7 판정 및 보조 분석 순수 함수 11개를 구현하고 `test_m5_analysis.py`를 추가했으며, `make verify`에서 1,170개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T12:58:00+0900",
+      "usage": {
+        "input_tokens": 2283016,
+        "cached_input_tokens": 2169856,
+        "output_tokens": 32348,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 14,
+      "name": "test-run",
+      "status": "completed",
+      "started_at": "2026-09-30T14:49:53+0900",
+      "summary": "`src/kodocs/eval/m5_test.py`에 `run_test`·`execute_experiment`·`analyze_results` 기반 14조합 test 실행기와 append-only 재실행 잠금을 구현하고 `tests/eval/test_m5_test.py`로 검증했으며, `make verify`에서 1,180개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T15:28:50+0900",
+      "usage": {
+        "input_tokens": 2829470,
+        "cached_input_tokens": 2695424,
+        "output_tokens": 8203,
+        "attempts": 2
+      }
+    },
+    {
+      "step": 15,
+      "name": "report-wiring",
+      "status": "completed",
+      "started_at": "2026-09-30T17:23:09+0900",
+      "summary": "`m5_report.py`·M5 템플릿/초안·10개 Make 타깃·AGENTS.md 명령어·보고서 테스트를 추가했으며 `make verify`에서 1,189개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T17:53:23+0900",
+      "usage": {
+        "input_tokens": 6299595,
+        "cached_input_tokens": 6111104,
+        "output_tokens": 33922,
+        "attempts": 1
+      }
+    }
+  ],
+  "created_at": "2026-09-30T00:40:16+0900",
+  "completed_at": "2026-09-30T17:53:23+0900"
+}

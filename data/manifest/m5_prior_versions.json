@@ -1,0 +1,43 @@
+{
+  "definition": "temporal:revision 골드 문항의 현행 규정별 발령일 바로 전 법제처 버전",
+  "generated_at": "2026-09-30T01:25:35+09:00",
+  "gold_queries_sha256": "59ea35da8775955a6fbec615eeffb260b882293851a3a7337f31d03d43d41b81",
+  "version_count": 5,
+  "versions": [
+    {
+      "current_issued_date": "2025-10-24",
+      "current_serial": "2200000149159",
+      "prior_issued_date": "2025-08-28",
+      "prior_serial": "2200000148343",
+      "rule_id": "2125945"
+    },
+    {
+      "current_issued_date": "2025-08-28",
+      "current_serial": "2200000148347",
+      "prior_issued_date": "2020-12-22",
+      "prior_serial": "2200000111035",
+      "rule_id": "2125949"
+    },
+    {
+      "current_issued_date": "2026-09-09",
+      "current_serial": "2200000151831",
+      "prior_issued_date": "2024-11-12",
+      "prior_serial": "2200000136721",
+      "rule_id": "2126295"
+    },
+    {
+      "current_issued_date": "2026-03-03",
+      "current_serial": "2200000151397",
+      "prior_issued_date": "2025-02-19",
+      "prior_serial": "2200000139795",
+      "rule_id": "2125959"
+    },
+    {
+      "current_issued_date": "2026-06-26",
+      "current_serial": "2200000151803",
+      "prior_issued_date": "2025-12-26",
+      "prior_serial": "2200000151393",
+      "rule_id": "2125955"
+    }
+  ]
+}

@@ -1,0 +1,1705 @@
+{
+  "counts": {
+    "duplicate_annex_label_count": 3,
+    "fallback_annex_count": 62,
+    "matched_annex_count": 506,
+    "normal_no_table_annex_count": 51,
+    "pypdf_annex_label_count": 622,
+    "pypdf_unique_annex_count": 619,
+    "unmapped_table_count": 193,
+    "upstage_table_count": 1302
+  },
+  "fallback_reason_counts": {
+    "upstage_label_missing": 34,
+    "upstage_label_without_table": 28
+  },
+  "fallbacks": [
+    {
+      "annex_id": "별표1",
+      "doc_id": "law-2200000151383",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표3",
+      "doc_id": "law-2200000151383",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표1",
+      "doc_id": "law-2200000151801",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표2",
+      "doc_id": "law-2200000148345",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별지7",
+      "doc_id": "law-2200000151391",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별지14",
+      "doc_id": "law-2200000151391",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표3",
+      "doc_id": "law-2200000151397",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표4",
+      "doc_id": "law-2200000151397",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표5",
+      "doc_id": "law-2200000151397",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표6",
+      "doc_id": "law-2200000151397",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표",
+      "doc_id": "law-2200000148721",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표3",
+      "doc_id": "law-2200000151395",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표6",
+      "doc_id": "law-2200000151395",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별지2",
+      "doc_id": "law-2200000148729",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별지3",
+      "doc_id": "law-2200000148729",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별지4",
+      "doc_id": "law-2200000148729",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별지6",
+      "doc_id": "law-2200000148729",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별지7",
+      "doc_id": "law-2200000148729",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별지8",
+      "doc_id": "law-2200000148729",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별지9",
+      "doc_id": "law-2200000148729",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별지10",
+      "doc_id": "law-2200000148729",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표",
+      "doc_id": "law-2200000148777",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표2",
+      "doc_id": "law-2200000150485",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표1",
+      "doc_id": "law-2200000111403",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표2",
+      "doc_id": "law-2200000111403",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표2",
+      "doc_id": "law-2200000150587",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표3",
+      "doc_id": "law-2200000150587",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표5",
+      "doc_id": "law-2200000150595",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별지6",
+      "doc_id": "law-2200000150595",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별지7",
+      "doc_id": "law-2200000150595",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별지8",
+      "doc_id": "law-2200000150595",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표1",
+      "doc_id": "law-2200000149621",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표",
+      "doc_id": "law-2200000151385",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표4",
+      "doc_id": "law-2200000150467",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "부록2",
+      "doc_id": "law-2200000150467",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표1",
+      "doc_id": "law-2200000151403",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표1",
+      "doc_id": "law-2200000156139",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표1",
+      "doc_id": "law-2200000111015",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표1",
+      "doc_id": "law-2200000149201",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표3",
+      "doc_id": "law-2200000149201",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표1",
+      "doc_id": "law-2200000111017",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표1",
+      "doc_id": "law-2200000151387",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표2",
+      "doc_id": "law-2200000111121",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표2",
+      "doc_id": "law-2200000142889",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별지7",
+      "doc_id": "law-2200000111123",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별지7",
+      "doc_id": "law-2200000148725",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별지14",
+      "doc_id": "law-2200000148725",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표2",
+      "doc_id": "law-2200000111049",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표3",
+      "doc_id": "law-2200000111049",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표4",
+      "doc_id": "law-2200000111049",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표5",
+      "doc_id": "law-2200000111049",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표6",
+      "doc_id": "law-2200000111049",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표3",
+      "doc_id": "law-2200000139795",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표4",
+      "doc_id": "law-2200000139795",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표5",
+      "doc_id": "law-2200000139795",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표6",
+      "doc_id": "law-2200000139795",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표3",
+      "doc_id": "law-2200000111055",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표6",
+      "doc_id": "law-2200000111055",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표3",
+      "doc_id": "law-2200000148763",
+      "reason": "upstage_label_missing"
+    },
+    {
+      "annex_id": "별표6",
+      "doc_id": "law-2200000148763",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표1",
+      "doc_id": "law-2200000122061",
+      "reason": "upstage_label_without_table"
+    },
+    {
+      "annex_id": "별표",
+      "doc_id": "law-2200000148323",
+      "reason": "upstage_label_without_table"
+    }
+  ],
+  "generated_at": "2026-09-30T01:08:10+09:00",
+  "gold_table_qrels": {
+    "all_matched": true,
+    "checked_count": 6,
+    "checks": [
+      {
+        "annex_id": "별표2",
+        "doc_id": "law-2200000149621",
+        "mapped_table_count": 2,
+        "qrel_annex_id": "17229_0-00",
+        "query_id": "g-real-007",
+        "status": "matched",
+        "upstage_table_index": 0
+      },
+      {
+        "annex_id": "별표2",
+        "doc_id": "law-2200000150479",
+        "mapped_table_count": 1,
+        "qrel_annex_id": "47161_0-01",
+        "query_id": "g-real-008",
+        "status": "matched",
+        "upstage_table_index": 1
+      },
+      {
+        "annex_id": "별표1",
+        "doc_id": "law-2200000140323",
+        "mapped_table_count": 1,
+        "qrel_annex_id": "52921_0-00",
+        "query_id": "g-real-009",
+        "status": "matched",
+        "upstage_table_index": 0
+      },
+      {
+        "annex_id": "별표5",
+        "doc_id": "law-2200000150467",
+        "mapped_table_count": 1,
+        "qrel_annex_id": "53959_0-04",
+        "query_id": "g-real-010",
+        "status": "matched",
+        "upstage_table_index": 4
+      },
+      {
+        "annex_id": "별지2",
+        "doc_id": "law-2200000139835",
+        "mapped_table_count": 2,
+        "qrel_annex_id": "52871_0-03",
+        "query_id": "g-real-011",
+        "status": "matched",
+        "upstage_table_index": 3
+      },
+      {
+        "annex_id": "별표3",
+        "doc_id": "law-2200000150467",
+        "mapped_table_count": 2,
+        "qrel_annex_id": "53959_0-02",
+        "query_id": "g-real-012",
+        "status": "matched",
+        "upstage_table_index": 2
+      }
+    ],
+    "expected_count": 6,
+    "fallback_count": 0,
+    "fallbacks": [],
+    "matched_count": 6
+  },
+  "input_hashes": {
+    "gold_queries_sha256": "59ea35da8775955a6fbec615eeffb260b882293851a3a7337f31d03d43d41b81",
+    "paired_pdf_set_sha256": "791fed11fa6288e3b72d6267ef15bc20eff9bb66b0390ab4cdca839ccff93e20",
+    "parse_runs_sha256": "e6b7ae8262f3811a08ded5c84298e3fd4eda5621f7a68dafd227a0cc93863b58",
+    "parse_targets_sha256": "6044be1c86ce344004bca46c27408905a07dfd1f974c2a5dd250181bc731a6b6",
+    "parser_settings_hashes": {
+      "pypdf": [
+        "639d3a2a68eb"
+      ],
+      "upstage": [
+        "920ba361b443"
+      ]
+    },
+    "table_golden_sha256": "4f4025349a6a85f75abbd92068b82cf41d1eccb7fc5037a3679ab24c88cf706a"
+  },
+  "label_variants": {
+    "pypdf": {
+      "bracket_style": {
+        "angle_ascii": 9,
+        "angle_fullwidth": 17,
+        "corner": 24,
+        "square": 572
+      },
+      "excluded_references": {
+        "editorial_reference_brackets": 12,
+        "particle_suffix_reference": 6
+      },
+      "kind": {
+        "별지": 437,
+        "별표": 166,
+        "부록": 2,
+        "서식": 17
+      },
+      "numbering_style": {
+        "branch_after_ho": 41,
+        "branch_before_ho": 4,
+        "hyphen_branch": 2,
+        "simple": 557,
+        "unnumbered": 18
+      }
+    },
+    "upstage": {
+      "bracket_style": {
+        "angle_ascii": 9,
+        "angle_fullwidth": 17,
+        "corner": 24,
+        "square": 545
+      },
+      "excluded_references": {
+        "editorial_reference_brackets": 12,
+        "particle_suffix_reference": 3
+      },
+      "kind": {
+        "별지": 428,
+        "별표": 148,
+        "부록": 2,
+        "서식": 17
+      },
+      "numbering_style": {
+        "branch_after_ho": 41,
+        "branch_before_ho": 4,
+        "hyphen_branch": 2,
+        "simple": 530,
+        "unnumbered": 18
+      }
+    }
+  },
+  "missing_targets": [],
+  "normal_no_table": [
+    {
+      "annex_id": "별지2",
+      "doc_id": "law-2200000149159",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지5",
+      "doc_id": "law-2200000111091",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지6",
+      "doc_id": "law-2200000111091",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지2",
+      "doc_id": "law-2200000151391",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지9",
+      "doc_id": "law-2200000151391",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지1",
+      "doc_id": "law-2200000151395",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지4",
+      "doc_id": "law-2200000151395",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지8",
+      "doc_id": "law-2200000148719",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지9",
+      "doc_id": "law-2200000148719",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지14",
+      "doc_id": "law-2200000151389",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지1",
+      "doc_id": "law-2200000118161",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지4",
+      "doc_id": "law-2200000118161",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지5",
+      "doc_id": "law-2200000118161",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지1",
+      "doc_id": "law-2200000150591",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지9",
+      "doc_id": "law-2200000132645",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지5",
+      "doc_id": "law-2200000150587",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지5의1",
+      "doc_id": "law-2200000150587",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지1",
+      "doc_id": "law-2200000149621",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지3",
+      "doc_id": "law-2200000150573",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지1",
+      "doc_id": "law-2200000148347",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지5",
+      "doc_id": "law-2200000150569",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지15",
+      "doc_id": "law-2200000148731",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지18",
+      "doc_id": "law-2200000148731",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지20",
+      "doc_id": "law-2200000148731",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지4",
+      "doc_id": "law-2200000150629",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지1",
+      "doc_id": "law-2200000150481",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지1",
+      "doc_id": "law-2200000135767",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지2",
+      "doc_id": "law-2200000135767",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지3",
+      "doc_id": "law-2200000135767",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지3",
+      "doc_id": "law-2200000140323",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "서식1",
+      "doc_id": "law-2200000150467",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "서식2",
+      "doc_id": "law-2200000150467",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "서식3",
+      "doc_id": "law-2200000150467",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "서식7",
+      "doc_id": "law-2200000150467",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지1",
+      "doc_id": "law-2200000150989",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지2",
+      "doc_id": "law-2200000150989",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지6",
+      "doc_id": "law-2200000150989",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지9",
+      "doc_id": "law-2200000150989",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지11",
+      "doc_id": "law-2200000151401",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지9",
+      "doc_id": "law-2200000111123",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지13",
+      "doc_id": "law-2200000111123",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지9",
+      "doc_id": "law-2200000148725",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지1",
+      "doc_id": "law-2200000111055",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지4",
+      "doc_id": "law-2200000111055",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지1",
+      "doc_id": "law-2200000148763",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지4",
+      "doc_id": "law-2200000148763",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지1",
+      "doc_id": "law-2200000111395",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지3",
+      "doc_id": "law-2200000111395",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지1",
+      "doc_id": "law-2200000128009",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지2",
+      "doc_id": "law-2200000128009",
+      "reason": "no_table_expected_for_form"
+    },
+    {
+      "annex_id": "별지3",
+      "doc_id": "law-2200000128009",
+      "reason": "no_table_expected_for_form"
+    }
+  ],
+  "rule_version": "m5-annex-v1",
+  "target_denominator": {
+    "declared_role_counts": {
+      "current": 95,
+      "history": 20
+    },
+    "declared_target_count": 115,
+    "definition": "parse_targets targets 중 load_inputs로 계산한 PDF SHA-256의 pypdf·upstage 현재 파싱 결과가 모두 있는 문서",
+    "missing_target_count": 0,
+    "paired_role_counts": {
+      "current": 95,
+      "history": 20
+    },
+    "paired_target_count": 115
+  },
+  "unmapped_table_reason_counts": {
+    "before_first_annex_label": 170,
+    "invalid_table": 2,
+    "outside_annex_region": 21
+  },
+  "unmapped_tables": [
+    {
+      "doc_id": "law-2200000151801",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000151801",
+      "reason": "before_first_annex_label",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000151801",
+      "reason": "before_first_annex_label",
+      "table_index": 2
+    },
+    {
+      "doc_id": "law-2200000151391",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000151397",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000151397",
+      "reason": "before_first_annex_label",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000148719",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000148727",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000148727",
+      "reason": "before_first_annex_label",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000148325",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000148775",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000150475",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000150475",
+      "reason": "before_first_annex_label",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000150591",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000150587",
+      "reason": "invalid_table",
+      "table_index": 7
+    },
+    {
+      "doc_id": "law-2200000150587",
+      "reason": "outside_annex_region",
+      "table_index": 33
+    },
+    {
+      "doc_id": "law-2200000150595",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000149437",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000149437",
+      "reason": "before_first_annex_label",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000149437",
+      "reason": "before_first_annex_label",
+      "table_index": 2
+    },
+    {
+      "doc_id": "law-2200000148723",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000150619",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000148731",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000148731",
+      "reason": "before_first_annex_label",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000148731",
+      "reason": "before_first_annex_label",
+      "table_index": 2
+    },
+    {
+      "doc_id": "law-2200000148731",
+      "reason": "before_first_annex_label",
+      "table_index": 3
+    },
+    {
+      "doc_id": "law-2200000148731",
+      "reason": "before_first_annex_label",
+      "table_index": 4
+    },
+    {
+      "doc_id": "law-2200000148731",
+      "reason": "before_first_annex_label",
+      "table_index": 5
+    },
+    {
+      "doc_id": "law-2200000148731",
+      "reason": "before_first_annex_label",
+      "table_index": 6
+    },
+    {
+      "doc_id": "law-2200000148731",
+      "reason": "before_first_annex_label",
+      "table_index": 7
+    },
+    {
+      "doc_id": "law-2200000148731",
+      "reason": "before_first_annex_label",
+      "table_index": 8
+    },
+    {
+      "doc_id": "law-2200000148731",
+      "reason": "before_first_annex_label",
+      "table_index": 9
+    },
+    {
+      "doc_id": "law-2200000148731",
+      "reason": "invalid_table",
+      "table_index": 23
+    },
+    {
+      "doc_id": "law-2200000148773",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000148773",
+      "reason": "before_first_annex_label",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000148773",
+      "reason": "before_first_annex_label",
+      "table_index": 2
+    },
+    {
+      "doc_id": "law-2200000148773",
+      "reason": "before_first_annex_label",
+      "table_index": 3
+    },
+    {
+      "doc_id": "law-2200000148773",
+      "reason": "before_first_annex_label",
+      "table_index": 4
+    },
+    {
+      "doc_id": "law-2200000148773",
+      "reason": "before_first_annex_label",
+      "table_index": 5
+    },
+    {
+      "doc_id": "law-2200000150635",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000150483",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000135767",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000135767",
+      "reason": "outside_annex_region",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000135767",
+      "reason": "outside_annex_region",
+      "table_index": 2
+    },
+    {
+      "doc_id": "law-2200000135767",
+      "reason": "outside_annex_region",
+      "table_index": 3
+    },
+    {
+      "doc_id": "law-2200000135767",
+      "reason": "outside_annex_region",
+      "table_index": 4
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 2
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 3
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 4
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 5
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 6
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 7
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 8
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 9
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 10
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 11
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 12
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 13
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 14
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 15
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 16
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 17
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 18
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 19
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 20
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 21
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 22
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 23
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 24
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 25
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 26
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 27
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 28
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 29
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 30
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 31
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 32
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 33
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 34
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 35
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 36
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 37
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 38
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 39
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 40
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 41
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 42
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 43
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 44
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 45
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 46
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 47
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 48
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 49
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 50
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 51
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 52
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 53
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 54
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 55
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 56
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 57
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 58
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 59
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 60
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 61
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 62
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 63
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 64
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 65
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 66
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 67
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 68
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 69
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 70
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 71
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 72
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 73
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 74
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 75
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 76
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 77
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 78
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 79
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 80
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 81
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 82
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 83
+    },
+    {
+      "doc_id": "law-2200000149619",
+      "reason": "before_first_annex_label",
+      "table_index": 84
+    },
+    {
+      "doc_id": "law-2200000150989",
+      "reason": "outside_annex_region",
+      "table_index": 9
+    },
+    {
+      "doc_id": "law-2200000150989",
+      "reason": "outside_annex_region",
+      "table_index": 10
+    },
+    {
+      "doc_id": "law-2200000150989",
+      "reason": "outside_annex_region",
+      "table_index": 11
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 2
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 3
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 4
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 5
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 6
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 7
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 8
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 9
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 10
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 11
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 12
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 13
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 14
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 15
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 16
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 17
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 18
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 19
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 20
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 21
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 22
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 23
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 24
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 25
+    },
+    {
+      "doc_id": "law-2200000151399",
+      "reason": "before_first_annex_label",
+      "table_index": 26
+    },
+    {
+      "doc_id": "law-2200000111017",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000111017",
+      "reason": "before_first_annex_label",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000111017",
+      "reason": "before_first_annex_label",
+      "table_index": 2
+    },
+    {
+      "doc_id": "law-2200000151387",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000151387",
+      "reason": "before_first_annex_label",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000151387",
+      "reason": "before_first_annex_label",
+      "table_index": 2
+    },
+    {
+      "doc_id": "law-2200000111123",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000111123",
+      "reason": "outside_annex_region",
+      "table_index": 22
+    },
+    {
+      "doc_id": "law-2200000111123",
+      "reason": "outside_annex_region",
+      "table_index": 23
+    },
+    {
+      "doc_id": "law-2200000148725",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000148725",
+      "reason": "outside_annex_region",
+      "table_index": 22
+    },
+    {
+      "doc_id": "law-2200000148725",
+      "reason": "outside_annex_region",
+      "table_index": 23
+    },
+    {
+      "doc_id": "law-2200000111049",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000111049",
+      "reason": "before_first_annex_label",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000139795",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000139795",
+      "reason": "before_first_annex_label",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000111095",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000111095",
+      "reason": "before_first_annex_label",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000111095",
+      "reason": "before_first_annex_label",
+      "table_index": 2
+    },
+    {
+      "doc_id": "law-2200000148147",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000148147",
+      "reason": "before_first_annex_label",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000148147",
+      "reason": "before_first_annex_label",
+      "table_index": 2
+    },
+    {
+      "doc_id": "law-2200000111395",
+      "reason": "outside_annex_region",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000111395",
+      "reason": "outside_annex_region",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000111395",
+      "reason": "outside_annex_region",
+      "table_index": 2
+    },
+    {
+      "doc_id": "law-2200000111395",
+      "reason": "outside_annex_region",
+      "table_index": 3
+    },
+    {
+      "doc_id": "law-2200000111395",
+      "reason": "outside_annex_region",
+      "table_index": 4
+    },
+    {
+      "doc_id": "law-2200000128009",
+      "reason": "before_first_annex_label",
+      "table_index": 0
+    },
+    {
+      "doc_id": "law-2200000128009",
+      "reason": "outside_annex_region",
+      "table_index": 1
+    },
+    {
+      "doc_id": "law-2200000128009",
+      "reason": "outside_annex_region",
+      "table_index": 2
+    },
+    {
+      "doc_id": "law-2200000128009",
+      "reason": "outside_annex_region",
+      "table_index": 3
+    },
+    {
+      "doc_id": "law-2200000128009",
+      "reason": "outside_annex_region",
+      "table_index": 4
+    }
+  ]
+}

@@ -37,3 +37,6 @@ dev = [
 docling = [
     "docling>=2.130.0",
 ]
+embed = [
+    "sentence-transformers>=6.1.0",
+]
