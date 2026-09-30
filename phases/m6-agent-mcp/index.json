@@ -19,7 +19,16 @@
     {
       "step": 1,
       "name": "m5-carryover",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T19:29:05+0900",
+      "summary": "`src/kodocs/retrieval/embedding.py`의 `_sentence_embedding_dimension()`에 신·구 API 호환 처리를 추가하고 `m5_retrieval.md`의 옛 한계를 삭제했으며, 회귀 테스트와 `make verify`(1,203 passed)를 통과했습니다.",
+      "completed_at": "2026-09-30T19:40:18+0900",
+      "usage": {
+        "input_tokens": 1285416,
+        "cached_input_tokens": 1197312,
+        "output_tokens": 10882,
+        "attempts": 1
+      }
     },
     {
       "step": 2,
