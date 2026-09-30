@@ -27,9 +27,10 @@
     },
     {
       "dir": "m5-retrieval",
-      "status": "error",
+      "status": "completed",
       "blocked_at": "2026-09-30T12:02:01+0900",
-      "failed_at": "2026-09-30T15:57:06+0900"
+      "failed_at": "2026-09-30T15:57:06+0900",
+      "completed_at": "2026-09-30T17:53:23+0900"
     }
   ]
 }
