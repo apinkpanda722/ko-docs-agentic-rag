@@ -159,7 +159,16 @@
     {
       "step": 11,
       "name": "eval-inputs",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T12:21:56+0900",
+      "summary": "`m5_inputs.py`의 평가 문항·권한·정답 구간·answer_repeated 로더와 `answer_ranges_by_doc`를 구현하고 `m5_eval_inputs.json`을 생성했습니다(제외 305쌍/92문항, silver test 반복 59/비반복 6, 실패 0, `make verify` 1,147개 통과).",
+      "completed_at": "2026-09-30T12:33:16+0900",
+      "usage": {
+        "input_tokens": 3489373,
+        "cached_input_tokens": 3368448,
+        "output_tokens": 28972,
+        "attempts": 1
+      }
     },
     {
       "step": 12,
