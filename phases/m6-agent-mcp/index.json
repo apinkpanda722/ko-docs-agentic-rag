@@ -1,0 +1,66 @@
+{
+  "project": "ko-docs-agentic-rag",
+  "phase": "m6-agent-mcp",
+  "steps": [
+    {
+      "step": 0,
+      "name": "design-docs",
+      "status": "pending"
+    },
+    {
+      "step": 1,
+      "name": "m5-carryover",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "name": "current-first",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "name": "get-document",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "name": "tool-contract",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "name": "llm-answer-client",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "name": "answer-core",
+      "status": "pending"
+    },
+    {
+      "step": 7,
+      "name": "simple-rag",
+      "status": "pending"
+    },
+    {
+      "step": 8,
+      "name": "agentic-rag",
+      "status": "pending"
+    },
+    {
+      "step": 9,
+      "name": "mcp-server",
+      "status": "pending"
+    },
+    {
+      "step": 10,
+      "name": "m6-runner",
+      "status": "pending"
+    },
+    {
+      "step": 11,
+      "name": "m6-report",
+      "status": "pending"
+    }
+  ]
+}
