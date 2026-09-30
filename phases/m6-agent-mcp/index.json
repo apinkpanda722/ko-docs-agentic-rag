@@ -75,7 +75,16 @@
     {
       "step": 5,
       "name": "llm-answer-client",
-      "status": "pending"
+      "status": "error",
+      "started_at": "2026-09-30T20:46:18+0900",
+      "error_message": "[3회 시도 후 실패] 결과 JSON을 받지 못함 (exit 1): {\"type\":\"thread.started\",\"thread_id\":\"01a0f22d-16eb-77f3-af9e-44ac4b2f6fc4\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"`--dangerously-bypass-hook-trust` is enabled. Enabled hooks may run without review for this invocation.\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"`--dangerously-bypass-hook-trust` is enabled. Enabled hooks may run without review for this invocation.\"}}\n{\"type\":\"turn.started\"}\n{\"type\":\"error\",\"message\":\"You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 10:23 PM.\"}\n{\"type\":\"turn.failed\",\"error\":{\"message\":\"You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 10:23 PM.\"}}\n",
+      "failed_at": "2026-09-30T20:57:21+0900",
+      "usage": {
+        "input_tokens": 0,
+        "cached_input_tokens": 0,
+        "output_tokens": 0,
+        "attempts": 3
+      }
     },
     {
       "step": 6,
