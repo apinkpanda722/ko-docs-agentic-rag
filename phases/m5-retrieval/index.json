@@ -75,7 +75,16 @@
     {
       "step": 5,
       "name": "index-schema",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T10:31:54+0900",
+      "summary": "`OpenSearchClient`·bulk 오류 수집(`retrieval/opensearch.py`)과 M5 인덱스 스키마·RRF/가중 파이프라인(`retrieval/index_schema.py`), 단위·통합 테스트를 추가했으며 `make verify` 1,024개 테스트가 통과했습니다(6개 integration 제외, 로컬 Docker 데몬 부재로 실응답 확인 미실행).",
+      "completed_at": "2026-09-30T10:40:57+0900",
+      "usage": {
+        "input_tokens": 1699524,
+        "cached_input_tokens": 1606528,
+        "output_tokens": 20688,
+        "attempts": 1
+      }
     },
     {
       "step": 6,
