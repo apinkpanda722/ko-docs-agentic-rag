@@ -243,6 +243,110 @@ def test_authorized_search_embeds_queries_selects_pipeline_and_groups_docs() -> 
     assert_every_subquery_prefiltered(json.loads(captured[0].content))
 
 
+def test_prefer_current_search_reorders_chunks_and_docs_without_changing_request() -> (
+    None
+):
+    captured: list[dict[str, object]] = []
+    raw_hits = [
+        {
+            "_score": 3.0,
+            "_source": {
+                "chunk_id": "prior#1",
+                "doc_id": "prior",
+                "start": 0,
+                "end": 10,
+                "text_nori": "개정 전 본문",
+                "title": "출장규칙",
+                "is_current": False,
+                "rule_id": "rule-a",
+                "date": "2025-01-01",
+            },
+        },
+        {
+            "_score": 2.0,
+            "_source": {
+                "chunk_id": "other#1",
+                "doc_id": "other",
+                "start": 0,
+                "end": 10,
+                "text_nori": "다른 문서",
+                "title": "다른 규정",
+                "is_current": True,
+                "rule_id": "rule-b",
+                "date": "2026-01-01",
+            },
+        },
+        {
+            "_score": 1.0,
+            "_source": {
+                "chunk_id": "current#1",
+                "doc_id": "current",
+                "start": 0,
+                "end": 10,
+                "text_nori": "현행 본문",
+                "title": "출장규칙",
+                "is_current": True,
+                "rule_id": "rule-a",
+                "date": "2026-01-01",
+            },
+        },
+    ]
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(json.loads(request.content))
+        return httpx.Response(200, json={"hits": {"hits": raw_hits}})
+
+    client = OpenSearchClient(
+        client=httpx.Client(transport=httpx.MockTransport(handler))
+    )
+    ctx = UserContext("platform", 2)
+    params = SearchParams("bm25", candidate_chunks=3)
+
+    baseline = authorized_search(client, "index", ctx, "출장", params)
+    preferred = authorized_search(
+        client,
+        "index",
+        ctx,
+        "출장",
+        params,
+        prefer_current=True,
+    )
+
+    assert [hit.chunk_id for hit in baseline.chunks] == [
+        "prior#1",
+        "other#1",
+        "current#1",
+    ]
+    assert [hit.chunk_id for hit in preferred.chunks] == [
+        "current#1",
+        "other#1",
+        "prior#1",
+    ]
+    assert [hit.doc_id for hit in preferred.docs] == ["current", "other", "prior"]
+    assert preferred.chunks[0].text == "현행 본문"
+    assert preferred.chunks[0].title == "출장규칙"
+    assert preferred.chunks[0].is_current is True
+    assert preferred.chunks[0].rule_id == "rule-a"
+    assert preferred.docs[0].title == "출장규칙"
+    assert preferred.docs[0].is_current is True
+    assert preferred.docs[0].rule_id == "rule-a"
+    assert captured[0] == captured[1]
+    assert captured[0]["query"]["bool"]["filter"] == access_filter(ctx)  # type: ignore[index]
+    assert captured[0]["_source"] == [
+        "chunk_id",
+        "doc_id",
+        "start",
+        "end",
+        "section_key",
+        "section_kind",
+        "text_nori",
+        "title",
+        "is_current",
+        "rule_id",
+        "date",
+    ]
+
+
 def test_bm25_skips_embedding_and_pipeline_and_empty_results_are_neutral() -> None:
     captured: list[httpx.Request] = []
 

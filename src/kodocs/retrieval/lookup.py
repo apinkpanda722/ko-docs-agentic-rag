@@ -10,13 +10,21 @@ from typing import Literal
 from kodocs.chunking.corpus import normalize_regulation_ref
 from kodocs.retrieval.access import UserContext, access_filter
 from kodocs.retrieval.opensearch import OpenSearchClient
+from kodocs.retrieval.ordering import prefer_current_order
 from kodocs.retrieval.search import DocHit
 from kodocs.synth.identifiers import extract_identifiers, service_pattern
 
 IdKind = Literal["ticket", "approval", "incident", "service", "regulation"]
 
 _ID_KINDS = frozenset({"ticket", "approval", "incident", "service", "regulation"})
-_SOURCE_FIELDS = ("chunk_id", "doc_id", "date")
+_SOURCE_FIELDS = (
+    "chunk_id",
+    "doc_id",
+    "date",
+    "title",
+    "is_current",
+    "rule_id",
+)
 
 
 @dataclass(frozen=True)
@@ -25,6 +33,9 @@ class _LookupChunk:
     doc_id: str
     score: float
     date: str | None
+    title: str | None
+    is_current: bool | None
+    rule_id: str | None
 
 
 def extract_query_identifiers(
@@ -58,6 +69,7 @@ def authorized_lookup_id(
     *,
     rank_query: str | None = None,
     size: int = 50,
+    prefer_current: bool = False,
 ) -> tuple[DocHit, ...]:
     """Look up an exact identifier with authorization in the same query."""
     if kind not in _ID_KINDS:
@@ -103,7 +115,11 @@ def authorized_lookup_id(
         },
     )
     chunks = _lookup_chunks(response, ranked=rank_query is not None)
-    return _group_documents(chunks, ranked=rank_query is not None)
+    return _group_documents(
+        chunks,
+        ranked=rank_query is not None,
+        prefer_current=prefer_current,
+    )
 
 
 def _lookup_chunks(
@@ -139,7 +155,20 @@ def _lookup_chunks(
         date = source.get("date")
         if date is not None and not isinstance(date, str):
             raise TypeError("OpenSearch lookup response has an invalid date")
-        chunks.append(_LookupChunk(chunk_id, doc_id, score, date))
+        title = _optional_string(source, "title")
+        is_current = _optional_bool(source, "is_current")
+        rule_id = _optional_string(source, "rule_id")
+        chunks.append(
+            _LookupChunk(
+                chunk_id,
+                doc_id,
+                score,
+                date,
+                title,
+                is_current,
+                rule_id,
+            )
+        )
     return tuple(chunks)
 
 
@@ -150,8 +179,26 @@ def _required_string(source: Mapping[str, object], field: str) -> str:
     return value
 
 
+def _optional_string(source: Mapping[str, object], field: str) -> str | None:
+    value = source.get(field)
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise TypeError("OpenSearch lookup response has an invalid source field")
+    return value
+
+
+def _optional_bool(source: Mapping[str, object], field: str) -> bool | None:
+    value = source.get(field)
+    if value is None:
+        return None
+    if not isinstance(value, bool):
+        raise TypeError("OpenSearch lookup response has an invalid source field")
+    return value
+
+
 def _group_documents(
-    chunks: Sequence[_LookupChunk], *, ranked: bool
+    chunks: Sequence[_LookupChunk], *, ranked: bool, prefer_current: bool = False
 ) -> tuple[DocHit, ...]:
     best_by_doc: dict[str, _LookupChunk] = {}
     date_by_doc: dict[str, str | None] = {}
@@ -169,7 +216,14 @@ def _group_documents(
             date_by_doc[chunk.doc_id] = chunk.date
 
     docs = [
-        DocHit(doc_id, chunk.score, chunk.chunk_id)
+        DocHit(
+            doc_id,
+            chunk.score,
+            chunk.chunk_id,
+            title=chunk.title,
+            is_current=chunk.is_current,
+            rule_id=chunk.rule_id,
+        )
         for doc_id, chunk in best_by_doc.items()
     ]
     if ranked:
@@ -177,4 +231,10 @@ def _group_documents(
     else:
         docs.sort(key=lambda hit: hit.doc_id)
         docs.sort(key=lambda hit: date_by_doc[hit.doc_id] or "", reverse=True)
+    if prefer_current:
+        return prefer_current_order(
+            docs,
+            key_rule=lambda hit: hit.rule_id,
+            key_is_current=lambda hit: hit.is_current,
+        )
     return tuple(docs)

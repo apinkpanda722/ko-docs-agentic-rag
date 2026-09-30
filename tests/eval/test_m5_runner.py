@@ -124,6 +124,24 @@ def test_runner_uses_none_for_questions_without_answer_ranges(
     assert result.span_hit is None
 
 
+def test_runner_forwards_prefer_current_only_when_enabled(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict[str, object]] = []
+
+    def fake_search(*_args, **kwargs):
+        calls.append(kwargs)
+        return SearchResult(chunks=(), docs=(), embed_ms=None, search_ms=0.0)
+
+    monkeypatch.setattr("kodocs.eval.m5_runner.authorized_search", fake_search)
+    config = RunConfig("composite", "fixed", "bm25", "nori", 50, None)
+
+    run_questions(object(), object(), [_question()], config)
+    run_questions(object(), object(), [_question()], config, prefer_current=True)
+
+    assert calls == [{}, {"prefer_current": True}]
+
+
 def test_one_search_error_fails_the_combination_without_partial_results(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
