@@ -187,7 +187,16 @@
     {
       "step": 13,
       "name": "analysis",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T12:45:54+0900",
+      "summary": "`m5_analysis.py`에 RunKey·QuestionMeta와 사다리·제거·14조합·H1/H2/H3/H4/H7 판정 및 보조 분석 순수 함수 11개를 구현하고 `test_m5_analysis.py`를 추가했으며, `make verify`에서 1,170개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T12:58:00+0900",
+      "usage": {
+        "input_tokens": 2283016,
+        "cached_input_tokens": 2169856,
+        "output_tokens": 32348,
+        "attempts": 1
+      }
     },
     {
       "step": 14,
