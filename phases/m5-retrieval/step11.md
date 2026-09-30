@@ -65,6 +65,16 @@ def main(argv=None) -> int      # CLI: python -m kodocs.eval.m5_inputs → data/
 - 근거가 없는 문항(구간 없음)은 `repeated = False`가 아니라 "태그 불가"로 따로 세어 manifest에 기록한다(FP-021: 분모에 조용히 넣지 않는다). 지금 대상 문항 중 그런 문항이 0이면 0이라고 기록.
 - 근거 SHA-256 목록은 정규화한 근거 텍스트의 해시로 기록한다(원문 텍스트는 기록하지 않는다). 정규화 후 길이가 10자 미만인 근거 수도 기록만 한다(규칙으로 쓰지는 않는다).
 
+### 4-1. 청크 잘림 검사용 정답 구간 공급 함수
+
+```python
+def answer_ranges_by_doc(condition: ParserCondition, root: Path = Path(".")) -> dict[str, dict[str, list[tuple[int, int]]]]:
+    # {"gold": {doc_id: [(start, end), ...]}, "silver": {...}} — dev·test 모두, 검색 지표 대상 문항의 rel ≥ 1 정답 구간(위 3절 매핑)
+```
+
+- `kodocs.retrieval.index_build`(step 7)의 CLI가 **지연 import로** 이 함수를 부른다(잘린 청크와 qrels가 겹치는지 검사). `condition`별로 정답 구간이 달라지므로(실제 규정은 조건별 조·별표 구간) 조건을 받는다. 구간이 없는 문서 단위 qrels는 이 결과에 넣지 않는다.
+- 테스트: 합성 fixture로 반환 구조·rel 0 제외·조건별 실제 규정 구간 차이·`index_build`가 호출하는 시그니처와 일치함(`inspect.signature`로 확인).
+
 ### 5. manifest `data/manifest/m5_eval_inputs.json` (커밋 대상, CLI가 생성)
 
 문항 id → `{repeated, evidence_sha256, n_matching_docs}`, 골드 test·실버 test × 출처(real/synthetic) × 반복 여부(반복/반복 아님) 그룹별 문항 수 표, 실버 test의 반복/반복 아님 그룹 크기(코퍼스 v2 규칙 4의 10문항 기준 사전 확인 값), 대상 문항 수(위 기준과 무엇을 세는지), 권한 전제 검사 결과, 구간 매핑 실패 목록, 구간 없음 문항 수, 태그 불가 수, 입력 해시(골드·실버 질의 파일, 코퍼스 설정) 요약. **이 파일은 `make m5-test` 전에 확정된다**(ADR-028 13번). CLI를 이 step에서 로컬에서 한 번 실행해 생성한다. 권한 전제 검사나 구간 매핑에서 실패가 나오면 목록과 함께 `blocked`로 보고하라(자동 제외 금지).

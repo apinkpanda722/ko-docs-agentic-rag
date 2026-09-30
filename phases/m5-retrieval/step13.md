@@ -27,6 +27,7 @@ def ablation(runs, qids) -> dict        # 최종(nori hybrid+구조)에서 한 �
 def full_grid(runs, qids) -> dict       # 14조합 표(평균 Recall@10·NDCG@10·구간 겹침 적중률·1위 적중률, n)
 def hypotheses(runs, meta, lookup_top1) -> dict   # H1·H2·H3·H4·H7 각각 판정 문자열과 통계
 def h2_breakdown(runs, meta) -> dict    # 출처별(실제/합성)·answer_repeated별 기술 통계
+def h3_breakdown(runs, meta) -> dict    # H3 출처별(실제/합성) 기술 통계 (판정 아님)
 def corpus_v2_rule(silver_test_runs, meta) -> dict
 def temporal_prior_vs_current(runs, prior_map, questions) -> dict
 def parser_compare(runs_by_condition, qids_real19, qids_real_test13) -> dict
@@ -44,12 +45,15 @@ def lexical_mismatch_subset(runs, meta) -> dict # 기술 통계만
 - **H7**: 골드 test 중 identifier·semantic·multi_doc 유형만, 최종 구성의 문서 단위 **Recall@10**을 합성(n=8) vs 실제(n=6)로 **독립 표본 부트스트랩**, 방향 "합성 > 실제". 문항 수가 8·6이 아니면 오류로 멈춘다(사전 고정 값). 전체 유형 비교는 기술 통계로만 별도 보고.
 - **판정 문자열**: `verdict()`(채택 / 기각(반대 방향) / 판정 보류(차이 입증 못 함))를 그대로 쓴다. 판정 불가 원인(표본 4 등)은 별도 필드 `note`에 적는다.
 - **h2_breakdown**: 각 문항의 (hybrid − nori BM25) NDCG@10 차이를 **출처별(real/synthetic)·answer_repeated별(반복/반복 아님)**로 나눠 `describe`(n·평균·sd·중앙값·최소·최대)만 보고한다(판정·CI 없음). 골드 test와 실버 test를 각각 낸다.
+- **h3_breakdown**: 골드 test 검색 지표 대상 21문항(H3 판정 대상 그대로)을 **출처별(real/synthetic)**로 나눠, 구조·고정 청킹 각각의 구간 겹침 적중률(문항별 0/1의 평균)과 문항별 차이(구조 − 고정)의 `describe`(n·평균·sd·중앙값·최소·최대)를 보고한다. 구간 없는 문항은 H3와 같은 규칙으로 분모에서 빼고 출처별로 그 수와 id를 적는다. **판정·CI·채택/기각 문자열을 붙이지 않는다**(판정은 기존 21문항 `hypotheses()`의 H3 그대로). 실버 test 65에도 같은 분해를 방향 확인용으로 낸다. 이유: 고정 청크(200자)가 합성 문서의 구조 청크(특히 회의록 안건)보다 작아 출처에 따라 청킹 효과가 다를 수 있다.
 - **corpus_v2_rule**: 실버 test 검색 지표 대상 문항에서, 문항별 (hybrid − nori BM25) NDCG@10 차이(H2와 같은 고정 청킹 쌍)를 만든다. **[반복 아님 그룹 − 반복 그룹]** 평균 차이에 `independent_bootstrap`(10,000회)을 적용한다. 규칙: (1) 두 그룹 중 하나라도 **10문항 미만**이면 `decision = "판정 불가(표본 부족) — 코퍼스 v2 미착수, 한계로 기록"`(CI는 참고로 계산 가능하면 함께 적되 판정에 쓰지 않는다), (2) 아니면 CI 하한 ≥ 0.10이면 `"코퍼스 v2 별도 phase 제안"`, 아니면 `"코퍼스 v2 미착수, 한계로만 기록"`. 그룹 크기와 하한 값을 결과에 그대로 남긴다.
 - **temporal_prior_vs_current**: 골드 temporal:revision 문항(dev·test 모두, split 표시)마다 최종 구성의 전체 문서 순위에서 현행 문서 순위와 `prior_map`(현행 doc_id → 개정 전 doc_id)의 개정 전 문서 순위를 낸다(없으면 `null`). `prior_above_current` = 개정 전 순위 < 현행 순위(개정 전만 있으면 참, 둘 다 없으면 거짓). 문항별 표와 test 3문항·dev 2문항의 "개정 전이 위" 개수를 기술 통계로 보고한다(판정 아님).
 - **parser_compare**: 조건 3개(`pypdf`, `upstage`, `composite`)의 최종 설정(구조 청킹·확정 hybrid) 결과를 실제 골드 검색 지표 대상 19문항과 test 13 부분집합에서 각각 Recall@10·NDCG@10 평균·기술 통계와 **조건 쌍 3개(composite−pypdf, composite−upstage, pypdf−upstage)의 짝 비교 부트스트랩 CI**로 낸다. 결과 객체에 `"label": "탐색적 비교(사전 등록 가설 아님)"`를 넣는다. 문항 수가 19·13이 아니면 오류.
 - **silver_direction**: 실버 test 65문항에 사다리·H1·H2·H3 비교를 같은 정의로 계산하되 "방향 확인용"으로 표시한다. `temporal:revision`·`temporal:as_of_event` 태그별 결과를 분리한다.
 
 ### 테스트
+
+(추가) `h3_breakdown`: 출처별 n이 21문항 분할과 일치, 구간 없는 문항이 분모에서 빠지고 출처별로 기록됨, 판정 문자열이 없음.
 
 각 함수를 손으로 만든 소형 `QuestionRun` fixture(문항 수 몇 개)로 검증한다: 사다리 증가분 계산, H3에서 구간 없는 문항이 분모에서 빠지고 목록에 남는지, H7이 8·6이 아니면 오류인지, `corpus_v2_rule`의 세 갈래(그룹 9문항 → 판정 불가, 하한 ≥ 0.10 → 제안, 그 미만 → 미착수), 그룹 크기 정확히 10인 경계, `temporal_prior_vs_current`의 순위 없음 처리, `parser_compare` 결과 라벨. 실제 데이터·파일 IO에 의존하지 않는다.
 

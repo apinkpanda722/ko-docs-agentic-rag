@@ -41,9 +41,14 @@ def main(argv: Sequence[str] | None = None) -> int     # CLI: --all | --conditio
 3. **멱등**: `recreate=True`면 인덱스를 삭제 후 다시 만든다. 파이프라인은 `ensure_pipelines`. 같은 입력으로 두 번 돌려도 같은 문서 수·같은 `_id`(=`chunk_id`)가 나온다.
 4. **항목 실패 처리(FP-030)**: 임베딩·벌크 항목 하나의 실패는 실패 목록(`chunk_id`, 사유)에 남기고 계속한다. 실패가 1건이라도 있으면 종료 코드는 비정상이며 manifest에 실패 수를 기록한다. 색인된 청크가 0건이면 실패(FP-031). 색인 후 `_count`가 적재 대상 청크 수와 다르면 실패.
 5. **manifest**: `data/manifest/m5_index.json`에 `indexes` 키를 추가한다(기존 `chunking` 키 보존, 인덱스 이름을 키로 하는 읽고-병합해-쓰기, FP-032). 각 인덱스: 조건, 청킹, 문서 수(합성/실제 현행/개정 전), 청크 수, 실패 수, 임베더 `model_id`·`revision`·설정 해시·장치·`init_s`, 별표 fallback 수, 빌드 시각, 코드 커밋 해시(`git rev-parse HEAD`, 실패하면 `null`), 색인 필드 스키마 해시. 원문 텍스트 금지.
-6. **진행 출력**: 청킹·임베딩·벌크 각 단계에서 N건마다 `flush=True`로 진행 줄 출력(FP-034). 진행 줄에 텍스트·URL 자격 정보 금지.
-7. 테스트: `FakeEmbedder` + `httpx.MockTransport`로 (a) 색인 문서 필드·`_id`·식별자 keyword 채움, (b) 재실행 멱등, (c) 항목 실패 시 계속 진행·비정상 종료, (d) 0건이면 실패, (e) `m5_index_specs()`가 4개이며 조건·청킹 조합이 위와 같음, (f) `--dry-run`이 OpenSearch를 호출하지 않음. 통합 테스트(`integration`)로 작은 fixture 코퍼스를 실제 OpenSearch에 색인해 `_count`를 확인하는 케이스 1개를 `tests/test_m5_opensearch_integration.py`에 추가한다.
-8. 실제 BGE-M3 임베딩·`make up`·전체 색인은 이 step에서 실행하지 마라(사용자가 나중에 실행). `--embedder fake` 경로만 로컬에서 시험해도 된다.
+6. **임베딩 잘림 검사(사용자 확정, 임베딩·적재 전에 수행)**: 청킹 직후, 벡터를 만들기 **전에** `embedder.count_tokens`로 모든 청크의 토큰 수를 재어 `max_seq_length`를 넘는 청크(`over_limit`)를 센다. 인덱스별로 다음을 기록한다: `max_seq_length`, `over_limit_chunk_count`, `over_limit_chunk_ids`(chunk_id 목록만, 텍스트 금지), 청크 토큰 수 최대·p99. 그중 **골드·실버 qrels가 걸린 청크 수**를 센다: `answer_ranges`(doc_id → 정답 구간 목록, 관련도 ≥ 1)와 문자 범위가 1자라도 겹치는 청크를 "qrels가 걸린 청크"로 본다. 골드와 실버를 따로 센다(`gold_answer_chunks_over_limit`, `silver_answer_chunks_over_limit`).
+   - `build_index`는 `answer_ranges_by_set: Mapping[str, Mapping[str, Sequence[tuple[int, int]]]] | None`(키 `"gold"`·`"silver"`)을 인자로 받는다(테스트는 가짜 값을 넣는다). CLI 기본 공급자는 `kodocs.eval.m5_inputs.answer_ranges_by_doc(condition, root)`(step 11이 만드는 함수)를 **함수 안에서 지연 import**한다. 함수가 아직 없으면 명확한 오류로 멈춘다(step 11 완료 후에는 항상 존재). 모듈 최상단에서 `kodocs.eval`을 import하지 마라(순환·계층 역전 방지).
+   - **골드 qrels 청크가 하나라도 잘리면(`gold_answer_chunks_over_limit > 0`) 벡터 생성·적재 전에 멈추고 보고한다**: 비정상 종료, 해당 청크의 (chunk_id, doc_id, 질문 id)와 토큰 수를 출력하고 `m5_index.json`의 해당 인덱스 항목에 실패 상태와 목록을 기록한다(인덱스는 만들지 않는다). 실버 qrels 청크가 잘린 경우는 멈추지 않고 수를 기록·경고 출력한다. 잘린 청크가 qrels와 무관하면 기록만 한다.
+   - `--dry-run`도 이 검사를 수행해 인덱스별 수치를 출력한다(OpenSearch 접속 없이. 단 `count_tokens`가 토크나이저를 필요로 하므로 `--embedder bge-m3`일 때는 토크나이저만 로컬 캐시에서 읽고 모델 가중치는 로드하지 않는다).
+7. **청크 길이 통계(결과 문서용)**: 인덱스별로 청크 길이(`len(body)`, 문자)의 중앙값·개수를 **출처별(real/synthetic)·문서 유형별(meeting·weekly·runbook·guide·notice·incident·regulation)**로 계산해 `m5_index.json`의 인덱스 항목에 기록한다(`chunk_length_chars_by_source`, `chunk_length_chars_by_doc_type`, 무엇을 세는지 필드 이름에 명시). `--dry-run`에서도 출력한다. step 15의 결과 문서 표가 이 값을 읽는다.
+8. **진행 출력**: 청킹·임베딩·벌크 각 단계에서 N건마다 `flush=True`로 진행 줄 출력(FP-034). 진행 줄에 텍스트·URL 자격 정보 금지.
+9. 테스트: `FakeEmbedder` + `httpx.MockTransport`로 (0) 한도 초과 청크 수·id 기록, 골드 qrels가 걸린 초과 청크가 있으면 임베딩·벌크 호출 없이 비정상 종료하고 manifest에 실패 기록, 실버만 걸리면 계속 진행하고 수만 기록, qrels 무관 초과 청크는 기록만, 청크 길이 통계(출처·유형별 중앙값) 계산, (a) 색인 문서 필드·`_id`·식별자 keyword 채움, (b) 재실행 멱등, (c) 항목 실패 시 계속 진행·비정상 종료, (d) 0건이면 실패, (e) `m5_index_specs()`가 4개이며 조건·청킹 조합이 위와 같음, (f) `--dry-run`이 OpenSearch를 호출하지 않음. 통합 테스트(`integration`)로 작은 fixture 코퍼스를 실제 OpenSearch에 색인해 `_count`를 확인하는 케이스 1개를 `tests/test_m5_opensearch_integration.py`에 추가한다.
+10. 실제 BGE-M3 임베딩·`make up`·전체 색인은 이 step에서 실행하지 마라(사용자가 나중에 실행). `--embedder fake` 경로만 로컬에서 시험해도 된다.
 
 ## Acceptance Criteria
 
@@ -76,5 +81,6 @@ make verify
 - 식별자를 분석 필드에서만 찾게 만들지 마라. 이유: 분석기가 하이픈에서 쪼갠다(FP-050, ADR-017). `ids_*` keyword 필드에 청크 본문에서 추출해 넣는다.
 - 색인 중 항목 하나가 실패했다고 전체를 중단하거나, 반대로 실패를 삼키고 성공으로 끝내지 마라. 이유: 배치의 항목 실패는 기록하고 계속하되(FP-030) 0건 성공을 성공으로 끝내면 안 된다(FP-031).
 - `m5_index.json`을 덮어써 `chunking` 키를 지우지 마라. 이유: 고정 청크 크기 확정값이 이 파일에 있다. append-only 성격의 기록은 최신 키 기준으로 읽는다(FP-032).
+- 한도를 넘는 청크를 조용히 잘라 임베딩하거나 검사 없이 적재하지 마라. 이유: 골드 정답 청크가 잘리면 그 문항의 검색 결과가 훼손된 벡터로 측정된다(사용자 확정: 골드 qrels 청크가 하나라도 잘리면 멈추고 보고). 검사는 벡터 생성 전에 한다.
 - BGE-M3 모델 로드·다운로드, Docker 기동, 실제 색인 실행을 하지 마라. 이유: 승인·사용자 실행 대상이다(사용자 실행 분담).
 - 청크 텍스트를 manifest·로그에 남기지 마라.

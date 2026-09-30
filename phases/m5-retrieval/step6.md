@@ -27,13 +27,15 @@ class Embedder(Protocol):
     revision: str
     dim: int
     settings: Mapping[str, object]      # max_seq_length, normalize, device 등 — 설정 해시 산출에 쓴다
+    def count_tokens(self, texts: Sequence[str]) -> list[int]: ...   # 모델 토크나이저로 잰 토큰 수(특수 토큰 포함). 임베딩 잘림 검사용, 모델 로딩 없이 토크나이저만 필요하면 그렇게
     def prepare(self) -> float: ...     # 모델 로딩 등 1회성 초기화. 걸린 초 반환(init_s)
     def embed(self, texts: Sequence[str], *, kind: Literal["passage", "query"]) -> list[list[float]]: ...
 
 class FakeEmbedder: ...                 # 텍스트 해시 기반 결정론 벡터(차원 인자), 외부 의존 없음. 유사 텍스트끼리 코사인이 높도록 문자 n-gram 해시 버킷 방식으로
 
-class Bge3Embedder:                     # BAAI/bge-m3, dense 벡터만, L2 정규화, max_seq_length=1024
-    def __init__(self, *, model_path_or_id: str = "BAAI/bge-m3", device: str | None = None, batch_size: int = 16, local_files_only: bool = True): ...
+class Bge3Embedder:                     # BAAI/bge-m3, dense 벡터만, L2 정규화, max_seq_length는 모델 지원 최대값(아래 규칙 8)
+    def __init__(self, *, model_path_or_id: str = "BAAI/bge-m3", device: str | None = None, batch_size: int = 16,
+                 max_batch_tokens: int = 16384, max_seq_length: int | None = None, local_files_only: bool = True): ...
 
 class CachedEmbedder:                   # 디스크 캐시 래퍼: 키 = sha256(model_id | revision | max_seq_length | normalize | kind | text)
     def __init__(self, inner: Embedder, cache_dir: Path): ...
@@ -49,7 +51,10 @@ def embedder_settings_hash(e: Embedder) -> str: ...     # 12자리, parsing.sche
 4. **캐시 키는 벡터를 결정하는 모든 것을 포함(FP-033)**: 위 키 정의를 그대로 쓴다. 캐시 저장은 원자적으로(임시 파일 → 이름 변경). 캐시 디렉토리는 `data/interim/embeddings/`(비커밋)이며 벡터 파일만 담는다. 캐시 히트·미스 수를 반환하는 `stats`를 제공한다.
 5. **배치 진행 출력(FP-034)**: `CachedEmbedder.embed`는 N건마다 진행 줄을 `flush=True`로 출력한다(텍스트 내용은 출력하지 않는다).
 6. **쿼리 접두어 없음**: BGE-M3는 지시문 접두어가 필요 없다. `kind`는 캐시 키·로깅 용도로만 구분한다.
-7. 테스트는 `FakeEmbedder`와 가짜 inner로: 캐시 히트가 inner를 다시 부르지 않음, 키에 모델·리비전·kind가 반영됨(다르면 미스), 원자적 쓰기, `Bge3Embedder` 모듈 import가 `sentence_transformers` 없이 성공하고 `prepare()`는 명확한 오류를 냄(monkeypatch로 ImportError 모사), 정규화 벡터 길이 1.
+8. **max_seq_length 명시 설정(잘림 방지, 사용자 확정)**: `sentence-transformers`의 기본값(모델 설정에 의존)에 맡기지 않는다. 다운로드된 로컬 스냅샷의 `sentence_bert_config.json`과 `config.json`(`max_position_embeddings`)에서 모델이 지원하는 최대 길이를 읽어(예상 8192, 확인된 값: `sentence_bert_config.json`의 `max_seq_length: 8192`, `max_position_embeddings: 8194`) `model.max_seq_length`에 **명시적으로 설정**하고 `settings["max_seq_length"]`에 기록한다. 생성자 인자 `max_seq_length`가 주어지면 그 값을 쓰되 모델 지원 최대값을 넘으면 오류다. 설정 파일에서 값을 읽지 못하면 조용히 기본값으로 떨어지지 말고 오류로 멈춘다. 이 값은 캐시 키와 `embedder_settings_hash`에 포함된다(step 7이 `m5_index.json`에 기록).
+9. **`count_tokens`**: 같은 토크나이저로 텍스트별 토큰 수를 잰다(잘림 판정은 `토큰 수 > max_seq_length`). 모델 가중치 로딩 없이 토크나이저만으로 동작하게 하되(가능하면), 그렇지 않으면 `prepare()` 이후에만 호출 가능하다고 docstring에 적는다. `FakeEmbedder.count_tokens`는 결정론적 근사(예: 문자 수 // 2 + 2)로 두어 테스트가 한도 초과 경로를 만들 수 있게 한다(생성자에서 `max_seq_length` 인자 지원).
+10. **긴 청크 배치(메모리 초과 방지)**: `Bge3Embedder.embed`는 입력을 **토큰 길이순으로 정렬**해(내림차순) 배치로 묶고, 배치당 (최대 토큰 수 × 배치 크기)가 `max_batch_tokens`를 넘지 않게 배치 크기를 줄인다. 한 청크가 혼자 한도를 넘어도 단독 배치로 처리한다. **결과는 반드시 입력 순서대로 반환**한다(정렬은 내부 구현). `CachedEmbedder`는 캐시 미스만 모아 inner에 넘긴다.
+11. 테스트는 `FakeEmbedder`와 가짜 inner로: 캐시 히트가 inner를 다시 부르지 않음, 키에 모델·리비전·kind가 반영됨(다르면 미스), 원자적 쓰기, `Bge3Embedder` 모듈 import가 `sentence_transformers` 없이 성공하고 `prepare()`는 명확한 오류를 냄(monkeypatch로 ImportError 모사), 정규화 벡터 길이 1, 길이순 배치가 입력 순서를 보존함(길이가 뒤섞인 입력), `max_batch_tokens` 초과 시 배치가 나뉨, `max_seq_length`를 스냅샷 설정 파일(테스트용 임시 디렉토리의 가짜 `sentence_bert_config.json`)에서 읽고 파일이 없으면 오류, 모델 최대값 초과 인자는 오류, `count_tokens`가 한도 초과 판정에 쓰일 수 있음.
 
 ## Acceptance Criteria
 
@@ -82,4 +87,5 @@ make verify
 - `pyproject.toml`·`uv.lock`을 수정하거나 `sentence-transformers`·`torch`를 설치하지 마라. 이유: 새 의존성·대용량 설치는 사용자 승인 후 사용자가 설치한다(FP-040). 어댑터는 지연 import로 작성한다.
 - 모델을 다운로드하지 마라(`local_files_only=True` 유지). 이유: 다운로드는 승인 대상이다.
 - 모델 로딩 시간을 청크별 임베딩 시간에 섞지 마라. 이유: 1회성 초기화가 처리 시간을 부풀린 실패다(FP-036).
+- `max_seq_length`를 1024 등 임의 값으로 낮추거나 `sentence-transformers` 기본값에 맡기지 마라. 이유: 값이 조용히 청크를 잘라 정답 청크의 임베딩을 훼손한다(사용자 확정: 모델 지원 최대값을 명시 설정하고 기록). 큰 청크의 메모리는 길이순 배치로 해결한다.
 - 캐시 키에서 모델 리비전·정규화 여부·max_seq_length를 빼지 마라. 이유: 멱등성 키가 출력을 결정하는 값과 다르면 서로 다른 벡터가 같은 캐시를 쓴다(FP-033).
