@@ -8,6 +8,9 @@ import pytest
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SOURCE_ROOT = PROJECT_ROOT / "src"
 RETRIEVAL_PACKAGE = SOURCE_ROOT / "kodocs" / "retrieval"
+TOOLS_PACKAGE = SOURCE_ROOT / "kodocs" / "tools"
+AGENT_PACKAGE = SOURCE_ROOT / "kodocs" / "agent"
+MCP_SERVER_PACKAGE = SOURCE_ROOT / "kodocs" / "mcp_server"
 CHUNKING_PACKAGE = SOURCE_ROOT / "kodocs" / "chunking"
 EVAL_PACKAGE = SOURCE_ROOT / "kodocs" / "eval"
 
@@ -17,7 +20,20 @@ RETRIEVAL_FORBIDDEN_IMPORTS = (
     "kodocs.agent",
     "kodocs.mcp_server",
     "kodocs.ui",
+    "kodocs.tools",
 )
+TOOLS_FORBIDDEN_IMPORTS = (
+    "kodocs.agent",
+    "kodocs.mcp_server",
+    "kodocs.ui",
+    "kodocs.llm",
+    "langchain*",
+    "langgraph*",
+    "mcp",
+    "openai",
+    "anthropic",
+)
+RETRIEVAL_CONSUMER_FORBIDDEN_IMPORTS = ("kodocs.retrieval",)
 M5_LLM_FORBIDDEN_IMPORTS = ("anthropic", "openai", "google", "kodocs.llm")
 
 
@@ -116,9 +132,13 @@ def _find_imports_matching(
     ]
 
 
-def find_forbidden_imports(path: Path, package_root: Path) -> list[str]:
-    """Find imports forbidden by the retrieval package's layer boundary."""
-    return _find_imports_matching(path, package_root, RETRIEVAL_FORBIDDEN_IMPORTS)
+def find_forbidden_imports(
+    path: Path,
+    package_root: Path,
+    forbidden_patterns: tuple[str, ...] = RETRIEVAL_FORBIDDEN_IMPORTS,
+) -> list[str]:
+    """Find imports forbidden by one package layer boundary."""
+    return _find_imports_matching(path, package_root, forbidden_patterns)
 
 
 def _write_retrieval_fixture(tmp_path: Path, source: str) -> tuple[Path, Path]:
@@ -140,7 +160,7 @@ def test_m5_guarded_package_directories_exist() -> None:
     """Ensure every package covered by the M5 no-LLM guard exists."""
     missing = [
         str(path.relative_to(PROJECT_ROOT))
-        for path in (RETRIEVAL_PACKAGE, CHUNKING_PACKAGE, EVAL_PACKAGE)
+        for path in (RETRIEVAL_PACKAGE, TOOLS_PACKAGE, CHUNKING_PACKAGE, EVAL_PACKAGE)
         if not path.is_dir()
     ]
     assert not missing, "M5 guarded packages not found:\n" + "\n".join(missing)
@@ -192,6 +212,7 @@ def test_retrieval_does_not_import_langchain_or_langgraph() -> None:
             "kodocs.ui.views",
             id="function-local",
         ),
+        pytest.param("import kodocs.tools\n", "kodocs.tools", id="tools"),
     ],
 )
 def test_find_forbidden_imports_detects_each_violation_form(
@@ -220,6 +241,100 @@ def test_find_forbidden_imports_accepts_allowed_file(tmp_path: Path) -> None:
     )
 
     assert find_forbidden_imports(path, package_root) == []
+
+
+def test_tools_package_exists() -> None:
+    """Ensure the tools boundary cannot silently scan an absent package."""
+    assert TOOLS_PACKAGE.is_dir(), f"tools package not found: {TOOLS_PACKAGE}"
+
+
+def test_tools_package_respects_layer_boundary() -> None:
+    """Keep orchestration, MCP, UI, LLM, and framework imports out of tools."""
+    violations = [
+        f"{path.relative_to(PROJECT_ROOT)}: {violation}"
+        for path in sorted(TOOLS_PACKAGE.rglob("*.py"))
+        for violation in find_forbidden_imports(
+            path,
+            SOURCE_ROOT,
+            TOOLS_FORBIDDEN_IMPORTS,
+        )
+    ]
+
+    assert not violations, "Forbidden tools imports found:\n" + "\n".join(violations)
+
+
+@pytest.mark.parametrize(
+    ("source", "expected_module"),
+    [
+        pytest.param("import kodocs.agent\n", "kodocs.agent", id="agent"),
+        pytest.param(
+            "import kodocs.mcp_server\n", "kodocs.mcp_server", id="mcp-server"
+        ),
+        pytest.param("import kodocs.ui\n", "kodocs.ui", id="ui"),
+        pytest.param("import kodocs.llm\n", "kodocs.llm", id="llm"),
+        pytest.param("import langchain_openai\n", "langchain_openai", id="langchain"),
+        pytest.param("import langgraph.graph\n", "langgraph.graph", id="langgraph"),
+        pytest.param("import mcp\n", "mcp", id="mcp"),
+        pytest.param("import mcp.server\n", "mcp.server", id="mcp-child"),
+        pytest.param("import openai\n", "openai", id="openai"),
+        pytest.param("import anthropic\n", "anthropic", id="anthropic"),
+    ],
+)
+def test_tools_guard_detects_forbidden_imports(
+    tmp_path: Path,
+    source: str,
+    expected_module: str,
+) -> None:
+    """Prove every prohibited tools dependency is detected by the AST guard."""
+    path, package_root = _write_retrieval_fixture(tmp_path, source)
+
+    violations = find_forbidden_imports(
+        path,
+        package_root,
+        TOOLS_FORBIDDEN_IMPORTS,
+    )
+
+    assert any(item.endswith(f": {expected_module}") for item in violations)
+
+
+@pytest.mark.parametrize("package", [AGENT_PACKAGE, MCP_SERVER_PACKAGE])
+def test_retrieval_consumers_do_not_import_retrieval(package: Path) -> None:
+    """Require agent and MCP server code to call retrieval only through tools."""
+    violations = [
+        f"{path.relative_to(PROJECT_ROOT)}: {violation}"
+        for path in sorted(package.rglob("*.py"))
+        for violation in find_forbidden_imports(
+            path,
+            SOURCE_ROOT,
+            RETRIEVAL_CONSUMER_FORBIDDEN_IMPORTS,
+        )
+    ]
+
+    assert not violations, f"Direct retrieval imports found in {package.name}:\n" + (
+        "\n".join(violations)
+    )
+
+
+@pytest.mark.parametrize("package_name", ["agent", "mcp_server"])
+def test_retrieval_consumer_guard_detects_violation(
+    tmp_path: Path,
+    package_name: str,
+) -> None:
+    """Prove both retrieval consumer guards reject direct imports."""
+    package_root = tmp_path / "src"
+    path = package_root / "kodocs" / package_name / "probe.py"
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        "from kodocs.retrieval import authorized_search\n", encoding="utf-8"
+    )
+
+    violations = find_forbidden_imports(
+        path,
+        package_root,
+        RETRIEVAL_CONSUMER_FORBIDDEN_IMPORTS,
+    )
+
+    assert any(item.endswith(": kodocs.retrieval") for item in violations)
 
 
 @pytest.mark.parametrize(
@@ -253,6 +368,7 @@ def test_m5_modules_do_not_import_llm_clients() -> None:
     target_files = sorted(
         {
             *RETRIEVAL_PACKAGE.rglob("*.py"),
+            *TOOLS_PACKAGE.rglob("*.py"),
             *CHUNKING_PACKAGE.rglob("*.py"),
             *EVAL_PACKAGE.glob("m5_*.py"),
         }
