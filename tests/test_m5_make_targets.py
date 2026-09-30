@@ -63,6 +63,14 @@ def test_embed_models_is_declared_but_not_installed_by_make() -> None:
 
     assert "uv run --group embed python -c" in recipe
     assert "snapshot_download" in recipe
-    assert "BAAI/bge-m3" in recipe
+    # 리비전·패턴은 embedding.py의 상수를 그대로 쓴다(조회와 다운로드가 어긋나지 않게)
+    for constant in (
+        "BGE_M3_MODEL_ID",
+        "BGE_M3_REVISION",
+        "BGE_M3_ALLOW_PATTERNS",
+        "BGE_M3_IGNORE_PATTERNS",
+    ):
+        assert constant in recipe
+    assert "revision=BGE_M3_REVISION" in recipe
     assert "uv add" not in recipe
     assert "embed 그룹" in MAKEFILE

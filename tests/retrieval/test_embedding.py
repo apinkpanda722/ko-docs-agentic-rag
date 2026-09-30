@@ -346,3 +346,63 @@ def test_count_tokens_exposes_over_limit_text_without_truncating(
     assert counts[1] > embedder.settings["max_seq_length"]
     with pytest.raises(ValueError, match="max_seq_length"):
         embedder.embed(["가나다라"], kind="query")
+
+
+def _fake_hub(monkeypatch: pytest.MonkeyPatch, fake) -> None:
+    import sys
+    import types
+
+    monkeypatch.setitem(
+        sys.modules, "huggingface_hub", types.SimpleNamespace(snapshot_download=fake)
+    )
+
+
+def test_resolve_local_snapshot_pins_revision_and_patterns_offline(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from kodocs.retrieval import embedding
+
+    calls: list[dict] = []
+
+    def fake_snapshot_download(**kwargs):
+        calls.append(kwargs)
+        return str(tmp_path)
+
+    _fake_hub(monkeypatch, fake_snapshot_download)
+
+    assert embedding._resolve_local_snapshot("BAAI/bge-m3") == tmp_path.resolve()
+    assert calls == [
+        {
+            "repo_id": "BAAI/bge-m3",
+            "revision": embedding.BGE_M3_REVISION,
+            "allow_patterns": list(embedding.BGE_M3_ALLOW_PATTERNS),
+            "ignore_patterns": list(embedding.BGE_M3_IGNORE_PATTERNS),
+            "local_files_only": True,
+        }
+    ]
+    assert embedding.BGE_M3_REVISION == "5617a9f61b028005a4858fdac845db406aefb181"
+    assert list(embedding.BGE_M3_ALLOW_PATTERNS) == [
+        "*.json",
+        "*.model",
+        "*.pt",
+        "pytorch_model.bin",
+        "1_Pooling/*",
+    ]
+    # `*.json`·`*.model`은 onnx/ 하위 파일에도 맞으므로 제외 패턴이 함께 필요하다
+    assert list(embedding.BGE_M3_IGNORE_PATTERNS) == ["onnx/*"]
+
+
+def test_resolve_local_snapshot_failure_keeps_original_cause_in_message(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from kodocs.retrieval import embedding
+
+    def failing(**_kwargs):
+        raise OSError("IncompleteSnapshotError: 18 files missing")
+
+    _fake_hub(monkeypatch, failing)
+
+    with pytest.raises(RuntimeError) as excinfo:
+        embedding._resolve_local_snapshot("BAAI/bge-m3")
+    assert "IncompleteSnapshotError: 18 files missing" in str(excinfo.value)
+    assert "로컬 BGE-M3 스냅샷을 찾을 수 없습니다" in str(excinfo.value)

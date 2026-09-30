@@ -20,7 +20,21 @@ from typing import Literal, Protocol
 
 EmbeddingKind = Literal["passage", "query"]
 
-_BGE_MODEL_ID = "BAAI/bge-m3"
+BGE_M3_MODEL_ID = "BAAI/bge-m3"
+# 조회(_resolve_local_snapshot)와 다운로드(make embed-models)가 같은 값을 쓴다.
+# 패턴 없이 오프라인 조회하면 huggingface_hub가 저장소 전체 파일을 요구해
+# 부분 다운로드 스냅샷(onnx·README 제외)을 불완전으로 판정한다.
+BGE_M3_REVISION = "5617a9f61b028005a4858fdac845db406aefb181"
+BGE_M3_ALLOW_PATTERNS: tuple[str, ...] = (
+    "*.json",
+    "*.model",
+    "*.pt",
+    "pytorch_model.bin",
+    "1_Pooling/*",
+)
+# `*.json`·`*.model`은 onnx/ 하위 파일에도 맞으므로(fnmatch의 `*`는 `/`도 포함) 제외한다.
+BGE_M3_IGNORE_PATTERNS: tuple[str, ...] = ("onnx/*",)
+_BGE_MODEL_ID = BGE_M3_MODEL_ID
 _BGE_DIM = 1024
 _CACHE_PROGRESS_EVERY = 100
 _REVISION_RE = re.compile(r"[0-9a-f]{40,64}")
@@ -661,11 +675,15 @@ def _resolve_local_snapshot(model_path_or_id: str) -> Path:
 
         resolved = snapshot_download(
             repo_id=model_path_or_id,
+            revision=BGE_M3_REVISION,
+            allow_patterns=list(BGE_M3_ALLOW_PATTERNS),
+            ignore_patterns=list(BGE_M3_IGNORE_PATTERNS),
             local_files_only=True,
         )
     except Exception as exc:
         raise RuntimeError(
-            "로컬 BGE-M3 스냅샷을 찾을 수 없습니다; 모델은 별도로 다운로드해야 합니다"
+            "로컬 BGE-M3 스냅샷을 찾을 수 없습니다; 모델은 별도로 다운로드해야 합니다 "
+            f"(원인: {type(exc).__name__}: {exc})"
         ) from exc
     snapshot = Path(resolved).resolve()
     if not snapshot.is_dir():
