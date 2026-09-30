@@ -89,7 +89,16 @@
     {
       "step": 6,
       "name": "answer-core",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T23:09:30+0900",
+      "summary": "`src/kodocs/agent/`에 공통 타입·Guard·EvidenceLog/round_robin_context·인용 검증/finalize_answer·프롬프트·비밀값 안전 JSONL TraceRecorder를 구현했으며 `make verify` 1,333개와 `tests/agent` 25개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T23:36:38+0900",
+      "usage": {
+        "input_tokens": 1990060,
+        "cached_input_tokens": 1866752,
+        "output_tokens": 30469,
+        "attempts": 1
+      }
     },
     {
       "step": 7,
