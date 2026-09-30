@@ -201,7 +201,16 @@
     {
       "step": 14,
       "name": "test-run",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T14:49:53+0900",
+      "summary": "`src/kodocs/eval/m5_test.py`에 `run_test`·`execute_experiment`·`analyze_results` 기반 14조합 test 실행기와 append-only 재실행 잠금을 구현하고 `tests/eval/test_m5_test.py`로 검증했으며, `make verify`에서 1,180개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T15:28:50+0900",
+      "usage": {
+        "input_tokens": 2829470,
+        "cached_input_tokens": 2695424,
+        "output_tokens": 8203,
+        "attempts": 2
+      }
     },
     {
       "step": 15,
