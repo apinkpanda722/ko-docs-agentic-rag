@@ -61,7 +61,16 @@
     {
       "step": 4,
       "name": "tool-contract",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T20:16:58+0900",
+      "summary": "`src/kodocs/tools/`에 `run_tool`, `ToolDeps`, pydantic 도구 계약·축약·스냅샷 계층을 구현하고 v1 스냅샷 및 계층 가드를 추가했으며, `make verify` 1,272개 테스트와 AC 선택 테스트 71개가 통과했습니다.",
+      "completed_at": "2026-09-30T20:46:18+0900",
+      "usage": {
+        "input_tokens": 4186940,
+        "cached_input_tokens": 4016384,
+        "output_tokens": 32676,
+        "attempts": 1
+      }
     },
     {
       "step": 5,
