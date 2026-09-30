@@ -89,7 +89,16 @@
     {
       "step": 6,
       "name": "embedder",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T10:40:57+0900",
+      "summary": "`retrieval/embedding.py`에 `Embedder`, `FakeEmbedder`, `Bge3Embedder`, `CachedEmbedder`, `embedder_settings_hash`를 구현하고 테스트를 추가했으며 `make verify`에서 1,038개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T11:01:00+0900",
+      "usage": {
+        "input_tokens": 1380051,
+        "cached_input_tokens": 1247872,
+        "output_tokens": 23309,
+        "attempts": 1
+      }
     },
     {
       "step": 7,
