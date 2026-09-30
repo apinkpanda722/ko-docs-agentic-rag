@@ -1,4 +1,4 @@
-.PHONY: verify up down logs test-integration collect-law collect-alio match-versions convert-hwp parse-targets parse-pypdf docling-models parse-docling parse-upstage-dry parse-upstage parse-upstage-direct-dry parse-upstage-direct parse-score table-drafts table-golden table-score parse-report reg-index seed-names build-db plan-docs generate-dry generate-pilot generate-pilot-rerun generate synth-validate synth-metrics synth-report review-sample review-score query-specs queries-dry queries queries-batch-dry queries-batch query-validate lexical-report golden-real-candidates golden-real-check golden-split-preview golden-packets golden-promote m4-report
+.PHONY: verify up down logs test-integration collect-law collect-alio match-versions convert-hwp parse-targets parse-pypdf docling-models parse-docling parse-upstage-dry parse-upstage parse-upstage-direct-dry parse-upstage-direct parse-score table-drafts table-golden table-score parse-report reg-index seed-names build-db plan-docs generate-dry generate-pilot generate-pilot-rerun generate synth-validate synth-metrics synth-report review-sample review-score query-specs queries-dry queries queries-batch-dry queries-batch query-validate lexical-report golden-real-candidates golden-real-check golden-split-preview golden-packets golden-promote m4-report m5-annex-map m5-chunking m5-eval-inputs embed-models m5-index-dry m5-index m5-dev m5-freeze m5-test m5-report
 
 # 하네스의 단일 검증 진입점. Stop hook, scripts/execute.py, step AC가 모두 이 타깃을 호출한다.
 verify:
@@ -150,3 +150,37 @@ golden-promote:
 
 m4-report:
 	uv run python -m kodocs.eval.m4_report
+
+m5-annex-map:
+	uv run python -m kodocs.parsing.annex_mapping
+
+m5-chunking:
+	uv run python -m kodocs.chunking.corpus --check
+	uv run python -m kodocs.chunking.chunkers
+
+m5-eval-inputs:
+	uv run python -m kodocs.eval.m5_inputs
+
+# 사용자가 승인 후 pyproject.toml에 embed 그룹을 추가해야 한다. 이 타깃은 약 2.3GB 모델만 내려받는다.
+embed-models:
+	uv run --group embed python -c "from pathlib import Path; from huggingface_hub import snapshot_download; p = Path(snapshot_download('BAAI/bge-m3', allow_patterns=['*.json', '*.txt', '*.model', '*.safetensors', '*.bin', '*.pt', '*.py', 'modules.json', '1_Pooling/**', '2_Dense/**'])); print(f'path={p}'); print(f'revision={p.name}')"
+
+m5-index-dry:
+	uv run --group embed python -m kodocs.retrieval.index_build --all --dry-run
+
+m5-index:
+	uv run --group embed python -m kodocs.retrieval.index_build --all
+
+m5-dev:
+	uv run --group embed python -m kodocs.eval.m5_dev
+
+m5-freeze:
+	uv run python -m kodocs.eval.m5_dev --freeze
+
+M5_RERUN_FLAGS = $(if $(RERUN_REASON),--rerun-reason "$(RERUN_REASON)")
+
+m5-test:
+	uv run --group embed python -m kodocs.eval.m5_test $(M5_RERUN_FLAGS)
+
+m5-report:
+	uv run python -m kodocs.eval.m5_report

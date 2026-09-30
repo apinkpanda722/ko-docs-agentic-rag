@@ -90,5 +90,15 @@ make golden-split-preview    # dev/test 배정 미리보기(그룹·할당 차�
 make golden-packets  # 골드 50·실버 표본 28 검수 패킷(Claude 판정 선채움, 점검용 더미 3은 검수 대상이 아닌 실버에서). 패킷·CSV는 불투명한 검수 번호 r-NNN만 쓰고 대응표는 data/interim/golden/review_keys.json → data/interim/golden/ (로컬 전용, 네트워크 없음)
 make golden-promote  # data/golden/m4_review/*-review.csv 집계 → 확정 골드·실버 data/golden/queries/ + 결과 문서 — 사용자 실행
 make m4-report       # M4 결과 문서 docs/results/2026-09-28-m4-golden-set.md(고정) 갱신 (네트워크 없음)
+make m5-annex-map    # 업스테이지 표 → 별표 id 매핑(로컬, 네트워크 없음) → data/manifest/m5_annex_mapping.json
+make m5-chunking     # 코퍼스 구조 청킹 통계·고정 청크 크기 확정 → data/manifest/m5_index.json (네트워크 없음)
+make m5-eval-inputs  # 검색 지표 대상·권한 전제 검사·구간 매핑·answer_repeated → data/manifest/m5_eval_inputs.json (네트워크 없음)
+make embed-models    # BGE-M3 모델 다운로드(약 2.3GB) — 네트워크, 사용자 실행, embed 그룹 설치 후
+make m5-index-dry    # 색인 청크 수·예상 임베딩 수만 출력 — 네트워크·OpenSearch 없음
+make m5-index        # 인덱스 4개 빌드(BGE-M3 임베딩·OpenSearch 적재) — make up 필요, 시간이 오래 걸림, 사용자 실행
+make m5-dev          # dev 튜닝 그리드 → data/manifest/m5_dev.json — 사용자 실행
+make m5-freeze       # 선택 설정을 data/manifest/m5_config.json에 고정(덮어쓰기 거부) — 사용자 실행
+make m5-test         # test 1회 실행(재실행은 RERUN_REASON="사유" make m5-test) — 사용자 실행
+make m5-report       # M5 결과 문서 docs/results/2026-09-30-m5-retrieval.md(고정) 갱신 (네트워크 없음)
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)
