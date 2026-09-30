@@ -5,10 +5,16 @@ from __future__ import annotations
 import os
 import uuid
 from collections.abc import Iterator
+from pathlib import Path
+from types import SimpleNamespace
 
 import httpx
 import pytest
 
+from kodocs.chunking.corpus import Access, CorpusDoc, Section
+from kodocs.retrieval import index_build
+from kodocs.retrieval.embedding import FakeEmbedder
+from kodocs.retrieval.index_build import IndexSpec, build_index
 from kodocs.retrieval.index_schema import (
     RRF_PIPELINE_NAME,
     ensure_pipelines,
@@ -146,3 +152,70 @@ def test_hybrid_query_responds_through_registered_pipeline(
 
     assert hits
     assert hits[0]["_id"] == "doc-pay-1234"
+
+
+@pytest.mark.integration
+def test_index_builder_indexes_small_fixture_and_count_matches(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    document = CorpusDoc(
+        doc_id="syn-integration",
+        source="synthetic",
+        doc_type="runbook",
+        title="통합 테스트",
+        text="PAY-1234 복구 절차",
+        sections=(Section("heading_section", None, ("복구",), 0, 14),),
+        access=Access("public", (), 0),
+        team="platform",
+        date="2026-09-30",
+        rule_id=None,
+        is_current=True,
+        superseded_by=None,
+        identifiers={
+            "ticket": ("PAY-1234",),
+            "approval": (),
+            "incident": (),
+            "service": (),
+            "regulation": (),
+        },
+    )
+    monkeypatch.setattr(
+        index_build,
+        "load_corpus",
+        lambda condition, *, root: (
+            [document],
+            SimpleNamespace(composite_annex_fallback_count=0),
+        ),
+    )
+    manifest = tmp_path / "data/manifest/m5_index.json"
+    manifest.parent.mkdir(parents=True)
+    manifest.write_text(
+        '{"chunking":{"fixed_size":200,"fixed_overlap":40}}',
+        encoding="utf-8",
+    )
+    http_client = httpx.Client(timeout=10.0)
+    client = OpenSearchClient(OPENSEARCH_URL, client=http_client)
+    index = "kodocs-m5-composite-structural"
+    try:
+        report = build_index(
+            IndexSpec("composite", "structural"),
+            client=client,
+            embedder=FakeEmbedder(dim=8),
+            root=tmp_path,
+            answer_ranges_by_set={"gold": {}, "silver": {}},
+        )
+        assert report.success is True
+        counted = client.request("GET", f"/{index}/_count")
+        assert counted["count"] == report.chunk_count == 1
+    except httpx.TransportError as exc:
+        pytest.fail(
+            f"OpenSearch is unavailable at {OPENSEARCH_URL}. "
+            f"Run `make up` and wait for startup before retrying: {exc}"
+        )
+    finally:
+        try:
+            client.request("DELETE", f"/{index}")
+        except httpx.TransportError:
+            pass
+        finally:
+            http_client.close()

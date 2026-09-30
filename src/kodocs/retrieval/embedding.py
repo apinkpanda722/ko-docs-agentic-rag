@@ -49,6 +49,14 @@ class Embedder(Protocol):
     ) -> list[list[float]]:
         """Embed texts without changing their input order."""
 
+    def embed_allowing_truncation(
+        self,
+        texts: Sequence[str],
+        *,
+        kind: EmbeddingKind,
+    ) -> list[list[float]]:
+        """Embed texts after a caller has explicitly audited token overflows."""
+
 
 class FakeEmbedder:
     """Dependency-free deterministic character n-gram embedder for tests."""
@@ -104,6 +112,23 @@ class FakeEmbedder:
             self.count_tokens(values),
             max_seq_length=int(self.settings["max_seq_length"]),
         )
+        return self._embed_values(values)
+
+    def embed_allowing_truncation(
+        self,
+        texts: Sequence[str],
+        *,
+        kind: EmbeddingKind,
+    ) -> list[list[float]]:
+        """Truncate deterministically after the index builder records overflow."""
+        _validate_kind(kind)
+        values = _validated_texts(texts)
+        max_seq_length = int(self.settings["max_seq_length"])
+        max_characters = max(0, 2 * (max_seq_length - 2) + 1)
+        return self._embed_values([text[:max_characters] for text in values])
+
+    def _embed_values(self, values: Sequence[str]) -> list[list[float]]:
+        """Hash already-validated values without applying a token-limit policy."""
         vectors: list[list[float]] = []
         for text in values:
             vector = [0.0] * self.dim
@@ -161,6 +186,7 @@ class Bge3Embedder:
         self._max_seq_length: int | None = None
         self._model_max_position_embeddings: int | None = None
         self._init_s: float | None = None
+        self._tokenizer_init_s: float | None = None
 
     @property
     def revision(self) -> str:
@@ -247,6 +273,49 @@ class Bge3Embedder:
         self._init_s = time.perf_counter() - started
         return self._init_s
 
+    def prepare_tokenizer(self) -> float:
+        """Load only the cached tokenizer for an OpenSearch-free dry run."""
+        if self._model is not None and self._init_s is not None:
+            return self._init_s
+        if self._tokenizer is not None and self._tokenizer_init_s is not None:
+            return self._tokenizer_init_s
+
+        started = time.perf_counter()
+        try:
+            from transformers import AutoTokenizer
+        except ImportError as exc:
+            raise RuntimeError(_MISSING_EMBED_GROUP) from exc
+
+        snapshot = _resolve_local_snapshot(self.model_id)
+        supported_max, position_max = _read_model_max_lengths(snapshot)
+        selected_max = self._requested_max_seq_length or supported_max
+        if selected_max > supported_max:
+            raise ValueError(
+                "max_seq_length가 모델 지원 최대값 "
+                f"{supported_max}을 초과합니다: {selected_max}"
+            )
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(
+                str(snapshot),
+                local_files_only=True,
+            )
+        except Exception as exc:
+            raise RuntimeError(
+                "로컬 BGE-M3 토크나이저를 불러오지 못했습니다; "
+                "모델은 별도로 다운로드해야 합니다: "
+                f"{type(exc).__name__}: {_first_line(str(exc))}"
+            ) from exc
+        if not callable(getattr(tokenizer, "encode", None)):
+            raise TypeError("BGE-M3 tokenizer does not provide encode()")
+
+        self._tokenizer = tokenizer
+        self._revision = _read_snapshot_revision(snapshot)
+        self._device = "tokenizer-only"
+        self._max_seq_length = selected_max
+        self._model_max_position_embeddings = position_max
+        self._tokenizer_init_s = time.perf_counter() - started
+        return self._tokenizer_init_s
+
     def count_tokens(self, texts: Sequence[str]) -> list[int]:
         """Count untruncated tokens after :meth:`prepare` has loaded the tokenizer.
 
@@ -276,13 +345,33 @@ class Bge3Embedder:
         """Embed length-sorted token-budgeted batches and restore input order."""
         _validate_kind(kind)
         values = _validated_texts(texts)
+        return self._embed_values(values, allow_truncation=False)
+
+    def embed_allowing_truncation(
+        self,
+        texts: Sequence[str],
+        *,
+        kind: EmbeddingKind,
+    ) -> list[list[float]]:
+        """Embed an already-audited overflow using the model's fixed truncation."""
+        _validate_kind(kind)
+        values = _validated_texts(texts)
+        return self._embed_values(values, allow_truncation=True)
+
+    def _embed_values(
+        self,
+        values: Sequence[str],
+        *,
+        allow_truncation: bool,
+    ) -> list[list[float]]:
         if not values:
             return []
         model = self._require_model()
         if self._max_seq_length is None:
             raise RuntimeError("Bge3Embedder.prepare() must run before embed()")
         token_counts = self.count_tokens(values)
-        _raise_for_over_limit(token_counts, max_seq_length=self._max_seq_length)
+        if not allow_truncation:
+            _raise_for_over_limit(token_counts, max_seq_length=self._max_seq_length)
 
         ordered = sorted(
             zip(range(len(values)), values, token_counts, strict=True),
@@ -383,6 +472,13 @@ class CachedEmbedder:
         """Delegate one-time initialization without adding it to embed timing."""
         return self._inner.prepare()
 
+    def prepare_tokenizer(self) -> float:
+        """Delegate tokenizer-only preparation when the wrapped adapter supports it."""
+        prepare = getattr(self._inner, "prepare_tokenizer", None)
+        if not callable(prepare):
+            return self._inner.prepare()
+        return float(prepare())
+
     def count_tokens(self, texts: Sequence[str]) -> list[int]:
         """Delegate token counting to the wrapped model tokenizer."""
         return self._inner.count_tokens(texts)
@@ -394,6 +490,24 @@ class CachedEmbedder:
         kind: EmbeddingKind,
     ) -> list[list[float]]:
         """Read hits, embed only unique misses, and atomically cache vectors."""
+        return self._embed_cached(texts, kind=kind, allow_truncation=False)
+
+    def embed_allowing_truncation(
+        self,
+        texts: Sequence[str],
+        *,
+        kind: EmbeddingKind,
+    ) -> list[list[float]]:
+        """Cache explicitly-audited truncated vectors under the same settings key."""
+        return self._embed_cached(texts, kind=kind, allow_truncation=True)
+
+    def _embed_cached(
+        self,
+        texts: Sequence[str],
+        *,
+        kind: EmbeddingKind,
+        allow_truncation: bool,
+    ) -> list[list[float]]:
         _validate_kind(kind)
         values = _validated_texts(texts)
         if not values:
@@ -404,7 +518,11 @@ class CachedEmbedder:
         progress = _Progress(total=len(values))
 
         for index, text in enumerate(values):
-            key = self._key(text, kind=kind)
+            key = self._key(
+                text,
+                kind=kind,
+                allow_truncation=allow_truncation,
+            )
             path = self._cache_dir / f"{key}.json"
             if path.is_file():
                 results[index] = self._read_vector(path)
@@ -420,9 +538,11 @@ class CachedEmbedder:
         misses = list(missing.items())
         for start in range(0, len(misses), _CACHE_PROGRESS_EVERY):
             group = misses[start : start + _CACHE_PROGRESS_EVERY]
-            vectors = self._inner.embed(
-                [entry[1][0] for entry in group],
-                kind=kind,
+            group_texts = [entry[1][0] for entry in group]
+            vectors = (
+                self._inner.embed_allowing_truncation(group_texts, kind=kind)
+                if allow_truncation
+                else self._inner.embed(group_texts, kind=kind)
             )
             if len(vectors) != len(group):
                 raise RuntimeError("inner embedder returned an unexpected vector count")
@@ -438,7 +558,13 @@ class CachedEmbedder:
             raise RuntimeError("cache did not resolve every requested vector")
         return [vector for vector in results if vector is not None]
 
-    def _key(self, text: str, *, kind: EmbeddingKind) -> str:
+    def _key(
+        self,
+        text: str,
+        *,
+        kind: EmbeddingKind,
+        allow_truncation: bool,
+    ) -> str:
         try:
             max_seq_length = self.settings["max_seq_length"]
             normalize = self.settings["normalize"]
@@ -446,15 +572,16 @@ class CachedEmbedder:
             raise ValueError(
                 "embedder settings require max_seq_length and normalize"
             ) from exc
+        parts = (
+            self.model_id,
+            self.revision,
+            str(max_seq_length),
+            json.dumps(normalize, ensure_ascii=False, sort_keys=True),
+            kind,
+            text,
+        )
         material = " | ".join(
-            (
-                self.model_id,
-                self.revision,
-                str(max_seq_length),
-                json.dumps(normalize, ensure_ascii=False, sort_keys=True),
-                kind,
-                text,
-            )
+            (*parts, "audited-truncation") if allow_truncation else parts
         )
         return hashlib.sha256(material.encode()).hexdigest()
 
