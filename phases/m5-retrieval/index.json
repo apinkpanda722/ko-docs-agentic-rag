@@ -103,7 +103,16 @@
     {
       "step": 7,
       "name": "index-build",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T11:01:00+0900",
+      "summary": "`retrieval/index_build.py`의 `IndexSpec`·`m5_index_specs`·`build_index`·dry-run CLI와 토크나이저 전용/명시적 잘림 임베딩 경로, 단위·OpenSearch 통합 테스트를 구현했으며 `make verify`에서 1,050개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T11:18:09+0900",
+      "usage": {
+        "input_tokens": 4543497,
+        "cached_input_tokens": 4374656,
+        "output_tokens": 44093,
+        "attempts": 1
+      }
     },
     {
       "step": 8,
