@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from threading import Lock
 
 from kodocs.tools import ToolResult
 
@@ -34,6 +35,7 @@ class EvidenceLog:
 
     def __init__(self) -> None:
         self._calls: list[EvidenceCall] = []
+        self._lock = Lock()
 
     @classmethod
     def from_calls(cls, calls: Sequence[EvidenceCall]) -> EvidenceLog:
@@ -44,7 +46,8 @@ class EvidenceLog:
 
     @property
     def calls(self) -> tuple[EvidenceCall, ...]:
-        return tuple(self._calls)
+        with self._lock:
+            return tuple(self._calls)
 
     def record(
         self,
@@ -53,20 +56,23 @@ class EvidenceLog:
         result: ToolResult,
     ) -> str:
         """Record one call and return its stable local ID (``c1``, ``c2``...)."""
-        call_id = f"c{len(self._calls) + 1}"
-        items = (
-            () if result.is_error else _evidence_items(name, result.payload, call_id)
-        )
-        self._calls.append(
-            EvidenceCall(
-                call_id=call_id,
-                name=name,
-                args=dict(args),
-                refs=tuple(dict(ref) for ref in result.refs),
-                items=items,
-                is_error=result.is_error,
+        with self._lock:
+            call_id = f"c{len(self._calls) + 1}"
+            items = (
+                ()
+                if result.is_error
+                else _evidence_items(name, result.payload, call_id)
             )
-        )
+            self._calls.append(
+                EvidenceCall(
+                    call_id=call_id,
+                    name=name,
+                    args=dict(args),
+                    refs=tuple(dict(ref) for ref in result.refs),
+                    items=items,
+                    is_error=result.is_error,
+                )
+            )
         return call_id
 
 

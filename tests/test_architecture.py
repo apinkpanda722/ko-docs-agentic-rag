@@ -42,7 +42,7 @@ AGENT_FORBIDDEN_IMPORTS = (
     "langchain*",
     "langgraph*",
 )
-AGENT_GRAPH_FILES = frozenset({"simple_rag.py", "tools.py"})
+AGENT_GRAPH_FILES = frozenset({"agentic_rag.py", "simple_rag.py", "tools.py"})
 AGENT_GRAPH_FORBIDDEN_IMPORTS = (
     "kodocs.retrieval",
     "openai",

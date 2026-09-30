@@ -1,5 +1,7 @@
 """Coordinate RAG workflows and retrieval tool wrappers."""
 
+from kodocs.agent.agentic_rag import AgenticState, build_agentic_graph
+from kodocs.agent.answer import answer
 from kodocs.agent.evidence import EvidenceLog, round_robin_context
 from kodocs.agent.finalize import NO_ANSWER_TEXT, finalize_answer
 from kodocs.agent.guardrails import Guard, GuardrailConfig
@@ -30,6 +32,7 @@ __all__ = [
     "NO_ANSWER_TEXT",
     "AgentContext",
     "AgentRuntime",
+    "AgenticState",
     "AnswerResult",
     "ChatLike",
     "Citation",
@@ -40,6 +43,8 @@ __all__ = [
     "ToolCallGuardrailError",
     "TraceRecorder",
     "TraceSession",
+    "answer",
+    "build_agentic_graph",
     "build_final_messages",
     "build_langgraph_tools",
     "execute_tool_call",

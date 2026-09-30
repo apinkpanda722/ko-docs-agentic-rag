@@ -5,6 +5,7 @@ from __future__ import annotations
 import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
+from threading import Lock
 
 from kodocs.agent.types import RefuseReason, canonical_hash
 
@@ -57,6 +58,8 @@ class Guard:
         self.deadline = clock() + duration if deadline is None else deadline
         self.steps_used = 0
         self.tokens_used = 0
+        self._registered_tool_calls = 0
+        self._tool_call_lock = Lock()
 
     def check_before_model_call(self) -> RefuseReason | None:
         """Return a refusal reason when another model request must not start."""
@@ -70,10 +73,20 @@ class Guard:
         """Reserve parallel or sequential calls atomically before execution."""
         if isinstance(count, bool) or not isinstance(count, int) or count < 0:
             raise ValueError("tool call count must be a non-negative integer")
-        if self.steps_used + count > self.config.max_steps:
-            return "guardrail_max_steps"
-        self.steps_used += count
+        with self._tool_call_lock:
+            if self.steps_used + count > self.config.max_steps:
+                return "guardrail_max_steps"
+            self.steps_used += count
+            self._registered_tool_calls += count
         return None
+
+    def consume_registered_tool_call(self) -> bool:
+        """Claim one call already reserved by an atomic routing decision."""
+        with self._tool_call_lock:
+            if self._registered_tool_calls == 0:
+                return False
+            self._registered_tool_calls -= 1
+            return True
 
     def add_usage(self, tokens: int) -> None:
         """Accumulate one completed model call's configured token total."""

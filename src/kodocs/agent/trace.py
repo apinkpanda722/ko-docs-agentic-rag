@@ -129,7 +129,16 @@ class TraceSession:
         }
         self._steps_used = 0
         self._tokens_used = 0
+        self._step_lock = threading.Lock()
         self._written_path: Path | None = None
+        self._record: dict[str, object] | None = None
+
+    @property
+    def record(self) -> dict[str, object]:
+        """Return the secret-safe payload written for this execution."""
+        if self._record is None:
+            raise RuntimeError("trace session has not been recorded")
+        return dict(self._record)
 
     def __enter__(self) -> Self:
         return self
@@ -171,21 +180,22 @@ class TraceSession:
     ) -> None:
         """Record model metadata without response content or request secrets."""
         token_record = _token_record(tokens)
-        self._tokens_used += sum(token_record.values())
-        self._steps.append(
-            {
-                "index": len(self._steps) + 1,
-                "kind": "model",
-                "name": name,
-                "args": {},
-                "latency_ms": float(latency_ms),
-                "tokens": token_record,
-                "cost_usd": float(cost_usd),
-                "error": _error_name(error),
-            }
-        )
-        if ttft_ms is not None and self._timings["ttft_ms"] is None:
-            self._timings["ttft_ms"] = float(ttft_ms)
+        with self._step_lock:
+            self._tokens_used += sum(token_record.values())
+            self._steps.append(
+                {
+                    "index": len(self._steps) + 1,
+                    "kind": "model",
+                    "name": name,
+                    "args": {},
+                    "latency_ms": float(latency_ms),
+                    "tokens": token_record,
+                    "cost_usd": float(cost_usd),
+                    "error": _error_name(error),
+                }
+            )
+            if ttft_ms is not None and self._timings["ttft_ms"] is None:
+                self._timings["ttft_ms"] = float(ttft_ms)
 
     def add_tool_step(
         self,
@@ -197,37 +207,38 @@ class TraceSession:
         error: BaseException | str | None = None,
     ) -> None:
         """Record refs and serialized size, never the retrieval result body."""
-        self._steps_used += 1
         tool_error = error
         if tool_error is None and result.is_error:
             tool_error = _tool_error_code(result.payload)
-        self._steps.append(
-            {
-                "index": len(self._steps) + 1,
-                "kind": "tool",
-                "name": name,
-                "args": _sanitize(args),
-                "latency_ms": float(latency_ms),
-                "tokens": _token_record(None),
-                "cost_usd": 0.0,
-                "error": _error_name(tool_error),
-                "refs": _sanitize(result.refs),
-                "result_chars": len(
-                    json.dumps(
-                        result.payload,
-                        ensure_ascii=False,
-                        sort_keys=True,
-                        separators=(",", ":"),
-                    )
-                ),
-            }
-        )
-        if result.timings:
-            for key in ("embed_ms", "search_ms"):
-                value = result.timings.get(key)
-                if value is not None:
-                    previous = self._timings[key]
-                    self._timings[key] = float(value) + (previous or 0.0)
+        with self._step_lock:
+            self._steps_used += 1
+            self._steps.append(
+                {
+                    "index": len(self._steps) + 1,
+                    "kind": "tool",
+                    "name": name,
+                    "args": _sanitize(args),
+                    "latency_ms": float(latency_ms),
+                    "tokens": _token_record(None),
+                    "cost_usd": 0.0,
+                    "error": _error_name(tool_error),
+                    "refs": _sanitize(result.refs),
+                    "result_chars": len(
+                        json.dumps(
+                            result.payload,
+                            ensure_ascii=False,
+                            sort_keys=True,
+                            separators=(",", ":"),
+                        )
+                    ),
+                }
+            )
+            if result.timings:
+                for key in ("embed_ms", "search_ms"):
+                    value = result.timings.get(key)
+                    if value is not None:
+                        previous = self._timings[key]
+                        self._timings[key] = float(value) + (previous or 0.0)
 
     def finish(
         self,
@@ -290,7 +301,11 @@ class TraceSession:
             "status": status,
             "error": _error_name(error),
         }
-        self._written_path = self._recorder._append(_sanitize(payload))
+        safe_payload = _sanitize(payload)
+        if not isinstance(safe_payload, dict):
+            raise TypeError("trace payload must be an object")
+        self._record = safe_payload
+        self._written_path = self._recorder._append(safe_payload)
         return self._written_path
 
 

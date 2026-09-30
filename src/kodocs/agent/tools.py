@@ -83,9 +83,12 @@ def execute_tool_call(
     args: dict,
 ) -> ToolResult:
     """Execute, capture, and trace one tool call through the shared dispatcher."""
-    refuse_reason = ctx.guard.register_tool_calls(1)
-    if refuse_reason is not None:
-        raise ToolCallGuardrailError(refuse_reason)
+    if not ctx.guard.consume_registered_tool_call():
+        refuse_reason = ctx.guard.register_tool_calls(1)
+        if refuse_reason is not None:
+            raise ToolCallGuardrailError(refuse_reason)
+        if not ctx.guard.consume_registered_tool_call():
+            raise RuntimeError("registered tool call could not be claimed")
 
     started = time.perf_counter()
     result = run_tool(name, args, ctx.user, deps)
