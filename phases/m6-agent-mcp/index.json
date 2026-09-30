@@ -117,7 +117,16 @@
     {
       "step": 8,
       "name": "agentic-rag",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-01T00:05:13+0900",
+      "summary": "`agentic_rag.py`의 도구 반복·원자적 5건 가드·공통 최종 호출과 `answer.py`의 런타임별 그래프 캐시·실행 트레이스를 구현했으며 `make verify` 1,358개 및 `tests/agent` 49개 테스트가 통과했습니다.",
+      "completed_at": "2026-10-01T00:35:29+0900",
+      "usage": {
+        "input_tokens": 4161727,
+        "cached_input_tokens": 4029952,
+        "output_tokens": 33401,
+        "attempts": 1
+      }
     },
     {
       "step": 9,
