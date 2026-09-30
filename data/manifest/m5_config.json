@@ -1,0 +1,36 @@
+{
+  "bm25_weight": 0.7,
+  "candidate_chunks": 50,
+  "code_commit": "1a5fe91700b2dd7ff1ce96a37e5b5df63a8a9f22",
+  "config_hash": "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d",
+  "embedder": {
+    "model_id": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "settings_hash": "a66f36873302"
+  },
+  "fixed_overlap": 40,
+  "fixed_size": 200,
+  "frozen_at": "2026-09-30T18:34:52+09:00",
+  "hybrid_method": "hybrid_weighted",
+  "indexes": {
+    "kodocs-m5-composite-fixed": {
+      "chunk_count": 9967,
+      "schema_hash": "78a7b49a8d531586754b74852f142772d5e43703bc47b545531a6c3683175816"
+    },
+    "kodocs-m5-composite-structural": {
+      "chunk_count": 4811,
+      "schema_hash": "78a7b49a8d531586754b74852f142772d5e43703bc47b545531a6c3683175816"
+    },
+    "kodocs-m5-pypdf-structural": {
+      "chunk_count": 4813,
+      "schema_hash": "78a7b49a8d531586754b74852f142772d5e43703bc47b545531a6c3683175816"
+    },
+    "kodocs-m5-upstage-structural": {
+      "chunk_count": 4768,
+      "schema_hash": "78a7b49a8d531586754b74852f142772d5e43703bc47b545531a6c3683175816"
+    }
+  },
+  "m5_dev_sha256": "c34c9679284446d6772c8a494020bcd29315dc08f037aca7734705fa41e9c280",
+  "m5_eval_inputs_sha256": "c567f34989a446de9f9b6daaeb6a14856aa2eda22cbca7845d29a69a1809317b",
+  "rank_constant": 60
+}

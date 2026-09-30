@@ -25,5 +25,322 @@
       "real": 4057,
       "synthetic": 754
     }
+  },
+  "indexes": {
+    "kodocs-m5-composite-fixed": {
+      "annex_fallback_count": 37,
+      "built_at": "2026-09-30T18:24:24+09:00",
+      "chunk_count": 9967,
+      "chunk_length_chars_by_doc_type": {
+        "guide": {
+          "count": 309,
+          "median": 200
+        },
+        "incident": {
+          "count": 298,
+          "median": 200
+        },
+        "meeting": {
+          "count": 565,
+          "median": 200
+        },
+        "notice": {
+          "count": 154,
+          "median": 200
+        },
+        "regulation": {
+          "count": 7864,
+          "median": 200
+        },
+        "runbook": {
+          "count": 381,
+          "median": 200
+        },
+        "weekly": {
+          "count": 396,
+          "median": 200
+        }
+      },
+      "chunk_length_chars_by_source": {
+        "real": {
+          "count": 7864,
+          "median": 200
+        },
+        "synthetic": {
+          "count": 2103,
+          "median": 200
+        }
+      },
+      "chunk_token_count_max": 203,
+      "chunk_token_count_p99": 163,
+      "chunking": "fixed",
+      "code_commit": "1a5fe91700b2dd7ff1ce96a37e5b5df63a8a9f22",
+      "condition": "composite",
+      "document_counts": {
+        "real_current": 95,
+        "real_prior": 5,
+        "synthetic": 200,
+        "total": 300
+      },
+      "embedder": {
+        "device": "mps",
+        "init_s": 4.796075375001237,
+        "model_id": "BAAI/bge-m3",
+        "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+        "settings_hash": "a66f36873302"
+      },
+      "failure_count": 0,
+      "failures": [],
+      "gold_answer_chunks_over_limit": 0,
+      "gold_answer_over_limit_chunks": [],
+      "index_field_schema_hash": "78a7b49a8d531586754b74852f142772d5e43703bc47b545531a6c3683175816",
+      "indexed_chunk_count": 9967,
+      "max_seq_length": 8192,
+      "opensearch_count": 9967,
+      "over_limit_chunk_count": 0,
+      "over_limit_chunk_ids": [],
+      "silver_answer_chunks_over_limit": 0,
+      "silver_answer_over_limit_chunks": [],
+      "status": "ok"
+    },
+    "kodocs-m5-composite-structural": {
+      "annex_fallback_count": 37,
+      "built_at": "2026-09-30T18:37:33+09:00",
+      "chunk_count": 4811,
+      "chunk_length_chars_by_doc_type": {
+        "guide": {
+          "count": 178,
+          "median": 236
+        },
+        "incident": {
+          "count": 95,
+          "median": 341
+        },
+        "meeting": {
+          "count": 58,
+          "median": 1713
+        },
+        "notice": {
+          "count": 92,
+          "median": 220.5
+        },
+        "regulation": {
+          "count": 4057,
+          "median": 166
+        },
+        "runbook": {
+          "count": 172,
+          "median": 343
+        },
+        "weekly": {
+          "count": 159,
+          "median": 358
+        }
+      },
+      "chunk_length_chars_by_source": {
+        "real": {
+          "count": 4057,
+          "median": 166
+        },
+        "synthetic": {
+          "count": 754,
+          "median": 309
+        }
+      },
+      "chunk_token_count_max": 14149,
+      "chunk_token_count_p99": 1098,
+      "chunking": "structural",
+      "code_commit": "1a5fe91700b2dd7ff1ce96a37e5b5df63a8a9f22",
+      "condition": "composite",
+      "document_counts": {
+        "real_current": 95,
+        "real_prior": 5,
+        "synthetic": 200,
+        "total": 300
+      },
+      "embedder": {
+        "device": "mps",
+        "init_s": 3.359861875000206,
+        "model_id": "BAAI/bge-m3",
+        "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+        "settings_hash": "a66f36873302"
+      },
+      "failure_count": 0,
+      "failures": [],
+      "gold_answer_chunks_over_limit": 0,
+      "gold_answer_over_limit_chunks": [],
+      "index_field_schema_hash": "78a7b49a8d531586754b74852f142772d5e43703bc47b545531a6c3683175816",
+      "indexed_chunk_count": 4811,
+      "max_seq_length": 8192,
+      "opensearch_count": 4811,
+      "over_limit_chunk_count": 3,
+      "over_limit_chunk_ids": [
+        "law-2200000150595#structural-0037",
+        "law-2200000149437#structural-0055",
+        "law-2200000149619#structural-0036"
+      ],
+      "silver_answer_chunks_over_limit": 0,
+      "silver_answer_over_limit_chunks": [],
+      "status": "ok"
+    },
+    "kodocs-m5-pypdf-structural": {
+      "annex_fallback_count": 0,
+      "built_at": "2026-09-30T18:28:42+09:00",
+      "chunk_count": 4813,
+      "chunk_length_chars_by_doc_type": {
+        "guide": {
+          "count": 178,
+          "median": 236
+        },
+        "incident": {
+          "count": 95,
+          "median": 341
+        },
+        "meeting": {
+          "count": 58,
+          "median": 1713
+        },
+        "notice": {
+          "count": 92,
+          "median": 220.5
+        },
+        "regulation": {
+          "count": 4059,
+          "median": 166
+        },
+        "runbook": {
+          "count": 172,
+          "median": 343
+        },
+        "weekly": {
+          "count": 159,
+          "median": 358
+        }
+      },
+      "chunk_length_chars_by_source": {
+        "real": {
+          "count": 4059,
+          "median": 166
+        },
+        "synthetic": {
+          "count": 754,
+          "median": 309
+        }
+      },
+      "chunk_token_count_max": 14149,
+      "chunk_token_count_p99": 984,
+      "chunking": "structural",
+      "code_commit": "1a5fe91700b2dd7ff1ce96a37e5b5df63a8a9f22",
+      "condition": "pypdf",
+      "document_counts": {
+        "real_current": 95,
+        "real_prior": 5,
+        "synthetic": 200,
+        "total": 300
+      },
+      "embedder": {
+        "device": "mps",
+        "init_s": 4.796075375001237,
+        "model_id": "BAAI/bge-m3",
+        "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+        "settings_hash": "a66f36873302"
+      },
+      "failure_count": 0,
+      "failures": [],
+      "gold_answer_chunks_over_limit": 0,
+      "gold_answer_over_limit_chunks": [],
+      "index_field_schema_hash": "78a7b49a8d531586754b74852f142772d5e43703bc47b545531a6c3683175816",
+      "indexed_chunk_count": 4813,
+      "max_seq_length": 8192,
+      "opensearch_count": 4813,
+      "over_limit_chunk_count": 2,
+      "over_limit_chunk_ids": [
+        "law-2200000150595#structural-0037",
+        "law-2200000149619#structural-0036"
+      ],
+      "silver_answer_chunks_over_limit": 0,
+      "silver_answer_over_limit_chunks": [],
+      "status": "ok"
+    },
+    "kodocs-m5-upstage-structural": {
+      "annex_fallback_count": 0,
+      "built_at": "2026-09-30T18:31:32+09:00",
+      "chunk_count": 4768,
+      "chunk_length_chars_by_doc_type": {
+        "guide": {
+          "count": 178,
+          "median": 236
+        },
+        "incident": {
+          "count": 95,
+          "median": 341
+        },
+        "meeting": {
+          "count": 58,
+          "median": 1713
+        },
+        "notice": {
+          "count": 92,
+          "median": 220.5
+        },
+        "regulation": {
+          "count": 4014,
+          "median": 173
+        },
+        "runbook": {
+          "count": 172,
+          "median": 343
+        },
+        "weekly": {
+          "count": 159,
+          "median": 358
+        }
+      },
+      "chunk_length_chars_by_source": {
+        "real": {
+          "count": 4014,
+          "median": 173
+        },
+        "synthetic": {
+          "count": 754,
+          "median": 309
+        }
+      },
+      "chunk_token_count_max": 17500,
+      "chunk_token_count_p99": 1111,
+      "chunking": "structural",
+      "code_commit": "1a5fe91700b2dd7ff1ce96a37e5b5df63a8a9f22",
+      "condition": "upstage",
+      "document_counts": {
+        "real_current": 95,
+        "real_prior": 5,
+        "synthetic": 200,
+        "total": 300
+      },
+      "embedder": {
+        "device": "mps",
+        "init_s": 4.796075375001237,
+        "model_id": "BAAI/bge-m3",
+        "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+        "settings_hash": "a66f36873302"
+      },
+      "failure_count": 0,
+      "failures": [],
+      "gold_answer_chunks_over_limit": 0,
+      "gold_answer_over_limit_chunks": [],
+      "index_field_schema_hash": "78a7b49a8d531586754b74852f142772d5e43703bc47b545531a6c3683175816",
+      "indexed_chunk_count": 4768,
+      "max_seq_length": 8192,
+      "opensearch_count": 4768,
+      "over_limit_chunk_count": 3,
+      "over_limit_chunk_ids": [
+        "law-2200000150595#structural-0037",
+        "law-2200000149437#structural-0054",
+        "law-2200000149619#structural-0036"
+      ],
+      "silver_answer_chunks_over_limit": 0,
+      "silver_answer_over_limit_chunks": [],
+      "status": "ok"
+    }
   }
 }
