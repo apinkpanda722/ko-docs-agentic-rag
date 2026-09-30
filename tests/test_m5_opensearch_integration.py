@@ -22,6 +22,7 @@ from kodocs.retrieval.index_schema import (
     index_body,
     weighted_pipeline_name,
 )
+from kodocs.retrieval.lookup import authorized_lookup_id
 from kodocs.retrieval.opensearch import OpenSearchClient
 from kodocs.retrieval.search import SearchParams, authorized_search
 
@@ -59,6 +60,10 @@ def m5_index() -> Iterator[tuple[OpenSearchClient, str]]:
                         "text_nori": "PAY-1234 지급 승인",
                         "vector": [1.0, 0.0],
                         "ids_ticket": ["PAY-1234"],
+                        "date": "2026-09-30",
+                        "access_level": "public",
+                        "access_teams": [],
+                        "access_min_grade": 0,
                     },
                 ),
                 (
@@ -71,6 +76,10 @@ def m5_index() -> Iterator[tuple[OpenSearchClient, str]]:
                         "text_nori": "PAY-1233 지급 승인",
                         "vector": [0.9, 0.1],
                         "ids_ticket": ["PAY-1233"],
+                        "date": "2026-09-29",
+                        "access_level": "public",
+                        "access_teams": [],
+                        "access_min_grade": 0,
                     },
                 ),
             ],
@@ -202,6 +211,17 @@ def test_identifier_term_query_avoids_analyzed_field_false_positive(
 
     exact = _search(client, name, {"term": {"ids_ticket": "PAY-1234"}})
     assert [hit["_id"] for hit in exact] == ["doc-pay-1234"]
+
+    authorized = authorized_lookup_id(
+        client,
+        name,
+        UserContext("finance", 1),
+        "ticket",
+        "PAY-1234",
+        rank_query="PAY-1234 지급 승인",
+    )
+    assert [hit.doc_id for hit in authorized] == ["doc-pay-1234"]
+    assert all(hit.doc_id != "doc-pay-1233" for hit in authorized)
 
 
 @pytest.mark.integration
