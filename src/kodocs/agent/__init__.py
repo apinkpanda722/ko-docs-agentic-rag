@@ -9,6 +9,12 @@ from kodocs.agent.prompts import (
     build_final_messages,
     prompt_hashes,
 )
+from kodocs.agent.tools import (
+    AgentContext,
+    ToolCallGuardrailError,
+    build_langgraph_tools,
+    execute_tool_call,
+)
 from kodocs.agent.trace import TraceRecorder, TraceSession
 from kodocs.agent.types import (
     AgentRuntime,
@@ -22,6 +28,7 @@ __all__ = [
     "AGENTIC_TOOL_PROMPT",
     "COMMON_SYSTEM_PROMPT",
     "NO_ANSWER_TEXT",
+    "AgentContext",
     "AgentRuntime",
     "AnswerResult",
     "ChatLike",
@@ -30,9 +37,12 @@ __all__ = [
     "Guard",
     "GuardrailConfig",
     "ModelAnswer",
+    "ToolCallGuardrailError",
     "TraceRecorder",
     "TraceSession",
     "build_final_messages",
+    "build_langgraph_tools",
+    "execute_tool_call",
     "finalize_answer",
     "prompt_hashes",
     "round_robin_context",

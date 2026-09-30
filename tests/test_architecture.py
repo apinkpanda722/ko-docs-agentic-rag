@@ -42,6 +42,12 @@ AGENT_FORBIDDEN_IMPORTS = (
     "langchain*",
     "langgraph*",
 )
+AGENT_GRAPH_FILES = frozenset({"simple_rag.py", "tools.py"})
+AGENT_GRAPH_FORBIDDEN_IMPORTS = (
+    "kodocs.retrieval",
+    "openai",
+    "langchain_openai",
+)
 
 
 def _current_package(path: Path, package_root: Path) -> tuple[str, ...]:
@@ -433,6 +439,7 @@ def test_agent_common_layer_has_no_retrieval_or_graph_framework_imports() -> Non
     violations = [
         f"{path.relative_to(PROJECT_ROOT)}: {violation}"
         for path in sorted(AGENT_PACKAGE.rglob("*.py"))
+        if path.name not in AGENT_GRAPH_FILES
         for violation in _find_imports_matching(
             path,
             SOURCE_ROOT,
@@ -441,6 +448,25 @@ def test_agent_common_layer_has_no_retrieval_or_graph_framework_imports() -> Non
     ]
 
     assert not violations, "Forbidden answer-core imports found:\n" + "\n".join(
+        violations
+    )
+
+
+def test_agent_graph_files_keep_retrieval_and_openai_behind_boundaries() -> None:
+    """Allow orchestration frameworks only in the two dedicated graph modules."""
+    paths = [AGENT_PACKAGE / name for name in sorted(AGENT_GRAPH_FILES)]
+    assert all(path.is_file() for path in paths)
+    violations = [
+        f"{path.relative_to(PROJECT_ROOT)}: {violation}"
+        for path in paths
+        for violation in _find_imports_matching(
+            path,
+            SOURCE_ROOT,
+            AGENT_GRAPH_FORBIDDEN_IMPORTS,
+        )
+    ]
+
+    assert not violations, "Forbidden agent graph imports found:\n" + "\n".join(
         violations
     )
 
