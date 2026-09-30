@@ -47,7 +47,16 @@
     {
       "step": 3,
       "name": "get-document",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T20:05:32+0900",
+      "summary": "`src/kodocs/retrieval/document.py`에 `DocumentChunk`, `DocumentResult`, `authorized_get_document`를 추가하고 fake·UUID 임시 인덱스 통합 테스트를 작성했으며 `make verify` 1,220개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T20:16:58+0900",
+      "usage": {
+        "input_tokens": 1896118,
+        "cached_input_tokens": 1789184,
+        "output_tokens": 11352,
+        "attempts": 1
+      }
     },
     {
       "step": 4,
