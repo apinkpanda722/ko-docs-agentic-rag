@@ -72,3 +72,10 @@ def test_span_hit_only_considers_the_first_k_chunks() -> None:
 
     assert span_hit_at_k(retrieved, [Span("doc-1", 10, 20)], k=1) is False
     assert span_hit_at_k(retrieved, [Span("doc-1", 10, 20)], k=2) is True
+
+
+def test_recall_and_ndcg_use_only_the_supplied_visible_relevance_mapping() -> None:
+    visible_relevance = {"visible-high": 2, "visible-low": 1}
+
+    assert recall_at_k(["visible-high", "visible-low"], visible_relevance, k=10) == 1.0
+    assert ndcg_at_k(["visible-high", "visible-low"], visible_relevance, k=10) == 1.0
