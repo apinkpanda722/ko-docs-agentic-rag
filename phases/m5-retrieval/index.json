@@ -117,7 +117,16 @@
     {
       "step": 8,
       "name": "authorized-search",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T11:18:09+0900",
+      "summary": "`retrieval/access.py`의 `UserContext`·`access_filter`·`can_read_doc`와 `retrieval/search.py`의 4종 pre-filter 검색·결정론적 문서 묶음을 구현하고 단위·통합 테스트를 추가했으며, `make verify`에서 1,084개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T11:30:52+0900",
+      "usage": {
+        "input_tokens": 2072361,
+        "cached_input_tokens": 1914752,
+        "output_tokens": 19766,
+        "attempts": 1
+      }
     },
     {
       "step": 9,
