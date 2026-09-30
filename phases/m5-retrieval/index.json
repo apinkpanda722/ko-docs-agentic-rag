@@ -173,7 +173,16 @@
     {
       "step": 12,
       "name": "dev-tuning",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T12:33:16+0900",
+      "summary": "`m5_runner.py`의 14조합·권한별 `run_questions`와 `m5_dev.py`의 18설정 dev 튜닝·`freeze_config`·`verify_config`를 테스트와 함께 구현했으며 `make verify`에서 1,159개 테스트가 통과했습니다(통합 12개 제외).",
+      "completed_at": "2026-09-30T12:45:54+0900",
+      "usage": {
+        "input_tokens": 3204323,
+        "cached_input_tokens": 3059456,
+        "output_tokens": 29128,
+        "attempts": 1
+      }
     },
     {
       "step": 13,
