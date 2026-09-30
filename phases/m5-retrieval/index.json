@@ -131,7 +131,16 @@
     {
       "step": 9,
       "name": "authorized-lookup-sql",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T11:30:52+0900",
+      "summary": "`retrieval/lookup.py`의 `extract_query_identifiers`·`authorized_lookup_id`와 `retrieval/sql.py`의 `authorized_run_sql`을 구현하고 단위·OpenSearch 통합 테스트를 추가했으며, `make verify`에서 1,121개 테스트가 통과했습니다(12개 integration 제외).",
+      "completed_at": "2026-09-30T11:46:07+0900",
+      "usage": {
+        "input_tokens": 4327342,
+        "cached_input_tokens": 4197504,
+        "output_tokens": 37750,
+        "attempts": 1
+      }
     },
     {
       "step": 10,
