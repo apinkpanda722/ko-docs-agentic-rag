@@ -163,7 +163,7 @@ m5-eval-inputs:
 
 # 사용자가 승인 후 pyproject.toml에 embed 그룹을 추가해야 한다. 이 타깃은 약 2.3GB 모델만 내려받는다.
 embed-models:
-	uv run --group embed python -c "from pathlib import Path; from huggingface_hub import snapshot_download; p = Path(snapshot_download('BAAI/bge-m3', allow_patterns=['*.json', '*.txt', '*.model', '*.safetensors', '*.bin', '*.pt', '*.py', 'modules.json', '1_Pooling/**', '2_Dense/**'])); print(f'path={p}'); print(f'revision={p.name}')"
+	uv run --group embed python -c "from pathlib import Path; from huggingface_hub import snapshot_download; from kodocs.retrieval.embedding import BGE_M3_ALLOW_PATTERNS, BGE_M3_IGNORE_PATTERNS, BGE_M3_MODEL_ID, BGE_M3_REVISION; p = Path(snapshot_download(BGE_M3_MODEL_ID, revision=BGE_M3_REVISION, allow_patterns=list(BGE_M3_ALLOW_PATTERNS), ignore_patterns=list(BGE_M3_IGNORE_PATTERNS))); print(f'path={p}'); print(f'revision={p.name}')"
 
 m5-index-dry:
 	uv run --group embed python -m kodocs.retrieval.index_build --all --dry-run

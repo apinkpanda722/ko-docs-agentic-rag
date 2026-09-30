@@ -191,6 +191,14 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **강제 수단**: /review 체크리스트 6번
 - **출처**: M1 /review (2b6963f)
 
+### FP-045 HF 부분 다운로드 스냅샷을 allow_patterns 없이 오프라인 조회 → 불완전 판정
+- **증상**: `make m5-index-dry`가 "로컬 BGE-M3 스냅샷을 찾을 수 없습니다"로 실패. 추론에 필요한 파일은 전부 있었고 원래 예외(`IncompleteSnapshotError`)는 메시지에 가려져 진단이 어려웠다.
+- **원인**: onnx·README 등을 빼고 받은 부분 스냅샷을 `snapshot_download(repo_id, local_files_only=True)`로 `allow_patterns` 없이 조회하면 huggingface_hub가 저장소 전체 파일이 캐시에 있는지 검사해 18개 파일 누락으로 판정한다. 다운로드(`make embed-models`)는 리비전 고정 없이 패턴도 달라 다른 버전을 받을 수 있었다.
+- **주의(실제 캐시로 확인)**: `allow_patterns`의 `*.json`·`*.model`은 fnmatch라 `onnx/config.json` 같은 하위 경로에도 맞는다. `ignore_patterns=['onnx/*']`를 함께 주어야 실제 캐시(onnx 제외)가 완전으로 판정된다. 패턴만 추측해 정하지 말고 실제 캐시로 조회해 확인한다.
+- **규칙**: 부분 다운로드한 모델은 조회에도 **다운로드와 같은 `revision`·`allow_patterns`·`ignore_patterns` 상수**를 쓴다(한 곳에 정의해 Makefile도 import). 오프라인 조회 실패 시 원래 예외를 메시지에 함께 보인다. 외부 라이브러리의 오프라인·부분 캐시 동작은 실제 캐시로 확인한다(FP-011).
+- **강제 수단**: `tests/retrieval/test_embedding.py`(`test_resolve_local_snapshot_pins_revision_and_patterns_offline`, `test_resolve_local_snapshot_failure_keeps_original_cause_in_message`), `tests/test_m5_make_targets.py`(`test_embed_models_is_declared_but_not_installed_by_make`)
+- **출처**: M5 실측 (`make m5-index-dry`)
+
 ## F. 이후 phase에 미리 적용할 것
 
 ### FP-050 식별자가 분석기에 쪼개짐 (M5)
