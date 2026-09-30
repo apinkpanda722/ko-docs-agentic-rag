@@ -19,6 +19,7 @@ from kodocs.costs import (
 
 SERVICE = "upstage.document-parse.standard"
 ANTHROPIC_PRICE_URL = "https://platform.claude.com/docs/en/about-claude/pricing"
+OPENAI_PRICE_URL = "https://developers.openai.com/api/docs/pricing"
 
 
 def _entry(*, call_id: str, ts: str, amount_usd: float) -> dict[str, object]:
@@ -105,6 +106,36 @@ def test_adding_anthropic_prices_does_not_change_upstage_price() -> None:
         checked_on="2026-09-26",
         billing_margin=1.05,
     )
+
+
+@pytest.mark.parametrize(
+    ("model", "suffix", "price_per_million"),
+    [
+        ("gpt-6-luna", "input", 0.10),
+        ("gpt-6-luna", "cached_input", 0.01),
+        ("gpt-6-luna", "cache_write", 0.125),
+        ("gpt-6-luna", "output", 0.50),
+        ("gpt-6.1-sol", "input", 2.00),
+        ("gpt-6.1-sol", "cached_input", 0.10),
+        ("gpt-6.1-sol", "cache_write", 2.50),
+        ("gpt-6.1-sol", "output", 10.00),
+    ],
+)
+def test_openai_answer_prices(
+    model: str,
+    suffix: str,
+    price_per_million: float,
+) -> None:
+    service = f"openai.{model}.{suffix}"
+    assert PRICES[service] == Price(
+        service=service,
+        unit="token",
+        unit_price_usd=price_per_million / 1_000_000,
+        source_url=OPENAI_PRICE_URL,
+        checked_on="2026-09-30",
+        billing_margin=1.0,
+    )
+    assert estimate_usd(service, 1_000_000) == pytest.approx(price_per_million * 1.1)
 
 
 def test_price_is_frozen() -> None:

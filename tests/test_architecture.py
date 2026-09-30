@@ -35,6 +35,7 @@ TOOLS_FORBIDDEN_IMPORTS = (
 )
 RETRIEVAL_CONSUMER_FORBIDDEN_IMPORTS = ("kodocs.retrieval",)
 M5_LLM_FORBIDDEN_IMPORTS = ("anthropic", "openai", "google", "kodocs.llm")
+OPENAI_CLIENT_FORBIDDEN_IMPORTS = ("openai", "langchain_openai")
 
 
 def _current_package(path: Path, package_root: Path) -> tuple[str, ...]:
@@ -386,3 +387,36 @@ def test_m5_modules_do_not_import_llm_clients() -> None:
     assert not violations, "LLM imports found in deterministic M5 code:\n" + "\n".join(
         violations
     )
+
+
+@pytest.mark.parametrize("package", [AGENT_PACKAGE, MCP_SERVER_PACKAGE, TOOLS_PACKAGE])
+def test_openai_client_imports_stay_in_llm(package: Path) -> None:
+    """Keep the OpenAI SDK and LangChain wrapper behind ``kodocs.llm``."""
+    violations = [
+        f"{path.relative_to(PROJECT_ROOT)}: {violation}"
+        for path in sorted(package.rglob("*.py"))
+        for violation in _find_imports_matching(
+            path,
+            SOURCE_ROOT,
+            OPENAI_CLIENT_FORBIDDEN_IMPORTS,
+        )
+    ]
+
+    assert not violations, "Direct OpenAI imports found:\n" + "\n".join(violations)
+
+
+@pytest.mark.parametrize("module", ["openai", "langchain_openai"])
+def test_openai_client_guard_detects_violation(tmp_path: Path, module: str) -> None:
+    """Prove the M6 client boundary guard rejects both prohibited imports."""
+    package_root = tmp_path / "src"
+    path = package_root / "kodocs" / "agent" / "probe.py"
+    path.parent.mkdir(parents=True)
+    path.write_text(f"import {module}\n", encoding="utf-8")
+
+    violations = _find_imports_matching(
+        path,
+        package_root,
+        OPENAI_CLIENT_FORBIDDEN_IMPORTS,
+    )
+
+    assert any(item.endswith(f": {module}") for item in violations)
