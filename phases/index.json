@@ -27,7 +27,8 @@
     },
     {
       "dir": "m5-retrieval",
-      "status": "pending"
+      "status": "blocked",
+      "blocked_at": "2026-09-30T12:02:01+0900"
     }
   ]
 }
