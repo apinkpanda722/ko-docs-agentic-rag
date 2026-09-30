@@ -145,7 +145,16 @@
     {
       "step": 10,
       "name": "metrics-stats",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T11:46:07+0900",
+      "summary": "`m5_metrics.py`의 문서·구간 검색 지표와 `m5_stats.py`의 결정론적 부트스트랩·기술통계·방향성 판정을 구현하고 테스트를 추가했으며, `make verify`에서 1,137개 테스트가 통과했습니다.",
+      "completed_at": "2026-09-30T11:52:23+0900",
+      "usage": {
+        "input_tokens": 1055034,
+        "cached_input_tokens": 908032,
+        "output_tokens": 12675,
+        "attempts": 1
+      }
     },
     {
       "step": 11,
