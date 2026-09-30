@@ -33,7 +33,16 @@
     {
       "step": 2,
       "name": "current-first",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-09-30T19:40:18+0900",
+      "summary": "`prefer_current_order` 기반 검색·lookup 현행 우선 옵션과 반환 필드 확장, `src/kodocs/eval/m6_temporal.py`·`make m6-temporal`을 추가했으며 `make verify` 1,211개 및 AC 선택 테스트 5개가 통과했습니다.",
+      "completed_at": "2026-09-30T20:05:32+0900",
+      "usage": {
+        "input_tokens": 3504350,
+        "cached_input_tokens": 3370624,
+        "output_tokens": 27781,
+        "attempts": 1
+      }
     },
     {
       "step": 3,
