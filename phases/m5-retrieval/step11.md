@@ -29,7 +29,9 @@ RETRIEVAL_TYPES = ("identifier", "semantic", "table", "multi_doc", "temporal")
 @dataclass(frozen=True)
 class EvalQuestion:
     question: Question                 # kodocs.eval.golden.Question
-    rel_by_doc: dict[str, int]         # doc_relevance(qrels) — rel ≥ 1 문서만 정답, 0은 제외 표기
+    rel_by_doc: dict[str, int]         # doc_relevance(qrels) 중 **asker에게 보이는** rel ≥ 1 문서만(ADR-028 12번). 보이지 않는 문서는 넣지 않는다. Recall 분모·NDCG IDCG는 이 매핑만으로 계산된다
+    n_relevant_total: int              # 보이지 않는 문서 포함 rel ≥ 1 문서 수(기록용)
+    n_relevant_visible: int            # len(rel_by_doc)
     answer_ranges: tuple[Span, ...]    # 정답 구간(문서 doc_id + 문자 범위), 조합본 기준
     repeated: bool                     # answer_repeated
 
@@ -47,15 +49,24 @@ def main(argv=None) -> int      # CLI: python -m kodocs.eval.m5_inputs → data/
 - 세는 단위: **중복 없는 문항 id**. 조건: `type ∈ RETRIEVAL_TYPES`이고 `rel ≥ 1`인 qrels가 1개 이상. permission·unanswerable·sql 유형은 qrels가 비어 있거나 다른 유형이라 제외된다.
 - 기대 수: 골드 test **21**, 실버 test **65**(`golden_review.json`의 `split.gold.retrieval_test_n`·`split.silver.retrieval_test_n`과 같아야 한다). 골드 dev·실버 dev 수는 계산해서 manifest에 기록한다(기대: 골드 dev 14, 실버 dev 43 — 다르면 사실 그대로 기록하되 골드 dev가 14가 아니면 `blocked`로 보고). 실제 골드 검색 지표 대상은 dev 6 + test 13 = 19, H7 대상(골드 test 중 identifier·semantic·multi_doc)은 합성 8·실제 6이어야 한다(`golden_review.json`의 `h7`과 비교). 수가 기대와 다르면 조용히 진행하지 말고 오류로 멈춘다.
 
-### 2. 권한 전제 검사 (자동 제외 금지)
+### 2. 정답 집합과 권한 전제 검사 (ADR-028 12번, 2026-09-30 사용자 확정 변경)
 
-- 모든 검색 지표 대상 문항(dev·test, 골드·실버)에 대해, `rel ≥ 1`인 qrels 문서가 (a) 코퍼스에 존재하고 (b) asker에게 보이는지(`kodocs.eval.golden.can_read` 기준, 실제 규정은 public) 전수 검사한다. 하나라도 실패하면 **실패 문항 목록(문항 id, 문서 id, 사유: `missing_doc` | `not_visible`)을 출력하고 종료 코드를 비정상으로** 한다. 그 문항을 자동으로 제외하지 않는다(사람이 판단한다). manifest에도 실패 목록을 기록한다.
+**배경**: 합성 사실이 여러 문서에 반복돼 qrels에 다른 팀 전용·제한 문서(질문자가 볼 수 없는 문서)가 들어 있다. 사전 확인(이 step의 1차 시도): 305쌍·92문항이며, 보이는 rel ≥ 1 문서가 0개인 문항은 없었다. pre-filter 구조상 이 문서들은 반환이 불가능하므로 정답 집합에서 제외한다.
+
+- **정답 집합 = asker가 볼 수 있는 rel ≥ 1 문서**(`kodocs.eval.golden.can_read` 기준, 실제 규정은 public; M4 `accessible_relevant_docs`와 같은 원칙). `EvalQuestion.rel_by_doc`에는 보이는 문서만 넣는다. 따라서 Recall@10의 분모, NDCG@10의 IDCG(이상적 순서), 상위 10 문서 채점이 모두 보이는 정답만으로 계산된다. 정답 구간(`answer_ranges`, `answer_ranges_by_doc`)도 보이는 문서의 구간만 포함한다.
+- **전제 검사에서 실패로 멈추는 것은 두 가지뿐**이다: (a) 문항의 rel ≥ 1 qrels 문서 중 코퍼스에 없는 문서가 있음(`missing_doc`), (b) 보이는 rel ≥ 1 문서가 0개인 문항(`no_visible_relevant`). 하나라도 있으면 실패 목록(문항 id, 문서 id 또는 null, 사유)을 출력하고 종료 코드를 비정상으로 하며 manifest `visibility.failures`에 기록한다.
+- **제외 기록(실패가 아님)**: 보이지 않아 정답에서 빠진 (문항, 문서) 쌍은 manifest `visibility.excluded_pairs`(문항 id, 문서 id, rel)에 모두 남기고 `visibility.excluded_pair_count`와 `visibility.excluded_question_count`를 기록한다. 문항별 (전체 정답 수, 보이는 정답 수)는 `visibility.per_question`(`{qid: {"total": n, "visible": m}}`)에 기록한다. 현재 데이터의 사전 확인값은 305쌍·92문항이다. 값이 다르면 사실대로 기록하되 최종 응답 `summary`에 다르다고 적는다(실패로 처리하지 않는다).
+- `n_relevant_total`/`n_relevant_visible`이 문항마다 채워져야 한다(step 12 이후 분석에서 참고용).
 
 ### 3. 정답 구간 매핑 (H3·구간 겹침 지표용)
 
 - 합성: qrels의 `start`/`end`를 그대로 쓴다(`CorpusDoc.text == body`이므로). 값이 없는 문서 단위 qrels(구간 없음)는 문서 전체 범위로 보지 말고 "구간 없음"으로 표시한다(구간 겹침 적중률은 구간이 있는 정답에만 정의; 구간 없는 문항 수를 manifest에 기록).
 - 실제: `article_key`가 있으면 그 문서 `sections`에서 `kind == "article"`이고 `key`가 같은 **모든** 구간의 범위. `annex_id`(표 정답 id, 예 `17229_0-00`)는 `table_golden.json`에서 `annex_label`을 찾아 정규화 별표 id(step 2·3과 같은 함수)로 바꾼 뒤 `kind == "annex"` 구간의 범위. 매핑 실패(구간을 못 찾음)는 목록으로 모아 오류로 멈춘다(FP-016: 실제 데이터 전체에 돌려 실패를 센 뒤 판단, 자동 제외 금지).
 - 정답 구간은 **조합본** 코퍼스 기준으로 계산한다. 이유: H3의 구조 vs 고정 비교와 최종 구성이 조합본 인덱스 위에서 이뤄진다.
+
+### 3-1. 지표 회귀 테스트 (필수)
+
+`tests/eval/test_m5_inputs.py`(필요하면 `tests/eval/test_m5_metrics.py`에도)에 다음을 추가한다: 전체 정답 3개 중 1개가 asker에게 안 보이는 문항에서 (a) `rel_by_doc`에 보이는 2개만 있고 `n_relevant_total == 3`, `n_relevant_visible == 2`, (b) 보이는 정답 2개를 상위에 둔 순위의 Recall@10 = 1.0이고 NDCG@10 = 1.0(안 보이는 문서를 IDCG에 넣었다면 1.0이 나오지 않는다), (c) 보이는 정답이 0개인 문항은 `no_visible_relevant` 실패, (d) 코퍼스에 없는 문서는 `missing_doc` 실패, (e) 제외 쌍 목록과 `per_question`이 채워짐, (f) `answer_ranges`가 보이는 문서만 포함. `src/kodocs/eval/m5_metrics.py`는 넘겨받은 매핑으로만 계산하므로 수정하지 않아도 된다. 다만 IDCG가 넘겨받은 `rel_by_doc`만으로 계산됨을 못박는 테스트(`tests/eval/test_m5_metrics.py`)를 추가한다.
 
 ### 4. answer_repeated 태그 (결정론)
 
@@ -77,7 +88,7 @@ def answer_ranges_by_doc(condition: ParserCondition, root: Path = Path(".")) -> 
 
 ### 5. manifest `data/manifest/m5_eval_inputs.json` (커밋 대상, CLI가 생성)
 
-문항 id → `{repeated, evidence_sha256, n_matching_docs}`, 골드 test·실버 test × 출처(real/synthetic) × 반복 여부(반복/반복 아님) 그룹별 문항 수 표, 실버 test의 반복/반복 아님 그룹 크기(코퍼스 v2 규칙 4의 10문항 기준 사전 확인 값), 대상 문항 수(위 기준과 무엇을 세는지), 권한 전제 검사 결과, 구간 매핑 실패 목록, 구간 없음 문항 수, 태그 불가 수, 입력 해시(골드·실버 질의 파일, 코퍼스 설정) 요약. **이 파일은 `make m5-test` 전에 확정된다**(ADR-028 13번). CLI를 이 step에서 로컬에서 한 번 실행해 생성한다. 권한 전제 검사나 구간 매핑에서 실패가 나오면 목록과 함께 `blocked`로 보고하라(자동 제외 금지).
+문항 id → `{repeated, evidence_sha256, n_matching_docs}`, 골드 test·실버 test × 출처(real/synthetic) × 반복 여부(반복/반복 아님) 그룹별 문항 수 표, 실버 test의 반복/반복 아님 그룹 크기(코퍼스 v2 규칙 4의 10문항 기준 사전 확인 값), 대상 문항 수(위 기준과 무엇을 세는지), 권한 전제 검사 결과(`visibility`: 검사 문항 수, 실패 수·목록, 제외 쌍 수·목록, 문항별 전체/보이는 정답 수), 구간 매핑 실패 목록, 구간 없음 문항 수, 태그 불가 수, 입력 해시(골드·실버 질의 파일, 코퍼스 설정) 요약. **이 파일은 `make m5-test` 전에 확정된다**(ADR-028 13번). CLI를 이 step에서 로컬에서 한 번 실행해 생성한다. 전제 검사 실패(`missing_doc`·`no_visible_relevant`)나 구간 매핑 실패가 나오면 목록과 함께 `blocked`로 보고하라. 보이지 않는 정답 문서의 제외(위 2절)는 실패가 아니며 자동 제외 금지 규칙의 예외가 아니라 ADR-028 12번의 정의이므로 기록만 한다.
 
 ## Acceptance Criteria
 
@@ -109,7 +120,8 @@ test -f data/manifest/m5_eval_inputs.json
 - `phases/` 아래 파일을 수정하거나 git commit을 하지 마라. 이유: index.json은 execute.py만 수정한다.
 - `src/kodocs/retrieval/`에서 `langchain`·`langgraph`·`kodocs.agent`·`kodocs.mcp_server`·`kodocs.ui`를 (상대 import 포함) import하지 마라. 이유: 검색은 측정 대상이라 추상화 없이 OpenSearch·SQLite를 직접 호출한다(ADR-009).
 - 기존 테스트를 깨뜨리지 마라
-- 권한상 보이지 않는 qrels 문서가 있는 문항을 자동으로 제외하거나 rel을 바꿔 통과시키지 마라. 이유: 문항 정답은 사람이 확정한 golden이며(AGENTS.md), 자동 제외는 분모를 조용히 바꾼다(FP-021). 목록과 함께 멈춘다.
+- **문항을 자동으로 제외하지 마라. 문서만 정답 집합에서 뺀다**: 보이지 않는 qrels 문서는 ADR-028 12번에 따라 정답 집합에서 빼되 (문항, 문서) 쌍과 문항별 (전체, 보이는) 수를 manifest에 전부 남겨라. 이유: 분모가 조용히 바뀌면 안 된다(FP-021). 보이는 정답이 0개인 문항·코퍼스에 없는 문서는 목록과 함께 멈춘다. `data/golden/`의 rel·qrels는 절대 바꾸지 않는다.
+- Recall·NDCG의 분모·IDCG를 전체 qrels(보이지 않는 문서 포함)로 계산하지 마라. 이유: 반환 불가능한 문서가 상한을 깎아 92문항의 지표를 조용히 왜곡한다. `m5_metrics`는 넘겨받은 `rel_by_doc`만으로 계산하므로 호출자(`EvalQuestion`)가 보이는 정답만 넘겨야 하고, 이를 회귀 테스트로 고정한다.
 - `data/golden/`의 어떤 파일도 수정·재생성하지 마라. 이유: 확정 기준이다. answer_repeated는 golden이 아니라 `data/manifest/m5_eval_inputs.json`에만 기록한다.
 - 검색 지표 대상 수를 하드코딩해 "맞춰서" 통과시키지 마라. 이유: 무엇을 세는지 기준으로 계산하고 `golden_review.json` 값과 대조하는 것이 검증이다(FP-043).
 - 실제 문항의 조문·표 원문이나 질문 해설을 manifest에 넣지 마라(해시·id·개수만).

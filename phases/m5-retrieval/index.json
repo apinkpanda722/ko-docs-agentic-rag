@@ -159,16 +159,7 @@
     {
       "step": 11,
       "name": "eval-inputs",
-      "status": "blocked",
-      "started_at": "2026-09-30T11:52:23+0900",
-      "blocked_reason": "권한 전제 검사에서 asker에게 보이지 않는 rel ≥ 1 qrel 문항-문서 조합 305건이 발견되었습니다. 자동 제외·rel 변경·golden 수정은 금지되어 사람 판단 없이는 CLI를 정상 종료할 수 없습니다. 전체 목록은 manifest의 `visibility.failures`에 기록했습니다.",
-      "blocked_at": "2026-09-30T12:02:01+0900",
-      "usage": {
-        "input_tokens": 2182238,
-        "cached_input_tokens": 2052608,
-        "output_tokens": 26043,
-        "attempts": 1
-      }
+      "status": "pending"
     },
     {
       "step": 12,

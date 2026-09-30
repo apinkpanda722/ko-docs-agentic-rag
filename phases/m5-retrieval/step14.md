@@ -28,7 +28,7 @@ test 1회 실행기와 재실행 잠금을 만든다. 신규 파일: `src/kodocs
 
 1. `data/manifest/m5_config.json`이 있고 `verify_config`가 통과(해시·`m5_eval_inputs.json`·`m5_dev.json` 해시 일치).
 2. `m5_index.json`의 인덱스 4개가 config가 기록한 스키마 해시·임베더 설정 해시와 일치하고 색인 실패 수가 0.
-3. `m5_eval_inputs.json`의 권한 전제 검사·구간 매핑 실패가 모두 0건.
+3. `m5_eval_inputs.json`의 권한 전제 검사 실패(`visibility.failures`: 보이는 정답 0개 문항·코퍼스에 없는 문서)·구간 매핑 실패가 모두 0건. (제외 쌍 `excluded_pairs`는 실패가 아니라 정의된 제외다.)
 4. **잠금**: `data/manifest/m5_test_runs.jsonl`(append-only)에 이전 실행 기록이 있으면 `--rerun-reason`이 비어 있지 않아야 한다. 없으면 "이전 실행이 있습니다. 재실행은 --rerun-reason이 필요합니다"라고 출력하고 종료 코드 2. 이전 기록이 없는데 `--rerun-reason`이 주어지면 무시하지 말고 오류로 알린다(첫 실행은 사유가 없다).
 
 ### 실행 내용 (한 번에 전부)
