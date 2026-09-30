@@ -36,6 +36,12 @@ TOOLS_FORBIDDEN_IMPORTS = (
 RETRIEVAL_CONSUMER_FORBIDDEN_IMPORTS = ("kodocs.retrieval",)
 M5_LLM_FORBIDDEN_IMPORTS = ("anthropic", "openai", "google", "kodocs.llm")
 OPENAI_CLIENT_FORBIDDEN_IMPORTS = ("openai", "langchain_openai")
+AGENT_FORBIDDEN_IMPORTS = (
+    "kodocs.retrieval",
+    "openai",
+    "langchain*",
+    "langgraph*",
+)
 
 
 def _current_package(path: Path, package_root: Path) -> tuple[str, ...]:
@@ -417,6 +423,45 @@ def test_openai_client_guard_detects_violation(tmp_path: Path, module: str) -> N
         path,
         package_root,
         OPENAI_CLIENT_FORBIDDEN_IMPORTS,
+    )
+
+    assert any(item.endswith(f": {module}") for item in violations)
+
+
+def test_agent_common_layer_has_no_retrieval_or_graph_framework_imports() -> None:
+    """Keep the pre-graph answer core behind tools and the LLM wrapper."""
+    violations = [
+        f"{path.relative_to(PROJECT_ROOT)}: {violation}"
+        for path in sorted(AGENT_PACKAGE.rglob("*.py"))
+        for violation in _find_imports_matching(
+            path,
+            SOURCE_ROOT,
+            AGENT_FORBIDDEN_IMPORTS,
+        )
+    ]
+
+    assert not violations, "Forbidden answer-core imports found:\n" + "\n".join(
+        violations
+    )
+
+
+@pytest.mark.parametrize(
+    "module",
+    ["kodocs.retrieval", "openai", "langchain_openai", "langgraph.graph"],
+)
+def test_agent_common_layer_guard_detects_violation(
+    tmp_path: Path,
+    module: str,
+) -> None:
+    package_root = tmp_path / "src"
+    path = package_root / "kodocs" / "agent" / "probe.py"
+    path.parent.mkdir(parents=True)
+    path.write_text(f"import {module}\n", encoding="utf-8")
+
+    violations = _find_imports_matching(
+        path,
+        package_root,
+        AGENT_FORBIDDEN_IMPORTS,
     )
 
     assert any(item.endswith(f": {module}") for item in violations)
