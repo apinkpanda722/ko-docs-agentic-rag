@@ -1,0 +1,7526 @@
+{
+  "scores": {
+    "test_gold|g-syn-003|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1578,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-026|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_gold|g-syn-003|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1578,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-015|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 4001,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-029|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_gold|g-syn-016|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_gold|g-real-001|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1118,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-014|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_gold|g-syn-027|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_gold|g-syn-029|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 209,
+      "evidence_sources": [
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-030|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_gold|g-syn-012|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_gold|g-real-001|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1118,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-015|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_gold|g-syn-030|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 160,
+      "evidence_sources": [
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-013|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 498,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        2,
+        2,
+        2
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-002|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3739,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-014|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 342,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-013|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 498,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        2,
+        2,
+        2
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-012|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1704,
+      "evidence_sources": [
+        "document",
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-027|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 121,
+      "evidence_sources": [
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-026|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 126,
+      "evidence_sources": [
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-016|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 4442,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-005|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_gold|g-syn-005|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_gold|g-syn-002|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2391,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-080|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3522,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        2,
+        2,
+        2
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-011|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3153,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-031|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1578,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-061|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 5192,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-002|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2337,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-002|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1829,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-045|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 797,
+      "evidence_sources": [
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-116|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2118,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        2,
+        3
+      ]
+    },
+    "test_gold|g-real-005|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2067,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-057|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 5601,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-052|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 4248,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-044|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2164,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-015|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1337,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-117|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1797,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-009|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 518,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-009|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 518,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-109|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1879,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-016|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 722,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-004|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 996,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-018|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 400,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-011|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 521,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-010|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1361,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-015|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1159,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-003|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1734,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-011|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 521,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        0,
+        0,
+        0
+      ]
+    },
+    "dev|s-syn-063|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1696,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-068|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3848,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-006|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1030,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-003|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1734,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-115|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2066,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-017|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1087,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        1,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-007|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 293,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        2,
+        2,
+        2
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-005|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1906,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-111|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1588,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-054|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2337,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-016|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3065,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-131|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-048|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 4585,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-059|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-050|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1406,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-018|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-134|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-064|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3314,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-006|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-065|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1588,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        1,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-015|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1337,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-141|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_gold|g-syn-022|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_gold|g-real-012|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-046|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 6000,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-009|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2099,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-114|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-140|agentic|gpt-6-luna": {
+      "mode": "faith",
+      "class": "gemini_faith_only",
+      "evidence_chars": 5510,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-010|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2145,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-104|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_gold|g-syn-024|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-033|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2104,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        1,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-056|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3429,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-018|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_gold|g-real-010|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 433,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-016|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 4069,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-132|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-064|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3314,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        2,
+        2,
+        2
+      ]
+    },
+    "test_silver|s-syn-103|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1997,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-086|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-136|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-103|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1997,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-106|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1715,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        3,
+        2
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-078|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-025|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3746,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-007|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 293,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        2,
+        2,
+        2
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-131|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-079|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2336,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-038|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3001,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-010|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-046|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3336,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        2,
+        1,
+        2
+      ]
+    },
+    "test_silver|s-syn-120|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2754,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-022|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-075|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-124|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-141|agentic|gpt-6-luna": {
+      "mode": "faith",
+      "class": "gemini_faith_only",
+      "evidence_chars": 2157,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-020|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-042|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3433,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-025|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2337,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-104|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-026|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1324,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-048|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 5019,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-086|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3505,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-005|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-043|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3923,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-027|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-121|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-070|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3674,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-125|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-021|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3635,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-139|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-088|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-081|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-056|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1766,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-110|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3687,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-085|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-075|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-149|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-017|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1361,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-059|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-101|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_gold|g-syn-024|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-052|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1569,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-019|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 662,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        2,
+        2,
+        2
+      ]
+    },
+    "test_gold|g-syn-020|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-067|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-140|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-147|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_gold|g-real-018|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 400,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-040|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3923,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-005|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-087|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 118,
+      "evidence_sources": [
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-133|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-102|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-079|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 864,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        1,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-022|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1662,
+      "evidence_sources": [
+        "document",
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-134|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-055|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1198,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-138|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-068|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-042|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2658,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-054|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2337,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-133|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-014|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 110,
+      "evidence_sources": [
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        1,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-125|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-112|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1663,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-039|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2893,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-035|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1700,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-126|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-070|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 6000,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        1,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-029|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 6000,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-021|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_gold|g-syn-007|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1769,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-053|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3337,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-066|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3124,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-082|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-018|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-123|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-120|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2754,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-029|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 5453,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-084|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-113|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2157,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-020|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-148|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-126|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-003|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-003|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 111,
+      "evidence_sources": [
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        2,
+        2,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-002|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2337,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-007|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1561,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-114|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-004|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-045|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1355,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-139|simple|gpt-6-luna": {
+      "mode": "faith",
+      "class": "gemini_faith_only",
+      "evidence_chars": 1588,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-060|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2893,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-149|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_gold|g-syn-020|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-118|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-081|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-034|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1766,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-012|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-082|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3590,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-116|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1805,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        2,
+        1,
+        2
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-009|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2099,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-043|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2118,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-106|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1715,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        1,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-112|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1663,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        2,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-078|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-021|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3408,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-136|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-101|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-004|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-146|agentic|gpt-6-luna": {
+      "mode": "faith",
+      "class": "gemini_faith_only",
+      "evidence_chars": 3429,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-088|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-147|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-123|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_gold|g-syn-018|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-102|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-066|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3124,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-148|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-138|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-084|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3414,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-087|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-039|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2893,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-035|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 5041,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-113|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2157,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        2,
+        2,
+        2
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-033|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 4222,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-real-017|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-050|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1406,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        1,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-026|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1324,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-146|simple|gpt-6-luna": {
+      "mode": "faith",
+      "class": "gemini_faith_only",
+      "evidence_chars": 3429,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-038|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3063,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-040|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2118,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-118|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-023|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-055|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1198,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-027|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-065|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3157,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-085|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-022|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_gold|g-real-019|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 5065,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-014|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1766,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_gold|g-syn-021|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-023|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 142,
+      "evidence_sources": [
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-017|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1361,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-124|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-010|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2145,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-067|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-132|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-121|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "test_silver|s-syn-110|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3687,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-060|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2893,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-053|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 4475,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "test_silver|s-syn-034|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1766,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-083|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-009|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-137|simple|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|g-real-002|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1829,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-049|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3031,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-007|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-syn-023|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-013|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3533,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-016|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 587,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-105|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-syn-001|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1961,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-143|simple|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-129|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-115|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2066,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-001|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1961,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-122|simple|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-071|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-145|agentic|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-077|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2928,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        1,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-008|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1638,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-004|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2099,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-108|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2658,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-058|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 6000,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-108|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 822,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-004|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 996,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-061|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 5192,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-019|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1796,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-077|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-036|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2481,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-006|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-137|agentic|gpt-6-luna": {
+      "mode": "faith",
+      "class": "gemini_faith_only",
+      "evidence_chars": 1556,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-008|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1769,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-072|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-030|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2782,
+      "evidence_sources": [
+        "document",
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-023|agentic|gpt-6-luna": {
+      "mode": "faith",
+      "class": "gemini_faith_only",
+      "evidence_chars": 974,
+      "evidence_sources": [
+        "document",
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-004|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2099,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-006|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-062|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 4542,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-013|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-syn-025|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-071|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2982,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-002|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1829,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-128|agentic|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-061|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 5192,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-051|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 4983,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-076|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-072|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-150|agentic|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-143|agentic|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-058|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 5983,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-019|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-real-020|simple|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|g-syn-017|simple|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|g-real-011|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 521,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-008|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1638,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-041|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3544,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        1,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-017|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|g-real-008|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 266,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        2,
+        2,
+        2
+      ]
+    },
+    "dev|s-syn-077|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1406,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        2,
+        3
+      ]
+    },
+    "dev|g-syn-006|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1961,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-008|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1769,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-032|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3142,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-010|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1361,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-111|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1588,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-130|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-032|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 4911,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-074|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2805,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-006|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1961,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-128|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-031|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1578,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        2,
+        2,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-117|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1797,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        1,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-047|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2888,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        1,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-014|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-real-004|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 996,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-076|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-008|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3460,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-107|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-049|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1471,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-142|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|g-real-016|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 722,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-001|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-057|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 6000,
+      "evidence_sources": [
+        "document",
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-119|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1926,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-107|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-real-020|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-105|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-001|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-083|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1404,
+      "evidence_sources": [
+        "document",
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-051|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1835,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-076|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-108|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2658,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-063|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-013|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1472,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-109|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1879,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-011|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1588,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-002|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1829,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-011|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-127|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-122|agentic|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-051|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 4983,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-049|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1471,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-057|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2589,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-007|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1796,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-128|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-119|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2634,
+      "evidence_sources": [
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-008|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1286,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-063|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-syn-010|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1361,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-011|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-syn-025|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 333,
+      "evidence_sources": [
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-073|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3174,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        1,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-083|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-117|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1797,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-024|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-144|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-019|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-058|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 5305,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-109|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1879,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-009|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1810,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-024|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-144|agentic|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|g-syn-028|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 6000,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-001|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-142|simple|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-009|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-127|agentic|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-080|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 4488,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-011|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 521,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-013|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1472,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        1,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-111|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3139,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        1,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-037|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2075,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-057|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 5601,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        1,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-008|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1638,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-025|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 333,
+      "evidence_sources": [
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-013|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1472,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        1,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-007|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-041|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 6000,
+      "evidence_sources": [
+        "document",
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        2,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-008|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1286,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-119|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-072|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1561,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        1,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-137|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-127|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-030|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3973,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-001|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1961,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-011|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3153,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-028|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 6000,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        2,
+        2,
+        2
+      ]
+    },
+    "dev|s-syn-144|simple|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-041|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1469,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        2,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-077|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-047|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1225,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-072|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-071|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1805,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        2,
+        2,
+        2
+      ]
+    },
+    "dev|s-syn-009|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-037|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 4089,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-014|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-130|simple|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|g-syn-019|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-006|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-044|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 6000,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        2,
+        2,
+        2
+      ]
+    },
+    "dev|s-syn-031|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1578,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-013|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-syn-019|simple|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|g-real-016|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 722,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-006|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1961,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-074|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-145|agentic|gpt-6-luna": {
+      "mode": "faith",
+      "class": "gemini_faith_only",
+      "evidence_chars": 2373,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-142|agentic|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-129|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-044|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 5742,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-019|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-105|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-107|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-real-015|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 393,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-111|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 4806,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        2,
+        null,
+        3
+      ],
+      "faithfulness": [
+        3,
+        null,
+        3
+      ]
+    },
+    "dev|s-syn-130|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-143|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-069|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3357,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        0,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-083|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-074|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2805,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-044|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 6000,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        null,
+        0
+      ],
+      "faithfulness": [
+        3,
+        null,
+        3
+      ]
+    },
+    "dev|s-syn-063|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-142|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|g-syn-025|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-135|simple|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-150|agentic|gpt-6-luna": {
+      "mode": "faith",
+      "class": "gemini_faith_only",
+      "evidence_chars": 1588,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-037|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2075,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-115|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2066,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-030|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 6000,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-062|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2481,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-028|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-syn-008|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1286,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-020|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-062|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2481,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-080|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-007|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1796,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-011|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-syn-004|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2099,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-109|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1879,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-017|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-143|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-008|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3460,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-047|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1225,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-115|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2066,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-017|agentic|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|g-syn-014|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-syn-014|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-syn-001|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1961,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-145|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|g-syn-019|agentic|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-108|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 822,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-028|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 180,
+      "evidence_sources": [
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-074|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-150|simple|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|g-syn-008|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2753,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-135|agentic|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-117|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1797,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-049|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1471,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-069|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1560,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        2,
+        2,
+        2
+      ]
+    },
+    "dev|s-syn-028|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-syn-023|agentic|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-047|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2888,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        1,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-073|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 6000,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        2,
+        2,
+        2
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-004|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 996,
+      "evidence_sources": [
+        "tool_refs"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-028|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-127|simple|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-137|agentic|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-001|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-135|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-129|agentic|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-061|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3661,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-119|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1926,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-129|simple|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-024|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-syn-013|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3443,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        1,
+        1,
+        1
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-012|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1641,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-032|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3142,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-122|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-069|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-107|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-syn-004|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2099,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-006|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1961,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-032|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3329,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-150|simple|gpt-6-luna": {
+      "mode": "faith",
+      "class": "gemini_faith_only",
+      "evidence_chars": 1588,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-051|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 4983,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-130|agentic|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-135|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|g-real-015|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 525,
+      "evidence_sources": [
+        "cited_section"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-073|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3174,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        2,
+        2,
+        2
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-105|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-071|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-036|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 4542,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-012|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1641,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-011|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1588,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-013|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-028|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-128|simple|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-037|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2075,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-036|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-030|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 3973,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-real-015|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-058|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 6000,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        2
+      ]
+    },
+    "dev|s-syn-019|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1796,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-145|simple|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-036|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2481,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-041|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1469,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        2,
+        2,
+        2
+      ]
+    },
+    "dev|s-syn-012|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1641,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-069|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-024|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-076|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-122|simple|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-011|simple|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-real-020|agentic|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|g-syn-028|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 180,
+      "evidence_sources": [
+        "reconstructed_sql"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|g-syn-010|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1361,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-012|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 1641,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-006|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|g-syn-023|simple|gpt-6.1-sol": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-080|simple|gpt-6-luna": {
+      "mode": "acc",
+      "class": "det_zero",
+      "correctness": [
+        0,
+        0,
+        0
+      ],
+      "faithfulness": []
+    },
+    "dev|s-syn-144|agentic|gpt-6-luna": {
+      "mode": null,
+      "class": "not_scored",
+      "correctness": [],
+      "faithfulness": []
+    },
+    "dev|s-syn-073|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 5276,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        2
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-062|agentic|gpt-6-luna": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2481,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    },
+    "dev|s-syn-031|agentic|gpt-6.1-sol": {
+      "mode": "acc",
+      "class": "gemini_acc",
+      "evidence_chars": 2972,
+      "evidence_sources": [
+        "document"
+      ],
+      "evidence_empty_reason": null,
+      "correctness": [
+        3,
+        3,
+        3
+      ],
+      "faithfulness": [
+        3,
+        3,
+        3
+      ]
+    }
+  },
+  "raw": {
+    "sha256": "b9c8be0d420a5000921e93daf841b79726407633edecda68d2802c8700b5768f",
+    "rows": 858
+  }
+}

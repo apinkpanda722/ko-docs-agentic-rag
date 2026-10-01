@@ -1,0 +1,57 @@
+{
+  "calls": 858,
+  "class_counts": {
+    "gemini_acc": 289,
+    "det_zero": 127,
+    "not_scored": 100,
+    "gemini_faith_only": 10
+  },
+  "format_errors": 2,
+  "format_error_rate": 0.002331002331002331,
+  "score_distribution": {
+    "correctness": {
+      "0": 152,
+      "1": 58,
+      "2": 36,
+      "3": 580
+    },
+    "faithfulness": {
+      "0": 3,
+      "1": 1,
+      "2": 29,
+      "3": 823
+    }
+  },
+  "concentration": {
+    "correctness": {
+      "max_share": 0.7021791767554479,
+      "concentrated": false
+    },
+    "faithfulness": {
+      "max_share": 0.9614485981308412,
+      "concentrated": true
+    }
+  },
+  "agreement": {
+    "correctness": 0.927007299270073,
+    "faithfulness": 0.9859154929577465
+  },
+  "cost_usd": 1.6656040500000198,
+  "status": "completed",
+  "remaining": 0,
+  "stops": [],
+  "updated_at": "2026-10-01T16:05:58.175985+00:00",
+  "rubric_sha256": "f2c78750a160a4437512a6e2c58836fb5c3231629c49b7664a38eaedf12b83e7",
+  "model_settings_hash": "49934421b2d4d225189ce8229b78ebb74e9dcaa69324650b0c657a2c4e5b234f",
+  "transmitted_schema_sha256": "f66a43446b65412e71642c5e40310a6f16de5373d4c51c86a7c70ccf35a98439",
+  "raw": [
+    {
+      "key": "grades",
+      "path": "data/interim/m7/grades.jsonl",
+      "sha256": "b9c8be0d420a5000921e93daf841b79726407633edecda68d2802c8700b5768f",
+      "rows": 858,
+      "event": "completed",
+      "at": "2026-10-01T16:05:58.177802+00:00"
+    }
+  ]
+}
