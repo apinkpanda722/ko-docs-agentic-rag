@@ -40,7 +40,8 @@
     },
     {
       "dir": "m7-answer-eval",
-      "status": "pending"
+      "status": "blocked",
+      "blocked_at": "2026-10-01T20:47:49+0900"
     }
   ]
 }

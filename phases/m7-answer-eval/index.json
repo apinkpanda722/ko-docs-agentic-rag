@@ -47,7 +47,16 @@
     {
       "step": 3,
       "name": "grading-inputs",
-      "status": "pending"
+      "status": "blocked",
+      "started_at": "2026-10-01T20:46:03+0900",
+      "blocked_reason": "M7-D1의 사전 등록 해시 조건이 실제 M6 산출물과 충돌합니다. dev/runs.jsonl SHA-256은 0f25104b068b7f29813db943493d2f37c70bdc3a490bad9f0359f22dadc3eb8b이나 m6_config.json의 m6_dev_sha256은 af8f0bb1f90b748ebd8dae6240c27f86c4f9fd2d1d1cc0a866659fc357fc8d17입니다. m6_config.py는 이 필드에 runs.jsonl이 아닌 data/manifest/m6_dev.json의 해시를 기록하며 실제로 그 파일과 일치합니다. 규칙·확정 manifest 변경이 금지되어 있으므로, 사용자가 M7-D1의 검증 대상 정정을 결정해야 합니다. 지시대로 즉시 중단했으며 AC는 실행하지 않았습니다.",
+      "blocked_at": "2026-10-01T20:47:49+0900",
+      "usage": {
+        "input_tokens": 296066,
+        "cached_input_tokens": 227328,
+        "output_tokens": 1531,
+        "attempts": 1
+      }
     },
     {
       "step": 4,
