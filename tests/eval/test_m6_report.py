@@ -257,6 +257,7 @@ def test_m6_report_measurements_and_no_raw_content(tmp_path):
     h5 = text.split("### H5\n")[1].split("\n## ")[0]
     assert "| 13문항 판정 | 13 | 채점 대기(M7) |" in h5
     assert "| 9문항 보조(sql 제외, 판정 아님) | 9 | 미실행 |" in h5
+    assert "| 실버 test 방향 확인(29문항, M7 채점 후 채움) | 29 | 미실행 |" in h5
     assert "answer_values" not in h5
 
 
@@ -424,3 +425,36 @@ def test_m6_report_dev_history_is_unrun_without_the_file(tmp_path):
 
     section = text.split("## dev 실행 이력\n", 1)[1].split("\n## ", 1)[0]
     assert "미실행" in section
+
+
+def test_m6_report_shows_silver_test_direction_metrics_separately(tmp_path):
+    metrics = {
+        system: {
+            "answer_match": {"numerator": 3, "denominator": 4, "rate": 0.75},
+            "citation_precision": {"mean": 0.5, "denominator": 2, "excluded": 1},
+            "unanswerable_refusal": {"numerator": 1, "denominator": 2, "rate": 0.5},
+            "permission_refusal": {"numerator": 2, "denominator": 2, "rate": 1.0},
+        }
+        for system in ("simple", "agentic")
+    }
+    put(
+        tmp_path,
+        "m6_test_results/run-01.json",
+        {
+            "seq": 1,
+            "deterministic_metrics": metrics,
+            "set_counts": {
+                "gold_test": {"question_count": 30, "execution_count": 60},
+                "silver_test": {"question_count": 83, "execution_count": 166},
+            },
+            "silver_test": {"deterministic_metrics": metrics, "concurrency": 4},
+        },
+    )
+
+    text = render(tmp_path)
+
+    section = text.split("## test 실행\n", 1)[1].split("\n## ", 1)[0]
+    assert "| gold_test | 30 | 60 |" in section
+    assert "| silver_test | 83 | 166 |" in section
+    assert "#### 실버 test 방향 확인(판정 아님)" in section
+    assert section.index("#### 실버 test 방향 확인") > section.index("시스템")

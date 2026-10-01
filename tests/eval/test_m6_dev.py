@@ -236,3 +236,42 @@ def test_run_dev_refuses_to_mix_rows_from_an_older_finalizer(tmp_path: Path) -> 
 
     with pytest.raises(RuntimeError, match="run-NN-invalid"):
         _require_current_finalizer_runs(runs)
+
+
+def test_test_dry_run_reports_executions_and_cost_per_set_and_model() -> None:
+    from kodocs.eval.m6_dev import estimate_test_dry_run
+
+    gold = load_m6_questions(Path("."), split="test", set_name="gold")
+    silver = load_m6_questions(Path("."), split="test", set_name="silver")
+    configs = [load_answer_config("luna"), load_answer_config("sol")]
+
+    result = estimate_test_dry_run(gold, silver, configs)
+
+    assert result["execution_count"] == (30 + 83) * 2
+    sets = result["sets"]
+    assert sets["gold_test"]["question_count"] == 30
+    assert sets["gold_test"]["execution_count"] == 60
+    assert sets["silver_test"]["question_count"] == 83
+    assert sets["silver_test"]["execution_count"] == 166
+    for config in configs:
+        gold_cost = sets["gold_test"]["by_model"][config.model]
+        silver_cost = sets["silver_test"]["by_model"][config.model]
+        total = result["totals_by_model"][config.model]
+        assert 0 < gold_cost["estimated_cost_usd"] < silver_cost["estimated_cost_usd"]
+        assert total["estimated_cost_usd"] == pytest.approx(
+            gold_cost["estimated_cost_usd"] + silver_cost["estimated_cost_usd"]
+        )
+        assert total["guarded_estimated_cost_usd"] >= total["estimated_cost_usd"]
+
+
+def test_test_dry_run_rejects_wrong_set_sizes() -> None:
+    from kodocs.eval.m6_dev import estimate_test_dry_run
+
+    gold = load_m6_questions(Path("."), split="test", set_name="gold")
+    silver = load_m6_questions(Path("."), split="test", set_name="silver")
+    configs = [load_answer_config("luna"), load_answer_config("sol")]
+
+    with pytest.raises(ValueError, match="83"):
+        estimate_test_dry_run(gold, silver[:-1], configs)
+    with pytest.raises(ValueError, match="30"):
+        estimate_test_dry_run(gold[:-1], silver, configs)
