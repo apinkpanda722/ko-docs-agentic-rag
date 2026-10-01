@@ -172,8 +172,8 @@ def test_m6_report_measurements_and_no_raw_content(tmp_path):
                 )
             },
             "top10_changes": {
-                "unexpected_change_count": 0,
-                "unexpected_changes": [],
+                "non_temporal_change_count": 0,
+                "non_temporal_changes": [],
                 "by_group": {"gold_test": {"checked": 30}},
             },
         },
@@ -248,7 +248,7 @@ def test_m6_report_measurements_and_no_raw_content(tmp_path):
         "2.5",
         "c" * 64,
         "d" * 64,
-        "unexpected_changes",
+        "non_temporal_changes",
     ):
         assert value in text
     assert "| g-real-003 | test | 2 | 1 | 1 | 2 |" in text
@@ -299,12 +299,28 @@ def test_m6_report_cli_and_malformed_input(tmp_path, capsys):
             "m6_temporal.json",
             {
                 "top10_changes": {
-                    "unexpected_change_count": 1,
-                    "unexpected_changes": ["s-syn-001"],
+                    "non_temporal_change_count": 2,
+                    "non_temporal_membership_changed_count": 1,
+                    "non_temporal_order_only_count": 1,
+                    "non_temporal_relevant_all_current_count": 1,
+                    "non_temporal_changes": [
+                        {
+                            "question_id": "s-syn-001",
+                            "membership_changed": True,
+                            "order_only": False,
+                            "relevant_docs_all_current": True,
+                        },
+                        {
+                            "question_id": "g-real-006",
+                            "membership_changed": False,
+                            "order_only": True,
+                            "relevant_docs_all_current": False,
+                        },
+                    ],
                 }
             },
             "is_current 효과",
-            "s-syn-001",
+            "| s-syn-001 | 구성 변경 | 예 |",
         ),
         ("m6_test_results/run-02.json", {"seq": 2}, "test 실행", "test 시도 2"),
     ],
