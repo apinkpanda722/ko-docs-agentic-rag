@@ -47,7 +47,16 @@
     {
       "step": 3,
       "name": "grading-inputs",
-      "status": "pending"
+      "status": "blocked",
+      "started_at": "2026-10-01T21:00:42+0900",
+      "blocked_reason": "실제 --verify-inputs가 m6_eval_inputs_sha256 불일치로 종료(code 2). m6_dev.json 기록값=e1e6143775266a35a672019e0bbb6692fc6588974742d1e547a2f21a1df595be, 현재 m6_eval_inputs.json=f7a814627ee8647f50e6e0deb240b3a44c6fddc8afad907c180148045475a035. 확정 manifest 수정은 금지되어 있으므로 M6 실행 당시 입력 manifest를 사용자가 확인해야 합니다.",
+      "blocked_at": "2026-10-01T21:11:03+0900",
+      "usage": {
+        "input_tokens": 1359341,
+        "cached_input_tokens": 1243520,
+        "output_tokens": 15399,
+        "attempts": 1
+      }
     },
     {
       "step": 4,
