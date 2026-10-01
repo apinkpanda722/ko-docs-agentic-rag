@@ -14,7 +14,7 @@
   "seed": 20261001,
   "rubric_sha256": "b1842fdc8d75a2017c93653fd8a79e74a89ff2d2125ab324ed0899230b13ce53",
   "model_settings_hash": "49934421b2d4d225189ce8229b78ebb74e9dcaa69324650b0c657a2c4e5b234f",
-  "calls": 1,
+  "calls": 30,
   "class_counts": {
     "gemini_acc": 10
   },
@@ -22,35 +22,35 @@
   "format_error_rate": 0.0,
   "score_distribution": {
     "correctness": {
-      "0": 0,
-      "1": 0,
+      "0": 9,
+      "1": 3,
       "2": 0,
-      "3": 0
+      "3": 18
     },
     "faithfulness": {
       "0": 0,
       "1": 0,
-      "2": 0,
-      "3": 0
+      "2": 2,
+      "3": 28
     }
   },
   "concentration": {
     "correctness": {
-      "max_share": 0,
+      "max_share": 0.6,
       "concentrated": false
     },
     "faithfulness": {
-      "max_share": 0,
-      "concentrated": false
+      "max_share": 0.9333333333333333,
+      "concentrated": true
     }
   },
   "agreement": {
-    "correctness": null,
-    "faithfulness": null
+    "correctness": 1.0,
+    "faithfulness": 0.9
   },
-  "cost_usd": 0.0,
-  "status": "stopped",
-  "remaining": 30,
+  "cost_usd": 0.061153950000000026,
+  "status": "completed",
+  "remaining": 0,
   "stops": [
     {
       "at": "2026-10-01T13:24:00.001422+00:00",
@@ -58,7 +58,7 @@
       "remaining": 30
     }
   ],
-  "updated_at": "2026-10-01T13:24:00.001546+00:00",
+  "updated_at": "2026-10-01T13:36:01.608274+00:00",
   "raw": [
     {
       "key": "pilot_grades",
@@ -67,6 +67,15 @@
       "rows": 1,
       "event": "stopped",
       "at": "2026-10-01T13:24:00.001774+00:00"
+    },
+    {
+      "key": "pilot_grades",
+      "path": "data/interim/m7/pilot/grades.jsonl",
+      "sha256": "8a16074d13007f64b46af1ac32b6e74b104f654cefb4b7b2832b6779a2682d05",
+      "rows": 31,
+      "event": "completed",
+      "at": "2026-10-01T13:36:01.608584+00:00"
     }
-  ]
+  ],
+  "transmitted_schema_sha256": "f66a43446b65412e71642c5e40310a6f16de5373d4c51c86a7c70ccf35a98439"
 }
