@@ -5,7 +5,16 @@
     {
       "step": 0,
       "name": "m6-report-fix",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-01T20:23:41+0900",
+      "summary": "m6_report.py의 _inputs()에 ID 접두 집계 fallback과 회귀 테스트 추가, M6 결과 문서 지정 칸 갱신. make verify 통과(1477개), m6_report 테스트 19개 통과. 문서 diff: 9줄 추가·8줄 삭제(골드·실버 8칸, 환경 4칸, 변경 기록 1행); 재생성의 커밋 해시 변경은 복원했으며 확정 manifest·H5 판정은 불변.",
+      "completed_at": "2026-10-01T20:27:32+0900",
+      "usage": {
+        "input_tokens": 646972,
+        "cached_input_tokens": 571904,
+        "output_tokens": 3811,
+        "attempts": 1
+      }
     },
     {
       "step": 1,
@@ -72,5 +81,6 @@
       "name": "m7-report",
       "status": "pending"
     }
-  ]
+  ],
+  "created_at": "2026-10-01T20:23:41+0900"
 }
