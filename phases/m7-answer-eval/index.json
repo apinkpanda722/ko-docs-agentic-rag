@@ -47,7 +47,16 @@
     {
       "step": 3,
       "name": "grading-inputs",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-01T21:15:15+0900",
+      "summary": "m7_grading.py의 verify_m6_inputs에 git 이력 기반 manifest 검증과 회귀 테스트를 추가하고 기존 분류·블라인드 빌더·파일럿 함수 및 m7_rubric.md 초안을 유지했다. make verify 1565개·m7_grading 테스트 36개 통과, 실제 M6 dev 300·골드 test 60·실버 test 166행 검증 OK. API 호출·커밋 없음.",
+      "completed_at": "2026-10-01T21:20:32+0900",
+      "usage": {
+        "input_tokens": 810581,
+        "cached_input_tokens": 725120,
+        "output_tokens": 5083,
+        "attempts": 1
+      }
     },
     {
       "step": 4,
