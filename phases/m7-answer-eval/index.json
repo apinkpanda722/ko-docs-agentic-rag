@@ -61,7 +61,16 @@
     {
       "step": 4,
       "name": "human-cards",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-01T21:20:32+0900",
+      "summary": "m7_human.py의 select_kappa_sample·write_cards·register_human_grades·load_human_grades와 Make 타깃 구현, 표본 50개(파일럿 10개 제외·H5 16개 강제 포함) manifest 및 로컬 카드 생성; make verify 1583개·전용 테스트 18개 통과. API 호출·golden 수정·커밋 없음.",
+      "completed_at": "2026-10-01T21:29:59+0900",
+      "usage": {
+        "input_tokens": 783472,
+        "cached_input_tokens": 700544,
+        "output_tokens": 12317,
+        "attempts": 1
+      }
     },
     {
       "step": 5,
