@@ -19,7 +19,16 @@
     {
       "step": 1,
       "name": "design-docs",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-01T20:27:33+0900",
+      "summary": "M7 판정 규칙 원문·ADR-030·EVAL·FP-051/052 고정, m7_rules.py의 REQUIRED_RULE_IDS·extract_rules_section()·rules_sha256() 및 일관성 테스트 추가. M5·M6 규칙 불변 확인, make verify 1485개·전용 테스트 8개 통과.",
+      "completed_at": "2026-10-01T20:34:32+0900",
+      "usage": {
+        "input_tokens": 992550,
+        "cached_input_tokens": 896256,
+        "output_tokens": 10091,
+        "attempts": 1
+      }
     },
     {
       "step": 2,
