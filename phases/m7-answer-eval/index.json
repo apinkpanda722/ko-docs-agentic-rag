@@ -89,7 +89,16 @@
     {
       "step": 6,
       "name": "analysis-stats",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-01T21:43:58+0900",
+      "summary": "m7_stats.py의 κ·H5·Sol·라우터·충실성 통계와 m7_analyze.py의 원본 해시 검증·분석 CLI, make m7-analyze 구현. 전용 테스트 37개·make verify 1665개 통과. 실제 분석·API 호출·커밋 없음.",
+      "completed_at": "2026-10-01T21:58:55+0900",
+      "usage": {
+        "input_tokens": 1567420,
+        "cached_input_tokens": 1454080,
+        "output_tokens": 20826,
+        "attempts": 1
+      }
     },
     {
       "step": 7,
