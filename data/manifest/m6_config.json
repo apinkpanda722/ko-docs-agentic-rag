@@ -1,0 +1,39 @@
+{
+  "answer": {
+    "model": "gpt-6-luna",
+    "settings": {
+      "api": "responses",
+      "effort": "low",
+      "max_attempts": 3,
+      "max_input_tokens": 272000,
+      "max_output_tokens": 4000,
+      "model": "gpt-6-luna",
+      "request_timeout_s": 30,
+      "temperature": null
+    },
+    "settings_hash": "055ad89e97b568870482146379370a599f5f1a27d1c4ce99baf8b26acf4beac5"
+  },
+  "code_commit": "910b542e99ce7cf7a49ac226ef9842a6009ad92d",
+  "config_hash": "ba5ee42864360f3af13a26b4581b0ce6044c395c0aef524af6195c5a98d199ef",
+  "finalizer_hash": "a83f28b7027525a1ecb3a4166ea980d40a85bb504cb1b2e7e81e5a262680bbb0",
+  "frozen_at": "2026-10-01T17:10:07+09:00",
+  "guardrails": {
+    "settings": {
+      "agentic_timeout_s": 120,
+      "context_char_budget": 6000,
+      "context_top_k": 8,
+      "max_output_tokens": 4000,
+      "max_steps": 5,
+      "max_tokens_per_question": 100000,
+      "request_timeout_s": 30,
+      "simple_timeout_s": 45
+    },
+    "settings_hash": "3d3a474bc14e288706a845a5219a001ee34d0b6b808b932a8310f2e53bcfc861"
+  },
+  "m5_config_hash": "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d",
+  "m6_dev_sha256": "af8f0bb1f90b748ebd8dae6240c27f86c4f9fd2d1d1cc0a866659fc357fc8d17",
+  "prompt_hashes": {
+    "agentic": "c6c721fa82535d97bab6f84d79f961d1ef6e64d61314b64e41b897fde2088b63",
+    "common": "f451255a45e5d64ecd4786a77f24a5aef360f58edfc9e95727b85bb9b0c910aa"
+  }
+}
