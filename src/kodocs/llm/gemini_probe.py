@@ -26,23 +26,55 @@ from kodocs.llm.grade_settings import load_grade_config
 class ProbeScore(BaseModel):
     accuracy: int = Field(ge=0, le=3, strict=True)
     faithfulness: int = Field(ge=0, le=3, strict=True)
+    rationale: str = Field(max_length=200)
+
+
+CONFIRMED_BASIS = (
+    "https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash",
+    "https://ai.google.dev/gemini-api/docs/gemini-3",
+)
+CHECKED_ON = "2026-10-01"
+
+
+def _call(records, name):
+    return next((r for r in records if r["name"] == name), None)
+
+
+def _minimal_summary(records):
+    entry = _call(records, "minimal_check")
+    if entry is None:
+        return {"ran": False}
+    return {
+        "ran": True,
+        "supported": bool(entry["accepted"]),
+        "error_type": entry["error_type"],
+        "status_code": entry["status_code"],
+        "sdk_error_type": entry.get("sdk_error_type"),
+    }
+
+
+def _repeat_summary(records):
+    first, second = _call(records, "baseline"), _call(records, "repeat")
+    if first is None or second is None or not (first["parsed"] and second["parsed"]):
+        return {"compared": False}
+    a, b = first["scores"], second["scores"]
+    return {
+        "compared": True,
+        "scores_equal": all(a[key] == b[key] for key in ("accuracy", "faithfulness")),
+        "rationale_equal": a["rationale"] == b["rationale"],
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)
-    config = replace(
-        load_grade_config(),
-        thinking_level="minimal",
-        temperature=None,
-        seed=None,
-        max_attempts=1,
-    )
+    # Confirmed settings (docs, 2026-10-01): thinking low, temperature/seed never sent.
+    config = replace(load_grade_config(), temperature=None, seed=None, max_attempts=1)
     plans = (
-        ("baseline_minimal", config),
-        ("temperature", replace(config, temperature=0.0)),
-        ("seed", replace(config, seed=20261001)),
+        ("baseline", config),
+        ("minimal_check", replace(config, thinking_level="minimal")),
+        ("repeat", config),
     )
     request = GradeRequest(
         "m7-probe",
@@ -94,6 +126,7 @@ def main(argv: list[str] | None = None) -> int:
             "usage_fields": [],
             "thinking_tokens_used": None,
             "model_version": None,
+            "response_id": None,
             "scores": None,
         }
         try:
@@ -136,6 +169,7 @@ def main(argv: list[str] | None = None) -> int:
                     "usage": asdict(result.usage),
                     "thinking_tokens_used": result.usage.thoughts_token_count > 0,
                     "model_version": result.model_record["model_version"],
+                    "response_id": result.request_id,
                     "scores": result.parsed.model_dump(),
                 }
             )
@@ -147,8 +181,16 @@ def main(argv: list[str] | None = None) -> int:
         "sdk": sdk_evidence(),
         "calls": records,
         "stopped": stopped,
-        "confirmation": "User must confirm model minimum from model documentation and "
-        "probe results, then set thinking_level/temperature/seed in models.toml",
+        "confirmed_settings": {
+            "thinking_level": "low",
+            "temperature": None,
+            "seed": None,
+            "basis": list(CONFIRMED_BASIS),
+            "checked_on": CHECKED_ON,
+            "note": "확정값은 minimal_check 결과와 무관하게 low(문서상 최저 수준)이다.",
+        },
+        "minimal_check": _minimal_summary(records),
+        "repeat_comparison": _repeat_summary(records),
     }
     target = Path("data/manifest/m7_probe.json")
     target.parent.mkdir(parents=True, exist_ok=True)

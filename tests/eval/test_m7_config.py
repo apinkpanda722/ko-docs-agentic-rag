@@ -14,9 +14,27 @@ def put(root, path, value):
     target.write_text(json.dumps(value))
 
 
+def probe_for(model):
+    return {
+        "calls": [
+            {
+                "name": "baseline",
+                "accepted": True,
+                "parsed": True,
+                "settings": model.record(),
+            }
+        ],
+        "confirmed_settings": {
+            "thinking_level": model.thinking_level,
+            "temperature": model.temperature,
+            "seed": model.seed,
+        },
+    }
+
+
 @pytest.fixture
 def frozen_inputs(tmp_path, monkeypatch):
-    model = GradeModelConfig("gemini-3.8-flash", thinking_level="minimal")
+    model = GradeModelConfig("gemini-3.8-flash", thinking_level="low")
     monkeypatch.setattr(config, "load_grade_config", lambda: model)
     check = InputVerification(
         config.DEV_SHA256,
@@ -33,9 +51,7 @@ def frozen_inputs(tmp_path, monkeypatch):
         "data/manifest/m7_human_sample.json": {"answer_ids": ["id"]},
         "data/interim/m7/cards/cards_manifest.json": {"rubric_sha256": rubric_sha256()},
         "data/manifest/m7_pilot.json": {"ids": list(map(str, range(10)))},
-        "data/manifest/m7_probe.json": {
-            "calls": [{"accepted": True, "settings": model.record()}]
-        },
+        "data/manifest/m7_probe.json": probe_for(model),
         "data/manifest/m6_config.json": {"config_hash": "m6", "m6_dev_sha256": "dev"},
     }.items():
         put(tmp_path, path, value)
@@ -112,7 +128,8 @@ def test_m7_config_requires_freeze_and_detects_changes(frozen_inputs):
 
 
 @pytest.mark.parametrize(
-    "field,value", [("temperature", 0.5), ("seed", 8), ("thinking_level", "low")]
+    "field,value",
+    [("temperature", 0.5), ("seed", 8), ("thinking_level", "high")],
 )
 def test_m7_config_probe_settings_must_match(frozen_inputs, monkeypatch, field, value):
     from dataclasses import replace
@@ -161,17 +178,17 @@ def test_m7_config_actual_price_expiration(frozen_inputs, monkeypatch):
         config.freeze_config(root=frozen_inputs.root)
 
 
-def test_m7_config_minimum_thinking_required(frozen_inputs, monkeypatch):
-    from dataclasses import replace
-
-    model = replace(frozen_inputs.model, thinking_level="high")
-    probe = {
-        "calls": [
-            {"accepted": True, "settings": m.record()}
-            for m in [frozen_inputs.model, model]
-        ]
-    }
-    put(frozen_inputs.root, "data/manifest/m7_probe.json", probe)
-    monkeypatch.setattr(config, "load_grade_config", lambda: model)
-    with pytest.raises(ValueError, match="minimum"):
-        config.freeze_config(root=frozen_inputs.root)
+def test_m7_config_requires_accepted_baseline_and_confirmed_values(
+    frozen_inputs,
+):
+    root = frozen_inputs.root
+    probe = probe_for(frozen_inputs.model)
+    probe["calls"][0]["accepted"] = False
+    put(root, "data/manifest/m7_probe.json", probe)
+    with pytest.raises(ValueError, match="baseline"):
+        config.freeze_config(root=root)
+    probe = probe_for(frozen_inputs.model)
+    probe["confirmed_settings"]["thinking_level"] = "high"
+    put(root, "data/manifest/m7_probe.json", probe)
+    with pytest.raises(ValueError, match="thinking_level"):
+        config.freeze_config(root=root)

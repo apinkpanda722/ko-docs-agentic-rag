@@ -110,7 +110,9 @@ def test_config_defaults_and_validation():
     assert config.tier == "paid"
     assert config.rpm_pacing == 10
     assert config.rpm is config.tpm is config.rpd is None
-    assert config.thinking_level is config.temperature is config.seed is None
+    # Confirmed 2026-10-01: thinking low (documented minimum); temperature/seed never sent.
+    assert config.thinking_level == "low"
+    assert config.temperature is config.seed is None
     assert config.record()["seed"] is None
     assert replace(config, seed=1).settings_hash() != config.settings_hash()
     with pytest.raises(ConfigError):
@@ -142,7 +144,7 @@ def test_success_usage_ledger_and_null_omission(tmp_path):
     assert result.model_record["model_version"] == "gemini-test-version"
     params = fake.calls[0]["config"]
     assert "temperature" not in params and "seed" not in params
-    assert "thinking_config" not in params
+    assert params["thinking_config"].thinking_level.value == "LOW"
     assert params["response_schema"] is Score
     lines = [
         json.loads(line) for line in (tmp_path / "costs.jsonl").read_text().splitlines()

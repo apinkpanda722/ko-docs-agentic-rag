@@ -60,7 +60,10 @@ def test_probe_three_calls_record_usage_and_only_integer_scores(monkeypatch, tmp
     def succeed(self, request):
         calls.append(self.config.record())
         return SimpleNamespace(
-            parsed=gemini_probe.ProbeScore(accuracy=3, faithfulness=3),
+            parsed=gemini_probe.ProbeScore(
+                accuracy=3, faithfulness=3, rationale="동일 사유"
+            ),
+            request_id=f"resp-{len(calls)}",
             usage=GradeUsage(100, 50, 20, 30, 150),
             model_record={"model_version": "reported-version"},
         )
@@ -68,13 +71,80 @@ def test_probe_three_calls_record_usage_and_only_integer_scores(monkeypatch, tmp
     monkeypatch.setattr(gemini_probe.GeminiGrader, "grade", succeed)
     assert gemini_probe.main([]) == 0
     record = json.loads((tmp_path / "data/manifest/m7_probe.json").read_text())
+    assert [c["name"] for c in record["calls"]] == [
+        "baseline",
+        "minimal_check",
+        "repeat",
+    ]
     assert len(calls) == 3
     assert all(entry["thinking_tokens_used"] for entry in record["calls"])
-    assert all(
-        entry["scores"] == {"accuracy": 3, "faithfulness": 3}
-        for entry in record["calls"]
+    assert all(entry["response_id"] for entry in record["calls"])
+    # thinking low for baseline/repeat, minimal only for the support check;
+    # temperature and seed are never sent in any call.
+    assert [c["thinking_level"] for c in calls] == ["low", "minimal", "low"]
+    assert all(c["temperature"] is None and c["seed"] is None for c in calls)
+    assert record["minimal_check"] == {
+        "ran": True,
+        "supported": True,
+        "error_type": None,
+        "status_code": None,
+        "sdk_error_type": None,
+    }
+    assert record["repeat_comparison"] == {
+        "compared": True,
+        "scores_equal": True,
+        "rationale_equal": True,
+    }
+    confirmed = record["confirmed_settings"]
+    assert (
+        confirmed["thinking_level"],
+        confirmed["temperature"],
+        confirmed["seed"],
+    ) == (
+        "low",
+        None,
+        None,
     )
-    assert calls[0]["temperature"] is None
-    assert calls[1]["temperature"] == 0
-    assert calls[2]["seed"] == 20261001
+    assert len(confirmed["basis"]) == 2 and confirmed["checked_on"] == "2026-10-01"
     assert "Reference:" not in json.dumps(record)
+
+
+def test_probe_minimal_rejection_is_recorded_without_retry_and_does_not_stop(
+    monkeypatch, tmp_path
+):
+    from types import SimpleNamespace
+
+    from kodocs.llm.gemini_chat import GradeUsage
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        gemini_probe,
+        "load_settings",
+        lambda **kwargs: Settings({"GEMINI_API_KEY": "secret"}, 45),
+    )
+    monkeypatch.setattr(gemini_probe, "create_client", lambda *args: object())
+    seen = []
+
+    def grade(self, request):
+        seen.append(self.config.thinking_level)
+        if self.config.thinking_level == "minimal":
+            raise FatalLLMError("safe", status_code=400)
+        return SimpleNamespace(
+            parsed=gemini_probe.ProbeScore(
+                accuracy=3, faithfulness=3, rationale=f"사유{len(seen)}"
+            ),
+            usage=GradeUsage(100, 50, 20, 30, 150),
+            model_record={"model_version": "v"},
+            request_id=f"resp-{len(seen)}",
+        )
+
+    monkeypatch.setattr(gemini_probe.GeminiGrader, "grade", grade)
+    assert gemini_probe.main([]) == 0
+    record = json.loads((tmp_path / "data/manifest/m7_probe.json").read_text())
+    assert seen == ["low", "minimal", "low"]  # no retry, repeat still runs
+    assert record["minimal_check"]["supported"] is False
+    assert record["minimal_check"]["status_code"] == 400
+    # Repeat comparison reports differing rationale text for the same input.
+    assert record["repeat_comparison"]["scores_equal"] is True
+    assert record["repeat_comparison"]["rationale_equal"] is False
+    assert record["confirmed_settings"]["thinking_level"] == "low"

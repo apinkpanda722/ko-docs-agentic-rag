@@ -56,25 +56,21 @@ def check_price(model):
 
 
 def _check_probe(model, probe):
-    accepted = [
-        c["settings"]
-        for c in probe.get("calls", [])
-        if c.get("accepted") and c.get("settings", {}).get("model") == model.model
-    ]
-    for field in ("temperature", "seed", "thinking_level"):
+    """Freeze only the probed, documented settings: baseline accepted, values equal."""
+    calls = {c.get("name"): c for c in probe.get("calls", [])}
+    baseline = calls.get("baseline")
+    if not baseline or not baseline.get("accepted") or not baseline.get("parsed"):
+        raise ValueError("probe: no accepted baseline configuration")
+    settings = baseline.get("settings", {})
+    if settings.get("model") != model.model:
+        raise ValueError("probe: baseline model differs from configured model")
+    confirmed = probe.get("confirmed_settings") or {}
+    for field in ("thinking_level", "temperature", "seed"):
         value = getattr(model, field)
-        if field == "thinking_level" and value is None:
-            raise ValueError("probe: minimum thinking_level must be confirmed")
-        if value is not None and not any(c.get(field) == value for c in accepted):
+        if settings.get(field) != value or confirmed.get(field) != value:
             raise ValueError(f"probe: unsupported/unconfirmed {field}")
-    if not accepted:
-        raise ValueError("probe: no accepted model configuration")
-    levels = ["minimal", "low", "medium", "high"]
-    supported = [
-        c["thinking_level"] for c in accepted if c.get("thinking_level") in levels
-    ]
-    if supported and model.thinking_level != min(supported, key=levels.index):
-        raise ValueError("probe: minimum supported thinking_level required")
+    if not model.thinking_level:
+        raise ValueError("probe: thinking_level must be confirmed")
 
 
 def freeze_config(*, root=Path("."), frozen_at=None):

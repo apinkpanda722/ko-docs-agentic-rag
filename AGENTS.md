@@ -111,7 +111,7 @@ make m6-test      # 골드 test 30문항 + 실버 test 83문항(H5 방향 확인
 make m6-tokens    # MCP 데모 사용자 토큰 생성(평문은 data/interim/mcp/tokens.json 비커밋, 해시만 data/manifest/mcp_token_hashes.json) — 사용자 실행
 make m6-report    # M6 결과 문서 docs/results/2026-10-01-m6-agent-mcp.md(고정) 갱신 — 네트워크 없음
 make m6-serve     # MCP 서버 기동(streamable HTTP, 127.0.0.1) — make up 필요, 사용자 실행
-make m7-probe  # Gemini 채점 모델 설정 확인(1~3회 실제 호출·과금) — 사용자 실행
+make m7-probe  # Gemini 채점 설정 확인(baseline·minimal_check·repeat 3회 실제 호출·과금, 확정값 thinking low·temperature/seed 미전송) → data/manifest/m7_probe.json — 사용자 실행
 make m7-cards  # κ 표본 50개 + 오프라인 카드 HTML 생성(로컬 전용, 네트워크 없음) — 사용자 실행
 make m7-human-register  # 사람 채점 CSV 검증·해시를 data/manifest/m7_human_grades.json에 기록 — 사용자 실행
 make m7-pilot  # 초안 루브릭 파일럿 10건 × 3회 채점 — 실제 Gemini 호출·과금, 사용자 실행
