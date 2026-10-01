@@ -122,6 +122,7 @@ def _inputs(data: Mapping) -> str:
     for label, key in (
         ("dev", "dev_set"),
         ("H5 풀", "h5_pool"),
+        ("H5 풀(sql 제외 보조)", "h5_pool_ex_sql"),
         ("정답 값 분모", "answer_match_denominator"),
         ("게이트", "gate_permission_dev"),
         ("답 없음", "unanswerable_dev"),
@@ -476,7 +477,16 @@ def _test(results: Sequence[Mapping], runs: Sequence[Mapping]) -> str:
             ),
             _operations(result.get("operations"), result.get("concurrency")),
         ]
-    parts += ["### H5\n\n채점 대기(M7)"]
+    parts += [
+        "### H5\n\n"
+        + _table(
+            ("범위", "문항 수", "상태"),
+            [
+                ["13문항 판정", 13, "채점 대기(M7)"],
+                ["9문항 보조(sql 제외, 판정 아님)", 9, MISSING],
+            ],
+        )
+    ]
     return "\n\n".join(parts)
 
 

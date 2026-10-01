@@ -20,6 +20,7 @@ M6_INPUTS_PATH = Path("data/manifest/m6_eval_inputs.json")
 
 EXPECTED_DEV_COUNT = 75
 EXPECTED_H5_COUNT = 13
+EXPECTED_H5_EX_SQL_COUNT = 9
 EXPECTED_ANSWER_DENOMINATOR = 56
 EXPECTED_PERMISSION_DEV = 8
 EXPECTED_UNANSWERABLE_DEV = 8
@@ -94,6 +95,8 @@ def build_input_manifest(
 
     _require_count("dev_set", dev, EXPECTED_DEV_COUNT)
     _require_count("h5_pool", h5, EXPECTED_H5_COUNT)
+    h5_ex_sql = [question for question in h5 if question.type != "sql"]
+    _require_count("h5_pool_ex_sql", h5_ex_sql, EXPECTED_H5_EX_SQL_COUNT)
     _require_count("answer_match_denominator", denominator, EXPECTED_ANSWER_DENOMINATOR)
     _require_count("gate_permission_dev", permission, EXPECTED_PERMISSION_DEV)
     _require_count("unanswerable_dev", unanswerable, EXPECTED_UNANSWERABLE_DEV)
@@ -140,6 +143,12 @@ def build_input_manifest(
         "h5_pool": {
             **_id_section(h5, by_set=False),
             "by_type": dict(sorted(Counter(question.type for question in h5).items())),
+        },
+        "h5_pool_ex_sql": {
+            **_id_section(h5_ex_sql, by_set=False),
+            "by_type": dict(
+                sorted(Counter(question.type for question in h5_ex_sql).items())
+            ),
         },
         "answer_match_denominator": {
             **_id_section(denominator, by_set=True),
@@ -211,6 +220,7 @@ def require_input_manifest(root: Path = Path(".")) -> Mapping[str, object]:
     for section, expected in (
         ("dev_set", EXPECTED_DEV_COUNT),
         ("h5_pool", EXPECTED_H5_COUNT),
+        ("h5_pool_ex_sql", EXPECTED_H5_EX_SQL_COUNT),
         ("answer_match_denominator", EXPECTED_ANSWER_DENOMINATOR),
         ("gate_permission_dev", EXPECTED_PERMISSION_DEV),
         ("unanswerable_dev", EXPECTED_UNANSWERABLE_DEV),

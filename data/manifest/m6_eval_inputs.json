@@ -303,7 +303,7 @@
       "s-syn-135"
     ]
   },
-  "generated_at": "2026-10-01T11:09:45+09:00",
+  "generated_at": "2026-10-01T15:46:52+09:00",
   "h5_pool": {
     "by_type": {
       "identifier": 4,
@@ -325,6 +325,24 @@
       "g-syn-027",
       "g-syn-029",
       "g-syn-030"
+    ]
+  },
+  "h5_pool_ex_sql": {
+    "by_type": {
+      "identifier": 4,
+      "multi_doc": 5
+    },
+    "count": 9,
+    "ids": [
+      "g-real-001",
+      "g-real-013",
+      "g-real-014",
+      "g-syn-002",
+      "g-syn-003",
+      "g-syn-005",
+      "g-syn-012",
+      "g-syn-015",
+      "g-syn-016"
     ]
   },
   "inputs": {

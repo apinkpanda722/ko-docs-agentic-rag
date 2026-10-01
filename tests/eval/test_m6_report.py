@@ -255,7 +255,9 @@ def test_m6_report_measurements_and_no_raw_content(tmp_path):
     for value in (secret, "answer_values", "api_key", "correctness", "P95 |"):
         assert value not in text
     h5 = text.split("### H5\n")[1].split("\n## ")[0]
-    assert h5.strip() == "채점 대기(M7)"
+    assert "| 13문항 판정 | 13 | 채점 대기(M7) |" in h5
+    assert "| 9문항 보조(sql 제외, 판정 아님) | 9 | 미실행 |" in h5
+    assert "answer_values" not in h5
 
 
 @pytest.mark.parametrize(

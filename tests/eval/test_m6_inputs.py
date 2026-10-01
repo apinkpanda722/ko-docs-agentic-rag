@@ -32,6 +32,17 @@ def test_real_m6_input_sets_match_preregistered_counts() -> None:
 
     assert manifest["dev_set"]["count"] == 75
     assert manifest["h5_pool"]["count"] == 13
+    ex_sql = manifest["h5_pool_ex_sql"]
+    sql_ids = {
+        question.id
+        for question in gold
+        if question.split == "test" and question.type == "sql"
+    }
+    assert ex_sql["count"] == 9
+    assert ex_sql["by_type"] == {"identifier": 4, "multi_doc": 5}
+    assert set(ex_sql["ids"]) < set(manifest["h5_pool"]["ids"])
+    assert not set(ex_sql["ids"]) & sql_ids
+    assert len(sql_ids) == 4
     denominator = manifest["answer_match_denominator"]
     assert denominator["count"] == 56
     assert denominator["by_set_source"] == {
@@ -76,6 +87,31 @@ def test_m6_input_count_drift_fails_closed() -> None:
     with pytest.raises(M6InputError, match="h5_pool"):
         build_input_manifest(
             changed_gold,
+            silver,
+            gold_sha256="g" * 64,
+            silver_sha256="s" * 64,
+            m5_config_hash=(
+                "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d"
+            ),
+        )
+
+
+def test_h5_pool_ex_sql_count_drift_fails_closed() -> None:
+    gold, silver = _questions()
+    identifier = next(
+        question
+        for question in gold
+        if question.split == "test" and question.type == "identifier"
+    )
+    # Retyping to sql keeps the 13-question H5 pool but leaves 8 non-sql questions.
+    changed = [
+        replace(question, type="sql") if question.id == identifier.id else question
+        for question in gold
+    ]
+
+    with pytest.raises(M6InputError, match="h5_pool_ex_sql"):
+        build_input_manifest(
+            changed,
             silver,
             gold_sha256="g" * 64,
             silver_sha256="s" * 64,
