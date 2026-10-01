@@ -233,3 +233,10 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **규칙**: 실행 원본 산출물이 비커밋이면 실행 시점(완료·정지 시)에 원본 파일의 SHA-256과 행 수를 커밋 manifest에 남긴다. 파생 manifest의 해시로는 원본을 고정할 수 없다. 이후 분석은 현재 원본을 기록과 대조한 뒤에만 진행한다. 해시 필드 이름이 가리키는 파일을 규칙에 쓰기 전에 코드로 확인한다(FP-011).
 - **강제 수단**: M7 step 3 `verify_m6_inputs`(`analyze_dev()` 재실행 비교), step 5 `m7_rawhash`(pilot·grade fingerprint)와 step 9·10 원본 해시 테스트, step 6·13의 분석·보고 전 대조.
 - **출처**: M7 step 3 blocked(M6 dev `runs.jsonl` 사례)
+
+### FP-054 채점 캐시 키가 답변 텍스트만 지문으로 써서 다른 답변의 점수를 복사함
+- **증상**: M7 채점에서 같은 질문의 두 시스템·두 모델 답변 텍스트가 같으면 캐시 키(`answer_sha256`, 루브릭, 설정, 반복)가 같아 13개 답변이 채점되지 않고 다른 답변의 점수를 받았다(299개 중 286개만 채점, 897회 대신 858회). 13쌍 중 4쌍은 인용 근거가 달라 충실성 점수가 틀린 값이었다. 형식 오류(parse_error) 행도 완료로 캐시되어 재시도되지 않았다.
+- **원인**: 캐시 키가 채점 요청 전체가 아니라 입력의 일부(답변 텍스트)만 포함했다. FP-033(멱등성 키와 출력 키 불일치)의 변형이다.
+- **규칙**: 채점 캐시 키는 채점 요청 전체를 지문으로 쓴다: 답변 ID와 요청 텍스트 해시(`request_sha256`)를 키에 넣는다. 답변마다 자기 입력으로 반복 채점하고, 점수 집계는 행의 `answer_id`가 대상 답변과 같을 때만 쓴다. 완료로 캐시하는 상태는 재호출해도 결과가 바뀌지 않는 것(성공, 과금 불확실)만이고, 형식 오류는 같은 슬롯을 정해진 횟수만 재시도한다. 키 필드를 바꾸면 기존 행은 원본을 덮어쓰지 않고 `answer_id`로 해시를 다시 계산해 메모리에서 보강한다.
+- **강제 수단**: `tests/eval/test_m7_grade.py`(`test_m7_grade_equal_answers_with_different_evidence_do_not_collide`, `test_m7_grade_equal_requests_are_still_graded_per_answer`, `test_m7_grade_legacy_rows_are_rekeyed_in_memory_without_regrading`, `test_m7_grade_legacy_collision_regrades_only_the_answer_without_rows`, `test_m7_grade_parse_error_slot_is_retried_once_and_original_row_is_kept`)
+- **출처**: M7 `make m7-grade` 실측 후 조언 세션 검증

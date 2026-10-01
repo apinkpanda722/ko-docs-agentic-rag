@@ -2,6 +2,7 @@
 
 import argparse
 import fcntl
+import hashlib
 import json
 import math
 import os
@@ -59,14 +60,22 @@ PILOT_PATH = Path("data/manifest/m7_pilot.json")
 SCORES_PATH = Path("data/manifest/m7_grade_scores.json")
 SUMMARY_PATH = Path("data/manifest/m7_grade_summary.json")
 DRY_PATH = Path("data/manifest/m7_dry_runs.jsonl")
+# FP-054: the grading fingerprint is the whole request (answer id + request hash),
+# not the answer text alone: equal answers with different evidence must not collide.
 CACHE_FIELDS = (
+    "answer_id",
     "answer_sha256",
+    "request_sha256",
     "rubric_sha256",
     "model_settings_hash",
     "mode",
     "repeat",
 )
-TERMINAL = {"succeeded", "parse_error", "billing_uncertain"}
+DONE_STATUSES = {"succeeded", "billing_uncertain"}
+API_STATUSES = {"succeeded", "parse_error", "billing_uncertain"}
+# A structured-output (format) error is retried once in the same repeat slot;
+# a second one leaves the slot missing (implementation-defect handling, not a rule).
+MAX_PARSE_ATTEMPTS = 2
 
 
 def now():
@@ -92,15 +101,53 @@ def cache_key(row):
     return tuple(row[k] for k in CACHE_FIELDS)
 
 
-def load_grades(path):
-    """FP-032: last row wins for each output-determining FP-033 key."""
-    latest = {}
+def request_sha256(request_text):
+    return hashlib.sha256(request_text.encode("utf-8")).hexdigest()
+
+
+def _with_request_hash(row, request_hashes):
+    """Rows written before the request hash existed are keyed in memory only.
+
+    The file is never rewritten: the hash is recomputed from the row's own answer_id.
+    """
+    if "request_sha256" in row:
+        return row
+    return {**row, "request_sha256": (request_hashes or {}).get(row.get("answer_id"))}
+
+
+def load_grade_log(path, request_hashes=None):
+    """Every logged row in file order (append-only log, nothing collapsed)."""
+    rows = []
     if path.exists():
         for line in path.read_text(encoding="utf-8").splitlines():
             if line.strip():
-                row = json.loads(line)
-                latest[cache_key(row)] = row
+                rows.append(_with_request_hash(json.loads(line), request_hashes))
+    return rows
+
+
+def load_grades(path, request_hashes=None):
+    """FP-032: last row wins for each output-determining FP-033 key."""
+    latest = {}
+    for row in load_grade_log(path, request_hashes):
+        latest[cache_key(row)] = row
     return latest
+
+
+def parse_error_counts(log):
+    counts = Counter()
+    for row in log:
+        if row.get("status") == "parse_error":
+            counts[cache_key(row)] += 1
+    return counts
+
+
+def slot_done(row, parse_errors=0):
+    """A slot is finished unless it is stopped/absent or has format-error retries left."""
+    if not row:
+        return False
+    if row.get("status") in DONE_STATUSES:
+        return True
+    return row.get("status") == "parse_error" and parse_errors >= MAX_PARSE_ATTEMPTS
 
 
 def tier(run, h5_ids, sample_ids):
@@ -165,6 +212,7 @@ def _requests(answers, classes, loader):
                 schema,
             ),
             {
+                "request_sha256": request_sha256(item.request_text),
                 "evidence_chars": item.evidence_chars,
                 "evidence_sources": list(item.evidence_sources),
                 "evidence_empty_reason": item.evidence_empty_reason,
@@ -185,7 +233,21 @@ def _active_rows(latest, hashes, tasks):
     ]
 
 
-def _report(rows, classes):
+def _active_log(log, hashes, tasks):
+    keys = {cache_key(base) for _, _, base in tasks}
+    return [
+        r
+        for r in log
+        if cache_key(r) in keys
+        and all(
+            r[name] == hashes[name] for name in ("rubric_sha256", "model_settings_hash")
+        )
+    ]
+
+
+def _report(rows, classes, log=None):
+    """Aggregates over the latest row per slot; format errors over the whole log."""
+    log = rows if log is None else log
     distribution, concentration, agreement = {}, {}, {}
     for field in ("correctness", "faithfulness"):
         values = [r[field] for r in rows if r.get(field) is not None]
@@ -207,23 +269,27 @@ def _report(rows, classes):
         agreement[field] = (
             sum(len(set(g)) == 1 for g in triples) / len(triples) if triples else None
         )
-    errors = sum(r["status"] == "parse_error" for r in rows)
+    api = [r for r in log if r["status"] in API_STATUSES]
+    errors = sum(r["status"] == "parse_error" for r in api)
     return {
-        "calls": len(rows),
+        "calls": len(api),
+        "slots": len(rows),
         "class_counts": dict(Counter(classes.values())),
         "format_errors": errors,
-        "format_error_rate": errors / len(rows) if rows else 0,
+        "format_error_rate": errors / len(api) if api else 0,
         "score_distribution": distribution,
         "concentration": concentration,
         "agreement": agreement,
-        "cost_usd": math.fsum(r.get("cost_usd", 0) for r in rows),
+        "cost_usd": math.fsum(r.get("cost_usd", 0) for r in log),
     }
 
 
-def _format_stop(rows):
+def _format_stop(log):
+    """Format-error rate over every API call in the log (retries included)."""
+    api = [r for r in log if r["status"] in API_STATUSES]
     return (
-        len(rows) >= 50
-        and sum(r["status"] == "parse_error" for r in rows) / len(rows) > 0.02
+        len(api) >= 50
+        and sum(r["status"] == "parse_error" for r in api) / len(api) > 0.02
     )
 
 
@@ -347,6 +413,7 @@ def _execute(
             {
                 "answer_id": run.answer_id,
                 "answer_sha256": run.answer_sha256,
+                "request_sha256": requests[run.answer_id][2]["request_sha256"],
                 **hashes,
                 "mode": requests[run.answer_id][0],
                 "repeat": repeat,
@@ -356,12 +423,17 @@ def _execute(
         if run.answer_id in requests
         for repeat in range(1, 4)
     ]
+    request_hashes = {
+        answer_id: value[2]["request_sha256"] for answer_id, value in requests.items()
+    }
     if dry_run:
-        latest = load_grades(path)
+        log = load_grade_log(path, request_hashes)
+        latest = load_grades(path, request_hashes)
+        errors = parse_error_counts(log)
         pending = [
             task
             for task in tasks
-            if latest.get(cache_key(task[2]), {}).get("status") not in TERMINAL
+            if not slot_done(latest.get(cache_key(task[2])), errors[cache_key(task[2])])
         ]
         return _dry(
             root,
@@ -388,16 +460,21 @@ def _execute(
         if pilot:
             previous.update({"ids": ids, "seed": SEED, **hashes})
             write_json(manifest, previous)  # Selection persists BEFORE any send.
-        latest = load_grades(path)
+        log = load_grade_log(path, request_hashes)
+        latest = load_grades(path, request_hashes)
+        parse_errors = parse_error_counts(log)
         stops = list(previous.get("stops", []))
         status = "completed"
 
         def active():
             return _active_rows(latest, hashes, tasks)
 
+        def active_log():
+            return _active_log(log, hashes, tasks)
+
         def remaining():
             return sum(
-                latest.get(cache_key(b), {}).get("status") not in TERMINAL
+                not slot_done(latest.get(cache_key(b)), parse_errors[cache_key(b)])
                 for _, _, b in tasks
             )
 
@@ -429,13 +506,13 @@ def _execute(
             )
 
         try:
-            if _format_stop(active()):
+            if _format_stop(active_log()):
                 stop("FormatErrorRateExceeded")
             else:
                 sent = 0
                 for run, request, base in tasks:
                     key = cache_key(base)
-                    if latest.get(key, {}).get("status") in TERMINAL:
+                    if slot_done(latest.get(key), parse_errors[key]):
                         continue
                     check_price(model)
                     estimate = grader.estimate(request)
@@ -446,6 +523,8 @@ def _execute(
                     row = {
                         **base,
                         "at": now(),
+                        # 1 = first call of the slot; 2 = the single format-error retry.
+                        "attempt": parse_errors[key] + 1,
                         "correctness": None,
                         "faithfulness": None,
                         "rationale": None,
@@ -490,17 +569,20 @@ def _execute(
                         )
                     row["cost_usd"] = max(row["cost_usd"], paid_spent(ledger) - before)
                     append(path, row)
+                    log.append(row)
                     latest[key] = row
+                    if row["status"] == "parse_error":
+                        parse_errors[key] += 1
                     sent += 1
                     if sent % progress_every == 0:
                         print(
-                            f"M7 progress={len(active())}; remaining={remaining()}; cost_usd={_report(active(), classes)['cost_usd']:.6f}",
+                            f"M7 progress={len(active())}; remaining={remaining()}; cost_usd={_report(active(), classes, active_log())['cost_usd']:.6f}",
                             flush=True,
                         )
                     if stopping is not None:
                         stop(type(stopping).__name__, stopping)
                         break
-                    if _format_stop(active()):
+                    if _format_stop(active_log()):
                         stop("FormatErrorRateExceeded")
                         break
         except (
@@ -516,7 +598,7 @@ def _execute(
         finally:
             summary = {
                 **previous,
-                **_report(active(), classes),
+                **_report(active(), classes, active_log()),
                 "status": status,
                 "remaining": remaining(),
                 "stops": stops,
@@ -539,11 +621,14 @@ def _execute(
                     if kind == "gemini_faith_only"
                     else None
                 )
+                info = requests.get(run.answer_id, (None, None, {}))[2]
                 rs = [
                     latest.get(
                         cache_key(
                             {
+                                "answer_id": run.answer_id,
                                 "answer_sha256": run.answer_sha256,
+                                "request_sha256": info.get("request_sha256"),
                                 **hashes,
                                 "mode": mode,
                                 "repeat": n,
@@ -553,10 +638,22 @@ def _execute(
                     )
                     for n in range(1, 4)
                 ]
+                # A score may only come from this answer's own graded request.
+                if any(r and r.get("answer_id") != run.answer_id for r in rs):
+                    raise RuntimeError(
+                        f"{run.answer_id}: score row belongs to another answer"
+                    )
                 scores[run.answer_id] = {
                     "mode": mode,
                     "class": kind,
-                    **requests.get(run.answer_id, (None, None, {}))[2],
+                    **info,
+                    # Repeat slots without a score (format error repeated after the retry).
+                    "missing_repeats": [
+                        n
+                        for n, r in enumerate(rs, 1)
+                        if kind in {"gemini_acc", "gemini_faith_only"}
+                        and r.get("status") != "succeeded"
+                    ],
                     "correctness": [0, 0, 0]
                     if kind == "det_zero"
                     else [r.get("correctness") for r in rs]

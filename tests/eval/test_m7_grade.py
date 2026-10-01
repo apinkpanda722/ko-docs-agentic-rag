@@ -136,15 +136,11 @@ def test_m7_grade_daily_stop_and_resume(env):
     assert len(summary["stops"]) == 1
 
 
-@pytest.mark.parametrize(
-    "error", [BillingUncertainError("safe"), GradeParseError("safe")]
-)
-def test_m7_grade_nonretryable_call_cached(env, error):
-    first = Fake({1: error})
-    run(env, first)
+def test_m7_grade_billing_uncertain_call_cached(env):
+    run(env, Fake({1: BillingUncertainError("safe")}))
     second = Fake()
     run(env, second)
-    assert not second.calls
+    assert not second.calls  # never re-sent: the first call may have been billed
 
 
 def test_m7_grade_format_gate_at_fifty(env):
@@ -152,7 +148,7 @@ def test_m7_grade_format_gate_at_fifty(env):
     summary = run(env, first)
     assert len(first.calls) == 50
     assert summary["format_error_rate"] == 1
-    assert summary["remaining"] == 10
+    assert summary["remaining"] == 60  # 50 slots await their one retry, 10 unsent
     second = Fake()
     run(env, second)
     assert not second.calls
@@ -247,7 +243,7 @@ def test_m7_grade_latest_duplicate_used(env):
     fake = Fake()
     summary = run(env, fake)
     assert not fake.calls
-    assert summary["calls"] == 60
+    assert summary["slots"] == 60 and summary["calls"] == 61  # log keeps every row
     scores = json.loads((env.root / grade.SCORES_PATH).read_text())["scores"]
     assert 1 in scores[row["answer_id"]]["correctness"]
 
@@ -372,7 +368,7 @@ def test_m7_grade_interruption_records_stop_raw(env):
     assert summary["raw"][-1]["event"] == "stopped"
 
 
-def test_m7_grade_cache_has_all_five_output_keys(env):
+def test_m7_grade_cache_has_all_output_keys(env):
     first = Fake()
     run(env, first)
     env.answers[0] = replace(env.answers[0], answer_sha256="new-answer")
@@ -380,7 +376,9 @@ def test_m7_grade_cache_has_all_five_output_keys(env):
     run(env, second)
     assert len(second.calls) == 3
     assert set(grade.CACHE_FIELDS) == {
+        "answer_id",
         "answer_sha256",
+        "request_sha256",
         "rubric_sha256",
         "model_settings_hash",
         "mode",
@@ -472,3 +470,172 @@ def test_m7_grade_stopped_400_records_message_and_is_retried_on_resume(env, caps
     latest = grade.load_grades(env.root / grade.PILOT_GRADES_PATH)
     assert {r["status"] for r in latest.values()} == {"succeeded"}
     assert summary["status"] == "completed"
+
+
+class ByEvidence(Fake):
+    """Faithfulness reflects the evidence in the request, so copied scores show."""
+
+    def grade(self, request):
+        self.calls.append(request)
+        faithfulness = 3 if "근거A" in request.user_content else 1
+        parsed = request.schema.model_validate(
+            {"faithfulness": faithfulness, "rationale": "x", "correctness": 3}
+        )
+        return GradeResult(
+            parsed, GradeUsage(100, 10, 10, 0, 110), 0.001, 1, (), None, {}
+        )
+
+
+def _pair(env, evidence_a="d1", evidence_b="d2"):
+    base = env.answers[0]
+
+    def cite(doc):
+        return ({"kind": "doc", "doc_id": doc, "section_key": None},)
+
+    # Same answer text (same answer_sha256), different answer ids and evidence.
+    first = replace(
+        base, answer_id="x|1", answer_sha256="same", citations=cite(evidence_a)
+    )
+    second = replace(
+        base, answer_id="x|2", answer_sha256="same", citations=cite(evidence_b)
+    )
+    env.answers = [first, second]
+    return lambda doc, section: {"d1": "근거A", "d2": "근거B"}[doc]
+
+
+def _run_pair(env, fake, loader, **kwargs):
+    return grade.run_grade(
+        root=env.root,
+        answers=env.answers,
+        grader=fake,
+        settings=env.settings,
+        evidence_loader=loader,
+        progress_every=1000,
+        **kwargs,
+    )
+
+
+def test_m7_grade_equal_answers_with_different_evidence_do_not_collide(env):
+    loader = _pair(env)
+    fake = ByEvidence()
+    _run_pair(env, fake, loader)
+    assert len(fake.calls) == 6  # each answer graded 3x on its own request
+    scores = json.loads((env.root / grade.SCORES_PATH).read_text())["scores"]
+    assert scores["x|1"]["faithfulness"] == [3, 3, 3]
+    assert scores["x|2"]["faithfulness"] == [1, 1, 1]  # not copied from x|1
+    assert scores["x|1"]["request_sha256"] != scores["x|2"]["request_sha256"]
+    rows = grade.load_grade_log(env.root / grade.GRADES_PATH)
+    assert {r["answer_id"] for r in rows} == {"x|1", "x|2"}
+
+
+def test_m7_grade_equal_requests_are_still_graded_per_answer(env):
+    loader = _pair(env, "d1", "d1")  # identical request text, different answer ids
+    fake = ByEvidence()
+    _run_pair(env, fake, loader)
+    assert len(fake.calls) == 6
+    scores = json.loads((env.root / grade.SCORES_PATH).read_text())["scores"]
+    assert scores["x|1"]["request_sha256"] == scores["x|2"]["request_sha256"]
+    rows = grade.load_grade_log(env.root / grade.GRADES_PATH)
+    assert sorted((r["answer_id"], r["repeat"]) for r in rows) == [
+        (a, n) for a in ("x|1", "x|2") for n in (1, 2, 3)
+    ]
+
+
+def _strip_request_hash(env):
+    path = env.root / grade.GRADES_PATH
+    rows = [json.loads(line) for line in path.read_text().splitlines()]
+    for row in rows:
+        row.pop("request_sha256")
+        row.pop("attempt", None)
+    path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
+    raw.record_fingerprint(env.root / grade.SUMMARY_PATH, "grades", path, "legacy")
+    return path
+
+
+def test_m7_grade_legacy_rows_are_rekeyed_in_memory_without_regrading(env):
+    loader = _pair(env, "d1", "d2")
+    _run_pair(env, ByEvidence(), loader)
+    path = _strip_request_hash(env)
+    before = path.read_bytes()
+    fake = ByEvidence()
+    _run_pair(env, fake, loader)
+    assert not fake.calls  # backfilled by answer_id, nothing re-sent
+    assert path.read_bytes() == before  # the log is never rewritten
+
+
+def test_m7_grade_legacy_collision_regrades_only_the_answer_without_rows(env):
+    # Old behaviour: the second answer shared the first one's rows and has none of its own.
+    loader = _pair(env, "d1", "d1")
+    env.answers = env.answers[:1]
+    _run_pair(env, ByEvidence(), loader)
+    path = _strip_request_hash(env)
+    before = path.read_text()
+    loader = _pair(env, "d1", "d1")
+    fake = ByEvidence()
+    _run_pair(env, fake, loader)
+    assert len(fake.calls) == 3  # only x|2, three repeats
+    assert path.read_text().startswith(before)  # old rows untouched, new ones appended
+    scores = json.loads((env.root / grade.SCORES_PATH).read_text())["scores"]
+    assert scores["x|1"]["faithfulness"] == scores["x|2"]["faithfulness"] == [3, 3, 3]
+
+
+def test_m7_grade_parse_error_slot_is_retried_once_and_original_row_is_kept(env):
+    first = Fake({1: GradeParseError("invalid")})
+    run(env, first)
+    path = env.root / grade.GRADES_PATH
+    assert len(first.calls) == 60
+    second = Fake()
+    summary = run(env, second)
+    assert len(second.calls) == 1  # same repeat slot, exactly once
+    assert second.calls[0].item_id == first.calls[0].item_id
+    log = grade.load_grade_log(path)
+    original = [r for r in log if r["status"] == "parse_error"]
+    assert len(original) == 1  # the failed row stays in the log
+    retried = [
+        r
+        for r in log
+        if (r["answer_id"], r["repeat"])
+        == (original[0]["answer_id"], original[0]["repeat"])
+    ]
+    assert [r["status"] for r in retried] == ["parse_error", "succeeded"]
+    assert [r["attempt"] for r in retried] == [1, 2]
+    # Format errors keep counting the original: 1 error over 61 API calls.
+    assert summary["format_errors"] == 1 and summary["calls"] == 61
+    scores = json.loads((env.root / grade.SCORES_PATH).read_text())["scores"]
+    assert scores[original[0]["answer_id"]]["missing_repeats"] == []
+    assert None not in scores[original[0]["answer_id"]]["correctness"]
+
+
+def _grow(env, extra=20):
+    """More answers so two format errors stay under the 2% stop threshold."""
+    env.answers += [
+        replace(r, answer_id=f"b{i}", answer_sha256=f"hashb{i}")
+        for i, r in enumerate(env.answers[:extra])
+    ]
+
+
+def test_m7_grade_second_parse_error_leaves_the_slot_missing(env):
+    _grow(env)
+    run(env, Fake({1: GradeParseError("invalid")}))
+    second = Fake({1: GradeParseError("invalid again")})
+    run(env, second)
+    third = Fake()
+    summary = run(env, third)
+    assert len(second.calls) == 1 and not third.calls  # no second retry
+    assert summary["remaining"] == 0 and summary["status"] == "completed"
+    assert summary["format_errors"] == 2
+    scores = json.loads((env.root / grade.SCORES_PATH).read_text())["scores"]
+    missing = [k for k, v in scores.items() if v.get("missing_repeats")]
+    assert len(missing) == 1
+    entry = scores[missing[0]]
+    assert len(entry["missing_repeats"]) == 1
+    assert entry["correctness"].count(None) == 1
+    assert entry["faithfulness"].count(None) == 1
+
+
+def test_m7_grade_dry_run_counts_retries_and_missing_answers(env):
+    _grow(env)
+    # Errors late in the run: 2 of 100 calls is exactly 2%, which does not stop.
+    run(env, Fake({80: GradeParseError("invalid"), 100: GradeParseError("invalid")}))
+    result = run(env, Fake(), dry_run=True)
+    assert result["calls"] == 2  # the two format-error slots only

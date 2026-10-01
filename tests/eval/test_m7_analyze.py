@@ -199,7 +199,7 @@ def test_m7_analyze_complete_fixture_and_cli(inputs, monkeypatch, capsys):
     assert "unanswerable" not in result["router"]["by_type"]
     # Tier 2 must fail before computing or printing any verdict.
     missing = next(i for i in human if i.startswith("dev|"))
-    scores[missing]["correctness"] = [1, None, 1]
+    scores[missing]["correctness"] = [None, None, 1]  # fewer than two scores
     write(
         root,
         "data/manifest/m7_grade_scores.json",

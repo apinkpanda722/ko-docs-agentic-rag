@@ -31,13 +31,24 @@ def _score(value):
 
 
 def _triple(values):
+    """Scores present in the three repeat slots.
+
+    A slot is None only when its format error repeated after the single retry
+    (implementation-defect handling recorded in hypotheses.md, not a rule change);
+    at least two scores must remain.
+    """
     if len(values) != 3:
-        raise ValueError("exactly three scores required")
-    return tuple(_score(v) for v in values)
+        raise ValueError("exactly three score slots required")
+    present = tuple(_score(v) for v in values if v is not None)
+    if len(present) < 2:
+        raise ValueError("at least two scores required")
+    return present
 
 
 def median_int(scores3) -> int:
-    return sorted(_triple(scores3))[1]
+    """Median of three; with one missing slot the lower of the two scores."""
+    present = sorted(_triple(scores3))
+    return present[1] if len(present) == 3 else present[0]
 
 
 def _identity(answer_id):
@@ -129,11 +140,17 @@ def kappa_report(human, gemini_median, *, repeats=None) -> KappaReport:
         b = [_score(gemini_median[i]) for i in ids]
     individual = ()
     if triples is not None:
-        checked = [_triple(triples[i]) for i in ids]
+        checked = [triples[i] for i in ids]
+        for t in checked:
+            _triple(t)
         if [median_int(t) for t in checked] != b:
             raise ValueError("median/repeats mismatch")
         individual = tuple(
-            weighted_kappa(a, [t[j] for t in checked], weights="quadratic")
+            weighted_kappa(
+                [x for x, t in zip(a, checked) if t[j] is not None],
+                [t[j] for t in checked if t[j] is not None],
+                weights="quadratic",
+            )
             for j in range(3)
         )
     quadratic = weighted_kappa(a, b, weights="quadratic")

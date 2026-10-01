@@ -251,7 +251,9 @@ def test_m7_stats_verdict_constants_match_preregistration():
     )
 
 
-@pytest.mark.parametrize("values", [[0, None, 2], [0, 4, 2], [0, True, 2]])
+@pytest.mark.parametrize(
+    "values", [[0, None, None], [None, None, None], [0, 4, 2], [0, True, 2]]
+)
 def test_m7_stats_reject_invalid_scores(values):
     with pytest.raises(ValueError):
         stats.median_int(values)
@@ -322,3 +324,28 @@ def test_m7_stats_faithfulness_excludes_answers_without_evidence():
     }
     row = stats.faithfulness_table(scores, meta)["rows"][0]
     assert (row["n"], row["n_no_evidence"], row["mean"]) == (1, 1, 2)
+
+
+def test_m7_stats_missing_repeat_slot_uses_remaining_scores():
+    # Format error repeated after the retry: two scores remain.
+    assert stats._triple([3, None, 1]) == (3, 1)
+    assert stats.median_int([3, None, 1]) == 1  # lower of the two
+    assert stats.median_int([3, 2, 1]) == 2
+    assert stats.median_int([None, 2, 2]) == 2
+    with pytest.raises(ValueError):
+        stats._triple([3, None])  # exactly three slots, at most one missing
+    scores = {aid("q", "simple"): score([3, None, 1])}
+    classes = {aid("q", "simple"): "gemini_acc"}
+    assert stats.question_scores(scores, classes) == {("q", "simple"): 2.0}
+    variability = stats.repeat_variability(scores)
+    assert variability["correctness"]["n"] == 1
+    assert variability["correctness"]["all_equal_rate"] == 0.0
+
+
+def test_m7_stats_kappa_individual_repeats_skip_missing_slots():
+    human = {f"a{i}": v for i, v in enumerate([0, 1, 2, 3, 3, 2, 1, 0])}
+    slots = {i: [v, v, v] for i, v in human.items()}
+    slots["a0"] = [0, None, 0]
+    report = stats.kappa_report(human, slots)
+    assert report.quadratic_kappa == 1 and len(report.individual_kappas) == 3
+    assert all(k == 1 for k in report.individual_kappas)
