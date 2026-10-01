@@ -112,5 +112,7 @@ make m6-tokens    # MCP 데모 사용자 토큰 생성(평문은 data/interim/mc
 make m6-report    # M6 결과 문서 docs/results/2026-10-01-m6-agent-mcp.md(고정) 갱신 — 네트워크 없음
 make m6-serve     # MCP 서버 기동(streamable HTTP, 127.0.0.1) — make up 필요, 사용자 실행
 make m7-probe  # Gemini 채점 모델 설정 확인(1~3회 실제 호출·과금) — 사용자 실행
+make m7-cards  # κ 표본 50개 + 오프라인 카드 HTML 생성(로컬 전용, 네트워크 없음) — 사용자 실행
+make m7-human-register  # 사람 채점 CSV 검증·해시를 data/manifest/m7_human_grades.json에 기록 — 사용자 실행
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)
