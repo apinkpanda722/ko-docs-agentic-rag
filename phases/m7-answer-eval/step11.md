@@ -14,6 +14,7 @@
 - `src/kodocs/agent/trace.py`·`evidence.py`·`simple_rag.py`·`agentic_rag.py`·`types.py` — 트레이스에 **무엇이 기록되는지**(도구 호출 인자·결과 refs·`tool_refs`·후보 목록 여부·최종 컨텍스트 구성)를 코드로 확인한다
 - `data/interim/m6/test/run-01/runs.jsonl`·`silver/*.jsonl`·`logs/traces/`(있으면)의 **실제 한 줄** — 필드 이름 확인(FP-011)
 - `src/kodocs/eval/m5_eval_inputs.py` 또는 `m5_inputs.py`(보이는 qrels 계산 방식: asker가 볼 수 있는 rel ≥ 1 문서), `data/manifest/m5_eval_inputs.json`
+- 참고(비커밋, 파일이 없을 수 있다): `data/interim/m7/human_memos.md` — 사람 채점 중 남긴 메모. 분류 규칙이 실제 사례에 맞는지 점검하는 참고 자료일 뿐이며 분류 판정이나 manifest에 쓰지 않고 원문을 옮기지 않는다.
 - `src/kodocs/tools/`(`search_docs`의 8청크·6,000자 축약)과 `agent/evidence.py`(라운드로빈 배분) — 최종 컨텍스트를 **재계산**할 수 있는지 확인
 
 이전 step에서 만들어진 코드를 꼼꼼히 읽고, 설계 의도를 이해한 뒤 작업하라. 이 phase의 판정 규칙(hypotheses.md의 'M7 판정 규칙', step 1에서 추가)은 결과를 보기 전에 사전 등록한 값이므로 바꾸지 마라. 검색 구성은 M5 최종 구성(`data/manifest/m5_config.json`, config_hash `455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d`)과 M6 고정 설정(`data/manifest/m6_config.json`, 답변 모델 gpt-6-luna)으로 고정이며 바꾸지 않는다. 답변은 새로 만들지 않고 M6 산출물(`data/interim/m6/`)을 재사용한다(보안 테스트셋·지연 측정 제외).
