@@ -36,3 +36,17 @@ max_output_tokens = 4000
 request_timeout_s = 30
 max_attempts = 3
 max_input_tokens = 272000
+
+[grade.gemini]
+model = "gemini-3.8-flash"
+tier = "paid"
+thinking_level = ""           # null until user probe confirmation; freeze target
+temperature = ""
+seed = ""
+max_output_tokens = 4000      # includes thinking
+request_timeout_s = 60
+max_attempts = 3
+rpm_pacing = 10               # 자체 보수값(공식 한도 아님)
+rpm = ""                     # paid official quota: user confirmation pending
+tpm = ""
+rpd = ""

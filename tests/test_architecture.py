@@ -536,3 +536,33 @@ def test_agent_common_layer_guard_detects_violation(
     )
 
     assert any(item.endswith(f": {module}") for item in violations)
+
+
+@pytest.mark.parametrize(
+    "package", [AGENT_PACKAGE, TOOLS_PACKAGE, RETRIEVAL_PACKAGE, MCP_SERVER_PACKAGE]
+)
+def test_google_imports_stay_in_gemini_wrapper(package: Path) -> None:
+    violations = [
+        violation
+        for path in package.rglob("*.py")
+        for violation in _find_imports_matching(path, SOURCE_ROOT, ("google",))
+    ]
+    assert not violations
+
+
+@pytest.mark.parametrize(
+    "source", ["import google", "import google.genai", "from google import genai"]
+)
+def test_google_guard_detects_violation(tmp_path: Path, source: str) -> None:
+    path, root = _write_retrieval_fixture(tmp_path, source)
+    assert _find_imports_matching(path, root, ("google",))
+
+
+def test_only_gemini_chat_imports_google_sdk() -> None:
+    violations = [
+        str(path)
+        for path in (SOURCE_ROOT / "kodocs").rglob("*.py")
+        if path.name != "gemini_chat.py"
+        and _find_imports_matching(path, SOURCE_ROOT, ("google",))
+    ]
+    assert not violations
