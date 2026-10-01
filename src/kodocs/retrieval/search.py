@@ -15,6 +15,7 @@ from kodocs.retrieval.index_schema import (
     weighted_pipeline_name,
 )
 from kodocs.retrieval.opensearch import OpenSearchClient
+from kodocs.retrieval.ordering import prefer_current_order
 
 SearchMethod = Literal["bm25", "knn", "hybrid_rrf", "hybrid_weighted"]
 Analyzer = Literal["standard", "nori"]
@@ -27,6 +28,11 @@ _SOURCE_FIELDS = (
     "end",
     "section_key",
     "section_kind",
+    "text_nori",
+    "title",
+    "is_current",
+    "rule_id",
+    "date",
 )
 
 
@@ -78,6 +84,10 @@ class ChunkHit:
     end: int
     section_key: str | None
     section_kind: str | None
+    text: str | None = None
+    title: str | None = None
+    is_current: bool | None = None
+    rule_id: str | None = None
 
 
 @dataclass(frozen=True)
@@ -87,6 +97,9 @@ class DocHit:
     doc_id: str
     score: float
     best_chunk_id: str
+    title: str | None = None
+    is_current: bool | None = None
+    rule_id: str | None = None
 
 
 @dataclass(frozen=True)
@@ -136,6 +149,8 @@ def authorized_search(
     query: str,
     params: SearchParams,
     embedder: Embedder | None = None,
+    *,
+    prefer_current: bool = False,
 ) -> SearchResult:
     """Run one search whose authorization is enforced inside every query branch."""
     vector: Sequence[float] | None = None
@@ -160,9 +175,15 @@ def authorized_search(
     response = client.request("POST", path, json=body)
     search_ms = (time.perf_counter() - search_started) * 1000.0
     chunks = _chunk_hits(response, limit=params.candidate_chunks)
+    if prefer_current:
+        chunks = prefer_current_order(
+            chunks,
+            key_rule=lambda hit: hit.rule_id,
+            key_is_current=lambda hit: hit.is_current,
+        )
     return SearchResult(
         chunks=chunks,
-        docs=_doc_hits(chunks),
+        docs=_doc_hits(chunks, prefer_current=prefer_current),
         embed_ms=embed_ms,
         search_ms=search_ms,
     )
@@ -261,6 +282,10 @@ def _chunk_hit(raw_hit: object) -> ChunkHit:
         end=end,
         section_key=_optional_str(source, "section_key"),
         section_kind=_optional_str(source, "section_kind"),
+        text=_optional_str(source, "text_nori"),
+        title=_optional_str(source, "title"),
+        is_current=_optional_bool(source, "is_current"),
+        rule_id=_optional_str(source, "rule_id"),
     )
 
 
@@ -287,7 +312,18 @@ def _optional_str(source: Mapping[str, object], field: str) -> str | None:
     return value
 
 
-def _doc_hits(chunks: Sequence[ChunkHit]) -> tuple[DocHit, ...]:
+def _optional_bool(source: Mapping[str, object], field: str) -> bool | None:
+    value = source.get(field)
+    if value is None:
+        return None
+    if not isinstance(value, bool):
+        raise TypeError("OpenSearch search response has an invalid source field")
+    return value
+
+
+def _doc_hits(
+    chunks: Sequence[ChunkHit], *, prefer_current: bool = False
+) -> tuple[DocHit, ...]:
     best_by_doc: dict[str, ChunkHit] = {}
     for chunk in chunks:
         if chunk.doc_id not in best_by_doc:
@@ -297,8 +333,17 @@ def _doc_hits(chunks: Sequence[ChunkHit]) -> tuple[DocHit, ...]:
             doc_id=doc_id,
             score=chunk.score,
             best_chunk_id=chunk.chunk_id,
+            title=chunk.title,
+            is_current=chunk.is_current,
+            rule_id=chunk.rule_id,
         )
         for doc_id, chunk in best_by_doc.items()
     ]
     docs.sort(key=lambda hit: (-hit.score, hit.doc_id))
+    if prefer_current:
+        return prefer_current_order(
+            docs,
+            key_rule=lambda hit: hit.rule_id,
+            key_is_current=lambda hit: hit.is_current,
+        )
     return tuple(docs)

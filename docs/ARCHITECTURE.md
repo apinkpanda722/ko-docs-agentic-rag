@@ -10,7 +10,8 @@ src/kodocs/
 ├── chunking/     # 구조 기준 청킹(조·별표 표·안건·섹션), 고정 길이 청킹
 ├── synth/        # 시드 데이터 → 합성 문서·티켓·결재 생성 (Anthropic API)
 ├── retrieval/    # OpenSearch·SQLite 검색, authorized_* (langchain·langgraph import 금지)
-├── agent/        # LangGraph 그래프(단순 RAG, Agentic RAG), 도구 래퍼, answer()
+├── tools/        # 도구 4개 계약(스키마·버전·오류·결과 축약)과 run_tool — agent·mcp_server가 retrieval을 부르는 유일한 경로
+├── agent/        # LangGraph 그래프(단순 RAG, Agentic RAG)·도구 래퍼·answer(), llm/ ManagedChat 사용
 ├── mcp_server/   # MCP 서버 (streamable HTTP, bearer 토큰 → 사용자 컨텍스트)
 ├── llm/          # Anthropic·OpenAI·Gemini 호출 래퍼 (모델명·온도·비용 기록, 월 상한)
 └── ui/           # Streamlit 데모 (answer()만 호출)
@@ -28,7 +29,8 @@ tests/
 ```
 
 ## 패턴
-- **검색은 순수 Python, 조율만 LangGraph.** `retrieval`은 OpenSearch·SQLite를 직접 호출한다. LangGraph 도구와 MCP 도구는 `retrieval`을 부르는 얇은 래퍼다.
+- **검색은 순수 Python, 조율만 LangGraph.** `retrieval`은 OpenSearch·SQLite를 직접 호출한다. `tools`가 검색 호출과 결과 계약을 한 곳에서 맡고, LangGraph 도구와 MCP 도구는 `tools`를 부르는 얇은 래퍼다.
+- **계층 경계.** `retrieval`은 `tools`·`agent`·`mcp_server`·`ui`를 import하지 않는다. `tools`는 `agent`·`mcp_server`·`ui`·`kodocs.llm`·`langchain*`·`langgraph*`·`mcp`를 import하지 않는다. `agent`·`mcp_server`는 `retrieval`을 직접 import하지 않고 `tools`를 통해서만 쓴다.
 - **단일 인가 지점.** 모든 경로가 `retrieval.authorized_*`를 거친다. 입구(LangGraph, MCP)가 늘어도 권한 규칙은 한 곳에 있다.
 - **공통 답변 인터페이스.** `answer(question, user_ctx) -> {answer, citations, refused, trace}`. 단순 RAG와 Agentic RAG가 이를 구현하고, 평가는 이 인터페이스만 호출한다.
 - **파서·청커 교체 가능.** 파서 어댑터는 같은 출력 형식을 내고, 조문 분할은 파서와 독립이다. 실험 시 한 부품만 바꾼다.
@@ -46,7 +48,7 @@ ALIO 사규(HWP/HWPX, 개정 버전) → 버전 매칭 → HWP/HWPX→PDF → �
                           └ Agentic RAG(LangGraph): 도구 선택 반복(≤5) → 답변(인용 필수)
 Streamlit 데모 → answer() (사용자 전환)
 외부 클라이언트(B, Claude Code) → MCP(bearer 토큰) → 같은 도구
-                          모든 도구 → retrieval.authorized_* → OpenSearch / SQLite
+                 agent·MCP → tools.run_tool → retrieval.authorized_* → OpenSearch / SQLite
 ```
 
 ## 상태 관리
@@ -60,7 +62,8 @@ Streamlit 데모 → answer() (사용자 전환)
 `answer()`는 질의마다 JSONL 한 줄을 남긴다: 질의 ID, 사용자, 시스템(단순/Agentic/라우터), 단계별(도구·인자·지연·토큰·비용), 구간 지연(임베딩·검색·TTFT·전체), 인용, 거절 여부. 실패 분석·GUI·비용 리포트가 이 파일을 읽는다. 필드는 프로젝트 B에서 Langfuse로 옮기기 쉽게 span 구조를 따른다.
 
 ## MCP 계약
-- 도구 4개(`search_docs`, `lookup_id`, `run_sql`, `get_document`)는 입출력 스키마와 버전(예: `search_docs` v1)을 가진다. 호환되지 않는 변경은 버전을 올린다.
-- 공통 오류 형식: `{error: {code: unauthorized | not_found | invalid_argument | limit_exceeded, message}}`. 권한 없음 응답은 문서의 존재 여부를 드러내지 않는다.
-- 인증: 데모 사용자별 정적 bearer 토큰 → 토큰·팀·직급 매핑 파일을 서버가 읽는다. 실서비스는 MCP 명세의 OAuth 2.1로 교체한다(한계).
-- 계약 테스트가 스키마 스냅샷과 오류 형식을 검증한다.
+- `tools`의 도구 4개(`search_docs`, `lookup_id`, `run_sql`, `get_document`)는 입출력 스키마와 버전(예: `search_docs` v1)을 가진다. 호환되지 않는 변경은 버전을 올린다.
+- 공통 오류 형식은 `{error: {code: unauthorized | not_found | invalid_argument | limit_exceeded, message}}`다. `unauthorized`는 bearer 토큰이 없거나 무효인 인증 실패에만 쓰고, 문서 단위 권한 부족은 존재하지 않는 ID와 바이트 동일한 `not_found`를 반환한다. 잘못된 인자는 `invalid_argument`, 입력 길이 상한 초과는 `limit_exceeded`다.
+- 인증: 데모 사용자별 정적 bearer 토큰 → 토큰·팀·직급 매핑 파일을 서버가 읽는다. 평문 토큰은 gitignore된 `data/interim/mcp/tokens.json`에만 저장하고, 저장소에는 SHA-256 해시만 `data/manifest/mcp_token_hashes.json`에 둔다. 실서비스는 MCP 명세의 OAuth 2.1로 교체한다(한계).
+- 계약 테스트는 버전별 스키마 스냅샷과 오류 형식을 검증한다. 스키마가 바뀌었는데 버전이 그대로면 실패하고, 과거 버전 스냅샷은 수정하지 않는다.
+- 같은 (사용자, 도구, 인자)의 in-process 결과와 MCP 결과는 지연 필드를 제외하고 동일해야 하며 계약 테스트가 parity를 검증한다.

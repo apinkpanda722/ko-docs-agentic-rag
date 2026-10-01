@@ -43,6 +43,7 @@ _UPSTAGE_DOCUMENT_PARSE_STANDARD = Price(
 )
 
 _ANTHROPIC_PRICE_URL = "https://platform.claude.com/docs/en/about-claude/pricing"
+_OPENAI_PRICE_URL = "https://developers.openai.com/api/docs/pricing"
 
 
 def _anthropic_token_price(service_suffix: str, unit_price_usd: float) -> Price:
@@ -69,10 +70,52 @@ _ANTHROPIC_PRICES = (
     _anthropic_token_price("output", 10e-6),
 )
 
+
+def _openai_token_price(
+    model: str,
+    service_suffix: str,
+    price_per_million_usd: float,
+) -> Price:
+    return Price(
+        service=f"openai.{model}.{service_suffix}",
+        unit="token",
+        unit_price_usd=price_per_million_usd / 1_000_000,
+        source_url=_OPENAI_PRICE_URL,
+        checked_on="2026-09-30",
+        billing_margin=1.0,
+    )
+
+
+_OPENAI_PRICES = tuple(
+    _openai_token_price(model, suffix, price)
+    for model, values in (
+        (
+            "gpt-6-luna",
+            (
+                ("input", 0.10),
+                ("cached_input", 0.01),
+                ("cache_write", 0.125),
+                ("output", 0.50),
+            ),
+        ),
+        (
+            "gpt-6.1-sol",
+            (
+                ("input", 2.00),
+                ("cached_input", 0.10),
+                ("cache_write", 2.50),
+                ("output", 10.00),
+            ),
+        ),
+    )
+    for suffix, price in values
+)
+
 PRICES: Mapping[str, Price] = MappingProxyType(
     {
         _UPSTAGE_DOCUMENT_PARSE_STANDARD.service: (_UPSTAGE_DOCUMENT_PARSE_STANDARD),
         **{price.service: price for price in _ANTHROPIC_PRICES},
+        **{price.service: price for price in _OPENAI_PRICES},
     }
 )
 
@@ -140,6 +183,7 @@ class CostLedger:
         quantity: float,
         ref: str,
         run_id: str,
+        metadata: Mapping[str, object] | None = None,
     ) -> LedgerEntry:
         """Append one tax-inclusive list-price billing event."""
         try:
@@ -161,11 +205,16 @@ class CostLedger:
             ref=ref,
             run_id=run_id,
         )
-        append_record(
-            self.path,
-            asdict(entry),
-            required=LedgerEntry.__dataclass_fields__,
-        )
+        record = asdict(entry)
+        if metadata:
+            collisions = sorted(set(record).intersection(metadata))
+            if collisions:
+                raise ValueError(
+                    "Cost ledger metadata cannot replace fields: "
+                    + ", ".join(collisions)
+                )
+            record.update(metadata)
+        append_record(self.path, record, required=LedgerEntry.__dataclass_fields__)
         return entry
 
     def month_total_usd(self, when: datetime | None = None) -> float:
@@ -221,8 +270,12 @@ class CostLedger:
                 try:
                     if not isinstance(raw_entry, dict):
                         raise TypeError("entry must be a JSON object")
-                    entry = LedgerEntry(**raw_entry)
-                except (TypeError, ValueError) as exc:
+                    base_entry = {
+                        name: raw_entry[name]
+                        for name in LedgerEntry.__dataclass_fields__
+                    }
+                    entry = LedgerEntry(**base_entry)
+                except (KeyError, TypeError, ValueError) as exc:
                     raise ValueError(
                         f"Invalid cost ledger entry in {self.path} "
                         f"line {line_number}: {exc}"

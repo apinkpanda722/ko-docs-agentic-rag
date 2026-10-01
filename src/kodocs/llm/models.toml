@@ -16,3 +16,23 @@ effort = ""
 temperature = ""              # Sonnet 5 sampling parameters unsupported; record null
 max_attempts = 3
 chars_per_token_estimate = 0.8
+
+[answer.luna]
+model = "gpt-6-luna"
+api = "responses"
+effort = "low"
+temperature = ""
+max_output_tokens = 4000
+request_timeout_s = 30
+max_attempts = 3
+max_input_tokens = 272000
+
+[answer.sol]
+model = "gpt-6.1-sol"
+api = "responses"
+effort = "low"
+temperature = ""
+max_output_tokens = 4000
+request_timeout_s = 30
+max_attempts = 3
+max_input_tokens = 272000

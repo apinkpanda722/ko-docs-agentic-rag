@@ -28,6 +28,18 @@ def find_unisolated_build_index_calls(text: str) -> bool:
     return "build_index(" in text and "index_name_override=" not in text
 
 
+def find_m6_permission_write_operations(text: str) -> list[str]:
+    """Reject every index creation/deletion/bulk-builder marker in the read-only test."""
+    forbidden = (
+        "build_index(",
+        "index_body(",
+        ".bulk(",
+        'request("PUT"',
+        'request("DELETE"',
+    )
+    return [marker for marker in forbidden if marker in text]
+
+
 def test_integration_tests_exist_so_the_guard_is_not_vacuous() -> None:
     assert _integration_test_files()
 
@@ -68,3 +80,25 @@ def test_guard_detects_real_names_and_unisolated_calls() -> None:
     assert not find_unisolated_build_index_calls(
         "build_index(spec, index_name_override=name)"
     )
+
+
+def test_m6_permission_integration_is_read_only() -> None:
+    path = TESTS_ROOT / "test_m6_permission_integration.py"
+    assert path.is_file()
+
+    assert find_m6_permission_write_operations(path.read_text(encoding="utf-8")) == []
+
+
+def test_m6_permission_write_guard_detects_all_forbidden_operations() -> None:
+    source = (
+        "build_index(spec)\nindex_body(dim=2)\nclient.bulk(name, docs)\n"
+        'client.request("PUT", path)\nclient.request("DELETE", path)\n'
+    )
+
+    assert find_m6_permission_write_operations(source) == [
+        "build_index(",
+        "index_body(",
+        ".bulk(",
+        'request("PUT"',
+        'request("DELETE"',
+    ]

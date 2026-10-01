@@ -186,6 +186,86 @@ def test_unranked_lookup_normalizes_regulation_and_orders_by_date_then_doc() -> 
     ]
 
 
+def test_prefer_current_lookup_reorders_same_rule_and_keeps_access_filter() -> None:
+    captured: list[dict[str, object]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(json.loads(request.content))
+        return httpx.Response(
+            200,
+            json={
+                "hits": {
+                    "hits": [
+                        {
+                            "_score": 3.0,
+                            "_source": {
+                                "chunk_id": "prior#1",
+                                "doc_id": "prior",
+                                "date": "2025-01-01",
+                                "title": "출장규칙",
+                                "is_current": False,
+                                "rule_id": "rule-a",
+                            },
+                        },
+                        {
+                            "_score": 2.0,
+                            "_source": {
+                                "chunk_id": "other#1",
+                                "doc_id": "other",
+                                "date": "2026-01-01",
+                                "title": "다른 규정",
+                                "is_current": True,
+                                "rule_id": "rule-b",
+                            },
+                        },
+                        {
+                            "_score": 1.0,
+                            "_source": {
+                                "chunk_id": "current#1",
+                                "doc_id": "current",
+                                "date": "2026-01-01",
+                                "title": "출장규칙",
+                                "is_current": True,
+                                "rule_id": "rule-a",
+                            },
+                        },
+                    ]
+                }
+            },
+        )
+
+    client = OpenSearchClient(
+        client=httpx.Client(transport=httpx.MockTransport(handler))
+    )
+    ctx = UserContext("legal", 2)
+
+    baseline = authorized_lookup_id(
+        client,
+        "index",
+        ctx,
+        "regulation",
+        "출장 규칙 제8조",
+        rank_query="출장 규칙",
+    )
+    preferred = authorized_lookup_id(
+        client,
+        "index",
+        ctx,
+        "regulation",
+        "출장 규칙 제8조",
+        rank_query="출장 규칙",
+        prefer_current=True,
+    )
+
+    assert [hit.doc_id for hit in baseline] == ["prior", "other", "current"]
+    assert [hit.doc_id for hit in preferred] == ["current", "other", "prior"]
+    assert preferred[0].title == "출장규칙"
+    assert preferred[0].is_current is True
+    assert preferred[0].rule_id == "rule-a"
+    assert captured[0] == captured[1]
+    assert captured[0]["query"]["bool"]["filter"][0] == access_filter(ctx)  # type: ignore[index]
+
+
 def test_missing_and_unauthorized_lookups_have_the_same_empty_result() -> None:
     client = OpenSearchClient(
         client=httpx.Client(

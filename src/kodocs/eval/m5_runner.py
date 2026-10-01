@@ -147,6 +147,8 @@ def run_questions(
     embedder: Embedder,
     questions: Sequence[EvalQuestion],
     cfg: RunConfig,
+    *,
+    prefer_current: bool = False,
 ) -> list[QuestionRun]:
     """Search every question with its asker context or fail the whole run."""
     results: list[QuestionRun] = []
@@ -155,6 +157,7 @@ def run_questions(
         qid = question.question.id
         try:
             asker = question.question.asker
+            search_kwargs = {"prefer_current": True} if prefer_current else {}
             search_result = authorized_search(
                 client,
                 index_name(cfg.condition, cfg.chunking),
@@ -162,6 +165,7 @@ def run_questions(
                 question.question.question,
                 _search_params(cfg),
                 embedder,
+                **search_kwargs,
             )
             ranked_docs = tuple(hit.doc_id for hit in search_result.docs)
             chunks = tuple(

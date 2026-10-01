@@ -18,6 +18,7 @@
 
 ## 아키텍처 규칙
 - CRITICAL: `src/kodocs/retrieval/`은 `langchain`·`langgraph`를 import하지 않는다. 검색은 측정 대상이므로 추상화 없이 OpenSearch·SQLite를 직접 호출한다. 이 경계는 테스트로 강제한다.
+- CRITICAL: `agent`·`mcp_server`는 `retrieval`을 `tools`를 통해서만 호출한다. 이 경계는 계층 가드 테스트로 강제한다.
 - CRITICAL: 모든 검색은 `retrieval`의 `authorized_*` 함수를 거친다. 권한 필터는 검색 **전에** 적용한다(pre-filter). LangGraph 도구와 MCP 서버는 이 함수를 호출하는 얇은 래퍼일 뿐, 권한 로직을 따로 두지 않는다.
 - CRITICAL: 사용자 컨텍스트(팀·직급)는 도구 인자로 받지 않는다. LangGraph는 `ToolRuntime` context로, MCP 서버는 bearer 토큰으로 서버가 결정해 주입한다. 모델이 권한 값을 보거나 만들 수 없어야 한다.
 - CRITICAL: `run_sql`은 SELECT만 허용하고, 허용 테이블 목록과 LIMIT을 강제하며, 읽기 전용 연결을 쓴다.
@@ -28,6 +29,7 @@
 - CRITICAL: 합성 문서는 가상 회사 이름으로만 만든다. 실존 기관·인물 이름으로 회의록·티켓 같은 기록을 생성하지 않는다. 실제 규정은 기관명 없이 규정명·조항만 참조한다.
 - 합성 문서에는 생성 모델, 프롬프트 템플릿 해시, 랜덤 시드, 출처가 된 시드 데이터 사실 ID를 메타데이터로 남긴다.
 - CRITICAL: MCP 도구의 입출력 스키마를 호환되지 않게 바꿀 때는 도구 버전을 올린다. 계약 테스트가 이를 강제한다.
+- CRITICAL: `make m6-tokens`가 만든 평문 토큰은 gitignore된 파일에만 두고 출력·커밋·트레이스에 남기지 않는다.
 - CRITICAL: 실제 API를 호출하는 스크립트는 누적 비용을 기록하고, 설정한 월 상한을 넘기 전에 멈춘다.
 - 정답(qrels)은 청크 ID가 아니라 구간(`doc_id` + 조항 ID 또는 시드 데이터 사실 ID·문자 범위)으로 표시한다.
 - 식별자는 적재 시 정규식으로 추출해 분석하지 않는 `keyword` 필드에 넣는다.
@@ -100,5 +102,14 @@ make m5-dev          # dev 튜닝 그리드 → data/manifest/m5_dev.json — �
 make m5-freeze       # 선택 설정을 data/manifest/m5_config.json에 고정(덮어쓰기 거부) — 사용자 실행
 make m5-test         # test 1회 실행(재실행은 RERUN_REASON="사유" make m5-test) — 사용자 실행
 make m5-report       # M5 결과 문서 docs/results/2026-09-30-m5-retrieval.md(고정) 갱신 (네트워크 없음)
+make m6-temporal  # M6 is_current 우선 처리 전후 순위·비 temporal 불변 확인 → data/manifest/m6_temporal.json — OpenSearch 필요(make up), 사용자 실행 (LLM 없음)
+make m6-inputs    # M6 평가 입력 집계(dev 75·H5 풀 13·정답 값 분모 56·게이트·라우터 유형) → data/manifest/m6_eval_inputs.json (네트워크 없음)
+make m6-dry       # dev 비교 예상 토큰·비용(2모델×2시스템×75문항, 예상·상한) — 네트워크 없음
+make m6-dev       # 답변 모델 dev 비교(LIMIT=N 파일럿 가능) — 실제 OpenAI 호출·과금, 사용자 실행
+make m6-freeze    # 선택 모델·프롬프트·가드레일을 data/manifest/m6_config.json에 고정(덮어쓰기 거부) — 사용자 실행
+make m6-test      # 골드 test 30문항×두 시스템 1회 실행(재실행은 RERUN_REASON="사유" make m6-test) — 실제 OpenAI 호출·과금, 사용자 실행
+make m6-tokens    # MCP 데모 사용자 토큰 생성(평문은 data/interim/mcp/tokens.json 비커밋, 해시만 data/manifest/mcp_token_hashes.json) — 사용자 실행
+make m6-report    # M6 결과 문서 docs/results/2026-10-01-m6-agent-mcp.md(고정) 갱신 — 네트워크 없음
+make m6-serve     # MCP 서버 기동(streamable HTTP, 127.0.0.1) — make up 필요, 사용자 실행
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)
