@@ -75,7 +75,16 @@
     {
       "step": 5,
       "name": "grade-runner",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-01T21:29:59+0900",
+      "summary": "m7_config.freeze_config·verify_config, m7_grade.run_pilot·run_grade, m7_rawhash 원본 검증과 Make 타깃 구현. make verify 1628개·전용 테스트 45개 통과, dry-run 299개 답변·897호출 확인. 실제 API 호출·freeze·커밋 없음.",
+      "completed_at": "2026-10-01T21:43:58+0900",
+      "usage": {
+        "input_tokens": 1286350,
+        "cached_input_tokens": 1185664,
+        "output_tokens": 19376,
+        "attempts": 1
+      }
     },
     {
       "step": 6,
