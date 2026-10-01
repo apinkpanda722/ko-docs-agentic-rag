@@ -327,7 +327,16 @@ def run_for(question, **kwargs):
         ("answer", "completed", True, "답", "det_zero"),
         ("answer", "completed", False, "", "det_zero"),
         ("answer", "completed", False, "  \n", "det_zero"),
-        ("no_answer", "infra_error", False, "", "det_zero"),
+        ("answer", "infra_error", False, "", "det_zero"),
+        ("no_answer", "infra_error", False, "", "not_scored"),
+        ("no_answer", "guardrail", True, "", "not_scored"),
+        (
+            "indistinguishable_from_no_answer",
+            "billing_uncertain",
+            False,
+            "",
+            "not_scored",
+        ),
         ("answer", "billing_uncertain", False, "답", "det_zero"),
         ("no_answer", "completed", False, "부분 답", "gemini_faith_only"),
         (
@@ -585,3 +594,209 @@ def test_m7_grading_terminal_precedence(inputs):
     runs = grading.load_m6_answers(inputs)
     assert runs[0].answer == rows[0]["answer"]
     assert grading.verify_m6_inputs(inputs).dev_runs_rows == 301
+
+
+def _real_loader(texts, outside=None):
+    class Loader:
+        def __call__(self, doc_id, section_key):
+            return texts.get((doc_id, section_key))
+
+        def section_outside(self, doc_id):
+            return outside
+
+    return Loader()
+
+
+def _real_question():
+    return replace(
+        load_m6_questions()[0],
+        source="real",
+        reference_answer="참조",
+        reference_sha256=None,
+    )
+
+
+def test_m7_evidence_document_citation_uses_tool_refs_sections(monkeypatch):
+    q = _real_question()
+    monkeypatch.setattr(grading, "_reference_text", lambda *_: "참조")
+    refs = [
+        {"kind": "doc", "doc_id": "law-1", "section_key": "제11조"},
+        {"kind": "doc", "doc_id": "law-1", "section_key": "제4조"},
+        {"kind": "doc", "doc_id": "law-1", "section_key": "제11조"},
+        {"kind": "doc", "doc_id": "law-2", "section_key": "제7조"},
+        {"kind": "doc", "doc_id": "law-1", "section_key": None},
+    ]
+    run = run_for(
+        q,
+        citations=[{"kind": "doc", "doc_id": "law-1", "section_key": None}],
+        tool_refs=refs,
+    )
+    loader = _real_loader(
+        {("law-1", "제11조"): "A조문", ("law-1", "제4조"): "B조문"}, outside="머리말"
+    )
+    item = grading.build_grade_item(run, q, loader)
+    text = item.request_text.split("## 인용 근거\n")[1]
+    # Same-document refs in tool order, deduplicated; section-less ref -> outside body.
+    assert (
+        text.index("[law-1 / 제11조]\nA조문")
+        < text.index("[law-1 / 제4조]\nB조문")
+        < text.index("[law-1 / 섹션 밖 본문]\n머리말")
+    )
+    assert "law-2" not in text and text.count("A조문") == 1
+    assert item.evidence_sources == ("tool_refs",)
+    assert item.evidence_empty_reason is None and item.evidence_missing == 0
+
+
+def test_m7_evidence_never_falls_back_to_document_head(monkeypatch):
+    q = _real_question()
+    monkeypatch.setattr(grading, "_reference_text", lambda *_: "참조")
+    cited = [{"kind": "doc", "doc_id": "law-1", "section_key": None}]
+    only_ref = [{"kind": "doc", "doc_id": "law-1", "section_key": "제4조"}]
+    # Section text unloadable and no outside body: empty, never a doc-head guess.
+    item = grading.build_grade_item(
+        run_for(q, citations=cited, tool_refs=only_ref), q, _real_loader({})
+    )
+    assert item.evidence_chars == 0
+    assert item.evidence_empty_reason == "tool_refs_unloadable"
+    # No tool_refs for the cited document at all.
+    item = grading.build_grade_item(
+        run_for(q, citations=cited, tool_refs=[]), q, _real_loader({})
+    )
+    assert item.evidence_empty_reason == "no_tool_refs"
+    item = grading.build_grade_item(
+        run_for(
+            q,
+            citations=[{"kind": "doc", "doc_id": "law-1", "section_key": "제9조"}],
+        ),
+        q,
+        _real_loader({}),
+    )
+    assert item.evidence_empty_reason == "section_not_found"
+    item = grading.build_grade_item(run_for(q, citations=[]), q, _real_loader({}))
+    assert item.evidence_empty_reason == "no_citations"
+
+
+def _sql_loader(tmp_path, monkeypatch, *, payload, trace_steps, error=False):
+    from types import SimpleNamespace
+
+    trace = tmp_path / "logs/traces/2026-10-01.jsonl"
+    trace.parent.mkdir(parents=True)
+    trace.write_text(
+        json.dumps({"trace_id": "t1", "steps": trace_steps}, ensure_ascii=False) + "\n"
+    )
+    calls = []
+
+    def fake_run_tool(name, args, ctx, deps):
+        calls.append((name, dict(args), ctx.team, ctx.grade, deps.db_path))
+        return SimpleNamespace(payload=payload, is_error=error)
+
+    monkeypatch.setattr(grading, "load_corpus", lambda *a, **k: ([], None))
+    monkeypatch.setattr(grading, "load_tool_config", lambda path: ("idx", None))
+    monkeypatch.setattr(grading, "run_tool", fake_run_tool)
+    return grading.EvidenceLoader(tmp_path), calls
+
+
+def _sql_steps(result_chars):
+    return [
+        {"kind": "model", "index": 1, "name": "agent"},
+        {"kind": "tool", "index": 2, "name": "search_docs", "args": {"query": "q"}},
+        {
+            "kind": "tool",
+            "index": 3,
+            "name": "run_sql",
+            "args": {"sql": "SELECT 1"},
+            "error": None,
+            "result_chars": result_chars,
+        },
+    ]
+
+
+def test_m7_evidence_sql_replay_reads_with_asker_and_matches_trace(
+    tmp_path, monkeypatch
+):
+    payload = {"rows": [[3]], "columns": ["n"]}
+    size = len(
+        json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    )
+    loader, calls = _sql_loader(
+        tmp_path, monkeypatch, payload=payload, trace_steps=_sql_steps(size)
+    )
+    q = replace(
+        load_m6_questions()[0],
+        source="synthetic",
+        reference_answer="참조",
+        reference_sha256=None,
+    )
+    run = run_for(
+        q,
+        citations=[
+            {"kind": "sql", "call_id": "c2", "doc_id": None, "section_key": None}
+        ],
+        trace_id="t1",
+    )
+    item = grading.build_grade_item(run, q, loader)
+    assert item.evidence_sources == ("reconstructed_sql",)
+    assert (
+        "[SQL 결과]\n"
+        + json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        in item.request_text
+    )
+    assert "run_sql" not in item.request_text and "SELECT" not in item.request_text
+    name, args, team, grade, db = calls[0]
+    assert (name, args) == ("run_sql", {"sql": "SELECT 1"})
+    assert (team, grade) == (q.asker.team, q.asker.grade)
+    assert db == tmp_path / "data/synthetic/ledger.sqlite"
+
+
+def test_m7_evidence_sql_replay_mismatch_and_missing_trace(tmp_path, monkeypatch):
+    payload = {"rows": [[3]]}
+    loader, _ = _sql_loader(
+        tmp_path, monkeypatch, payload=payload, trace_steps=_sql_steps(1)
+    )
+    q = replace(
+        load_m6_questions()[0],
+        source="synthetic",
+        reference_answer="참조",
+        reference_sha256=None,
+    )
+    cite = {"kind": "sql", "call_id": "c2", "doc_id": None, "section_key": None}
+    with pytest.raises(grading.EvidenceReconstructionError, match="sql replay size"):
+        grading.build_grade_item(run_for(q, citations=[cite], trace_id="t1"), q, loader)
+    # call id pointing at a non-run_sql step is a hard error.
+    with pytest.raises(grading.EvidenceReconstructionError, match="not a run_sql"):
+        grading.build_grade_item(
+            run_for(q, citations=[{**cite, "call_id": "c1"}], trace_id="t1"), q, loader
+        )
+    # Trace absent: empty evidence with a reason, not a guess.
+    item = grading.build_grade_item(
+        run_for(q, citations=[cite], trace_id="missing"), q, loader
+    )
+    assert item.evidence_empty_reason == "sql_trace_missing"
+
+
+def test_m7_evidence_check_reports_empty_reasons_in_manifest_form():
+    q = _real_question()
+    answers = [
+        run_for(
+            replace(q, id="q-a"),
+            citations=[{"kind": "doc", "doc_id": "law-1", "section_key": None}],
+        ),
+        run_for(
+            replace(q, id="q-b"),
+            citations=[{"kind": "doc", "doc_id": "law-1", "section_key": "제1조"}],
+        ),
+    ]
+    original = grading._reference_text
+    grading._reference_text = lambda *_: "참조"
+    try:
+        report = grading.check_evidence(
+            Path("/nonexistent-root"),
+            answers=answers,
+            loader=_real_loader({("law-1", "제1조"): "본문"}),
+        )
+    finally:
+        grading._reference_text = original
+    assert report["graded_items"] == 2
+    assert report["empty_evidence_by_reason"] == {"no_tool_refs": 1}
+    assert report["items_by_evidence_source"] == {"cited_section": 1}
+    assert report["reconstruction_failures"] == []

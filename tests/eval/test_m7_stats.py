@@ -306,3 +306,19 @@ def test_m7_stats_sol_overall_pairs_questions_before_signal():
     assert result["overall"]["mean_diff"] == 0
     assert result["overall"]["ci_low"] <= 0 <= result["overall"]["ci_high"]
     assert not result["recheck_signal"]
+
+
+def test_m7_stats_faithfulness_excludes_answers_without_evidence():
+    scores = {
+        aid("q", "simple"): score([2, 2, 2]),
+        aid("r", "simple"): {
+            **score([0, 0, 0]),
+            "evidence_empty_reason": "sql_trace_missing",
+        },
+    }
+    meta = {
+        i: {"system": "simple", "type": "identifier", "model": "gpt-6-luna"}
+        for i in scores
+    }
+    row = stats.faithfulness_table(scores, meta)["rows"][0]
+    assert (row["n"], row["n_no_evidence"], row["mean"]) == (1, 1, 2)

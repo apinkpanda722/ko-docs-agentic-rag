@@ -163,6 +163,11 @@ def _requests(answers, classes, loader):
                 item.request_text,
                 schema,
             ),
+            {
+                "evidence_chars": item.evidence_chars,
+                "evidence_sources": list(item.evidence_sources),
+                "evidence_empty_reason": item.evidence_empty_reason,
+            },
         )
     return result
 
@@ -532,6 +537,7 @@ def _execute(
                 scores[run.answer_id] = {
                     "mode": mode,
                     "class": kind,
+                    **requests.get(run.answer_id, (None, None, {}))[2],
                     "correctness": [0, 0, 0]
                     if kind == "det_zero"
                     else [r.get("correctness") for r in rs]

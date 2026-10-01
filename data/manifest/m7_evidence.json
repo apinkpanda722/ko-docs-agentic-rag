@@ -1,0 +1,17 @@
+{
+  "empty_evidence_by_reason": {},
+  "empty_evidence_ids": {},
+  "empty_evidence_total": 0,
+  "empty_in_h5_pool": {},
+  "empty_in_kappa_sample": {},
+  "graded_items": 299,
+  "items_by_evidence_source": {
+    "cited_section": 20,
+    "document": 242,
+    "reconstructed_sql": 21,
+    "tool_refs": 23
+  },
+  "note": "빈 근거 항목은 충실성 집계에서 '근거 없음'으로 따로 표시하고 평균에서 제외한다. 정답성은 그대로 채점한다.",
+  "reconstruction_failures": [],
+  "schema_version": 1
+}

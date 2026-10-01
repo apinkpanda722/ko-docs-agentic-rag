@@ -301,24 +301,30 @@ def repeat_variability(scores):
 
 
 def faithfulness_table(scores, metadata):
-    groups = defaultdict(list)
+    """Mean faithfulness; answers with no evidence text are listed, not averaged."""
+    groups, no_evidence = defaultdict(list), defaultdict(int)
     for i, row in scores.items():
         if row["class"] in {"gemini_acc", "gemini_faith_only"}:
             m = metadata[i]
+            if row.get("evidence_empty_reason"):
+                no_evidence[m["system"], m["type"]] += 1
+                continue
             groups[m["system"], m["type"]].append(
                 statistics.mean(_triple(row["faithfulness"]))
             )
+    keys = sorted(set(groups) | set(no_evidence))
     return {
         "note": FAITH_NOTE,
         "rows": [
             {
                 "system": s,
                 "type": t,
-                "n": len(values),
-                "mean": statistics.mean(values),
+                "n": len(groups.get((s, t), [])),
+                "n_no_evidence": no_evidence.get((s, t), 0),
+                "mean": statistics.mean(groups[s, t]) if groups.get((s, t)) else None,
                 "note": FAITH_NOTE,
             }
-            for (s, t), values in sorted(groups.items())
+            for s, t in keys
         ],
     }
 

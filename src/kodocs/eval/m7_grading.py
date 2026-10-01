@@ -13,6 +13,7 @@ import argparse
 import hashlib
 import json
 import random
+import re
 import subprocess
 import sys
 from collections import Counter, defaultdict
@@ -33,6 +34,8 @@ from kodocs.eval.m6_runner import (
 )
 from kodocs.ingest.manifest import latest_records, load_records, sha256_file
 from kodocs.llm.answer_settings import load_answer_config
+from kodocs.tools import ToolDeps, UserContext, load_tool_config, run_tool
+from kodocs.tools.deps import M5_CONFIG_PATH, TOOL_INDEX
 
 DEV_RUNS_PATH = m6_dev.DEV_RUNS_PATH
 RUN_PATHS = {
@@ -91,6 +94,7 @@ class AnsweredRun:
     answer_sha256: str
     reference_answer_path: Path
     root: Path
+    trace_id: str | None = None
 
     @property
     def question_id(self) -> str:
@@ -139,6 +143,7 @@ class AnsweredRun:
                 else Path(f"data/golden/queries/{question.set}.jsonl")
             ),
             root=root,
+            trace_id=row.get("trace_id"),
         )
 
 
@@ -383,7 +388,9 @@ def classify_run(run: AnsweredRun, question: Question) -> RunClass:
     }:
         raise ValueError("unknown expected_response")
     if run.status != "completed":
-        return "det_zero"
+        # A failed run on a no-answer question is a refusal-accuracy failure, not
+        # a wrong answer: it is not graded for correctness (rule M7-G1).
+        return "det_zero" if question.expected_response == "answer" else "not_scored"
     if question.expected_response == "answer":
         return "det_zero" if run.refused or not run.answer.strip() else "gemini_acc"
     return "not_scored" if run.refused else "gemini_faith_only"
@@ -413,18 +420,31 @@ class GradeItem:
     request_text: str
     evidence_chars: int
     evidence_missing: int = 0
+    evidence_sources: tuple[str, ...] = ()
+    evidence_empty_reason: str | None = None
+    evidence_reasons: tuple[str, ...] = ()
+
+
+class EvidenceReconstructionError(RuntimeError):
+    """A reconstructed tool result disagrees with the recorded trace."""
 
 
 class EvidenceLoader:
     """Section-offset adapter over the frozen index's offline corpus loader.
 
-    A real doc with no section key has no identifiable cited article: it is
-    missing evidence, rather than replacing it with an uncited article/body.
+    Evidence is what the model actually received. A real-document citation
+    without a section key is expanded to the sections of the same document in
+    the run's own tool_refs, never to the document head (which would add an
+    uncited article). SQL citations are rebuilt by re-running the recorded
+    ``run_sql`` call read-only with the same asker (no LLM involved).
     """
 
     def __init__(self, root: Path = Path(".")):
+        self.root = Path(root)
         documents, _report = load_corpus("composite", root=root)
         self.documents: dict[str, CorpusDoc] = {d.doc_id: d for d in documents}
+        self._traces: dict[str, list[Mapping[str, object]]] | None = None
+        self._deps: ToolDeps | None = None
 
     def __call__(self, doc_id: str, section_key: str | None) -> str | None:
         document = self.documents.get(doc_id)
@@ -438,6 +458,89 @@ class EvidenceLoader:
             if section.key == section_key:
                 return document.text[section.start : section.end]
         return None
+
+    def section_outside(self, doc_id: str) -> str | None:
+        """Body of a real document that belongs to no section (verbatim spans)."""
+        document = self.documents.get(doc_id)
+        if document is None or document.source == "synthetic":
+            return None
+        spans = sorted((sec.start, sec.end) for sec in document.sections)
+        parts, cursor = [], 0
+        for start, end in spans:
+            if start > cursor:
+                parts.append(document.text[cursor:start])
+            cursor = max(cursor, end)
+        parts.append(document.text[cursor:])
+        return "\n".join(part for part in parts if part.strip()) or None
+
+    def sql_evidence(
+        self, run: AnsweredRun, citation: Mapping[str, object]
+    ) -> str | None:
+        """Re-run the cited ``run_sql`` call read-only; None if the trace is absent."""
+        steps = self._trace_steps(run.trace_id)
+        match = re.fullmatch(r"c(\d+)", str(citation.get("call_id")))
+        if steps is None or match is None:
+            return None
+        tool_steps = sorted(
+            (st for st in steps if st.get("kind") == "tool"),
+            key=lambda st: st.get("index", 0),
+        )
+        number = int(match.group(1))
+        if not 1 <= number <= len(tool_steps):
+            return None
+        step = tool_steps[number - 1]
+        if step.get("name") != "run_sql":
+            raise EvidenceReconstructionError(
+                f"{run.answer_id}: citation {citation.get('call_id')} is not a run_sql step"
+            )
+        if step.get("error") is not None:
+            return None
+        result = run_tool(
+            "run_sql",
+            step.get("args") or {},
+            UserContext(team=run.asker.team, grade=run.asker.grade),
+            self._tool_deps(),
+        )
+        if result.is_error:
+            raise EvidenceReconstructionError(
+                f"{run.answer_id}: run_sql replay returned an error"
+            )
+        serialized = json.dumps(
+            result.payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        )
+        # The trace stores the serialized length of the original result.
+        if len(serialized) != step.get("result_chars"):
+            raise EvidenceReconstructionError(
+                f"{run.answer_id}: sql replay size {len(serialized)} != "
+                f"recorded {step.get('result_chars')}"
+            )
+        return serialized
+
+    def _tool_deps(self) -> ToolDeps:
+        if self._deps is None:
+            _index, params = load_tool_config(self.root / M5_CONFIG_PATH)
+            # run_sql only reads the SQLite file; no OpenSearch or embedder is used.
+            self._deps = ToolDeps(
+                client=None,  # type: ignore[arg-type]
+                index=TOOL_INDEX,
+                embedder=None,  # type: ignore[arg-type]
+                db_path=self.root / "data" / "synthetic" / "ledger.sqlite",
+                search_params=params,
+            )
+        return self._deps
+
+    def _trace_steps(self, trace_id: str | None):
+        if trace_id is None:
+            return None
+        if self._traces is None:
+            self._traces = {}
+            for path in sorted((self.root / "logs" / "traces").glob("*.jsonl")):
+                for line in path.read_text(encoding="utf-8").splitlines():
+                    if line.strip():
+                        record = json.loads(line)
+                        if isinstance(record.get("trace_id"), str):
+                            self._traces[record["trace_id"]] = record.get("steps", [])
+        return self._traces.get(trace_id)
 
 
 def _reference_text(run: AnsweredRun, question: Question) -> str:
@@ -463,6 +566,69 @@ def _reference_text(run: AnsweredRun, question: Question) -> str:
     return text
 
 
+def _collect_evidence(run: AnsweredRun, loader):
+    """Evidence items (doc_id, label, text, source) and per-citation miss reasons."""
+    outside = getattr(loader, "section_outside", None)
+    sql_loader = getattr(loader, "sql_evidence", None)
+    items: list[tuple[str | None, str | None, str, str]] = []
+    reasons: list[str] = []
+    seen: set[tuple[str | None, str | None]] = set()
+
+    def add(doc_id, label, text, source):
+        if (doc_id, label) not in seen:
+            seen.add((doc_id, label))
+            items.append((doc_id, label, text, source))
+
+    for citation in run.citations:
+        kind = citation.get("kind")
+        if kind == "sql":
+            text = sql_loader(run, citation) if sql_loader is not None else None
+            if text:
+                add(None, None, text, "reconstructed_sql")
+            else:
+                reasons.append(
+                    "sql_replay_unavailable"
+                    if sql_loader is None
+                    else "sql_trace_missing"
+                )
+            continue
+        doc_id, section = citation.get("doc_id"), citation.get("section_key")
+        if kind != "doc" or not isinstance(doc_id, str):
+            reasons.append("invalid_citation")
+            continue
+        text = loader(doc_id, section)
+        if text:
+            add(doc_id, section, text, "cited_section" if section else "document")
+            continue
+        if section is not None:
+            reasons.append("section_not_found")
+            continue
+        # Document-level citation of a real document: use what the model received.
+        keys = list(
+            dict.fromkeys(
+                ref.get("section_key")
+                for ref in run.tool_refs
+                if ref.get("kind") == "doc" and ref.get("doc_id") == doc_id
+            )
+        )
+        if not keys:
+            reasons.append("no_tool_refs")
+            continue
+        found = False
+        for key in keys:
+            if key is not None:
+                body, label = loader(doc_id, key), key
+            else:
+                body = outside(doc_id) if outside is not None else None
+                label = "섹션 밖 본문"
+            if body:
+                add(doc_id, label, body, "tool_refs")
+                found = True
+        if not found:
+            reasons.append("tool_refs_unloadable")
+    return items, reasons
+
+
 def build_grade_item(
     run: AnsweredRun,
     question: Question,
@@ -472,27 +638,14 @@ def build_grade_item(
     if kind not in {"gemini_acc", "gemini_faith_only"}:
         raise ValueError("run does not require Gemini grading")
     reference = _reference_text(run, question)
-    evidence, missing = [], 0
-    for citation in run.citations:
-        if citation.get("kind") != "doc":
-            continue
-        doc_id = citation.get("doc_id")
-        text = (
-            evidence_loader(doc_id, citation.get("section_key"))
-            if isinstance(doc_id, str)
-            else None
-        )
-        if not text:
-            missing += 1
-            continue
-        evidence.append((doc_id, citation.get("section_key"), text))
-    # One character per citation per round, then join each contiguous prefix.
+    evidence, reasons = _collect_evidence(run, evidence_loader)
+    # One character per item per round, then join each contiguous prefix.
     # This gives equal access to the budget and redistributes exhausted shares.
     lengths = [0] * len(evidence)
     budget = 6000
     while budget:
         advanced = False
-        for i, (_, _, text) in enumerate(evidence):
+        for i, (_, _, text, _) in enumerate(evidence):
             if lengths[i] < len(text):
                 lengths[i] += 1
                 budget -= 1
@@ -502,20 +655,41 @@ def build_grade_item(
         if not advanced:
             break
     evidence_text = "\n\n".join(
-        f"[{doc_id}" + (f" / {section}" if section else "") + "]\n" + text[:length]
-        for (doc_id, section, text), length in zip(evidence, lengths, strict=True)
+        (
+            f"[{doc_id} / {label}]"
+            if doc_id and label
+            else f"[{doc_id}]"
+            if doc_id
+            else "[SQL 결과]"
+        )
+        + "\n"
+        + text[:length]
+        for (doc_id, label, text, _), length in zip(evidence, lengths, strict=True)
         if length
     )
     request = (
         f"## 질문\n{question.question}\n\n## 참조 답변\n{reference}"
         f"\n\n## 시스템 답변\n{run.answer}\n\n## 인용 근거\n{evidence_text}"
     )
+    total = sum(lengths)
+    empty = (
+        None
+        if total
+        else (Counter(reasons).most_common(1)[0][0] if reasons else "no_citations")
+    )
     return GradeItem(
         run.answer_id,
         "acc" if kind == "gemini_acc" else "faith",
         request,
-        sum(lengths),
-        missing,
+        total,
+        len(reasons),
+        tuple(
+            sorted(
+                {src for (_, _, _, src), n in zip(evidence, lengths, strict=True) if n}
+            )
+        ),
+        empty,
+        tuple(reasons),
     )
 
 
@@ -596,16 +770,99 @@ def parse_rubric_sections(path: Path = RUBRIC_PATH) -> dict[str, str]:
     return sections
 
 
+EVIDENCE_MANIFEST_PATH = Path("data/manifest/m7_evidence.json")
+
+
+def check_evidence(
+    root: Path = Path("."),
+    *,
+    answers: Sequence[AnsweredRun] | None = None,
+    loader=None,
+) -> dict[str, object]:
+    """Offline report of grading items by evidence source and empty-evidence reason."""
+    root = Path(root)
+    answers = load_m6_answers(root) if answers is None else list(answers)
+    classes = classify_all(answers)
+    loader = EvidenceLoader(root) if loader is None else loader
+    h5_path = root / "data/manifest/m6_eval_inputs.json"
+    sample_path = root / "data/manifest/m7_human_sample.json"
+    h5_ids = set(_json(h5_path)["h5_pool"]["ids"]) if h5_path.exists() else set()
+    sample_ids = (
+        set(_json(sample_path)["answer_ids"]) if sample_path.exists() else set()
+    )
+    sources, empty, failures = Counter(), defaultdict(list), []
+    graded = 0
+    for run in answers:
+        if classes[run.answer_id] not in {"gemini_acc", "gemini_faith_only"}:
+            continue
+        graded += 1
+        try:
+            item = build_grade_item(run, run.question, loader)
+        except EvidenceReconstructionError as exc:
+            failures.append({"answer_id": run.answer_id, "error": str(exc)})
+            continue
+        sources.update(item.evidence_sources)
+        if item.evidence_empty_reason is not None:
+            empty[item.evidence_empty_reason].append(run.answer_id)
+
+    def scoped(ids):
+        return {
+            reason: sorted(set(values) & ids)
+            for reason, values in empty.items()
+            if set(values) & ids
+        }
+
+    report = {
+        "schema_version": 1,
+        "graded_items": graded,
+        "items_by_evidence_source": dict(sorted(sources.items())),
+        "empty_evidence_total": sum(len(v) for v in empty.values()),
+        "empty_evidence_by_reason": {k: len(v) for k, v in sorted(empty.items())},
+        "empty_evidence_ids": {k: sorted(v) for k, v in sorted(empty.items())},
+        "empty_in_kappa_sample": {k: len(v) for k, v in scoped(sample_ids).items()},
+        "empty_in_h5_pool": {k: len(v) for k, v in scoped(h5_ids).items()},
+        "reconstruction_failures": failures,
+        "note": "빈 근거 항목은 충실성 집계에서 '근거 없음'으로 따로 표시하고 평균에서 제외한다. 정답성은 그대로 채점한다.",
+    }
+    return report
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="M7 채점 입력을 오프라인 검증합니다.")
-    parser.add_argument("--verify-inputs", action="store_true", required=True)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--verify-inputs", action="store_true")
+    mode.add_argument(
+        "--check-evidence",
+        action="store_true",
+        help="채점 대상 근거 구성(출처별)과 근거 0자 건수(사유별)를 출력하고 manifest에 기록",
+    )
     parser.add_argument("--root", type=Path, default=Path("."))
+    parser.add_argument("--no-write", action="store_true")
     args = parser.parse_args(argv)
     try:
-        check = verify_m6_inputs(args.root)
+        if args.check_evidence:
+            report = check_evidence(args.root)
+        else:
+            check = verify_m6_inputs(args.root)
     except InputHashError as exc:
         print(f"M7 입력 불일치: {exc}", file=sys.stderr)
         return 2
+    if args.check_evidence:
+        if not args.no_write:
+            path = args.root / EVIDENCE_MANIFEST_PATH
+            path.write_text(
+                json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+        print(f"채점 대상 {report['graded_items']}건")
+        print(f"근거 출처별 항목 수: {report['items_by_evidence_source']}")
+        print(
+            f"근거 0자: {report['empty_evidence_total']}건 "
+            f"(사유별 {report['empty_evidence_by_reason']}, "
+            f"κ 표본 {report['empty_in_kappa_sample']}, H5 풀 {report['empty_in_h5_pool']})"
+        )
+        print(f"SQL 재현 불일치: {len(report['reconstruction_failures'])}건")
+        return 1 if report["reconstruction_failures"] else 0
     print(
         "OK\n" + json.dumps(asdict(check), ensure_ascii=False, indent=2, sort_keys=True)
     )
