@@ -145,7 +145,16 @@
     {
       "step": 10,
       "name": "m6-runner",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-01T10:42:04+0900",
+      "summary": "`m6_inputs.py`·`m6_metrics.py`·`m6_runner.py`·`m6_dev.py`·`m6_config.py`·`m6_test.py`와 Make 타깃, `m6_eval_inputs.json`을 구현했으며 `make verify` 1,417개, M6 선택 테스트 21개 및 입력 집계(dev 75·H5 13·분모 56)가 통과했습니다.",
+      "completed_at": "2026-10-01T11:10:53+0900",
+      "usage": {
+        "input_tokens": 15105456,
+        "cached_input_tokens": 14862336,
+        "output_tokens": 73325,
+        "attempts": 1
+      }
     },
     {
       "step": 11,
