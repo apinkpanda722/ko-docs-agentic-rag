@@ -17,6 +17,7 @@ from kodocs.eval.m7_grading import (
 )
 from kodocs.eval.m7_human import CSV_PATH, HumanGradesNotRegistered, load_human_grades
 from kodocs.eval.m7_rawhash import RawHashMismatch, verify_fingerprint
+from kodocs.eval.m7_security import analyze_h6
 
 ANALYSIS_PATH = Path("data/manifest/m7_analysis.json")
 HUMAN_PATH = Path("data/manifest/m7_human_grades.json")
@@ -160,6 +161,9 @@ def run_analysis(*, root=Path("."), csv_path=None):
         "faithfulness": faithfulness,
         "variability": variability,
     }
+    h6 = analyze_h6(root)
+    if h6 is not None:
+        result["h6"] = h6
     path = root / ANALYSIS_PATH
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -194,7 +198,17 @@ def print_summary(result):
     print(result["sol"]["note"])
     print(f"라우터 착수={result['router']['launch']}: {result['router']['note']}")
     print(m7_stats.FAITH_NOTE)
-    print("H6: 보안 결과 없음(step 9 이후)")
+    print_h6(result.get("h6"))
+
+
+def print_h6(h6):
+    if h6 is None:
+        print("H6: 보안 결과 없음(step 9 이후)")
+    elif h6["pending"]:
+        print(h6["message"])
+    else:
+        for key, report in h6["by_path_system"].items():
+            print(f"{key}: {report['text']}")
 
 
 def main(argv=None):

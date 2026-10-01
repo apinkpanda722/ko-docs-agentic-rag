@@ -1,4 +1,4 @@
-.PHONY: verify up down logs test-integration collect-law collect-alio match-versions convert-hwp parse-targets parse-pypdf docling-models parse-docling parse-upstage-dry parse-upstage parse-upstage-direct-dry parse-upstage-direct parse-score table-drafts table-golden table-score parse-report reg-index seed-names build-db plan-docs generate-dry generate-pilot generate-pilot-rerun generate synth-validate synth-metrics synth-report review-sample review-score query-specs queries-dry queries queries-batch-dry queries-batch query-validate lexical-report golden-real-candidates golden-real-check golden-split-preview golden-packets golden-promote m4-report m5-annex-map m5-chunking m5-eval-inputs embed-models m5-index-dry m5-index m5-dev m5-freeze m5-test m5-report m6-temporal m6-inputs m6-dry m6-dev m6-freeze m6-test m6-tokens m6-serve m6-report m7-probe m7-cards m7-human-register m7-pilot m7-freeze m7-grade-dry m7-grade m7-analyze m7-evidence-check m7-security-set
+.PHONY: verify up down logs test-integration collect-law collect-alio match-versions convert-hwp parse-targets parse-pypdf docling-models parse-docling parse-upstage-dry parse-upstage parse-upstage-direct-dry parse-upstage-direct parse-score table-drafts table-golden table-score parse-report reg-index seed-names build-db plan-docs generate-dry generate-pilot generate-pilot-rerun generate synth-validate synth-metrics synth-report review-sample review-score query-specs queries-dry queries queries-batch-dry queries-batch query-validate lexical-report golden-real-candidates golden-real-check golden-split-preview golden-packets golden-promote m4-report m5-annex-map m5-chunking m5-eval-inputs embed-models m5-index-dry m5-index m5-dev m5-freeze m5-test m5-report m6-temporal m6-inputs m6-dry m6-dev m6-freeze m6-test m6-tokens m6-serve m6-report m7-probe m7-cards m7-human-register m7-pilot m7-freeze m7-grade-dry m7-grade m7-analyze m7-evidence-check m7-security-set m7-security-dry m7-security m7-leak-review-register
 
 # 하네스의 단일 검증 진입점. Stop hook, scripts/execute.py, step AC가 모두 이 타깃을 호출한다.
 verify:
@@ -247,3 +247,12 @@ m7-evidence-check:
 
 m7-security-set:
 	uv run --group embed python -m kodocs.eval.m7_security_set
+
+m7-security-dry:
+	uv run python -m kodocs.eval.m7_security --dry-run
+
+m7-security:
+	uv run --group embed python -m kodocs.eval.m7_security $(M6_RERUN_FLAGS) $(if $(MCP_URL),--mcp-url "$(MCP_URL)")
+
+m7-leak-review-register:
+	uv run python -m kodocs.eval.m7_security --register-review $(if $(CSV_PATH),--csv-path "$(CSV_PATH)") $(if $(FORCE_REASON),--force-reason "$(FORCE_REASON)")
