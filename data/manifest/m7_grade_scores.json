@@ -3,11 +3,13 @@
     "test_gold|g-syn-003|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "6946c43b2f7c02475158bb49dbf1c065c260a49682221515918f6106b614bede",
       "evidence_chars": 1578,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -22,6 +24,7 @@
     "test_gold|g-syn-026|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -32,11 +35,13 @@
     "test_gold|g-syn-003|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "d7c1432ef7dc2d497d5ac4ff4f9c05afce9222a200a220c6ce435e2d1c2c7f15",
       "evidence_chars": 1578,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -51,11 +56,13 @@
     "test_gold|g-syn-015|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "6a0a17fd5c676e047836aa48ebefd46d0d9c1790b0f8c3555e8f10e13ed9ac57",
       "evidence_chars": 4001,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -70,6 +77,7 @@
     "test_gold|g-syn-029|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -80,6 +88,7 @@
     "test_gold|g-syn-016|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -90,11 +99,13 @@
     "test_gold|g-real-001|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a9f71e11b0488d279c0f09878bb58fb36e6f56aa9b8f6cc2f7b7c503b8879615",
       "evidence_chars": 1118,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -109,6 +120,7 @@
     "test_gold|g-real-014|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -119,6 +131,7 @@
     "test_gold|g-syn-027|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -129,11 +142,13 @@
     "test_gold|g-syn-029|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "5c262a074ae56cedb7985cf2377ccb6efa1cb2b16d31097b5f7a0acb65d8185e",
       "evidence_chars": 209,
       "evidence_sources": [
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -148,6 +163,7 @@
     "test_gold|g-syn-030|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -158,6 +174,7 @@
     "test_gold|g-syn-012|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -168,11 +185,13 @@
     "test_gold|g-real-001|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "4620f70acf72a76826af15765929228aaf6204082b4f83ecfbaa636de6e15872",
       "evidence_chars": 1118,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -187,6 +206,7 @@
     "test_gold|g-syn-015|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -197,11 +217,13 @@
     "test_gold|g-syn-030|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "81da6302ef3ae61a7ad2d51b8d2ac15777d78b4eed5c2f0ffbe400dccce61e74",
       "evidence_chars": 160,
       "evidence_sources": [
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -216,11 +238,13 @@
     "test_gold|g-real-013|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "1b3d8fccae90ef2a969c19bec56f7ea171ec44627bc3f9a1c521b05622ae0e4b",
       "evidence_chars": 498,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         2,
         2,
@@ -235,11 +259,13 @@
     "test_gold|g-syn-002|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "03b94a4172b5644e1e90b1a009dc73eee219ceac4ba2a144ee805943c7542d77",
       "evidence_chars": 3739,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -254,11 +280,13 @@
     "test_gold|g-real-014|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "1a3d40da673824e66f3da9066c6c20ac374f00ef4dcecb69fbdf20bab01f30de",
       "evidence_chars": 342,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -273,11 +301,13 @@
     "test_gold|g-real-013|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "73186a0d03018b494a58e0ba6fb873bbb74ba85d56c2c8dd7a7c9cece7df8923",
       "evidence_chars": 498,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         2,
         2,
@@ -292,12 +322,14 @@
     "test_gold|g-syn-012|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "e1a0737abbf97361669858991e6603c1a59b8a95136a0ca462f903cd85a347d3",
       "evidence_chars": 1704,
       "evidence_sources": [
         "document",
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -312,11 +344,13 @@
     "test_gold|g-syn-027|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "410b58c98c7ddc59be032294f19b9626295816ecdbce3f66aa763ddd1bd1999f",
       "evidence_chars": 121,
       "evidence_sources": [
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -331,11 +365,13 @@
     "test_gold|g-syn-026|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "969793f06537e2783738b16aae284d8008b71c8bb244d0ec887ddc5f8b79bbfa",
       "evidence_chars": 126,
       "evidence_sources": [
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -350,11 +386,13 @@
     "test_gold|g-syn-016|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "9c2d779f44858492f859e5a5ccdf44afcea4dd645d781c33120c6941fba2fcb1",
       "evidence_chars": 4442,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -369,6 +407,7 @@
     "test_gold|g-syn-005|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -379,6 +418,7 @@
     "test_gold|g-syn-005|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -389,11 +429,13 @@
     "test_gold|g-syn-002|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "83bbd7ffab3f0a75834095ce9bcafa029f8bdcfea8f34fa714ecf554ba1c6f3e",
       "evidence_chars": 2391,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -408,11 +450,13 @@
     "dev|s-syn-080|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "51df4f730e4988fe542ceae1bc6c41ea3bef61809162ae772a7b32e877589ff0",
       "evidence_chars": 3522,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         2,
         2,
@@ -427,11 +471,13 @@
     "dev|g-syn-011|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "163df037106eea1d6a3add3089226edee42c10528bd8482eae85dee67282e557",
       "evidence_chars": 3153,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -446,11 +492,13 @@
     "dev|s-syn-031|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "ecf77a03626ee41e171cef8c74abd25fc6fc0936907c71964bd3424ba149e12d",
       "evidence_chars": 1578,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -465,11 +513,13 @@
     "dev|s-syn-061|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a3e1344eaf01113135e9b4f6d9e8603a8d5a96814cb1062f6d792c21c3a5ca83",
       "evidence_chars": 5192,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -484,11 +534,13 @@
     "test_silver|s-syn-002|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "917346f0f3f59a9a41ab69885feb7513021da051ddee4b720562b43d2fd0e65c",
       "evidence_chars": 2337,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -503,11 +555,13 @@
     "dev|g-real-002|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "1ccd6555fcc53b758d70321f218f735c579dd70255a40b597c3861ac13a6b2be",
       "evidence_chars": 1829,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -522,11 +576,13 @@
     "test_silver|s-syn-045|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "629eabb761bff6953245ead3a6a629d2288053b704e88f8c818531d3d08a9e00",
       "evidence_chars": 797,
       "evidence_sources": [
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -541,11 +597,13 @@
     "test_silver|s-syn-116|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "95c17f1a727127907c603c6453d872d1cd08f04a11573ff1dd000eb11b207e49",
       "evidence_chars": 2118,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -560,11 +618,13 @@
     "test_gold|g-real-005|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "d6ea099fd0e80cd65fc6571687277ffbe901f99463f6551313270f574bc1d17b",
       "evidence_chars": 2067,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -579,11 +639,13 @@
     "dev|s-syn-057|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "c55967113983f350161b061ba68d3cd5b6981283c5ad84947da86ea96484d279",
       "evidence_chars": 5601,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -598,11 +660,13 @@
     "test_silver|s-syn-052|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "fd6c5b36bc0bfcbd8e15a7f0d84f125095df355e41989e7a5d9645be3b0a348e",
       "evidence_chars": 4248,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -617,11 +681,13 @@
     "dev|s-syn-044|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "cd87a66a173bdd3bc109c147fe229e12ef86cb7a98992881b70cd048defb87a1",
       "evidence_chars": 2164,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -636,11 +702,13 @@
     "test_silver|s-syn-015|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "27a426b33de339301d3ae5d8a18d4c3a626a3a8cded3faa8904255794a425c33",
       "evidence_chars": 1337,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -655,11 +723,13 @@
     "dev|s-syn-117|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "7effb3b23cdabe53b837c0e2d8bbded6b526079d74f9ecca34f5d13e10322856",
       "evidence_chars": 1797,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -674,11 +744,13 @@
     "test_gold|g-real-009|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a5d7bc80c44f29de75f902543ad2e83bd10b54ac12881cd4373d45e3817af561",
       "evidence_chars": 518,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -693,11 +765,13 @@
     "test_gold|g-real-009|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "e95130dbc814e10d944d3a68deb353c3ad37b8820cc303e20a07aa3e3eadb57d",
       "evidence_chars": 518,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -712,11 +786,13 @@
     "dev|s-syn-109|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "1349da6dce2098e891c93120973c1a064b8544f896751c095d5d7434045afd25",
       "evidence_chars": 1879,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -731,11 +807,13 @@
     "dev|g-real-016|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "30be0cebc487a1bac8a018c86009fe585161f592aadbecbc59de46e57b9b11ff",
       "evidence_chars": 722,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -750,11 +828,13 @@
     "dev|g-real-004|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "9928bb5df82f82510fa79c30cce182e1e109ac489b75f85f9606378765e2ecc4",
       "evidence_chars": 996,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -769,11 +849,13 @@
     "test_gold|g-real-018|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "497d26d39a71b02eae4ba6b1cf1ee791f8f09379efc920570c98ae22b2038386",
       "evidence_chars": 400,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -788,11 +870,13 @@
     "dev|g-real-011|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "d951f3ca4fd7e2ebe143ef4469e764248c7de674d26f654e8f12408fa906dc5e",
       "evidence_chars": 521,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -807,11 +891,13 @@
     "dev|g-syn-010|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "f01d625132cf0f97e1c21f76b89b2a16874a0f0932c9872e798c7dc0f387efbb",
       "evidence_chars": 1361,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -826,11 +912,13 @@
     "dev|g-real-015|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a617d22874d8d55c41c52b4ac1003f2178d813715caa9027fb1afe669b389118",
       "evidence_chars": 1159,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -845,11 +933,13 @@
     "test_gold|g-real-003|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "b3171eecbb8d03734ad75a4a1d27de99278e1c0c5e67ebc15d6dba0d22ebaf42",
       "evidence_chars": 1734,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -864,11 +954,13 @@
     "dev|g-real-011|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "bf8c58d4bd7ca973b13ce17b1b177d11262b63ef5c4502c626c94b104eca15c8",
       "evidence_chars": 521,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -883,11 +975,13 @@
     "dev|s-syn-063|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "992dc27732eb2fb5e2c443140c30f60bf508a64b44122edc1119b8db37b043f6",
       "evidence_chars": 1696,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -902,11 +996,13 @@
     "test_silver|s-syn-068|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "9a05d3cdde499c9d7b6977446330f5abe7ecf135048f7c5b2e2c96090d36952e",
       "evidence_chars": 3848,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -921,11 +1017,13 @@
     "test_gold|g-real-006|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "238cd1e0566740238a084191335aa9f4fbb20479c59e413d46c8b8d3f60b5d53",
       "evidence_chars": 1030,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -940,11 +1038,13 @@
     "test_gold|g-real-003|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "da608cdd3eca934912a111f452eedaf30ba374d4cf75fe569cbe74f6673ccdb3",
       "evidence_chars": 1734,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -959,11 +1059,13 @@
     "dev|s-syn-115|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "056a662b7666bdfdb0c16b0d0cbe02f9105905edd11aaa1e476d8e2cadca60a4",
       "evidence_chars": 2066,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -978,11 +1080,13 @@
     "test_gold|g-real-017|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "3c95d94d06c7df6169cd369f1705b3bffbb3dba9cf405182e6cc9023a092d5f5",
       "evidence_chars": 1087,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         1,
@@ -997,11 +1101,13 @@
     "test_gold|g-real-007|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "fecf06753e8dadf4d41f173545d590e1c384672f08d67bbfb294b0607e9f0975",
       "evidence_chars": 293,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         2,
         2,
@@ -1016,11 +1122,13 @@
     "test_gold|g-real-005|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "9bb36c71d723ea7747c778bf49fa8f29318384b2929ef678359901461d388170",
       "evidence_chars": 1906,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1035,11 +1143,13 @@
     "dev|s-syn-111|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "8eca325c3b71da9ec1f0ee4deeb789b1c3cd8b9c62ffbec18a514ede3e366c42",
       "evidence_chars": 1588,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1054,11 +1164,13 @@
     "test_silver|s-syn-054|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "55d5597c4e7dbc2d4162ee0b62b99f6261e937f24d042ec92b93f2be84120c73",
       "evidence_chars": 2337,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1073,11 +1185,13 @@
     "test_silver|s-syn-016|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "0d71df89c7c9e0f47824397cc9a2090ca0653bbd8d9a7c67f630679b12781bb9",
       "evidence_chars": 3065,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1092,17 +1206,20 @@
     "test_silver|s-syn-131|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-048|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a7d814e4709e18e887053296780dc3ba786cf70968163bacacc66c201e6d5bcd",
       "evidence_chars": 4585,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1117,6 +1234,7 @@
     "test_silver|s-syn-059|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1127,11 +1245,13 @@
     "test_silver|s-syn-050|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "93b3e9ff95d28dd9607b072932518b2077f0c59e22525fbec36eb140a1562ac4",
       "evidence_chars": 1406,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1146,23 +1266,27 @@
     "test_gold|g-syn-018|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-134|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-064|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "3550eca80e69fc778d303ca8192a979ef64ba137df94878662a76516f2ef2042",
       "evidence_chars": 3314,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1177,6 +1301,7 @@
     "test_gold|g-real-006|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1187,11 +1312,13 @@
     "test_silver|s-syn-065|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "b9b69747fc1b2531f4cbed3f35ae2cd4391e29277f20bc2e3d26e4150ffdaf3f",
       "evidence_chars": 1588,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         1,
@@ -1206,11 +1333,13 @@
     "test_silver|s-syn-015|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "c485fc50a01ef80a9c2c1ba3528b70525af29a673f2a3ca50ee0cefe7c7b4abf",
       "evidence_chars": 1337,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1225,18 +1354,21 @@
     "test_silver|s-syn-141|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_gold|g-syn-022|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_gold|g-real-012|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1247,11 +1379,13 @@
     "test_silver|s-syn-046|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "5c53d7f08e3d8af20e0a89dbb8cb29172d095b940ae1e78a02a01d8943c7e948",
       "evidence_chars": 6000,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1266,11 +1400,13 @@
     "test_gold|g-syn-009|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "7e142089d4e762d4acf7f8f464a702db8db723ff802e556d1b3b44fdc34a7f12",
       "evidence_chars": 2099,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1285,6 +1421,7 @@
     "test_silver|s-syn-114|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1295,11 +1432,13 @@
     "test_silver|s-syn-140|agentic|gpt-6-luna": {
       "mode": "faith",
       "class": "gemini_faith_only",
+      "request_sha256": "89c5d4c28b0f7b99dc346b464c13e47ba7d51289fc1056fbcfadc712b5f19020",
       "evidence_chars": 5510,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": [
         3,
@@ -1310,11 +1449,13 @@
     "test_silver|s-syn-010|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "3adbf3b4db64c9fada3fc40e4a44539da7ca36d51a72acf4581cffae12eb5c40",
       "evidence_chars": 2145,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1329,6 +1470,7 @@
     "test_silver|s-syn-104|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1339,17 +1481,20 @@
     "test_gold|g-syn-024|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-033|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "65a09227b21eb885d218d96ee1c0767d4142533f635cc0e3baac009543c0f9c9",
       "evidence_chars": 2104,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         1,
@@ -1364,11 +1509,13 @@
     "test_silver|s-syn-056|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "5fd485b0af3df49d8748368e22695cce19315f25373f2f3b5a38e21ec6ba72c8",
       "evidence_chars": 3429,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1383,6 +1530,7 @@
     "test_silver|s-syn-018|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1393,11 +1541,13 @@
     "test_gold|g-real-010|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "d8016c0ceab85ff3d5f6a02c1253f136d132ad706eed301546402776b52574c3",
       "evidence_chars": 433,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1412,11 +1562,13 @@
     "test_silver|s-syn-016|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "6739308573e26a7d9fd70c2d222e99455e2300bcde4ed91262af7c199ba1b61b",
       "evidence_chars": 4069,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1431,17 +1583,20 @@
     "test_silver|s-syn-132|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-064|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "6b533c224b78e296aec103d871398c337bffe1032a468b029b5debac5d2e919d",
       "evidence_chars": 3314,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1456,11 +1611,13 @@
     "test_silver|s-syn-103|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "6b5ebaa03dcee77be62867019c5e964dc77e67dde12d239baed5c5cbb73cb098",
       "evidence_chars": 1997,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1475,6 +1632,7 @@
     "test_silver|s-syn-086|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1485,17 +1643,20 @@
     "test_silver|s-syn-136|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-103|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "9bb665dfbda306f0eaa9d972299d8c979a91d1be1604dbc1aa07f7b3f40a281e",
       "evidence_chars": 1997,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1510,11 +1671,13 @@
     "test_silver|s-syn-106|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "ccaa9fe2b802b74eaf01b037c0ee7eca6246cdaa286dcf877380497cc27dec96",
       "evidence_chars": 1715,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         3,
@@ -1529,6 +1692,7 @@
     "test_silver|s-syn-078|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1539,11 +1703,13 @@
     "test_silver|s-syn-025|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "dc3fd0f7f3bb4f309c49786b0a92d3e78e2d3eb77ae59dc4876111c68cedbdef",
       "evidence_chars": 3746,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1558,11 +1724,13 @@
     "test_gold|g-real-007|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a817e6fcaeac1a67a370aec37c531d2e9083ab98b7e813aa891025fe611d63cd",
       "evidence_chars": 293,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         2,
         2,
@@ -1577,17 +1745,20 @@
     "test_silver|s-syn-131|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-079|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "fff6758485d9eb73d8d65e1a82c96021144bf2ef201c341d1b835c0ea1ac60ef",
       "evidence_chars": 2336,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1602,11 +1773,13 @@
     "test_silver|s-syn-038|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "764a36f6e2396a3fc5492f621b9ff19eb769d5a619c1eff714e67e28b5b04485",
       "evidence_chars": 3001,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1621,6 +1794,7 @@
     "test_gold|g-real-010|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1631,11 +1805,13 @@
     "test_silver|s-syn-046|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "8db43db3df30310f3e54d9b293d06090423a10204f8ef6e8096bfa5fc2cd1b2e",
       "evidence_chars": 3336,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1650,11 +1826,13 @@
     "test_silver|s-syn-120|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "8905e1f37ce4e19a5d63dd00c43418912b3d3f6c929e0679e53d506a3f9385e9",
       "evidence_chars": 2754,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1669,12 +1847,14 @@
     "test_gold|g-syn-022|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-075|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1685,17 +1865,20 @@
     "test_silver|s-syn-124|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-141|agentic|gpt-6-luna": {
       "mode": "faith",
       "class": "gemini_faith_only",
+      "request_sha256": "3ce2f401038dc0c2cbf6aef7955f90e8774c729d18b40c57887b96bfa99746cf",
       "evidence_chars": 2157,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": [
         3,
@@ -1706,6 +1889,7 @@
     "test_silver|s-syn-020|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1716,11 +1900,13 @@
     "test_silver|s-syn-042|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "983694445b2ad087c97efad3f906c119b8f7076ce8696562b79a5bf131c05245",
       "evidence_chars": 3433,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1735,11 +1921,13 @@
     "test_silver|s-syn-025|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "0af6d9306dd6ccd1df1957722d046b46e583647b29e4f926194c6377f3c42c43",
       "evidence_chars": 2337,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1754,6 +1942,7 @@
     "test_silver|s-syn-104|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1764,11 +1953,13 @@
     "test_silver|s-syn-026|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "bdd005a33300f78885eabdfcbbf62d3dedaf15720d3b6c1b1600606ccf904b30",
       "evidence_chars": 1324,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1783,11 +1974,13 @@
     "test_silver|s-syn-048|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "e91640c2ad57873a65e456c3671055779b618c12fdacad0b0fc777747a37851f",
       "evidence_chars": 5019,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1802,11 +1995,13 @@
     "test_silver|s-syn-086|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "4759e6f62552258ffe7a66c19d61b9f78d3646e93c7dd690ec9d0c0c6d244965",
       "evidence_chars": 3505,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1821,6 +2016,7 @@
     "test_silver|s-syn-005|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1831,11 +2027,13 @@
     "test_silver|s-syn-043|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "0598b27b6b40e1c7a254d8d944f1096cd9526d52a500d18b93cdf5b2b37fb63b",
       "evidence_chars": 3923,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1850,6 +2048,7 @@
     "test_silver|s-syn-027|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1860,17 +2059,20 @@
     "test_silver|s-syn-121|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-070|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "f7645a4887638a00f42d3bd91b11aeedffd8328822510d4bf4331a1e91bd0c38",
       "evidence_chars": 3674,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1885,17 +2087,20 @@
     "test_silver|s-syn-125|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-021|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "6841ecf7ec2874eceb70dc0ad51128760b6a08ee218ae8ef9453258efe489a6b",
       "evidence_chars": 3635,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1910,12 +2115,14 @@
     "test_silver|s-syn-139|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-088|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1926,6 +2133,7 @@
     "test_silver|s-syn-081|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1936,11 +2144,13 @@
     "test_silver|s-syn-056|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "f603f980cdc6d71021746067bf658ac6227337bbea305b69635bff23904ba0eb",
       "evidence_chars": 1766,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1955,11 +2165,13 @@
     "test_silver|s-syn-110|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "ba2b72139d7462ea86151cb4565c35a01a7fcfc92461b50c669a0f39c4ed0be0",
       "evidence_chars": 3687,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -1974,6 +2186,7 @@
     "test_silver|s-syn-085|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1984,6 +2197,7 @@
     "test_silver|s-syn-075|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -1994,17 +2208,20 @@
     "test_silver|s-syn-149|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-017|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "e6e0d5cb2a149910b0a3bdac3233accb7b81e10930f423bb0b37318488888f56",
       "evidence_chars": 1361,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2019,6 +2236,7 @@
     "test_silver|s-syn-059|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2029,6 +2247,7 @@
     "test_silver|s-syn-101|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2039,17 +2258,20 @@
     "test_gold|g-syn-024|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-052|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "5524583ab6c6e38fe6a77430a75477d0825d16437607bbdcbc448845b3938b57",
       "evidence_chars": 1569,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2064,11 +2286,13 @@
     "test_gold|g-real-019|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "7685c8ca4b8bb3451da6696cdeed5e8e3b4adecb1f873748dbed70d4e0fc3c75",
       "evidence_chars": 662,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2083,12 +2307,14 @@
     "test_gold|g-syn-020|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-067|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2099,23 +2325,27 @@
     "test_silver|s-syn-140|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-147|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_gold|g-real-018|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "c498f81f4d200de730a70859c76dbccf2a95ffd5ee2711ffb7b005044964d4e5",
       "evidence_chars": 400,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2130,11 +2360,13 @@
     "test_silver|s-syn-040|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "e70759ee5b9b86b5e5e95dfc00d45e60ec9cad8ad2b5e47e7967cd8ff0c4afa6",
       "evidence_chars": 3923,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2149,6 +2381,7 @@
     "test_silver|s-syn-005|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2159,11 +2392,13 @@
     "test_silver|s-syn-087|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "c127b86ad4fd03ac9babdf16f25257714deea26c56feb387fa1833693dcb47fe",
       "evidence_chars": 118,
       "evidence_sources": [
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2178,12 +2413,14 @@
     "test_silver|s-syn-133|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-102|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2194,11 +2431,13 @@
     "test_silver|s-syn-079|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "2552b839f962904541591a659c83428821ba9356abe545fc624c7996432d188d",
       "evidence_chars": 864,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         1,
@@ -2213,12 +2452,14 @@
     "test_silver|s-syn-022|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "67781a0dd134e074ff5c194924dfe01f4905f51216cd1ac685e1619c581b44c7",
       "evidence_chars": 1662,
       "evidence_sources": [
         "document",
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2233,17 +2474,20 @@
     "test_silver|s-syn-134|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-055|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "f0d91a1c3e90c9f3393bb259310ffcbd3e87b756f69c678390bdfcd673bb68ad",
       "evidence_chars": 1198,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2258,12 +2502,14 @@
     "test_silver|s-syn-138|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-068|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2274,11 +2520,13 @@
     "test_silver|s-syn-042|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "edc574879b08fe4aa551bf281d727cb8f64dd675f2437c286a0c77bfd024edda",
       "evidence_chars": 2658,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2293,11 +2541,13 @@
     "test_silver|s-syn-054|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "55d5597c4e7dbc2d4162ee0b62b99f6261e937f24d042ec92b93f2be84120c73",
       "evidence_chars": 2337,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2312,17 +2562,20 @@
     "test_silver|s-syn-133|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-014|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a8a5998fed5c44cad8c78023117d866146092c0a4b6ac7c8183ec981018c0a99",
       "evidence_chars": 110,
       "evidence_sources": [
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         1,
@@ -2337,17 +2590,20 @@
     "test_silver|s-syn-125|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-112|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "0cb1f7c866fe0969ad628cfd06cc8abbf4a57b4620323e7d0906888d667eae58",
       "evidence_chars": 1663,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2362,11 +2618,13 @@
     "test_silver|s-syn-039|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "3f0e035524bf7ea761139a94dc3d22df5d4be368c6349130a334f69e38580a78",
       "evidence_chars": 2893,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2381,11 +2639,13 @@
     "test_silver|s-syn-035|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "54c50fc026f6d72277f61584ed287741b7ab917ef0858e9987d5ea8ec71644c3",
       "evidence_chars": 1700,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2400,17 +2660,20 @@
     "test_silver|s-syn-126|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-070|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "72cb0c595551f9f1e06629f63b1140eb76b9024aec31251354c47af0fe1fe08f",
       "evidence_chars": 6000,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         1,
@@ -2425,11 +2688,13 @@
     "test_silver|s-syn-029|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "731f171771863815602b83cc2129ef23764f480be99076dbc00a66e12a33abeb",
       "evidence_chars": 6000,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2444,17 +2709,20 @@
     "test_gold|g-syn-021|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_gold|g-syn-007|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "aaa0d067f96e38e742bb4c7c5f81b88117d8c93ec021d7b98d6eacfd5fb69950",
       "evidence_chars": 1769,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2469,11 +2737,13 @@
     "test_silver|s-syn-053|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a1ec73109e618d5653f0f61fa85aadaa65773d86d81ad0531ec23214ba712fad",
       "evidence_chars": 3337,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2488,11 +2758,13 @@
     "test_silver|s-syn-066|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "1b35344332d7cb858c70e9e2f916de256943a4c0895d5e9f8e8e72278de9f829",
       "evidence_chars": 3124,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2507,6 +2779,7 @@
     "test_silver|s-syn-082|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2517,6 +2790,7 @@
     "test_silver|s-syn-018|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2527,17 +2801,20 @@
     "test_silver|s-syn-123|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-120|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "9df6b33d91f386a62917107f569326a47a3fddecd48f472276ab62dcf538b9a8",
       "evidence_chars": 2754,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2552,11 +2829,13 @@
     "test_silver|s-syn-029|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "1d4b8a6bcd797f9060acc51411b78b7d98aaee1dc6e5cbd7eb05aa9fd6249da5",
       "evidence_chars": 5453,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2571,6 +2850,7 @@
     "test_silver|s-syn-084|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2581,11 +2861,13 @@
     "test_silver|s-syn-113|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "edb16774d351813fd839c84c99ee78096f5dbd085f41f4e502b96e18b775f9e0",
       "evidence_chars": 2157,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2600,6 +2882,7 @@
     "test_silver|s-syn-020|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2610,18 +2893,21 @@
     "test_silver|s-syn-148|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-126|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-003|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2632,11 +2918,13 @@
     "test_silver|s-syn-003|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "e2171da8190ff0d5f5ae5f52ab4b8dc3322fe3d0ac9b6a110363cae864e1d722",
       "evidence_chars": 111,
       "evidence_sources": [
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         2,
         2,
@@ -2651,11 +2939,13 @@
     "test_silver|s-syn-002|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "917346f0f3f59a9a41ab69885feb7513021da051ddee4b720562b43d2fd0e65c",
       "evidence_chars": 2337,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2670,11 +2960,13 @@
     "test_gold|g-syn-007|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "27b3fa7c93b9241eaca6eca2f354074ebed7f75f5dc664bb2c57220313520421",
       "evidence_chars": 1561,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2689,6 +2981,7 @@
     "test_silver|s-syn-114|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2699,6 +2992,7 @@
     "test_silver|s-syn-004|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2709,11 +3003,13 @@
     "test_silver|s-syn-045|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "fcd2397b332e05a241ec92b89261b98a00d88817d3dda59b292ae8033e77932d",
       "evidence_chars": 1355,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2728,11 +3024,13 @@
     "test_silver|s-syn-139|simple|gpt-6-luna": {
       "mode": "faith",
       "class": "gemini_faith_only",
+      "request_sha256": "7d24939ad669b266df8e1ee915c41c970b7ce220160416e4eb7d254c89cb8d68",
       "evidence_chars": 1588,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": [
         3,
@@ -2743,11 +3041,13 @@
     "test_silver|s-syn-060|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "836d8fdc7f8a66ff042ac7d5be4b5052d3ed6789691cbd6a6fc9ecd04b31fc36",
       "evidence_chars": 2893,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2762,18 +3062,21 @@
     "test_silver|s-syn-149|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_gold|g-syn-020|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-118|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2784,6 +3087,7 @@
     "test_silver|s-syn-081|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2794,11 +3098,13 @@
     "test_silver|s-syn-034|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a336305cedfbccd9e2071aba89c00c881b64c8ff82b2108d21c38dbf88a9eb25",
       "evidence_chars": 1766,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2813,6 +3119,7 @@
     "test_gold|g-real-012|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2823,11 +3130,13 @@
     "test_silver|s-syn-082|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "ee4805d28af040c1a75040a5ae66518c2fe45d85f2c5d3088a3282234e9f4f4c",
       "evidence_chars": 3590,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2842,11 +3151,13 @@
     "test_silver|s-syn-116|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "ced4b11f4a72aced535bd8871714d15b2abd4f08a9d200e676814f42d7ee63c2",
       "evidence_chars": 1805,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         2,
         1,
@@ -2861,11 +3172,13 @@
     "test_gold|g-syn-009|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "6a13d2c6bfecd9d22638ee3defc077d78be9a90760ba11245b62ebb3ab676b48",
       "evidence_chars": 2099,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2880,11 +3193,13 @@
     "test_silver|s-syn-043|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "762cc6372dd8a5a2649b147fac7de9c44288dc44194d94ee6d9995e0b420d4ec",
       "evidence_chars": 2118,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2899,11 +3214,13 @@
     "test_silver|s-syn-106|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "799e2aa7a284a4f7872873d688d1b6f4068259bae8f4d2f5face984ab072abbf",
       "evidence_chars": 1715,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         1,
@@ -2918,11 +3235,13 @@
     "test_silver|s-syn-112|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "7b946258fcfae3666cad3bdd4ee51790f6c45082174842e85cdb0c5c0e0f6306",
       "evidence_chars": 1663,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         2,
         3,
@@ -2937,6 +3256,7 @@
     "test_silver|s-syn-078|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2947,11 +3267,13 @@
     "test_silver|s-syn-021|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "be2f6016a48cb8181770aeae4b98d77ae2f2341deb82e70a58916a72c7974f6c",
       "evidence_chars": 3408,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -2966,12 +3288,14 @@
     "test_silver|s-syn-136|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-101|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2982,6 +3306,7 @@
     "test_silver|s-syn-004|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -2992,11 +3317,13 @@
     "test_silver|s-syn-146|agentic|gpt-6-luna": {
       "mode": "faith",
       "class": "gemini_faith_only",
+      "request_sha256": "18d8df57299603ba58dbdc13f67822891c666b805f922aaebc83fb6431d77b62",
       "evidence_chars": 3429,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": [
         3,
@@ -3007,6 +3334,7 @@
     "test_silver|s-syn-088|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3017,24 +3345,28 @@
     "test_silver|s-syn-147|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-123|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_gold|g-syn-018|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-102|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3045,11 +3377,13 @@
     "test_silver|s-syn-066|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "f3a5748943217b7991015c86033318e6eae1e0297a9614f2aa8d9a21880e3686",
       "evidence_chars": 3124,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3064,23 +3398,27 @@
     "test_silver|s-syn-148|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-138|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-084|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "8825134ad542ffef2fcccd043ec889c3f281f166239ec82c7f6a95b6ed57ec10",
       "evidence_chars": 3414,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3095,6 +3433,7 @@
     "test_silver|s-syn-087|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3105,11 +3444,13 @@
     "test_silver|s-syn-039|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "3f0e035524bf7ea761139a94dc3d22df5d4be368c6349130a334f69e38580a78",
       "evidence_chars": 2893,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3124,11 +3465,13 @@
     "test_silver|s-syn-035|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "61715f0603c439f3e4bb673761ad125de19cbd12031d6e6711ee7c53adeee1b9",
       "evidence_chars": 5041,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3143,11 +3486,13 @@
     "test_silver|s-syn-113|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "848a92c193725fdce09f17a477831623c8761bd576484fd34119907331d621fd",
       "evidence_chars": 2157,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         2,
         2,
@@ -3162,11 +3507,13 @@
     "test_silver|s-syn-033|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "766ea816710b84c5b7562d08ac0d4300d05cfcb1315a789402cde1a54da5418b",
       "evidence_chars": 4222,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3181,6 +3528,7 @@
     "test_gold|g-real-017|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3191,11 +3539,13 @@
     "test_silver|s-syn-050|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "bd2fa33ce80dca2c4c269e79c14d8e152e413ee8e0c6f33d4fd4f6e9d05208dc",
       "evidence_chars": 1406,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         1,
@@ -3210,11 +3560,13 @@
     "test_silver|s-syn-026|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "5294d8fe550a4b562a663a3d70c43cf4f81696a50825e28b9efe5ad52cfd9d9a",
       "evidence_chars": 1324,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3229,11 +3581,13 @@
     "test_silver|s-syn-146|simple|gpt-6-luna": {
       "mode": "faith",
       "class": "gemini_faith_only",
+      "request_sha256": "151ec218c6616176fb26a3e038920c79e6ce3d6f0008c5123d45b3e4363d25f0",
       "evidence_chars": 3429,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": [
         3,
@@ -3244,11 +3598,13 @@
     "test_silver|s-syn-038|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "0c84f139e37e2cd36ace9ebcc955847128967d545d2a48f3af15144c162c3ec2",
       "evidence_chars": 3063,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3263,11 +3619,13 @@
     "test_silver|s-syn-040|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "5f2813b6bbe25d07b5f0f554a0c2d017bc684c1247c881c8aad600b3d252afbd",
       "evidence_chars": 2118,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3282,6 +3640,7 @@
     "test_silver|s-syn-118|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3292,6 +3651,7 @@
     "test_silver|s-syn-023|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3302,11 +3662,13 @@
     "test_silver|s-syn-055|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "c28dfe942e321469bbdc69f5059d6f98042534afb01776cce5bb0453d441ecab",
       "evidence_chars": 1198,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3321,6 +3683,7 @@
     "test_silver|s-syn-027|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3331,11 +3694,13 @@
     "test_silver|s-syn-065|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "0fc62a2447a355562ea8941d27e8cc701f083e404e3d3d5b26c2211984f35098",
       "evidence_chars": 3157,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3350,6 +3715,7 @@
     "test_silver|s-syn-085|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3360,6 +3726,7 @@
     "test_silver|s-syn-022|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3370,11 +3737,13 @@
     "test_gold|g-real-019|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "6465986a4cea9cad922c55b3ae6e479afcbd93a917ab86e2fee67100f9e92e53",
       "evidence_chars": 5065,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3389,11 +3758,13 @@
     "test_silver|s-syn-014|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "23f09df27f4b10c17025392bfa799f8d41c289e9e4a223a18490f6658dda9e43",
       "evidence_chars": 1766,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3408,17 +3779,20 @@
     "test_gold|g-syn-021|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-023|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "0ff3af9e22d787a793982f85eb995df4b46619496018de6c0d6401f4d89186f2",
       "evidence_chars": 142,
       "evidence_sources": [
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3433,11 +3807,13 @@
     "test_silver|s-syn-017|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "7356b69f50a6104463c52a6c9e33ab3483bca5be2ce4b78f4b2679c8623e8e4e",
       "evidence_chars": 1361,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3452,17 +3828,20 @@
     "test_silver|s-syn-124|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-010|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "3adbf3b4db64c9fada3fc40e4a44539da7ca36d51a72acf4581cffae12eb5c40",
       "evidence_chars": 2145,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3477,6 +3856,7 @@
     "test_silver|s-syn-067|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3487,23 +3867,27 @@
     "test_silver|s-syn-132|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-121|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "test_silver|s-syn-110|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "1a5e8f993f9115e228a792de83a41f39c94f830abc0a6012d59b497723697a26",
       "evidence_chars": 3687,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3518,11 +3902,13 @@
     "test_silver|s-syn-060|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "836d8fdc7f8a66ff042ac7d5be4b5052d3ed6789691cbd6a6fc9ecd04b31fc36",
       "evidence_chars": 2893,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3537,11 +3923,13 @@
     "test_silver|s-syn-053|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "6c81894a1ae69e082f771bd8c0858a56a073e81fcd38fdf44d64994664d5b5c3",
       "evidence_chars": 4475,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3556,11 +3944,13 @@
     "test_silver|s-syn-034|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "4cec4106d504cee02ae4f77d63814499fd6fc77561daa175a9e7582f46d229e0",
       "evidence_chars": 1766,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3575,6 +3965,7 @@
     "dev|s-syn-083|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3585,6 +3976,7 @@
     "dev|s-syn-009|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3595,17 +3987,20 @@
     "dev|s-syn-137|simple|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|g-real-002|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "42f69b7f8beb42271e9f1e354b58525d33b1372dc5cf1964bf87d4bb6b57e6b5",
       "evidence_chars": 1829,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3620,11 +4015,13 @@
     "dev|s-syn-049|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "8e05193eb5a088fd427ba39fc6751cd775f6097dd9b9a7707e05d952eca98483",
       "evidence_chars": 3031,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3639,6 +4036,7 @@
     "dev|s-syn-007|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3649,17 +4047,20 @@
     "dev|g-syn-023|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-013|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "1b63ddc1fbc5725610d53f98d5efbe39b0527ded9292d8e54e434e14b8e8358a",
       "evidence_chars": 3533,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3674,11 +4075,13 @@
     "dev|g-real-016|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "426aad80b6c79bc455a6aa56e578dd9e2ba3fde0b47124e79cc1f78e0e601693",
       "evidence_chars": 587,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3693,6 +4096,7 @@
     "dev|s-syn-105|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3703,11 +4107,13 @@
     "dev|g-syn-001|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "1d523a20558966b901ca54b2be41d3f11d5d680fac54b96a01559ed35192d0aa",
       "evidence_chars": 1961,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3722,23 +4128,27 @@
     "dev|s-syn-143|simple|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-129|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-115|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a1ee2ad5be40cffb115880d89f8ed37289d2c822a54949c488987c1bcb60ea8b",
       "evidence_chars": 2066,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3753,11 +4163,13 @@
     "dev|g-syn-001|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "cc2344d5cc6d49e49b432bc16dd05dcf66a0820b4b8faca350b5d2d2ed9a8ffa",
       "evidence_chars": 1961,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3772,12 +4184,14 @@
     "dev|s-syn-122|simple|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-071|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3788,17 +4202,20 @@
     "dev|s-syn-145|agentic|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-077|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "5aced4d01388e661e44fda2c3c318f77a9fc58def8bbe0e5c901b088cdd6e5ec",
       "evidence_chars": 2928,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         1,
@@ -3813,11 +4230,13 @@
     "dev|g-real-008|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "d901612c108d3ab38f304206eba338ec3d81060482fbb01ada32427379e41e01",
       "evidence_chars": 1638,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3832,11 +4251,13 @@
     "dev|g-syn-004|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "8928fa6a5461eb838bf954a440739a22bce78682be66c846abae52cee96e2fa8",
       "evidence_chars": 2099,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3851,11 +4272,13 @@
     "dev|s-syn-108|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "3c9dd35f0191454bb4e811a34396d34f143e5d44f01cb593c907eb7ad34b1533",
       "evidence_chars": 2658,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3870,11 +4293,13 @@
     "dev|s-syn-058|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "e67e43f010a602408cdf5c7713299ab451db6b26b293916e0c9f955857207185",
       "evidence_chars": 6000,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3889,11 +4314,13 @@
     "dev|s-syn-108|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "ab87bd3b0bde88eeaa91573cbf4b188985163544eab9b6c982d4508ce37edd27",
       "evidence_chars": 822,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3908,11 +4335,13 @@
     "dev|g-real-004|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "dfe3c477d52fc99f831ed757555fc0170eea9c0daeed92676696f94e9e756543",
       "evidence_chars": 996,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3927,11 +4356,13 @@
     "dev|s-syn-061|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "eb68431260df14b44d11b7bb8d096caa6c131b117ea67ff862dc9c7e84f5883b",
       "evidence_chars": 5192,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3946,11 +4377,13 @@
     "dev|s-syn-019|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "d7c995a899116cd6d47983e8202da1b4007abdbaf5d4bc3d82e049e6507f3242",
       "evidence_chars": 1796,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3965,6 +4398,7 @@
     "dev|s-syn-077|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -3975,11 +4409,13 @@
     "dev|s-syn-036|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "159dc961806ac63a7a8ea41799caefc433d5005aaab25a028618f270955d1c95",
       "evidence_chars": 2481,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -3994,6 +4430,7 @@
     "dev|s-syn-006|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4004,11 +4441,13 @@
     "dev|s-syn-137|agentic|gpt-6-luna": {
       "mode": "faith",
       "class": "gemini_faith_only",
+      "request_sha256": "27597c5ff82904bc46a888eb3bd6ed546ea81d7ef6078af8385a48bca9432c68",
       "evidence_chars": 1556,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": [
         3,
@@ -4019,11 +4458,13 @@
     "dev|s-syn-008|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "8bb72d7aab17cd154549108bcf802f264ca35fac80e926917f03f47e0b1c68cd",
       "evidence_chars": 1769,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4038,6 +4479,7 @@
     "dev|s-syn-072|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4048,12 +4490,14 @@
     "dev|s-syn-030|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "0e78b5744047871dea87cd8cd075b7ac89fe2ecdfe4a42aabb1815186056876f",
       "evidence_chars": 2782,
       "evidence_sources": [
         "document",
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4068,12 +4512,14 @@
     "dev|g-syn-023|agentic|gpt-6-luna": {
       "mode": "faith",
       "class": "gemini_faith_only",
+      "request_sha256": "a4749061bde92864be50db2a05acfd6453a4360ec9aeb86507ce7c50a30953cf",
       "evidence_chars": 974,
       "evidence_sources": [
         "document",
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": [
         3,
@@ -4084,11 +4530,13 @@
     "dev|g-syn-004|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "83eb62faf857f794ea3662d503306840a3a1ed9e522617a968492f11ea0931d4",
       "evidence_chars": 2099,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4103,6 +4551,7 @@
     "dev|s-syn-006|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4113,11 +4562,13 @@
     "dev|s-syn-062|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "c9a6055adc2f63c02aac03816550e241f8d2daea4e6400b0bb272b7d2a33a5eb",
       "evidence_chars": 4542,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4132,6 +4583,7 @@
     "dev|g-syn-013|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4142,6 +4594,7 @@
     "dev|g-syn-025|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4152,11 +4605,13 @@
     "dev|s-syn-071|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "3192ab79c3dbf1cd88538c7f0d6904daa28df897a2037eabd909615c3417bc6e",
       "evidence_chars": 2982,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4171,11 +4626,13 @@
     "dev|g-real-002|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "7c0306a3f757e2966e7cfcae9074e15cf430eb5ebf9b51e72bbcc4e1879e9d11",
       "evidence_chars": 1829,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4190,17 +4647,20 @@
     "dev|s-syn-128|agentic|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-061|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "c5ff2041a72508aaaef2dec60c044dbe1902d90268ad072c56456be4a00a8a06",
       "evidence_chars": 5192,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4215,11 +4675,13 @@
     "dev|s-syn-051|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "4a359068193c53bf3ff4d878afe84b89b9146ac245b74d5d98f1744d13abce4c",
       "evidence_chars": 4983,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4234,6 +4696,7 @@
     "dev|s-syn-076|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4244,6 +4707,7 @@
     "dev|s-syn-072|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4254,23 +4718,27 @@
     "dev|s-syn-150|agentic|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-143|agentic|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-058|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "bca915fd0e8533d806dd87957b1ceac3364776d83249f262b60654473693ef6a",
       "evidence_chars": 5983,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         0,
@@ -4285,6 +4753,7 @@
     "dev|s-syn-019|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4295,23 +4764,27 @@
     "dev|g-real-020|simple|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|g-syn-017|simple|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|g-real-011|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "d0ea7f69e8046119f4eedb3a82178eeb9586b18f3c125f4afb30374294e0e089",
       "evidence_chars": 521,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4326,11 +4799,13 @@
     "dev|g-real-008|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "4271b2cb91028b58a343320527eade58f598d41a5cf37fbbea2b4e412df70dae",
       "evidence_chars": 1638,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4345,11 +4820,13 @@
     "dev|s-syn-041|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "d0d887ebeeb64048cd74960b72ed78edeb5b77cfde9a92558351d3443f06b75c",
       "evidence_chars": 3544,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         1,
@@ -4364,17 +4841,20 @@
     "dev|g-syn-017|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|g-real-008|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "92bc678fe9942c0b65b37596c64415c07a82fcc027d1f39bf2496cae01d1a34e",
       "evidence_chars": 266,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4389,11 +4869,13 @@
     "dev|s-syn-077|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "c177ec5feba5fe1186e1c09a53012f735beaaf0576b4f4af618c3d282ce5e10a",
       "evidence_chars": 1406,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4408,11 +4890,13 @@
     "dev|g-syn-006|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "89ce650f957ee6eab2d1e5d7302d81096fa6d07636e634a5e0d234e7f6fc67da",
       "evidence_chars": 1961,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4427,11 +4911,13 @@
     "dev|s-syn-008|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "2ec3d38dad8253cbff4f9b5fa63791c34ad7da9560ecb6f28868a31317742017",
       "evidence_chars": 1769,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4446,11 +4932,13 @@
     "dev|s-syn-032|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "917dd478db76ad487e3f74f404ba9fcefef1675c654f6ffb68728b6d77066711",
       "evidence_chars": 3142,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4465,11 +4953,13 @@
     "dev|g-syn-010|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "dc1f9bbed927cb25c3448fd19d9b7529bf2d222f8c378957a665ae28bae6c757",
       "evidence_chars": 1361,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4484,11 +4974,13 @@
     "dev|s-syn-111|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "3c22946f495cb73941567a3188072e873d0ae6d62db7e6eeed7b3c52d82fe1a3",
       "evidence_chars": 1588,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4503,17 +4995,20 @@
     "dev|s-syn-130|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-032|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a38e3583fb553daecaa89517c6dca69b631eebbac79291e2008fc6a8052205ba",
       "evidence_chars": 4911,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4528,11 +5023,13 @@
     "dev|s-syn-074|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "3f98c3f45ab1517d524671912120bfb902df678dce4daa063fcfd09943905145",
       "evidence_chars": 2805,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4547,11 +5044,13 @@
     "dev|g-syn-006|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "7e565be88982269801df36bccb294a836d8b3c9dbdc8d893ce262dcca5390acf",
       "evidence_chars": 1961,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4566,17 +5065,20 @@
     "dev|s-syn-128|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-031|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a060824c9873935e8bc051a935c909d58d91dc15e4a30fbaa12f492dcc9d0bbc",
       "evidence_chars": 1578,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         2,
         2,
@@ -4591,11 +5093,13 @@
     "dev|s-syn-117|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "341c32ce04e6c2c07613ada73caa21db61690e5c9baa3023cdee9d86963f82e5",
       "evidence_chars": 1797,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         1,
@@ -4610,11 +5114,13 @@
     "dev|s-syn-047|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "b64f161f21682e735cc79c3f852b3cf04bea1430e1f6f990c649444c11c0ca73",
       "evidence_chars": 2888,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         1,
@@ -4629,6 +5135,7 @@
     "dev|g-syn-014|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4639,11 +5146,13 @@
     "dev|g-real-004|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "e7e8464405a5a7c6a5b5b9f599cbd81f431d2164b1e847b4bc5d8b3ec9afd31b",
       "evidence_chars": 996,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4658,6 +5167,7 @@
     "dev|s-syn-076|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4668,11 +5178,13 @@
     "dev|s-syn-008|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "73677b2fd0bf449ef8f01855931a8fb50f8a2c91befe702d9d13ae1f88ba83b7",
       "evidence_chars": 3460,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4687,6 +5199,7 @@
     "dev|s-syn-107|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4697,11 +5210,13 @@
     "dev|s-syn-049|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "9e97ec18da805c773576d31c4bef9676062c14630fe256e5f2a90e047163f573",
       "evidence_chars": 1471,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4716,17 +5231,20 @@
     "dev|s-syn-142|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|g-real-016|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "d4847bf776267df15cbf866996d1cee873fa2adb3231e6ec26c3c4b51a3fd4d3",
       "evidence_chars": 722,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4741,6 +5259,7 @@
     "dev|s-syn-001|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4751,12 +5270,14 @@
     "dev|s-syn-057|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "bcd4b74ac7c18d4ec8968e1aac699a2820bc2fa13b99a3f40a69c4b0ade6c2d3",
       "evidence_chars": 6000,
       "evidence_sources": [
         "document",
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4771,11 +5292,13 @@
     "dev|s-syn-119|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "5e4d8a1be410e4a17f819715c6c9c7d4fdad3ec50b36e4ebf461c25ff404e18e",
       "evidence_chars": 1926,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4790,6 +5313,7 @@
     "dev|s-syn-107|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4800,12 +5324,14 @@
     "dev|g-real-020|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-105|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4816,6 +5342,7 @@
     "dev|s-syn-001|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4826,12 +5353,14 @@
     "dev|s-syn-083|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "4fca718d1c6f99739d38a2bd135c634c2ab73a78c8dc51b1d2a60309c639d9c0",
       "evidence_chars": 1404,
       "evidence_sources": [
         "document",
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4846,11 +5375,13 @@
     "dev|s-syn-051|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "7c818e258f77a2c6cd27516b29b61e2cde9b91767228fad149d5bbc4ec049ef1",
       "evidence_chars": 1835,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4865,6 +5396,7 @@
     "dev|s-syn-076|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4875,11 +5407,13 @@
     "dev|s-syn-108|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "86967f5a9489a0877765662c16b70c87359572c3d8551126a8610c8d919562a2",
       "evidence_chars": 2658,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4894,6 +5428,7 @@
     "dev|s-syn-063|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4904,11 +5439,13 @@
     "dev|s-syn-013|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "59b85fffd833311c4d339b4bd2b5eb240479447e4df40b58b6eea24ff25fecc8",
       "evidence_chars": 1472,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4923,11 +5460,13 @@
     "dev|s-syn-109|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a87bac5e277f0241dc7bb94a95b58d1480640a6da7e334bba9009cdb00e1960c",
       "evidence_chars": 1879,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4942,11 +5481,13 @@
     "dev|s-syn-011|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "1e53636eeda35e7748e07e3d16d142407d72ea42c2c751114ad318413ac2a14b",
       "evidence_chars": 1588,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4961,11 +5502,13 @@
     "dev|g-real-002|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "736fcb46c65bc447e09bbb1e3ace5bc411b3ef2195ab7c6277e671742d3fab26",
       "evidence_chars": 1829,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -4980,6 +5523,7 @@
     "dev|g-syn-011|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -4990,23 +5534,27 @@
     "dev|s-syn-127|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-122|agentic|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-051|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "0808dadbb61a0eba936323ad48483905392ba39d8e2820871b23e50be54f33f6",
       "evidence_chars": 4983,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5021,11 +5569,13 @@
     "dev|s-syn-049|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "9e97ec18da805c773576d31c4bef9676062c14630fe256e5f2a90e047163f573",
       "evidence_chars": 1471,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5040,11 +5590,13 @@
     "dev|s-syn-057|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "089385c7ec49b73091387c39dc6e10910b98b45e87d220b17076446d50903787",
       "evidence_chars": 2589,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5059,11 +5611,13 @@
     "dev|s-syn-007|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "51029682d06c0b9a725b83bb22b351684b18c079a50ac3dc31dde9d805de9e07",
       "evidence_chars": 1796,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5078,17 +5632,20 @@
     "dev|s-syn-128|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-119|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "d597f6bb2c099c5d22e7e79cc5c4abdc88d3df465d64a751a71dfc7b9563cbb5",
       "evidence_chars": 2634,
       "evidence_sources": [
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5103,11 +5660,13 @@
     "dev|g-syn-008|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "93b9fa70b359d53c8895b747932cdaaabf1b60e4023801090912b7efee4b72b7",
       "evidence_chars": 1286,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5122,6 +5681,7 @@
     "dev|s-syn-063|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5132,11 +5692,13 @@
     "dev|g-syn-010|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "df6178c85a22909fdfc1d703d1a1b2c59d542cd8d3b7b7439b85e8a8cecf63f4",
       "evidence_chars": 1361,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5151,6 +5713,7 @@
     "dev|g-syn-011|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5161,11 +5724,13 @@
     "dev|g-syn-025|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "7b20a11d02f6fa9afafd10fcdbce5d8f0d2ebe095b555c22b8ddabb79de4c326",
       "evidence_chars": 333,
       "evidence_sources": [
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5180,11 +5745,13 @@
     "dev|s-syn-073|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "de0bf8fec4e4e3a7a9f1cb75e436333ddcb4ca19d67d7670fb0b64e12087ec73",
       "evidence_chars": 3174,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         1,
@@ -5199,6 +5766,7 @@
     "dev|s-syn-083|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5209,11 +5777,13 @@
     "dev|s-syn-117|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "757a46f6778d0ee717d8f2433405dcbfa2225b9ffba09e817ca1eb16d53c7aeb",
       "evidence_chars": 1797,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5228,6 +5798,7 @@
     "dev|s-syn-024|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5238,12 +5809,14 @@
     "dev|s-syn-144|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-019|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5254,11 +5827,13 @@
     "dev|s-syn-058|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "746248ec0ea79a85e6755ee87f14423fed00a631023578027d9294dd81c00498",
       "evidence_chars": 5305,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5273,11 +5848,13 @@
     "dev|s-syn-109|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "cb51cf229d545d35ebd602b00aab00bc196984706fa4ac65dc152c02aa2a431d",
       "evidence_chars": 1879,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5292,11 +5869,13 @@
     "dev|s-syn-009|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "c7808f518197dc3be2bdf103db5fe03500308702eea67ac975568cc7f4d48f24",
       "evidence_chars": 1810,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5311,6 +5890,7 @@
     "dev|s-syn-024|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5321,17 +5901,20 @@
     "dev|s-syn-144|agentic|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|g-syn-028|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "f79e1663b6cb16000cfa0a8d453f2e5e08d2f45403f7822d983d195aba950df8",
       "evidence_chars": 6000,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5346,6 +5929,7 @@
     "dev|s-syn-001|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5356,12 +5940,14 @@
     "dev|s-syn-142|simple|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-009|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5372,17 +5958,20 @@
     "dev|s-syn-127|agentic|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-080|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "ada345e86864c85d80a268e4b9e646d451bd520ad9fb69c74f5e5d5879222416",
       "evidence_chars": 4488,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5397,11 +5986,13 @@
     "dev|g-real-011|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "2802cce8c48c4e3097fd51145b0f02513b5f5b1417cb8df09cdf6bded35551b8",
       "evidence_chars": 521,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5416,11 +6007,13 @@
     "dev|s-syn-013|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "c4f34c08cd56d89496b5045c15119fcd48e2d01e5dd2ca98e4667a92c1836e49",
       "evidence_chars": 1472,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         1,
@@ -5435,11 +6028,13 @@
     "dev|s-syn-111|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "d69a030d8007975c65642147d316480900c1b300de98638892ff59d713c90049",
       "evidence_chars": 3139,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         1,
@@ -5454,11 +6049,13 @@
     "dev|s-syn-037|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "310553010eeacddec7995803832be39fe6aa70ceff146098b7d11e15d41ce1e1",
       "evidence_chars": 2075,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5473,11 +6070,13 @@
     "dev|s-syn-057|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "2723f1eb9160be5b640868fa73f917dfe2fa0b671cb4c1041ba7c2399e84699b",
       "evidence_chars": 5601,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         1,
@@ -5492,11 +6091,13 @@
     "dev|g-real-008|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "12962776939c0a1b9812632e4be4690da451f991de845ae9e7ad872c62112cbf",
       "evidence_chars": 1638,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5511,11 +6112,13 @@
     "dev|g-syn-025|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "399accd129a1c18f0d1c67127feef2af30151f7279cf31c176042fc4ce0c091c",
       "evidence_chars": 333,
       "evidence_sources": [
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5530,11 +6133,13 @@
     "dev|s-syn-013|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "cea86e6c90041bc5c8482b4d3ef69df3832c466c4aed3e07329d75aed01f48d4",
       "evidence_chars": 1472,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         1,
@@ -5549,6 +6154,7 @@
     "dev|s-syn-007|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5559,12 +6165,14 @@
     "dev|s-syn-041|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "f12a632924d4935b0f965435c4518b2f652fb168fed979be6be7cbc3e0625b82",
       "evidence_chars": 6000,
       "evidence_sources": [
         "document",
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         2,
@@ -5579,11 +6187,13 @@
     "dev|g-syn-008|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "838fde5faa09bb29394a4f5e962903cdf2574c30c2dfa52d94b6071d5a2530a5",
       "evidence_chars": 1286,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5598,6 +6208,7 @@
     "dev|s-syn-119|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5608,11 +6219,13 @@
     "dev|s-syn-072|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "3ce492e85ee9fdb3bebc46cfe74f57673a55227cea3f6a841bfb90b113c61b90",
       "evidence_chars": 1561,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         1,
@@ -5627,23 +6240,27 @@
     "dev|s-syn-137|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-127|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-030|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "6a007a9cad4fa865f40861e9527f46b89c634dde1bf92990257e1e70e967ea2e",
       "evidence_chars": 3973,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5658,11 +6275,13 @@
     "dev|g-syn-001|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "741b32186f4d1ec23cf1a6e95438216b69591e901da2d82b5bc2dd9ebed2a996",
       "evidence_chars": 1961,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5677,11 +6296,13 @@
     "dev|g-syn-011|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "087d245d3ae4da55eba134c55cfc618c9878d82ea8ab6932e174ab63493692f9",
       "evidence_chars": 3153,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5696,11 +6317,13 @@
     "dev|g-syn-028|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "ad3a770d3f1e339510291cb15692e990a4135da38b87eae8c7ec034184995c1e",
       "evidence_chars": 6000,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5715,17 +6338,20 @@
     "dev|s-syn-144|simple|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-041|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "de55f1112590890cdf22dfd63e253e6ffb3fa7120f64d03b1a1e1ac3deb00380",
       "evidence_chars": 1469,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         2,
         3,
@@ -5740,6 +6366,7 @@
     "dev|s-syn-077|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5750,11 +6377,13 @@
     "dev|s-syn-047|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "4014c1f86540cb7f379636de678079a23ab0c7054d97cd4719d706a1d3655814",
       "evidence_chars": 1225,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5769,6 +6398,7 @@
     "dev|s-syn-072|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5779,11 +6409,13 @@
     "dev|s-syn-071|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "0238a1d8b9d26fb9edfb65f31749a0ab5449abd7661cfe80c751a9b3331f1919",
       "evidence_chars": 1805,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5798,6 +6430,7 @@
     "dev|s-syn-009|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5808,11 +6441,13 @@
     "dev|s-syn-037|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "7bd555aeb8e4653eaf2a9e282ff31dcb4de80073180f84d5c5aacabb22013b2c",
       "evidence_chars": 4089,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5827,6 +6462,7 @@
     "dev|g-syn-014|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5837,18 +6473,21 @@
     "dev|s-syn-130|simple|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|g-syn-019|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-006|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5859,11 +6498,13 @@
     "dev|s-syn-044|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "b5642d8907ff7cbb24f98d6db3cc9fe84c458114fe654481208ba4c2d8a814ef",
       "evidence_chars": 6000,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5878,11 +6519,13 @@
     "dev|s-syn-031|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "98af065dbec54e10b7a70405656e3317d5582639b12b449debdf94a2f856b102",
       "evidence_chars": 1578,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5897,6 +6540,7 @@
     "dev|g-syn-013|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5907,17 +6551,20 @@
     "dev|g-syn-019|simple|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|g-real-016|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "33450adae6133de44429b9ec26e7f8104f365ff25d70714f541c00fe391cc29c",
       "evidence_chars": 722,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5932,11 +6579,13 @@
     "dev|g-syn-006|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "d48e3946399cc03ec50849508732ee733c6b45f38e8789321e2aadffcbe676d1",
       "evidence_chars": 1961,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -5951,6 +6600,7 @@
     "dev|s-syn-074|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -5961,11 +6611,13 @@
     "dev|s-syn-145|agentic|gpt-6-luna": {
       "mode": "faith",
       "class": "gemini_faith_only",
+      "request_sha256": "fcab49226f6d758260dc4299d5f5619bed9a6b44a59609653b7b15063a82a2cd",
       "evidence_chars": 2373,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": [
         3,
@@ -5976,23 +6628,27 @@
     "dev|s-syn-142|agentic|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-129|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-044|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "9961758b8383aab8ded39d076f584f3cb458b2f433ae29f536fff04db3a4d319",
       "evidence_chars": 5742,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6007,12 +6663,14 @@
     "dev|g-syn-019|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-105|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6023,6 +6681,7 @@
     "dev|s-syn-107|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6033,11 +6692,13 @@
     "dev|g-real-015|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "d98d9c284ebbd98a721f0ece34c8aa4398a554c8a360d863cd84f0e2e8c3fc63",
       "evidence_chars": 393,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6052,42 +6713,48 @@
     "dev|s-syn-111|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "10a1bdf0c83ab45bf35237e8997ca68e4a130c016636a7e699be4a691be517a7",
       "evidence_chars": 4806,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         2,
-        null,
+        3,
         3
       ],
       "faithfulness": [
         3,
-        null,
+        3,
         3
       ]
     },
     "dev|s-syn-130|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-143|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-069|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "42692f1be13f29c2bf890d35111908ba2276687c515d1ac78f4bebdb72d1370e",
       "evidence_chars": 3357,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         0,
@@ -6102,6 +6769,7 @@
     "dev|s-syn-083|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6112,11 +6780,13 @@
     "dev|s-syn-074|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "0f8698dc9f105a337e01a0d6f42673235374b63d5b61ae2e6d631ebc9f53df15",
       "evidence_chars": 2805,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6131,25 +6801,28 @@
     "dev|s-syn-044|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "b12e57df27d7c7af68a98e61c894c11e5450a57daa84fe1bf98c1330780a1a23",
       "evidence_chars": 6000,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
-        null,
+        0,
         0
       ],
       "faithfulness": [
         3,
-        null,
+        3,
         3
       ]
     },
     "dev|s-syn-063|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6160,12 +6833,14 @@
     "dev|s-syn-142|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|g-syn-025|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6176,17 +6851,20 @@
     "dev|s-syn-135|simple|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-150|agentic|gpt-6-luna": {
       "mode": "faith",
       "class": "gemini_faith_only",
+      "request_sha256": "4bb5f5cf92a07e79d345c47a08d1c92362bfbae8f8a42ea629f9fe9ccc3e9536",
       "evidence_chars": 1588,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": [
         3,
@@ -6197,11 +6875,13 @@
     "dev|s-syn-037|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "ea3cd84b384986e85a6f312fbad7b1a19ca4ea4de052c1e38491bcfe424240fa",
       "evidence_chars": 2075,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6216,11 +6896,13 @@
     "dev|s-syn-115|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "bf32151b2e38db1660d7d8ab829d59e85a46e167db88a538283470fbc7fdd9b7",
       "evidence_chars": 2066,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6235,11 +6917,13 @@
     "dev|s-syn-030|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "0c5ef63342cab05c0f4a8f3420b129f3ffe6de07c15f2ac13feac187b0e73b92",
       "evidence_chars": 6000,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6254,11 +6938,13 @@
     "dev|s-syn-062|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "c779e066c15212fb24bcacb003c709ce84844cf202ebdc7833bdb000321baa72",
       "evidence_chars": 2481,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6273,6 +6959,7 @@
     "dev|s-syn-028|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6283,11 +6970,13 @@
     "dev|g-syn-008|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "281fec342b7e880c2ccf876c75043693254feb250437c784e592d9fa0edc0482",
       "evidence_chars": 1286,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6302,17 +6991,20 @@
     "dev|g-real-020|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-062|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a1d830b1f774640759efacbaae10f972d642c85d734c9846cc86a6b4d194ab4d",
       "evidence_chars": 2481,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6327,6 +7019,7 @@
     "dev|s-syn-080|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6337,11 +7030,13 @@
     "dev|s-syn-007|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "51029682d06c0b9a725b83bb22b351684b18c079a50ac3dc31dde9d805de9e07",
       "evidence_chars": 1796,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6356,6 +7051,7 @@
     "dev|s-syn-011|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6366,11 +7062,13 @@
     "dev|g-syn-004|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "5222e78eeeda96344db854bd5f17fb710370127023539be671888bb9749df2f9",
       "evidence_chars": 2099,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6385,11 +7083,13 @@
     "dev|s-syn-109|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "29b0a3260ab92be55021f917cb84069ec5223b208b76ed6018059d3368729ab6",
       "evidence_chars": 1879,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6404,23 +7104,27 @@
     "dev|g-syn-017|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-143|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-008|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "7c17f274df2d4b781b196ff4fbf981245a0f1d69da26231b8c4d7dfd555b03c9",
       "evidence_chars": 3460,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6435,11 +7139,13 @@
     "dev|s-syn-047|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "bc3f4e21a1d8a663bae532bff35ff65c0285bb0e01bae090f5c0e4f6e13b6948",
       "evidence_chars": 1225,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6454,11 +7160,13 @@
     "dev|s-syn-115|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "774029ac9ba446486f62a931b8edc5e4e8a50811d5fc8c1b8b0a4998788a9680",
       "evidence_chars": 2066,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6473,12 +7181,14 @@
     "dev|g-syn-017|agentic|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|g-syn-014|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6489,6 +7199,7 @@
     "dev|g-syn-014|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6499,11 +7210,13 @@
     "dev|g-syn-001|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "73eee8c10b0be3b4a4706705752b146f28d06f5e7226fe1f84f704f80276e880",
       "evidence_chars": 1961,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6518,23 +7231,27 @@
     "dev|s-syn-145|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|g-syn-019|agentic|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-108|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "fa85ffc833227727d3af895fe8e1b0d74bc71fc4c5cad2eb3657b5c96df36374",
       "evidence_chars": 822,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6549,11 +7266,13 @@
     "dev|g-syn-028|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "3d451b5574dd9936fd32bb0abe1a5a13bfed4f5c2387586f4e98344833384acf",
       "evidence_chars": 180,
       "evidence_sources": [
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6568,6 +7287,7 @@
     "dev|s-syn-074|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6578,17 +7298,20 @@
     "dev|s-syn-150|simple|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|g-syn-008|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "db3095f9beec859a07c4c9c76508da5bfcca4245c9167fd120d4543df73e8b0b",
       "evidence_chars": 2753,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6603,17 +7326,20 @@
     "dev|s-syn-135|agentic|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-117|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "6ebf0e9c38029af9acf0723e40136d2d77a57054508c90eac73f2c4fdbf0a654",
       "evidence_chars": 1797,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6628,11 +7354,13 @@
     "dev|s-syn-049|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "e461a90b032ca7a85099678099782f6efe53d1eca7478d817aa39658edea8af1",
       "evidence_chars": 1471,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6647,11 +7375,13 @@
     "dev|s-syn-069|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "b776d9feb9622a90b54e92c3e01164242803591eb957d51a5d6f579a2a935d55",
       "evidence_chars": 1560,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6666,6 +7396,7 @@
     "dev|s-syn-028|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6676,17 +7407,20 @@
     "dev|g-syn-023|agentic|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-047|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "67681d99ac74bba3aa14e1afee044b8bf1e640c72047eb5117f9151081b7a6d5",
       "evidence_chars": 2888,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         1,
@@ -6701,11 +7435,13 @@
     "dev|s-syn-073|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a06deee624f727155d889ee4143fc5bf34a31ea50ecc26a29c159bd2d4ad74fe",
       "evidence_chars": 6000,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         2,
         2,
@@ -6720,11 +7456,13 @@
     "dev|g-real-004|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "9928bb5df82f82510fa79c30cce182e1e109ac489b75f85f9606378765e2ecc4",
       "evidence_chars": 996,
       "evidence_sources": [
         "tool_refs"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6739,6 +7477,7 @@
     "dev|s-syn-028|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6749,18 +7488,21 @@
     "dev|s-syn-127|simple|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-137|agentic|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-001|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6771,23 +7513,27 @@
     "dev|s-syn-135|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-129|agentic|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-061|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "91a5623b390cccf73a56beb0341a05b6167ed45fe5732b68736ff12adad17279",
       "evidence_chars": 3661,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6802,11 +7548,13 @@
     "dev|s-syn-119|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "1435488b4079a4deb6c2c86a3678d1d875eeba3912fb4fcba645ca75e799838e",
       "evidence_chars": 1926,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6821,12 +7569,14 @@
     "dev|s-syn-129|simple|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-024|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6837,11 +7587,13 @@
     "dev|g-syn-013|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "aa67998dcb826628a671d7561656812ee411012866f935f03ac907eb0cbdba63",
       "evidence_chars": 3443,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         1,
         1,
@@ -6856,11 +7608,13 @@
     "dev|s-syn-012|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "391b8f171bd561e6572d3c1e04b380da469b954fd33051777a93ad61cb801634",
       "evidence_chars": 1641,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6875,11 +7629,13 @@
     "dev|s-syn-032|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "f66c72d5aa54566680a15f69c11fe8094606527c2164ce7b015a13e708a702c3",
       "evidence_chars": 3142,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6894,12 +7650,14 @@
     "dev|s-syn-122|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-069|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6910,6 +7668,7 @@
     "dev|s-syn-107|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6920,11 +7679,13 @@
     "dev|g-syn-004|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "cca7c85eafe79694ab0e4a1cf5d48f780ecbfb5a3db35b256cc38f3c808492f2",
       "evidence_chars": 2099,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -6939,11 +7700,13 @@
     "dev|g-syn-006|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "412c3eeec7a64362dff1729bb0c9cc254e8523cbcd4bdd68ef800f4027e75f5c",
       "evidence_chars": 1961,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6958,11 +7721,13 @@
     "dev|s-syn-032|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a07544e8a477be90f4d06d664d44762d6a5d62d71cdbad771cc320ae14d7c25a",
       "evidence_chars": 3329,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -6977,11 +7742,13 @@
     "dev|s-syn-150|simple|gpt-6-luna": {
       "mode": "faith",
       "class": "gemini_faith_only",
+      "request_sha256": "f8220aadda93e92b3d86ebe3074db1bb25eeddd3e2a2efcee87063b06abcb0d5",
       "evidence_chars": 1588,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": [
         3,
@@ -6992,11 +7759,13 @@
     "dev|s-syn-051|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "a4b1ff50de136b31889d425675f782ec3da7cdc2d57498a8cb870b22844ca939",
       "evidence_chars": 4983,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -7011,23 +7780,27 @@
     "dev|s-syn-130|agentic|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-135|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|g-real-015|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "ef593a05e11a6a1ca86c46aefab7392d3b2a199d65fe4c557ec1c0548b482b02",
       "evidence_chars": 525,
       "evidence_sources": [
         "cited_section"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -7042,11 +7815,13 @@
     "dev|s-syn-073|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "80e2f1b04a5ebf72eefa476d9c7f0255518f52c535dc54668b5f4cf69318da71",
       "evidence_chars": 3174,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         2,
         2,
@@ -7061,6 +7836,7 @@
     "dev|s-syn-105|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -7071,6 +7847,7 @@
     "dev|s-syn-071|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -7081,11 +7858,13 @@
     "dev|s-syn-036|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "60fb1c9fcac94459ca4b2f398d9207ef2637c9f9197399b9f4be3b8859286e2c",
       "evidence_chars": 4542,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -7100,11 +7879,13 @@
     "dev|s-syn-012|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "739f2a976c37629d048b7119b67073c80e49cce3296d5ba1f40be80e56d31580",
       "evidence_chars": 1641,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -7119,11 +7900,13 @@
     "dev|s-syn-011|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "db08dfbdc7476eeec22d641d0526316772602c77222cf16c24a48c5f064f292b",
       "evidence_chars": 1588,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -7138,6 +7921,7 @@
     "dev|g-syn-013|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -7148,6 +7932,7 @@
     "dev|s-syn-028|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -7158,17 +7943,20 @@
     "dev|s-syn-128|simple|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-037|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "2a55efa9d9780b0be4fedb137f07ae1495c6273aca6ce93e83880d9691b1282f",
       "evidence_chars": 2075,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -7183,6 +7971,7 @@
     "dev|s-syn-036|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -7193,11 +7982,13 @@
     "dev|s-syn-030|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "89354ac10903a0add30fc5bbd69fd3a575932aba6776b0e7340bce06891de3be",
       "evidence_chars": 3973,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -7212,6 +8003,7 @@
     "dev|g-real-015|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -7222,11 +8014,13 @@
     "dev|s-syn-058|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "cf7c9b9e69204ea194e869b065f4434252f9ff63f9a5c4c5686a04771e8ca0ac",
       "evidence_chars": 6000,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         0,
@@ -7241,11 +8035,13 @@
     "dev|s-syn-019|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "534ec726330e9f3a5203b1377681f280015e857b2d44f0836d5436bfd51a5cb8",
       "evidence_chars": 1796,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -7260,17 +8056,20 @@
     "dev|s-syn-145|simple|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-036|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "b4a0224d1328b2e6bc309c0340204ad51112e63d4749bf798102204362b33fef",
       "evidence_chars": 2481,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -7285,11 +8084,13 @@
     "dev|s-syn-041|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "eae7334561f3d7eb000e65a12e9164c14915344297e29cbf49129fb9640d2f75",
       "evidence_chars": 1469,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -7304,11 +8105,13 @@
     "dev|s-syn-012|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "fe215af381ea0d265f1673b4a045ddb1266527d81a89c5595d43422bd1404b96",
       "evidence_chars": 1641,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -7323,6 +8126,7 @@
     "dev|s-syn-069|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -7333,6 +8137,7 @@
     "dev|s-syn-024|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -7343,6 +8148,7 @@
     "dev|s-syn-076|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -7353,12 +8159,14 @@
     "dev|s-syn-122|simple|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-011|simple|gpt-6.1-sol": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -7369,17 +8177,20 @@
     "dev|g-real-020|agentic|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|g-syn-028|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "7467476887b3975ca0c7e9c8c93c4166ca7b7c5e6d8be2829b530825bda6e908",
       "evidence_chars": 180,
       "evidence_sources": [
         "reconstructed_sql"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -7394,11 +8205,13 @@
     "dev|g-syn-010|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "512d90397a3958eb44ac508dc410f978994fd681fb581c1609cdee3d3d90726a",
       "evidence_chars": 1361,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -7413,11 +8226,13 @@
     "dev|s-syn-012|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "fe215af381ea0d265f1673b4a045ddb1266527d81a89c5595d43422bd1404b96",
       "evidence_chars": 1641,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -7432,6 +8247,7 @@
     "dev|s-syn-006|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -7442,12 +8258,14 @@
     "dev|g-syn-023|simple|gpt-6.1-sol": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-080|simple|gpt-6-luna": {
       "mode": "acc",
       "class": "det_zero",
+      "missing_repeats": [],
       "correctness": [
         0,
         0,
@@ -7458,17 +8276,20 @@
     "dev|s-syn-144|agentic|gpt-6-luna": {
       "mode": null,
       "class": "not_scored",
+      "missing_repeats": [],
       "correctness": [],
       "faithfulness": []
     },
     "dev|s-syn-073|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "0077e4d1032a517a3374ad58c5a31ed6a2b71c8a9cd166f37d8f6fd3984e4b36",
       "evidence_chars": 5276,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -7483,11 +8304,13 @@
     "dev|s-syn-062|agentic|gpt-6-luna": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "c996bfe81ce7158e7b386ebe4a05e386705cdf7f27b21a93c34198d71bbab141",
       "evidence_chars": 2481,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -7502,11 +8325,13 @@
     "dev|s-syn-031|agentic|gpt-6.1-sol": {
       "mode": "acc",
       "class": "gemini_acc",
+      "request_sha256": "881a66b69c65b1ee5270eb22ec7bef96c181007b5e0350a34fb5ff893291d15e",
       "evidence_chars": 2972,
       "evidence_sources": [
         "document"
       ],
       "evidence_empty_reason": null,
+      "missing_repeats": [],
       "correctness": [
         3,
         3,
@@ -7520,7 +8345,7 @@
     }
   },
   "raw": {
-    "sha256": "b9c8be0d420a5000921e93daf841b79726407633edecda68d2802c8700b5768f",
-    "rows": 858
+    "sha256": "8743f0556135f8649f099064b12337bd07178c19bc6ae2376b10d7143bfb38e5",
+    "rows": 899
   }
 }
