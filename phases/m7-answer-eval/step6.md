@@ -30,6 +30,7 @@
 - 3회 편차 집계: 문항별 표준편차 평균·3회 전부 일치 비율(정답성·충실성 각각).
 
 ### 2. CLI (`make m7-analyze`)
+- **분석 전 원본 해시 대조(M7-D1 예방, FP-053)**: `m7_rawhash.verify_fingerprint`로 현재 `data/interim/m7/grades.jsonl`이 `m7_grade_summary.json`의 가장 최근 `raw` 기록과 같은지, `m7_grade_scores.json`에 기록된 fingerprint와 같은지 확인하고 다르면 `RawHashMismatch`로 **분석을 거부**한다. 또 `verify_m6_inputs()`(step 3)를 다시 실행해 M6 입력이 freeze 기록(`m7_config.json`의 `runs.jsonl` fingerprint)과 같을 때만 진행한다.
 - 입력: `data/manifest/m7_grade_scores.json`, `data/manifest/m7_human_grades.json`(+ `load_human_grades`), `m6_eval_inputs.json`, `m7_config.json`. 출력: `data/manifest/m7_analysis.json`(점수·통계·판정 문구, **텍스트 없음**)와 표준 출력 요약.
 - **사람 CSV 등록 manifest가 없으면 κ 계산을 거부한다**(`HumanGradesNotRegistered`). 채점 manifest가 불완전(우선순위 tier 1·2가 덜 끝남)이면 어떤 문구도 만들지 않고 부족한 건수를 알린다.
 - `m7_analysis.json`에는 **H6 섹션이 없다**. step 9가 `h6` 키를 추가한다(키가 없을 때 출력은 `H6: 보안 결과 없음(step 9 이후)`).
@@ -39,6 +40,7 @@
 - κ: 완전 일치 = 1, 손계산한 3×3·4×4 예제(이차·선형 값을 fixture에 적어 둔다), 한 범주만 쓴 경우(분산 0) 처리, 사람 점수 80% 몰림 시 `uninterpretable`.
 - 판정 문구 3종 분기와 경계(CI 하한이 정확히 0 → 보류, 상한이 정확히 0 → 보류). 부트스트랩이 `m5_stats` 함수와 시드 20260930을 쓴다(같은 입력 → 같은 CI). κ 미달 → 사람 점수 기반 문구. `depends_on_sql`.
 - 라우터: +0.5·−0.5 정확히 경계(포함), 7문항 유형 제외, 한쪽만 있을 때 `launch=False`.
+- **원본 해시 대조**: `grades.jsonl`이 기록과 다르면(줄 수정·추가·삭제) 분석을 거부한다. M6 입력이 freeze 기록과 다르면 거부한다.
 - 충실성 표에 '사람 검증 없음' 표기. 사람 CSV 미등록 시 κ 거부. 채점 불완전 시 문구 미생성.
 
 ## Acceptance Criteria

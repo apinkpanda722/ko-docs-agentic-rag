@@ -45,6 +45,7 @@ in-process(두 시스템)와 MCP(도구 수준) 보안 실행기, c1 확인 연�
 
 ### 4. c1 확인 연결·H6 집계
 - 실행 후 `export_c1_candidates`로 `data/interim/m7/leak_review/`에 후보·`review.html`을 만든다. `make m7-leak-review-register`(→ `register_leak_review`)를 Makefile에 추가한다. `make m7-security`는 마지막에 c1 후보 수와 확인이 필요하다는 안내를 출력한다.
+- **원본 해시 기록(M7-D1 예방, FP-053)**: 실행 완료·정지 시 `data/interim/m7/security/runs.jsonl`의 SHA-256·행 수를 `m7_rawhash.record_fingerprint`(step 5)로 `m7_security_results.json`의 `raw`에 기록한다. `m7_analyze`의 H6 섹션과 c1 후보 내보내기·보고는 현재 `runs.jsonl`이 기록과 같을 때만 진행한다(`verify_fingerprint`, 다르면 거부). 재실행(`RERUN_REASON`)은 새 항목을 추가한다.
 - 결과 manifest `data/manifest/m7_security_results.json`(커밋; 집계·id·건수·해시만, 텍스트 없음)에 경로·시스템별 `n`·(a)(b)(c2)(c3) 건수·c1 후보 수·에코 제외 수·c3 제외 수·기준선 후보율(`c1_baseline`, M6 runs 사용)·parity 불일치 건수·not_found 불일치 건수·대조군 오거절률·부분 답변 비율·노출률·Agentic 시도율·dry-run·실행 이력을 기록한다.
 - `m7_analyze.py`에 H6 섹션을 추가한다(`m7_analysis.json`의 `h6` 키): `h6_verdict`를 호출한다. **c1 후보가 1건 이상인데 `data/manifest/m7_leak_review.json`이 없으면 H6 문구를 내지 않고 `H6 판정 대기(c1 후보 확인 필요)`를 출력한다.** 경로·시스템별 문구를 따로 낸다(합산하지 않는다).
 
@@ -58,6 +59,7 @@ AGENTS.md의 `m7-security` 명령어 항목과 `--help` 출력에 선행 조건�
 - 누설을 주입한 fake(응답에 카나리아·열람 불가 doc_id·c2/c3 값)가 집계에 잡힌다. c1 후보가 있고 확인 CSV가 없으면 H6가 `판정 대기`, 등록 후 확정 수만큼 반영된다.
 - **전부 거절하는 fake 시스템에서 누설 0이고 대조군 권한 오거절률이 100%로 보고된다**(공허한 통과 방지, FP-052).
 - 실행 거부: S6 노출 미검증·해시 불일치·남은 S6에 false·비대조 200 미만·M6 해시 불일치·월 상한. 제외된 S6가 있어도 남은 S6가 전부 true이고 총수 ≥ 200이면 실행된다.
+- **원본 해시**: 실행 후 `runs.jsonl`의 sha256·행 수가 manifest에 기록되고, 파일을 수정하면 H6 분석·c1 후보 내보내기가 거부된다.
 - parity 불일치·not_found 바이트 불일치가 기록된다. 평문 토큰이 로그·예외·manifest·출력에 없다(fake 토큰 문자열로 검사). 통합 테스트가 필요하면 **인덱스는 읽기 전용**이며 실측 인덱스를 만들거나 지우지 않는다(FP-046).
 - `make verify`가 API 키·OpenSearch·MCP 서버 없이 통과한다.
 
@@ -92,6 +94,7 @@ uv run python -m kodocs.eval.m7_security --dry-run   # 거부 조건 확인용: 
 - 토큰·API 키를 출력하거나 manifest·예외·트레이스에 넣지 마라. 이유: `make m6-tokens` 평문 토큰은 gitignore된 파일에만 둔다(CRITICAL).
 - 누설 판정을 결과를 본 뒤 조정하지 마라(어휘·에코 규칙·c3 값 형태). 이유: 사전 등록 규칙이다(M7-L3). 문제를 발견하면 `blocked`로 보고하고 사용자가 규칙 변경 기록을 남긴다.
 - 누설률을 대조군 없이 보고하게 만들지 마라. 이유: 모든 질문을 거절하는 시스템도 누설 0%가 된다(FP-052).
+- 보안 실행 `runs.jsonl`의 원본 해시·행 수를 manifest에 남기지 않고 끝내지 마라. 이유: 원본이 비커밋이라 분석 시점에 변조·손상을 탐지할 수 없다(FP-053).
 - 시스템 응답 없음·가드레일 실패를 시나리오에서 제외하지 마라. 이유: 거절·실패도 누설 없는 응답으로 센다(분모에 포함). 제외는 S6 노출 검증의 사유가 있는 경우뿐이다.
 - 실제 LLM·외부 API(OpenAI·Gemini·Anthropic)를 호출하지 마라. 테스트는 mock·fake만 쓴다. 이유: `make verify`는 API 키 없이 통과해야 하며, 실제 호출은 사용자가 직접 실행한다(ADR-014).
 - `.env`를 열거나 출력하지 마라. 이유: 비밀 값이 들어 있다.

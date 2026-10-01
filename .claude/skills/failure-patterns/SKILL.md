@@ -226,3 +226,10 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **규칙**: 누설률은 항상 권한 있는 대조군의 응답률·오거절률과 함께 보고하고 비공허성 테스트를 둔다.
 - **강제 수단**: M7 step 9 mock 테스트
 - **출처**: M7 설계(ADR-030·M7-L1·L4)
+
+### FP-053 비커밋 실행 원본의 해시를 커밋하지 않아 입력 검증이 막힘
+- **증상**: M7 step 3에서 M6 dev `runs.jsonl`의 SHA-256(`0f25104b…`)이 `m6_config.json`의 `m6_dev_sha256`(`af8f0bb1…`)과 달라 입력 검증이 막혔다. 이 필드는 `runs.jsonl`이 아니라 `m6_dev.json`의 해시였다.
+- **원인**: 실행 원본(`data/interim/**/runs.jsonl`)이 비커밋인데 원본 자체의 해시를 커밋 manifest에 남기지 않았다. 사전 등록 규칙이 파생 manifest의 해시를 원본 해시로 가정했다.
+- **규칙**: 실행 원본 산출물이 비커밋이면 실행 시점(완료·정지 시)에 원본 파일의 SHA-256과 행 수를 커밋 manifest에 남긴다. 파생 manifest의 해시로는 원본을 고정할 수 없다. 이후 분석은 현재 원본을 기록과 대조한 뒤에만 진행한다. 해시 필드 이름이 가리키는 파일을 규칙에 쓰기 전에 코드로 확인한다(FP-011).
+- **강제 수단**: M7 step 3 `verify_m6_inputs`(`analyze_dev()` 재실행 비교), step 5 `m7_rawhash`(pilot·grade fingerprint)와 step 9·10 원본 해시 테스트, step 6·13의 분석·보고 전 대조.
+- **출처**: M7 step 3 blocked(M6 dev `runs.jsonl` 사례)

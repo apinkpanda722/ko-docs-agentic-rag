@@ -79,7 +79,11 @@ H7의 판정 문항 수는 split 확정 후 이 파일에 숫자로 고정하며
 
 ### D. 입력 데이터
 
-- **M7-D1** 채점·분석 입력은 M6 산출물이며 새로 만들지 않는다(보안 테스트셋 답변·지연 측정 실행 제외). dev는 `data/interim/m6/dev/runs.jsonl`(SHA-256이 `data/manifest/m6_config.json`의 `m6_dev_sha256`과 같아야 하며 무효 처리된 `run-01-invalid`는 쓰지 않는다)의 luna·sol 300행, test는 `data/interim/m6/test/run-01/`의 골드 60행과 `silver/`의 실버 166행(선택 모델 gpt-6-luna)이다. 답변 식별자는 `answer_id = "{run_set}|{question_id}|{system}|{model}"`(run_set은 dev·test_gold·test_silver)이다. M5 구성과 M6 고정 설정은 바꾸지 않는다.
+- **M7-D1** 채점·분석 입력은 M6 산출물이며 새로 만들지 않는다(보안 테스트셋 답변·지연 측정 실행 제외). dev는 `data/interim/m6/dev/runs.jsonl`의 luna·sol 300행(무효 처리된 `run-01-invalid`는 쓰지 않는다), test는 `data/interim/m6/test/run-01/`의 골드 60행과 `silver/`의 실버 166행(선택 모델 gpt-6-luna)이다. 답변 식별자는 `answer_id = "{run_set}|{question_id}|{system}|{model}"`(run_set은 dev·test_gold·test_silver)이다. M5 구성과 M6 고정 설정은 바꾸지 않는다.
+  - **dev 입력 검증(3단계)**: (a) `data/manifest/m6_dev.json`의 SHA-256이 `data/manifest/m6_config.json`의 `m6_dev_sha256`과 같다(이 필드는 `runs.jsonl`이 아니라 `m6_dev.json`의 해시다). (b) `runs.jsonl`을 읽어 `src/kodocs/eval/m6_dev.py`의 `analyze_dev()`를 그대로 다시 실행하고(외부 호출 없음) 결과를 커밋된 `m6_dev.json`과 비교한다. 비교 대상은 `answer_match`·`citation_precision`·`unanswerable_refusal`·`gate`·`guardrails_summary`·`operations`·`model_stats`·`paired_bootstrap`·`selection`·`selection_reason`이다. 실행 시점 값(`code_commit`, `init_s`)은 `m6_dev.json`에 기록된 값을 인자로 넘기고 비교에서 제외한 필드 목록을 남긴다. 숫자는 정확히 일치해야 하며 허용 오차는 없다. 하나라도 다르면 채점을 거부하고 다른 필드를 보고한다. 행별 해시(m5_config·프롬프트·finalizer·모델 설정)는 `analyze_dev` 안의 `_require_frozen_run_hashes`가 검사하므로 중복 구현하지 않는다. (c) 현재 `runs.jsonl`의 SHA-256(2026-10-01 확인 값 `0f25104b068b7f29813db943493d2f37c70bdc3a490bad9f0359f22dadc3eb8b`)을 `m7_config.json` freeze 기록에 넣어 M7 시점부터 고정한다.
+  - **test 입력 검증**: `data/manifest/m6_test_runs.jsonl`의 `result_sha256`이 `data/manifest/m6_test_results/run-01.json`의 SHA-256과 같고, `src/kodocs/eval/m6_test.py`의 `analyze_test()`를 같은 방식(골드·실버 각각, 기록된 `init_s`·`concurrency`를 인자로 사용, 제외 필드 목록 기록, 허용 오차 없음)으로 다시 실행해 결과 파일과 비교한다. 현재 test `runs.jsonl`들의 SHA-256도 freeze 기록에 넣는다.
+  - **한계**: M6 실행 당시의 `runs.jsonl` 해시가 없다. 답변 텍스트 변경처럼 집계에 영향을 주지 않는 변경은 위 비교로 탐지하지 못한다. 결과 문서 한계 절에 적는다.
+  - **예방**: M7의 모든 사용자 실행(`make m7-pilot`·`make m7-grade`·`make m7-security`·`make m7-latency`)은 완료 시(정지 시 포함) 원본 jsonl의 SHA-256과 행 수를 커밋 대상 manifest에 기록한다. 이후 분석·보고는 현재 원본의 SHA-256·행 수를 기록과 대조한 뒤에만 진행한다(FP-053).
 
 ### X. 실행 순서·고정·비용
 
@@ -188,3 +192,4 @@ H7의 판정 문항 수는 split 확정 후 이 파일에 숫자로 고정하며
 | 2026-09-30 | test 결과를 보기 전. 합성 사실 반복으로 qrels에 질문자가 볼 수 없는 문서가 포함됨(305쌍·92문항, 보이는 정답 0개 문항 없음). pre-filter 구조상 반환 불가능한 문서라 정답에서 제외 | (M5 판정 규칙 절에 정답 집합 규정 없음. ADR-028 12번: 안 보이는 정답 문서가 있는 문항은 실패로 멈춤) | M5 판정 규칙 절에 "정답 집합" 항목 추가: 보이는 rel ≥ 1 문서로 한정, Recall 분모·IDCG·구간 정답 모두 보이는 정답만 사용 |
 | 2026-09-29 | split 확정 후 기록(`data/manifest/golden_review.json`의 `split.gold.h7`, M5 결과를 보기 전) | 출처별 문항 수는 split 확정 후 고정 (split 확정 후 기록: 합성 n=?, 실제 n=?) | 합성 n=8, 실제 n=6(고정) |
 | 2026-10-01 | M7 착수 전 판정 규칙 사전 등록(채점·κ·H5·H6·P95·실패 분석, 결과를 보기 전). 채점 모델을 Gemini 무료 등급에서 유료(gemini-3.8-flash)로 변경(ADR-030) | (해당 절 없음) | M7 판정 규칙 절 추가 |
+| 2026-10-01 | M7 입력 검증 대상 정정(step 3 실행 중 발견): `m6_dev_sha256`은 `runs.jsonl`이 아니라 `m6_dev.json`의 해시. 판정 규칙·수치 변경 없음 | M7-D1: dev `runs.jsonl`의 SHA-256이 `m6_config.json`의 `m6_dev_sha256`과 같아야 한다 | M7-D1: dev는 `m6_dev.json` 해시 확인 + `analyze_dev()` 재실행 비교 + 현재 `runs.jsonl` 해시 freeze 고정, test는 `analyze_test()` 재실행 비교, 실행 산출물 원본 해시·행 수를 manifest에 기록하는 예방 규칙 추가 |

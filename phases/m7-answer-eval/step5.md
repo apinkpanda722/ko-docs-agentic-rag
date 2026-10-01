@@ -40,13 +40,13 @@
 - 10건 × 3회 = 30호출을 현재 **초안 루브릭**으로 채점한다(`pilot/grades.jsonl`). 보고: 형식 오류율, 점수 분포·쏠림(루브릭 점검 항목, 중단 조건 아님), 3회 일치율, 비용. `--dry-run` 지원. freeze 전에 실행하는 유일한 호출이다. 파일럿 결과는 분석에 쓰이지 않는다(M7-G6).
 
 ### 3. freeze (`make m7-freeze`)
-`m7_config.json`을 **새로 만들며 덮어쓰기를 거부한다**(M6 `m6_config.py`와 같은 방식, 재고정은 별도 사유 기록 없이는 불가). 기록: 모델 ID·tier·thinking_level·temperature·seed(null 가능)·`rpm_pacing`·`max_output_tokens`·모델 설정 해시, `rubric_sha256`·`schema_sha256`, `rules_sha256`(`m7_rules.rules_sha256()`), 표본 해시(`m7_human_sample.json`)·사람 CSV 해시(`m7_human_grades.json`)·파일럿 manifest 해시·probe manifest 해시, M6 `config_hash`·`m6_dev_sha256`, 가격 `valid_until`, 시드, 고정 시각.
+`m7_config.json`을 **새로 만들며 덮어쓰기를 거부한다**(M6 `m6_config.py`와 같은 방식, 재고정은 별도 사유 기록 없이는 불가). 기록: 모델 ID·tier·thinking_level·temperature·seed(null 가능)·`rpm_pacing`·`max_output_tokens`·모델 설정 해시, `rubric_sha256`·`schema_sha256`, `rules_sha256`(`m7_rules.rules_sha256()`), 표본 해시(`m7_human_sample.json`)·사람 CSV 해시(`m7_human_grades.json`)·파일럿 manifest 해시·probe manifest 해시, M6 `config_hash`·`m6_dev_sha256`, **현재 dev `runs.jsonl`의 SHA-256·행 수와 test `runs.jsonl`들의 SHA-256·행 수(`verify_m6_inputs`가 돌려준 값, M7-D1(c))**, 가격 `valid_until`, 시드, 고정 시각.
 **freeze는 아래 하나라도 어긋나면 거부한다**(M7-X1):
 - `data/manifest/m7_human_grades.json`이 없다(사람 CSV 해시 미기록).
 - 카드 manifest(`data/interim/m7/cards/cards_manifest.json`)의 루브릭 해시가 현재 `rubric_sha256()`과 다르다.
 - `data/manifest/m7_pilot.json`이 없다. `data/manifest/m7_probe.json`이 없다.
 - `models.toml`의 temperature·seed·thinking_level이 probe가 '지원'으로 기록한 값과 어긋난다(미지원인데 값이 있음, probe에 없는 thinking 수준 등). 모델 ID가 비었거나 `ensure_price_valid`가 실패한다.
-- M6 config 해시·`m6_dev_sha256` 검증이 실패한다(`load_m6_answers`의 해시 검사).
+- `verify_m6_inputs()`(step 3, M7-D1 정정판: `m6_dev.json` 해시 + `analyze_dev` 재실행 비교 + test 재집계 비교)가 실패한다. 현재 dev `runs.jsonl`의 SHA-256이 M7-D1에 적힌 값(`0f25104b…`)과 다르면 거부한다(사유를 메시지에 담는다).
 
 ### 4. 채점 (`make m7-grade-dry`, `make m7-grade`)
 - freeze 기록이 없으면 `m7-grade`는 거부한다. 실행 시작 때 현재 루브릭·스키마·모델 설정·규칙 해시가 freeze 기록과 같은지 검사한다.
@@ -59,11 +59,17 @@
 - **dry-run**: 호출 수(분류별·tier별·모드별), 예상 입력·출력 토큰, 예상 비용(정가 + 부가세, 최악 `max_output_tokens` 기준 상한 병기), 월 상한(`MONTHLY_BUDGET_USD`) 대비, 페이싱에 따른 최소 소요 시간, `ensure_price_valid` 결과를 출력하고 `m7_dry_runs.jsonl`에 기록한다. 선택 플래그 `--credit-usd X`: 예상 비용과 이미 쓴 Gemini 비용(원장 `tier=paid`)의 합을 X와 비교해 출력하고, 실행 중에도 누적(원장 기준, 부가세 포함)이 X를 넘기 전에 정지한다. 분류별 건수(참고: gemini_acc+gemini_faith_only 예상 299개, 호출 897회)를 함께 출력한다. 예상과 다르면 실패시키지 말고 그대로 출력한다.
 - 호출 전 월 상한(BudgetGuard)과 `ensure_price_valid`를 검사한다. 완료 시 `m7_grade_scores.json`·`m7_grade_summary.json`을 쓴다.
 
+### 4-1. 실행 산출물 원본 해시 기록 (M7-D1 예방 규칙, FP-053)
+- 공용 모듈 `src/kodocs/eval/m7_rawhash.py`: `fingerprint(path) -> {"sha256","rows"}`(UTF-8 바이트 SHA-256과 비어 있지 않은 줄 수), `record_fingerprint(manifest_path, key, path, event)`(manifest의 `raw` 이력 리스트에 `{key, path, sha256, rows, event, at}` append), `verify_fingerprint(manifest_path, key, path)`(현재 원본이 **가장 최근 기록**과 같아야 하며 다르면 `RawHashMismatch`). step 6·9·10·13이 이 모듈을 재사용한다.
+- `make m7-pilot`은 완료·정지 시 `pilot/grades.jsonl`의 fingerprint를 `data/manifest/m7_pilot.json`의 `raw`에, `make m7-grade`는 완료·**정지(`GradeStopError` 포함)** 시 `data/interim/m7/grades.jsonl`의 fingerprint를 `data/manifest/m7_grade_summary.json`의 `raw`에 기록한다(append-only 파일이 재개 실행으로 자라므로 실행마다 새 항목을 추가한다). `m7_grade_scores.json`도 생성 시 그 시점의 `grades.jsonl` fingerprint를 담는다.
+- `m7-grade`는 **시작할 때** 기존 `grades.jsonl`이 가장 최근 기록과 같은지 `verify_fingerprint`로 확인하고 다르면 거부한다(실행 사이의 수정·손상 탐지). 이후 분석(step 6의 `m7-analyze`)은 현재 `grades.jsonl`이 기록과 같을 때만 진행한다.
+
 ### 5. Makefile·AGENTS.md
 `m7-pilot`, `m7-freeze`, `m7-grade-dry`, `m7-grade`(+ `--credit-usd` 전달을 위한 변수 `M7_CREDIT_USD`)를 `.PHONY`와 Makefile에 추가하고 AGENTS.md 명령어 목록에 각각 적는다(실제 API를 호출하는 `m7-pilot`·`m7-grade`는 "실제 Gemini 호출·과금, 사용자 실행"으로 표시).
 
 ### 6. 테스트 (fake `GeminiGrader` 주입, 네트워크 금지)
 - 중단·재개 시 이미 기록된 키는 호출 0회. 일일 한도 예외 → 즉시 정지·정지 이력·재실행 시 이어짐. 크레딧 소진 정지. 형식 오류율: 49호출까지는 2% 초과여도 중단하지 않고, 50호출 이후 2% 초과면 중단, 점수가 한 값에 몰려도 중단하지 않고 summary에 쏠림이 기록됨.
+- **원본 해시 기록**: pilot·grade 실행(완료와 정지 각각)이 `raw` 이력에 sha256·행 수를 남기고, 재개 실행이 새 항목을 추가하며, 시작 시 파일이 기록과 다르면 거부한다. `verify_fingerprint`가 한 줄 수정·줄 추가·줄 삭제를 모두 탐지한다. `m7_rawhash`는 텍스트를 manifest에 쓰지 않는다.
 - freeze 거부 각각(사람 CSV 해시 없음·루브릭 해시 불일치·파일럿 manifest 없음·probe 불일치)과 덮어쓰기 거부. freeze 전 `m7-grade` 거부. 모델 ID 빈 값 거부. `valid_until` 이후 거부. 우선순위(tier 순서) 테스트. `det_zero`·`not_scored`는 호출 0회. `--credit-usd` 초과 전 정지. `m7_grade_scores.json`에 텍스트가 없다.
 
 ## Acceptance Criteria
@@ -85,6 +91,7 @@ make -n m7-pilot m7-freeze m7-grade-dry m7-grade   # 타깃이 선언돼 있는�
    - 형식 오류율 중단이 누적 50호출 이후부터이고 쏠림은 중단이 아니라 보고인가?
    - 캐시 키가 (answer_sha256, rubric_sha256, model_settings_hash, mode, repeat)인가?
    - `m7_grade_scores.json`에 점수·id만 있고 텍스트가 없는가?
+   - pilot·grade 완료/정지 시 원본 SHA-256·행 수가 커밋 manifest의 `raw`에 기록되고, 시작 시 대조되는가?
 3. 결과를 최종 응답(JSON)으로 보고한다. `phases/` 아래 파일은 수정하지 않고 git commit도 하지 않는다:
    - 성공 → `"status": "completed"`, `"summary": "산출물 한 줄 요약(다음 step이 쓸 파일·함수 이름 포함)"`
    - 해결할 수 없는 실패 → `"status": "error"`, `"reason": "구체적 에러 내용"`
@@ -96,6 +103,7 @@ make -n m7-pilot m7-freeze m7-grade-dry m7-grade   # 타깃이 선언돼 있는�
 - freeze 후 루브릭·모델 설정·시드를 바꾸는 경로를 만들지 마라. 이유: κ·H5 결과를 본 뒤 조정하면 사전 등록이 무효가 된다(M7-G4).
 - 점수 쏠림을 중단 조건으로 만들지 마라. 이유: 거절·실패를 결정론으로 거른 뒤라 정답이 대부분이고 H5부터 채점해 초반 쏠림이 정상일 수 있다(M7-G5). 정상 채점이 중단된다.
 - 일일 한도·크레딧 소진 후 재시도 루프를 만들지 마라. 이유: 정지 후 사용자가 재개한다. 호출 낭비·과금 위험이다.
+- 실행 산출물(`grades.jsonl`·`pilot/grades.jsonl`)의 원본 해시·행 수를 manifest에 남기지 않고 끝내지 마라. 이유: 원본이 비커밋이라 나중에 변조·손상을 탐지할 수 없다(FP-053, M6 dev `runs.jsonl`은 해시가 커밋되지 않아 입력 검증이 막혔다).
 - `grades.jsonl`의 중복 줄을 그대로 집계하지 마라. 이유: append-only 기록은 최신 줄만 읽어야 점수가 부풀지 않는다(FP-032).
 - 진행 출력에 API 키·URL·응답 원문을 넣지 마라. 이유: 비밀·원문 노출 방지(FP-034).
 - 실제 LLM·외부 API(OpenAI·Gemini·Anthropic)를 호출하지 마라. 테스트는 mock·fake만 쓴다. 이유: `make verify`는 API 키 없이 통과해야 하며, 실제 호출은 사용자가 직접 실행한다(ADR-014).

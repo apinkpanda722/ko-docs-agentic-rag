@@ -31,13 +31,14 @@
 - 러너: 113문항(골드 test 30 + 실버 test 83, `m6_eval_inputs.json`의 test 문항 ID, id 정렬 고정 순서)을 시스템별 1회, **동시성 1**로 실행한다. 동시성이 1이 아니면 `ConcurrencyError`로 거부한다(코드 강제, 옵션으로 못 바꾼다). 단순 RAG가 판정 대상이고 Agentic도 같은 조건으로 측정한다(목표 설정용). 예열: dev 문항 3건을 먼저 실행하고 결과에서 제외한다(임베더·연결 초기화 시간은 `init_s`로 따로 기록, 문항별 지연에 섞지 않는다 — FP-036).
 - 구간 기록: 임베딩(`embed_s`)·검색(`search_s`)·TTFT(`ttft_ms`/1000, 최종 답변 호출의 첫 출력 토큰까지)·전체(`answer()` 호출 전후 wall clock, 재시도 포함). 트레이스 `timings`에 없는 값이 있으면 `None`으로 기록하고 개수를 보고한다.
 - 판정(M7-P3): P95 = **nearest-rank**(정렬 후 `ceil(0.95 * n)`번째; n=113이면 108번째). 가드레일·실패(`guardrail_timeout` 등)도 지연으로 **포함**한다. 단순 RAG 전체 P95 ≤ 5.0초이면 `P95 목표 달성`, 초과이면 `P95 목표 미달`(점추정으로 판정). 부트스트랩 95% CI(10,000회, 시드 20261001)는 병기만 한다. **검색 구간(임베딩·검색)은 목표를 두지 않고 P50·P95·최댓값 기술 통계만 보고한다.** TTFT도 기술 통계다.
-- 결과 manifest `data/manifest/m7_latency.json`(커밋): 시스템별 구간 통계·P95·판정·CI·실행 수·실패 수·동시성(=1)·`streaming=true`·예열 제외 수·`init_s`·실행 시각(KST)·코드 커밋·M6 config 해시·모델 설정 해시·**측정 환경 자동 수집값**(Python·패키지 버전(langgraph·langchain-openai·openai·mcp·google-genai 등 설치된 버전), OpenSearch 버전·힙 설정(로컬 OpenSearch의 읽기 전용 정보 API로 읽는다. 실패하면 `None`으로 기록하고 사유를 적는다, 호출은 `localhost`뿐), 기기·OS(`platform`), 임베딩 장치(임베더가 쓰는 device 기록 재사용)). 실제 문항별 기록은 `data/interim/m7/latency/runs.jsonl`(비커밋). 이 실행의 답변은 채점하지 않는다.
+- 결과 manifest `data/manifest/m7_latency.json`(커밋): 시스템별 구간 통계·P95·판정·CI·실행 수·실패 수·동시성(=1)·`streaming=true`·예열 제외 수·`init_s`·실행 시각(KST)·코드 커밋·M6 config 해시·모델 설정 해시·**측정 환경 자동 수집값**(Python·패키지 버전(langgraph·langchain-openai·openai·mcp·google-genai 등 설치된 버전), OpenSearch 버전·힙 설정(로컬 OpenSearch의 읽기 전용 정보 API로 읽는다. 실패하면 `None`으로 기록하고 사유를 적는다, 호출은 `localhost`뿐), 기기·OS(`platform`), 임베딩 장치(임베더가 쓰는 device 기록 재사용)). 실제 문항별 기록은 `data/interim/m7/latency/runs.jsonl`(비커밋)이며 **완료·정지 시 그 파일의 SHA-256·행 수를 `m7_rawhash.record_fingerprint`(step 5)로 `m7_latency.json`의 `raw`에 기록한다**(M7-D1 예방, FP-053). 이후 P95·구간 통계 재계산과 결과 문서 생성은 현재 `runs.jsonl`이 기록과 같을 때만 진행한다(`verify_fingerprint`). 이 실행의 답변은 채점하지 않는다.
 - 1회 잠금과 `RERUN_REASON`(사유·날짜·이전 결과 해시 누적, M7-P4). 재실행해도 첫 결과를 manifest에 보존한다. `--dry-run`: 실행 수(113 × 2 + 예열 6)·예상 비용(M6 test 평균 기반)·월 상한 대비를 출력하고 `m7_dry_runs.jsonl`에 기록. M6 config 해시 검사(M6 러너와 같은 방식)를 통과해야 실행한다.
 - Makefile 타깃 `m7-latency-dry`, `m7-latency`(`RERUN_REASON` 변수 지원)를 `.PHONY`·Makefile·AGENTS.md 명령어 목록에 추가한다(`m7-latency`는 "실제 OpenAI 호출·과금, 동시성 1 단독 실행, 사용자 실행").
 
 ### 3. 테스트 (fake chat·fake clock, 네트워크 금지)
 - 동시성 ≠ 1 거부. 예열 3건 제외(결과 수 = 113). 실패·가드레일이 지연에 포함된다. nearest-rank 경계: n=113 → 108번째, n=100 → 95번째, 정렬·동점 처리. 판정 문구(달성/미달, 경계 5.0초는 달성). 검색 구간에 목표·판정 문구가 없다(기술 통계만).
 - `StreamingChat`이 `response_schema` 호출에만 `stream=True`를 전달하고 도구 선택 호출에는 전달하지 않는다. **기본 경로의 요청 파라미터 스냅샷·모델 설정 해시·프롬프트 해시·`finalizer_hash`가 `m6_config.json` 값과 같다.**
+- **원본 해시**: 실행 후 `runs.jsonl`의 sha256·행 수가 `m7_latency.json`의 `raw`에 기록되고, 파일을 수정하면 재계산·보고가 거부된다.
 - 환경 필드 완비(없으면 `None`+사유). 1회 잠금·재실행 사유 누적.
 
 ## Acceptance Criteria
@@ -72,6 +73,7 @@ uv run python -c "from kodocs.agent.finalize import finalizer_hash; import json;
 - 검색 구간(임베딩·검색)에 목표값이나 달성/미달 문구를 넣지 마라. 이유: M6 동시성 4에서 검색 P95를 이미 봤으므로 지금 정한 목표는 결과를 보고 정한 목표가 된다. 기술 통계만 보고한다(M7-P3).
 - 스트리밍 기본값을 켜지 마라. 이유: M6 test·dev 결과와 해시는 비스트리밍 호출로 만들어졌다. 스트리밍은 지연 측정 실행에서만 쓰며 결과에 조건을 적는다.
 - 모델 로딩·연결 초기화 시간을 문항별 지연에 섞지 마라. 이유: 첫 문항 지연이 부풀어 P95가 왜곡된다(FP-036). `init_s`로 분리한다.
+- 지연 실행 `runs.jsonl`의 원본 해시·행 수를 manifest에 남기지 않고 끝내지 마라. 이유: 원본이 비커밋이라 분석 시점에 변조·손상을 탐지할 수 없다(FP-053).
 - 지연 실행의 답변을 채점·재사용하거나 지연 판정을 위해 실패 문항을 빼지 마라. 이유: 실패도 지연으로 포함하는 것이 사전 등록 규칙이다(M7-P3).
 - 실제 LLM·외부 API(OpenAI·Gemini·Anthropic)를 호출하지 마라. 테스트는 mock·fake만 쓴다. 이유: `make verify`는 API 키 없이 통과해야 하며, 실제 호출은 사용자가 직접 실행한다(ADR-014).
 - `.env`를 열거나 출력하지 마라. 이유: 비밀 값이 들어 있다.
