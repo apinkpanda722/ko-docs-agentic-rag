@@ -33,7 +33,16 @@
     {
       "step": 2,
       "name": "gemini-client",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-01T20:34:32+0900",
+      "summary": "GradeModelConfig/load_grade_config, GeminiGrader, ensure_price_valid, gemini_probe·make m7-probe 구현. make verify 1529개, 전용 테스트 178개 및 probe --dry-run 통과. SDK 2.26.0 소스 확인: .venv/lib/python3.12/site-packages/google/genai/{types.py,errors.py,_api_client.py,models.py}. 모델별 최저 thinking 지원·실제 429 quota 상세 계약·HTTP 요청 ID는 확인 불가로 기록. 실제 API 호출·커밋 없음.",
+      "completed_at": "2026-10-01T20:46:03+0900",
+      "usage": {
+        "input_tokens": 1867543,
+        "cached_input_tokens": 1739008,
+        "output_tokens": 17398,
+        "attempts": 1
+      }
     },
     {
       "step": 3,
