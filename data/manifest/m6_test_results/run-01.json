@@ -1,0 +1,276 @@
+{
+  "billing_uncertain_count": 0,
+  "concurrency": 4,
+  "config_hash": "ba5ee42864360f3af13a26b4581b0ce6044c395c0aef524af6195c5a98d199ef",
+  "deterministic_metrics": {
+    "agentic": {
+      "answer_match": {
+        "denominator": 16,
+        "numerator": 6,
+        "rate": 0.375
+      },
+      "citation_precision": {
+        "denominator": 18,
+        "excluded": 12,
+        "mean": 0.9444444444444444
+      },
+      "permission_refusal": {
+        "denominator": 3,
+        "numerator": 3,
+        "rate": 1.0
+      },
+      "unanswerable_refusal": {
+        "denominator": 2,
+        "numerator": 2,
+        "rate": 1.0
+      }
+    },
+    "simple": {
+      "answer_match": {
+        "denominator": 16,
+        "numerator": 5,
+        "rate": 0.3125
+      },
+      "citation_precision": {
+        "denominator": 13,
+        "excluded": 17,
+        "mean": 0.9230769230769231
+      },
+      "permission_refusal": {
+        "denominator": 3,
+        "numerator": 3,
+        "rate": 1.0
+      },
+      "unanswerable_refusal": {
+        "denominator": 2,
+        "numerator": 2,
+        "rate": 1.0
+      }
+    }
+  },
+  "execution_count": 60,
+  "guardrail_terminations": {},
+  "m5_config_hash": "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d",
+  "operations": {
+    "gpt-6-luna": {
+      "agentic": {
+        "cost_usd": {
+          "mean": 0.0010979177,
+          "total": 0.032937531
+        },
+        "guardrail_terminations": {
+          "guardrail_max_steps": 0,
+          "guardrail_timeout": 0,
+          "guardrail_tokens": 0
+        },
+        "init_s": 4.834338208998815,
+        "latency_s": {
+          "p50": 7.425796541499949
+        },
+        "n": 30,
+        "statuses": {
+          "billing_uncertain": 0,
+          "completed": 30,
+          "infra_error": 0
+        },
+        "steps": {
+          "max": 5.0,
+          "mean": 1.4333333333333333
+        },
+        "tokens": {
+          "cache_write": 174690,
+          "cached_input": 51376,
+          "input": 32947,
+          "output": 8597,
+          "reasoning": 417
+        }
+      },
+      "simple": {
+        "cost_usd": {
+          "mean": 0.00046714708333333335,
+          "total": 0.0140144125
+        },
+        "guardrail_terminations": {
+          "guardrail_max_steps": 0,
+          "guardrail_timeout": 0,
+          "guardrail_tokens": 0
+        },
+        "init_s": 4.834338208998815,
+        "latency_s": {
+          "p50": 2.917689625001003
+        },
+        "n": 30,
+        "statuses": {
+          "billing_uncertain": 0,
+          "completed": 30,
+          "infra_error": 0
+        },
+        "steps": {
+          "max": 1.0,
+          "mean": 1.0
+        },
+        "tokens": {
+          "cache_write": 89891,
+          "cached_input": 0,
+          "input": 90,
+          "output": 2990,
+          "reasoning": 0
+        }
+      }
+    }
+  },
+  "previous_result_sha256": null,
+  "question_count": 30,
+  "ran_at": "2026-10-01T17:10:14+09:00",
+  "rerun_reason": null,
+  "run_id": "m6-test-01",
+  "runs_sha256": "de39ffd1db5d29eeb739f1b84b2e6007ebb899f24c62002fbb2f99c4537a8c3f",
+  "schema_version": 1,
+  "seq": 1,
+  "set_counts": {
+    "gold_test": {
+      "execution_count": 60,
+      "question_count": 30
+    },
+    "silver_test": {
+      "execution_count": 166,
+      "question_count": 83
+    }
+  },
+  "silver_runs_sha256": "1869a8cb0cd5287814a9121cf450e6478bf874a4029d574d17e6deeeca688af1",
+  "silver_test": {
+    "billing_uncertain_count": 0,
+    "concurrency": 4,
+    "deterministic_metrics": {
+      "agentic": {
+        "answer_match": {
+          "denominator": 65,
+          "numerator": 6,
+          "rate": 0.09230769230769231
+        },
+        "citation_precision": {
+          "denominator": 43,
+          "excluded": 40,
+          "mean": 0.7771317829457364
+        },
+        "permission_refusal": {
+          "denominator": 9,
+          "numerator": 9,
+          "rate": 1.0
+        },
+        "unanswerable_refusal": {
+          "denominator": 9,
+          "numerator": 6,
+          "rate": 0.6666666666666666
+        }
+      },
+      "simple": {
+        "answer_match": {
+          "denominator": 65,
+          "numerator": 5,
+          "rate": 0.07692307692307693
+        },
+        "citation_precision": {
+          "denominator": 40,
+          "excluded": 43,
+          "mean": 0.7244047619047619
+        },
+        "permission_refusal": {
+          "denominator": 9,
+          "numerator": 9,
+          "rate": 1.0
+        },
+        "unanswerable_refusal": {
+          "denominator": 9,
+          "numerator": 7,
+          "rate": 0.7777777777777778
+        }
+      }
+    },
+    "execution_count": 166,
+    "guardrail_terminations": {
+      "guardrail_max_steps": 5
+    },
+    "m5_config_hash": "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d",
+    "operations": {
+      "gpt-6-luna": {
+        "agentic": {
+          "cost_usd": {
+            "mean": 0.0013721656445783133,
+            "total": 0.11388974850000001
+          },
+          "guardrail_terminations": {
+            "guardrail_max_steps": 5,
+            "guardrail_timeout": 0,
+            "guardrail_tokens": 0
+          },
+          "init_s": 4.834338208998815,
+          "latency_s": {
+            "p50": 8.246731291998003
+          },
+          "n": 83,
+          "statuses": {
+            "billing_uncertain": 0,
+            "completed": 83,
+            "infra_error": 0
+          },
+          "steps": {
+            "max": 5.0,
+            "mean": 2.0
+          },
+          "tokens": {
+            "cache_write": 644205,
+            "cached_input": 238481,
+            "input": 81392,
+            "output": 24973,
+            "reasoning": 992
+          }
+        },
+        "simple": {
+          "cost_usd": {
+            "mean": 0.0004998974518072289,
+            "total": 0.0414914885
+          },
+          "guardrail_terminations": {
+            "guardrail_max_steps": 0,
+            "guardrail_timeout": 0,
+            "guardrail_tokens": 0
+          },
+          "init_s": 4.834338208998815,
+          "latency_s": {
+            "p50": 2.5710709169979964
+          },
+          "n": 83,
+          "statuses": {
+            "billing_uncertain": 0,
+            "completed": 83,
+            "infra_error": 0
+          },
+          "steps": {
+            "max": 1.0,
+            "mean": 1.0
+          },
+          "tokens": {
+            "cache_write": 255277,
+            "cached_input": 5901,
+            "input": 249,
+            "output": 11452,
+            "reasoning": 459
+          }
+        }
+      }
+    },
+    "question_count": 83,
+    "schema_version": 1,
+    "status_counts": {
+      "billing_uncertain": 0,
+      "completed": 166,
+      "infra_error": 0
+    }
+  },
+  "status_counts": {
+    "billing_uncertain": 0,
+    "completed": 60,
+    "infra_error": 0
+  }
+}

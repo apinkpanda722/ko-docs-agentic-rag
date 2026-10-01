@@ -1,0 +1,573 @@
+{
+  "answer_match": {
+    "gpt-6-luna": {
+      "agentic": {
+        "by_source": {
+          "real": {
+            "denominator": 3,
+            "numerator": 3,
+            "rate": 1.0
+          },
+          "synthetic": {
+            "denominator": 53,
+            "numerator": 4,
+            "rate": 0.07547169811320754
+          }
+        },
+        "denominator": 56,
+        "numerator": 7,
+        "rate": 0.125
+      },
+      "simple": {
+        "by_source": {
+          "real": {
+            "denominator": 3,
+            "numerator": 2,
+            "rate": 0.6666666666666666
+          },
+          "synthetic": {
+            "denominator": 53,
+            "numerator": 1,
+            "rate": 0.018867924528301886
+          }
+        },
+        "denominator": 56,
+        "numerator": 3,
+        "rate": 0.05357142857142857
+      }
+    },
+    "gpt-6.1-sol": {
+      "agentic": {
+        "by_source": {
+          "real": {
+            "denominator": 3,
+            "numerator": 3,
+            "rate": 1.0
+          },
+          "synthetic": {
+            "denominator": 53,
+            "numerator": 3,
+            "rate": 0.05660377358490566
+          }
+        },
+        "denominator": 56,
+        "numerator": 6,
+        "rate": 0.10714285714285714
+      },
+      "simple": {
+        "by_source": {
+          "real": {
+            "denominator": 3,
+            "numerator": 3,
+            "rate": 1.0
+          },
+          "synthetic": {
+            "denominator": 53,
+            "numerator": 1,
+            "rate": 0.018867924528301886
+          }
+        },
+        "denominator": 56,
+        "numerator": 4,
+        "rate": 0.07142857142857142
+      }
+    }
+  },
+  "citation_precision": {
+    "gpt-6-luna": {
+      "agentic": {
+        "denominator": 44,
+        "excluded": 31,
+        "mean": 0.7196969696969697
+      },
+      "simple": {
+        "denominator": 34,
+        "excluded": 41,
+        "mean": 0.7573529411764706
+      }
+    },
+    "gpt-6.1-sol": {
+      "agentic": {
+        "denominator": 45,
+        "excluded": 30,
+        "mean": 0.7592592592592592
+      },
+      "simple": {
+        "denominator": 36,
+        "excluded": 39,
+        "mean": 0.7171296296296297
+      }
+    }
+  },
+  "code_commit": "910b542e99ce7cf7a49ac226ef9842a6009ad92d",
+  "concurrency": 4,
+  "finalizer_hash": "a83f28b7027525a1ecb3a4166ea980d40a85bb504cb1b2e7e81e5a262680bbb0",
+  "gate": {
+    "gpt-6-luna": {
+      "a_count": 0,
+      "b_count": 0,
+      "execution_count": 16,
+      "passed": true,
+      "permission_question_count": 8,
+      "results": [
+        {
+          "a": false,
+          "b": false,
+          "question_id": "g-syn-017",
+          "system": "simple"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "g-syn-017",
+          "system": "agentic"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "g-syn-019",
+          "system": "simple"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "g-syn-019",
+          "system": "agentic"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-122",
+          "system": "simple"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-122",
+          "system": "agentic"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-127",
+          "system": "simple"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-127",
+          "system": "agentic"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-128",
+          "system": "simple"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-128",
+          "system": "agentic"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-129",
+          "system": "simple"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-129",
+          "system": "agentic"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-130",
+          "system": "simple"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-130",
+          "system": "agentic"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-135",
+          "system": "simple"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-135",
+          "system": "agentic"
+        }
+      ]
+    },
+    "gpt-6.1-sol": {
+      "a_count": 0,
+      "b_count": 0,
+      "execution_count": 16,
+      "passed": true,
+      "permission_question_count": 8,
+      "results": [
+        {
+          "a": false,
+          "b": false,
+          "question_id": "g-syn-017",
+          "system": "simple"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "g-syn-017",
+          "system": "agentic"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "g-syn-019",
+          "system": "simple"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "g-syn-019",
+          "system": "agentic"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-122",
+          "system": "simple"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-122",
+          "system": "agentic"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-127",
+          "system": "simple"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-127",
+          "system": "agentic"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-128",
+          "system": "simple"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-128",
+          "system": "agentic"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-129",
+          "system": "simple"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-129",
+          "system": "agentic"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-130",
+          "system": "simple"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-130",
+          "system": "agentic"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-135",
+          "system": "simple"
+        },
+        {
+          "a": false,
+          "b": false,
+          "question_id": "s-syn-135",
+          "system": "agentic"
+        }
+      ]
+    }
+  },
+  "guardrails": {
+    "settings": {
+      "agentic_timeout_s": 120,
+      "context_char_budget": 6000,
+      "context_top_k": 8,
+      "max_output_tokens": 4000,
+      "max_steps": 5,
+      "max_tokens_per_question": 100000,
+      "request_timeout_s": 30,
+      "simple_timeout_s": 45
+    },
+    "settings_hash": "3d3a474bc14e288706a845a5219a001ee34d0b6b808b932a8310f2e53bcfc861"
+  },
+  "guardrails_summary": {
+    "agentic": {
+      "guardrail_max_steps": 3,
+      "guardrail_timeout": 0,
+      "guardrail_tokens": 0,
+      "max_cumulative_tokens": 52854
+    },
+    "simple": {
+      "guardrail_max_steps": 0,
+      "guardrail_timeout": 0,
+      "guardrail_tokens": 0,
+      "max_cumulative_tokens": 4410
+    }
+  },
+  "m5_config_hash": "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d",
+  "m6_eval_inputs_sha256": "e1e6143775266a35a672019e0bbb6692fc6588974742d1e547a2f21a1df595be",
+  "model_stats": {
+    "gpt-6-luna": {
+      "concurrency": 4,
+      "gate_passed": true,
+      "latency_p50_s": 5.308030228999087,
+      "mean_answer_match": 0.08928571428571429,
+      "mean_cost_usd": 0.00063632657
+    },
+    "gpt-6.1-sol": {
+      "concurrency": 4,
+      "gate_passed": true,
+      "latency_p50_s": 10.307146187498802,
+      "mean_answer_match": 0.08928571428571429,
+      "mean_cost_usd": 0.011472364200000001
+    }
+  },
+  "models": {
+    "gpt-6-luna": {
+      "settings": {
+        "api": "responses",
+        "effort": "low",
+        "max_attempts": 3,
+        "max_input_tokens": 272000,
+        "max_output_tokens": 4000,
+        "model": "gpt-6-luna",
+        "request_timeout_s": 30,
+        "temperature": null
+      },
+      "settings_hash": "055ad89e97b568870482146379370a599f5f1a27d1c4ce99baf8b26acf4beac5"
+    },
+    "gpt-6.1-sol": {
+      "settings": {
+        "api": "responses",
+        "effort": "low",
+        "max_attempts": 3,
+        "max_input_tokens": 272000,
+        "max_output_tokens": 4000,
+        "model": "gpt-6.1-sol",
+        "request_timeout_s": 30,
+        "temperature": null
+      },
+      "settings_hash": "ded4b6caf98d6bf3a564cf6233ec98110ee4246bf2d566dbccfa940cda70784e"
+    }
+  },
+  "operations": {
+    "gpt-6-luna": {
+      "agentic": {
+        "cost_usd": {
+          "mean": 0.0011649544866666668,
+          "total": 0.0873715865
+        },
+        "guardrail_terminations": {
+          "guardrail_max_steps": 3,
+          "guardrail_timeout": 0,
+          "guardrail_tokens": 0
+        },
+        "init_s": 3.4861286249997647,
+        "latency_s": {
+          "p50": 8.650654250002844
+        },
+        "n": 75,
+        "statuses": {
+          "billing_uncertain": 0,
+          "completed": 75,
+          "infra_error": 0
+        },
+        "steps": {
+          "max": 5.0,
+          "mean": 1.8266666666666667
+        },
+        "tokens": {
+          "cache_write": 460561,
+          "cached_input": 303179,
+          "input": 70553,
+          "output": 23543,
+          "reasoning": 416
+        }
+      },
+      "simple": {
+        "cost_usd": {
+          "mean": 0.00010769865333333334,
+          "total": 0.008077399
+        },
+        "guardrail_terminations": {
+          "guardrail_max_steps": 0,
+          "guardrail_timeout": 0,
+          "guardrail_tokens": 0
+        },
+        "init_s": 3.4861286249997647,
+        "latency_s": {
+          "p50": 2.9257458749998477
+        },
+        "n": 75,
+        "statuses": {
+          "billing_uncertain": 0,
+          "completed": 75,
+          "infra_error": 0
+        },
+        "steps": {
+          "max": 1.0,
+          "mean": 1.0
+        },
+        "tokens": {
+          "cache_write": 0,
+          "cached_input": 230659,
+          "input": 225,
+          "output": 10028,
+          "reasoning": 86
+        }
+      }
+    },
+    "gpt-6.1-sol": {
+      "agentic": {
+        "cost_usd": {
+          "mean": 0.02037900186666667,
+          "total": 1.5284251400000002
+        },
+        "guardrail_terminations": {
+          "guardrail_max_steps": 0,
+          "guardrail_timeout": 0,
+          "guardrail_tokens": 0
+        },
+        "init_s": 3.4861286249997647,
+        "latency_s": {
+          "p50": 16.047734333000335
+        },
+        "n": 75,
+        "statuses": {
+          "billing_uncertain": 0,
+          "completed": 75,
+          "infra_error": 0
+        },
+        "steps": {
+          "max": 5.0,
+          "mean": 2.1866666666666665
+        },
+        "tokens": {
+          "cache_write": 345301,
+          "cached_input": 616909,
+          "input": 69322,
+          "output": 32589,
+          "reasoning": 442
+        }
+      },
+      "simple": {
+        "cost_usd": {
+          "mean": 0.0025657265333333336,
+          "total": 0.19242949000000004
+        },
+        "guardrail_terminations": {
+          "guardrail_max_steps": 0,
+          "guardrail_timeout": 0,
+          "guardrail_tokens": 0
+        },
+        "init_s": 3.4861286249997647,
+        "latency_s": {
+          "p50": 5.014969916999689
+        },
+        "n": 75,
+        "statuses": {
+          "billing_uncertain": 0,
+          "completed": 75,
+          "infra_error": 0
+        },
+        "steps": {
+          "max": 1.0,
+          "mean": 1.0
+        },
+        "tokens": {
+          "cache_write": 0,
+          "cached_input": 230659,
+          "input": 225,
+          "output": 15142,
+          "reasoning": 117
+        }
+      }
+    }
+  },
+  "paired_bootstrap": {
+    "ci_high": 0.026785714285714284,
+    "ci_low": -0.026785714285714284,
+    "left_model": "gpt-6-luna",
+    "mean_diff": 0.0,
+    "n": 56,
+    "n_boot": 10000,
+    "right_model": "gpt-6.1-sol",
+    "seed": 20260930
+  },
+  "prompt_hashes": {
+    "agentic": "c6c721fa82535d97bab6f84d79f961d1ef6e64d61314b64e41b897fde2088b63",
+    "common": "f451255a45e5d64ecd4786a77f24a5aef360f58edfc9e95727b85bb9b0c910aa"
+  },
+  "question_count": 75,
+  "schema_version": 1,
+  "selection": "gpt-6-luna",
+  "selection_reason": "cheaper_on_tie",
+  "status": "completed",
+  "systems": [
+    "simple",
+    "agentic"
+  ],
+  "unanswerable_refusal": {
+    "gpt-6-luna": {
+      "agentic": {
+        "denominator": 8,
+        "numerator": 4,
+        "rate": 0.5
+      },
+      "simple": {
+        "denominator": 8,
+        "numerator": 7,
+        "rate": 0.875
+      }
+    },
+    "gpt-6.1-sol": {
+      "agentic": {
+        "denominator": 8,
+        "numerator": 8,
+        "rate": 1.0
+      },
+      "simple": {
+        "denominator": 8,
+        "numerator": 8,
+        "rate": 1.0
+      }
+    }
+  }
+}
