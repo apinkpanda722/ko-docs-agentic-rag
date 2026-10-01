@@ -103,5 +103,7 @@ make m5-freeze       # 선택 설정을 data/manifest/m5_config.json에 고정(�
 make m5-test         # test 1회 실행(재실행은 RERUN_REASON="사유" make m5-test) — 사용자 실행
 make m5-report       # M5 결과 문서 docs/results/2026-09-30-m5-retrieval.md(고정) 갱신 (네트워크 없음)
 make m6-temporal  # M6 is_current 우선 처리 전후 순위·비 temporal 불변 확인 → data/manifest/m6_temporal.json — OpenSearch 필요(make up), 사용자 실행 (LLM 없음)
+make m6-tokens    # MCP 데모 사용자 토큰 생성(평문은 data/interim/mcp/tokens.json 비커밋, 해시만 data/manifest/mcp_token_hashes.json) — 사용자 실행
+make m6-serve     # MCP 서버 기동(streamable HTTP, 127.0.0.1) — make up 필요, 사용자 실행
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)

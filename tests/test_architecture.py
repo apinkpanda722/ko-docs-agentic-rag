@@ -48,6 +48,12 @@ AGENT_GRAPH_FORBIDDEN_IMPORTS = (
     "openai",
     "langchain_openai",
 )
+MCP_SERVER_FORBIDDEN_IMPORTS = (
+    "kodocs.retrieval",
+    "kodocs.agent",
+    "openai",
+    "langchain*",
+)
 
 
 def _current_package(path: Path, package_root: Path) -> tuple[str, ...]:
@@ -348,6 +354,45 @@ def test_retrieval_consumer_guard_detects_violation(
     )
 
     assert any(item.endswith(": kodocs.retrieval") for item in violations)
+
+
+def test_mcp_server_respects_its_full_layer_boundary() -> None:
+    """Keep retrieval, agent, OpenAI, and LangChain out of the MCP adapter."""
+    violations = [
+        f"{path.relative_to(PROJECT_ROOT)}: {violation}"
+        for path in sorted(MCP_SERVER_PACKAGE.rglob("*.py"))
+        for violation in find_forbidden_imports(
+            path,
+            SOURCE_ROOT,
+            MCP_SERVER_FORBIDDEN_IMPORTS,
+        )
+    ]
+
+    assert not violations, "Forbidden MCP server imports found:\n" + "\n".join(
+        violations
+    )
+
+
+@pytest.mark.parametrize(
+    "module",
+    ["kodocs.retrieval", "kodocs.agent", "openai", "langchain_openai"],
+)
+def test_mcp_server_guard_detects_each_forbidden_import(
+    tmp_path: Path,
+    module: str,
+) -> None:
+    package_root = tmp_path / "src"
+    path = package_root / "kodocs" / "mcp_server" / "probe.py"
+    path.parent.mkdir(parents=True)
+    path.write_text(f"import {module}\n", encoding="utf-8")
+
+    violations = find_forbidden_imports(
+        path,
+        package_root,
+        MCP_SERVER_FORBIDDEN_IMPORTS,
+    )
+
+    assert any(item.endswith(f": {module}") for item in violations)
 
 
 @pytest.mark.parametrize(

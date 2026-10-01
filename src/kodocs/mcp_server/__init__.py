@@ -1,1 +1,1 @@
-"""Expose retrieval tools through the MCP server."""
+"""Expose shared retrieval tools through authenticated streamable HTTP."""
