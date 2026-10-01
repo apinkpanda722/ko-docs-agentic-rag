@@ -457,7 +457,7 @@ def test_m7_grading_shuffle_pilot():
 def test_m7_grading_rubric_schema():
     sections = grading.parse_rubric_sections(grading.RUBRIC_PATH)
     assert list(sections) == ["공통 지침", "정답성 앵커", "충실성 앵커", "출력 형식"]
-    assert "초안" in grading.RUBRIC_PATH.read_text()
+    assert grading.RUBRIC_PATH.read_text().startswith("<!-- 확정 2026-10-01:")
     assert (
         grading.rubric_sha256()
         == hashlib.sha256(grading.RUBRIC_PATH.read_bytes()).hexdigest()
