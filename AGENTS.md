@@ -109,6 +109,7 @@ make m6-dev       # 답변 모델 dev 비교(LIMIT=N 파일럿 가능) — 실�
 make m6-freeze    # 선택 모델·프롬프트·가드레일을 data/manifest/m6_config.json에 고정(덮어쓰기 거부) — 사용자 실행
 make m6-test      # 골드 test 30문항×두 시스템 1회 실행(재실행은 RERUN_REASON="사유" make m6-test) — 실제 OpenAI 호출·과금, 사용자 실행
 make m6-tokens    # MCP 데모 사용자 토큰 생성(평문은 data/interim/mcp/tokens.json 비커밋, 해시만 data/manifest/mcp_token_hashes.json) — 사용자 실행
+make m6-report    # M6 결과 문서 docs/results/2026-10-01-m6-agent-mcp.md(고정) 갱신 — 네트워크 없음
 make m6-serve     # MCP 서버 기동(streamable HTTP, 127.0.0.1) — make up 필요, 사용자 실행
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)

@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MAKEFILE = (ROOT / "Makefile").read_text(encoding="utf-8")
 AGENTS = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
-RUNNER_TARGETS = ("m6-inputs", "m6-dry", "m6-dev", "m6-freeze", "m6-test")
+RUNNER_TARGETS = ("m6-inputs", "m6-dry", "m6-dev", "m6-freeze", "m6-test", "m6-report")
 
 
 def _recipe(target: str) -> str:
@@ -65,6 +65,7 @@ def test_m6_runner_targets_are_phony_documented_and_operator_only() -> None:
         "uv run python -m kodocs.eval.m6_dev --dry-run"
     )
     assert _recipe("m6-freeze").strip() == ("uv run python -m kodocs.eval.m6_config")
+    assert _recipe("m6-report").strip() == ("uv run python -m kodocs.eval.m6_report")
 
 
 def test_m6_dev_and_test_forward_optional_operator_values() -> None:
