@@ -159,16 +159,8 @@
     {
       "step": 11,
       "name": "m6-report",
-      "status": "error",
-      "started_at": "2026-10-01T11:10:53+0900",
-      "error_message": "[3회 시도 후 실패] 결과 JSON을 받지 못함 (exit 1): {\"type\":\"thread.started\",\"thread_id\":\"01a0f53f-c092-7671-9c11-e016ea76a171\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"`--dangerously-bypass-hook-trust` is enabled. Enabled hooks may run without review for this invocation.\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"`--dangerously-bypass-hook-trust` is enabled. Enabled hooks may run without review for this invocation.\"}}\n{\"type\":\"turn.started\"}\n{\"type\":\"error\",\"message\":\"You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 3:25 PM.\"}\n{\"type\":\"turn.failed\",\"error\":{\"message\":\"You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 3:25 PM.\"}}\n",
-      "failed_at": "2026-10-01T11:16:34+0900",
-      "usage": {
-        "input_tokens": 0,
-        "cached_input_tokens": 0,
-        "output_tokens": 0,
-        "attempts": 3
-      }
+      "status": "pending",
+      "started_at": "2026-10-01T11:10:53+0900"
     }
   ],
   "created_at": "2026-09-30T19:14:49+0900"
