@@ -1,0 +1,72 @@
+{
+  "ids": [
+    "dev|s-syn-012|agentic|gpt-6-luna",
+    "dev|s-syn-036|simple|gpt-6-luna",
+    "dev|s-syn-044|agentic|gpt-6-luna",
+    "dev|s-syn-073|simple|gpt-6-luna",
+    "dev|s-syn-111|agentic|gpt-6-luna",
+    "dev|s-syn-049|agentic|gpt-6-luna",
+    "dev|g-syn-006|agentic|gpt-6-luna",
+    "dev|g-syn-010|agentic|gpt-6-luna",
+    "dev|g-syn-028|simple|gpt-6-luna",
+    "dev|g-real-016|agentic|gpt-6-luna"
+  ],
+  "seed": 20261001,
+  "rubric_sha256": "b1842fdc8d75a2017c93653fd8a79e74a89ff2d2125ab324ed0899230b13ce53",
+  "model_settings_hash": "49934421b2d4d225189ce8229b78ebb74e9dcaa69324650b0c657a2c4e5b234f",
+  "calls": 1,
+  "class_counts": {
+    "gemini_acc": 10
+  },
+  "format_errors": 0,
+  "format_error_rate": 0.0,
+  "score_distribution": {
+    "correctness": {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0
+    },
+    "faithfulness": {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0
+    }
+  },
+  "concentration": {
+    "correctness": {
+      "max_share": 0,
+      "concentrated": false
+    },
+    "faithfulness": {
+      "max_share": 0,
+      "concentrated": false
+    }
+  },
+  "agreement": {
+    "correctness": null,
+    "faithfulness": null
+  },
+  "cost_usd": 0.0,
+  "status": "stopped",
+  "remaining": 30,
+  "stops": [
+    {
+      "at": "2026-10-01T13:24:00.001422+00:00",
+      "error_type": "FatalLLMError",
+      "remaining": 30
+    }
+  ],
+  "updated_at": "2026-10-01T13:24:00.001546+00:00",
+  "raw": [
+    {
+      "key": "pilot_grades",
+      "path": "data/interim/m7/pilot/grades.jsonl",
+      "sha256": "a26cb3e5146473f995683fcd63acfc28ccc230c7db5fe53370aa04f2b1330b4a",
+      "rows": 1,
+      "event": "stopped",
+      "at": "2026-10-01T13:24:00.001774+00:00"
+    }
+  ]
+}

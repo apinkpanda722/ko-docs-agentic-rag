@@ -1,0 +1,160 @@
+{
+  "ts": "2026-10-01T13:21:45.979039+00:00",
+  "sdk": {
+    "version": "2.26.0",
+    "sources": [
+      "/Users/taserlee/PycharmProjects/ko-docs-agentic-rag/.venv/lib/python3.12/site-packages/google/genai/types.py",
+      "/Users/taserlee/PycharmProjects/ko-docs-agentic-rag/.venv/lib/python3.12/site-packages/google/genai/errors.py",
+      "/Users/taserlee/PycharmProjects/ko-docs-agentic-rag/.venv/lib/python3.12/site-packages/google/genai/_api_client.py"
+    ],
+    "schema": "GenerateContentConfig.response_schema + application/json",
+    "thinking": "ThinkingConfig.thinking_level; SDK enum minimum MINIMAL",
+    "model_minimum_support": "SDK has no gemini-3.8-flash support matrix; 모델 페이지 https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash (확인일 2026-10-01)는 thinking level low/medium/high만 나열(minimal 없음) → 확정 low",
+    "model_document_evidence": "https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash, https://ai.google.dev/gemini-api/docs/gemini-3 (temperature 기본값 1.0 유지 권장), 확인일 2026-10-01",
+    "sampling": "GenerateContentConfig.temperature (float), seed (int)",
+    "usage_total": "prompt + candidates + tool_use_prompt + thoughts",
+    "identity": "response_id (response identifier), model_version; HTTP request ID 확인 불가",
+    "errors": "APIError.code/details; 4xx ClientError; 5xx ServerError",
+    "quota_structure": "확인 불가: details is opaque response JSON, no typed quota contract"
+  },
+  "calls": [
+    {
+      "name": "baseline",
+      "settings": {
+        "model": "gemini-3.8-flash",
+        "tier": "paid",
+        "thinking_level": "low",
+        "temperature": null,
+        "seed": null,
+        "max_output_tokens": 4000,
+        "request_timeout_s": 60,
+        "max_attempts": 1,
+        "rpm_pacing": 10,
+        "rpm": null,
+        "tpm": null,
+        "rpd": null
+      },
+      "settings_hash": "9e998555bdba00f0d1c91f5d465dd9ae5ee7f7316bec151d0405f5bdc44a8b0a",
+      "accepted": true,
+      "error_type": null,
+      "status_code": null,
+      "parsed": true,
+      "usage_fields": [
+        "prompt_token_count",
+        "candidates_token_count",
+        "thoughts_token_count",
+        "total_token_count"
+      ],
+      "thinking_tokens_used": false,
+      "model_version": "gemini-3.8-flash",
+      "response_id": "XF6-as_REeCk0-kPwe6l8AU",
+      "scores": {
+        "accuracy": 3,
+        "faithfulness": 3,
+        "rationale": "The answer perfectly matches the reference and is completely supported by the provided evidence."
+      },
+      "usage": {
+        "input_tokens": 42,
+        "output_tokens": 42,
+        "candidates_token_count": 42,
+        "thoughts_token_count": 0,
+        "total_token_count": 84
+      }
+    },
+    {
+      "name": "minimal_check",
+      "settings": {
+        "model": "gemini-3.8-flash",
+        "tier": "paid",
+        "thinking_level": "minimal",
+        "temperature": null,
+        "seed": null,
+        "max_output_tokens": 4000,
+        "request_timeout_s": 60,
+        "max_attempts": 1,
+        "rpm_pacing": 10,
+        "rpm": null,
+        "tpm": null,
+        "rpd": null
+      },
+      "settings_hash": "066ce6dcd01e68075c12b8d2d086a5ba7327ddd3769b1ae25cd99636fa6ff216",
+      "accepted": false,
+      "error_type": "FatalLLMError",
+      "status_code": 400,
+      "parsed": false,
+      "usage_fields": [],
+      "thinking_tokens_used": null,
+      "model_version": null,
+      "response_id": null,
+      "scores": null,
+      "sdk_error_type": "ClientError"
+    },
+    {
+      "name": "repeat",
+      "settings": {
+        "model": "gemini-3.8-flash",
+        "tier": "paid",
+        "thinking_level": "low",
+        "temperature": null,
+        "seed": null,
+        "max_output_tokens": 4000,
+        "request_timeout_s": 60,
+        "max_attempts": 1,
+        "rpm_pacing": 10,
+        "rpm": null,
+        "tpm": null,
+        "rpd": null
+      },
+      "settings_hash": "9e998555bdba00f0d1c91f5d465dd9ae5ee7f7316bec151d0405f5bdc44a8b0a",
+      "accepted": true,
+      "error_type": null,
+      "status_code": null,
+      "parsed": true,
+      "usage_fields": [
+        "prompt_token_count",
+        "candidates_token_count",
+        "thoughts_token_count",
+        "total_token_count"
+      ],
+      "thinking_tokens_used": true,
+      "model_version": "gemini-3.8-flash",
+      "response_id": "aF6-arjeGeOWosUPtpig2A4",
+      "scores": {
+        "accuracy": 3,
+        "faithfulness": 3,
+        "rationale": "The answer accurately matches the reference and is completely supported by the provided evidence."
+      },
+      "usage": {
+        "input_tokens": 42,
+        "output_tokens": 133,
+        "candidates_token_count": 42,
+        "thoughts_token_count": 91,
+        "total_token_count": 175
+      }
+    }
+  ],
+  "stopped": false,
+  "confirmed_settings": {
+    "thinking_level": "low",
+    "temperature": null,
+    "seed": null,
+    "basis": [
+      "https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash",
+      "https://ai.google.dev/gemini-api/docs/gemini-3"
+    ],
+    "checked_on": "2026-10-01",
+    "note": "확정값은 minimal_check 결과와 무관하게 low(문서상 최저 수준)이다."
+  },
+  "minimal_check": {
+    "ran": true,
+    "supported": false,
+    "error_type": "FatalLLMError",
+    "status_code": 400,
+    "sdk_error_type": "ClientError"
+  },
+  "repeat_comparison": {
+    "compared": true,
+    "scores_equal": true,
+    "rationale_equal": false
+  }
+}
