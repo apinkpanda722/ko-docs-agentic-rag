@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from kodocs.agent.finalize import finalizer_hash
 from kodocs.agent.guardrails import GuardrailConfig
 from kodocs.agent.types import AnswerResult, Citation
 from kodocs.costs import BudgetExceededError
@@ -241,3 +242,63 @@ def test_runner_checks_m5_hash_and_flushes_safe_progress(
     assert "M6 progress" in output
     assert "질문-q1" not in output
     assert "token" not in output.casefold()
+
+
+def test_rows_record_dropped_citations_and_finalizer_hash(tmp_path: Path) -> None:
+    dropped = [{"kind": "doc", "doc_id": "d1", "section_key": "-", "call_id": None}]
+
+    def fake_answer(question, _ctx, *, system, runtime, question_id):
+        del question, system, runtime
+        result = _result(question_id)
+        return AnswerResult(
+            result.answer,
+            result.citations,
+            result.refused,
+            result.refuse_reason,
+            {**result.trace, "dropped_citations": dropped},
+        )
+
+    rows = run_answers(
+        [_question("q1")],
+        systems=("simple",),
+        model_configs=_models(),
+        runtime_factory=lambda *_args: _runtime(),
+        output_path=tmp_path / "runs.jsonl",
+        m5_config_hash=M5_CONFIG_HASH,
+        answer_fn=fake_answer,
+        concurrency=1,
+    )
+
+    assert rows[0]["dropped_citations"] == dropped
+    assert rows[0]["finalizer_hash"] == finalizer_hash()
+
+
+def test_cache_is_not_reused_across_finalizer_versions(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    output = tmp_path / "runs.jsonl"
+    calls: list[str] = []
+
+    def fake_answer(question, _ctx, *, system, runtime, question_id):
+        del question, system, runtime
+        calls.append(question_id)
+        return _result(question_id)
+
+    def run() -> None:
+        run_answers(
+            [_question("q1")],
+            systems=("simple",),
+            model_configs=_models(),
+            runtime_factory=lambda *_args: _runtime(),
+            output_path=output,
+            m5_config_hash=M5_CONFIG_HASH,
+            answer_fn=fake_answer,
+            concurrency=1,
+        )
+
+    run()
+    run()
+    assert calls == ["q1"]
+    monkeypatch.setattr("kodocs.eval.m6_runner.finalizer_hash", lambda: "f" * 64)
+    run()
+    assert calls == ["q1", "q1"]

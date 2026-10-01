@@ -95,6 +95,7 @@ def test_trace_has_required_fields_and_is_exactly_one_json_line(tmp_path: Path) 
         "steps",
         "timings",
         "citations",
+        "dropped_citations",
         "refused",
         "refuse_reason",
         "guardrail",
@@ -173,3 +174,29 @@ def test_context_manager_records_exception_type_then_reraises(tmp_path: Path) ->
     assert trace["status"] == "error"
     assert trace["error"] == "RuntimeError"
     assert "sensitive failure detail" not in json.dumps(trace)
+
+
+def test_dropped_citations_are_persisted_in_the_trace_line(tmp_path: Path) -> None:
+    recorder = _recorder(tmp_path)
+    dropped = [{"kind": "doc", "doc_id": "d9", "section_key": "-", "call_id": None}]
+    result = AnswerResult(
+        answer=NO_ANSWER_TEXT,
+        citations=(),
+        refused=True,
+        refuse_reason="no_valid_citation",
+        trace={"dropped_citations": dropped},
+    )
+    with _session(recorder, "q-dropped") as session:
+        session.finish(result)
+
+    line = json.loads(next(tmp_path.glob("*.jsonl")).read_text().splitlines()[-1])
+    assert line["dropped_citations"] == dropped
+    assert session.record["dropped_citations"] == dropped
+
+
+def test_missing_dropped_citations_default_to_an_empty_list(tmp_path: Path) -> None:
+    recorder = _recorder(tmp_path)
+    with _session(recorder, "q-clean") as session:
+        session.finish(_success())
+
+    assert session.record["dropped_citations"] == []

@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from kodocs.agent.finalize import finalizer_hash
 from kodocs.agent.guardrails import GuardrailConfig
 from kodocs.agent.prompts import prompt_hashes
 from kodocs.agent.types import canonical_hash
@@ -31,6 +32,7 @@ def _root(tmp_path: Path) -> Path:
             "settings_hash": config.settings_hash(),
         },
         "prompt_hashes": prompt_hashes(),
+        "finalizer_hash": finalizer_hash(),
         "guardrails": {
             "settings": GuardrailConfig().record(),
             "settings_hash": GuardrailConfig().settings_hash(),

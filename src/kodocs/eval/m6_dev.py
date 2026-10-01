@@ -14,6 +14,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import asdict
 from pathlib import Path
 
+from kodocs.agent.finalize import finalizer_hash
 from kodocs.agent.guardrails import GuardrailConfig
 from kodocs.agent.prompts import (
     AGENTIC_TOOL_PROMPT,
@@ -480,6 +481,7 @@ def analyze_dev(
         "selection_reason": selected["reason"],
         "models": settings,
         "prompt_hashes": prompt_hashes(),
+        "finalizer_hash": finalizer_hash(),
         "guardrails": {
             "settings": guardrails.record(),
             "settings_hash": guardrails.settings_hash(),
@@ -520,6 +522,7 @@ def run_dev(
     else:
         selected_questions = questions
         output_path = root / DEV_RUNS_PATH
+    _require_current_finalizer_runs(output_path)
     rows = run_answers(
         selected_questions,
         systems=SYSTEMS,
@@ -558,6 +561,23 @@ def run_dev(
     )
     _write_json_atomic(root / DEV_MANIFEST_PATH, full)
     return full
+
+
+def _require_current_finalizer_runs(path: Path) -> None:
+    """Refuse to mix rows made by an older answer finalizer into a new run file."""
+    if not path.exists():
+        return
+    current = finalizer_hash()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        if isinstance(row, dict) and row.get("finalizer_hash") != current:
+            raise RuntimeError(
+                f"{path} has rows from a different answer finalizer; move it to "
+                "run-NN-invalid and record it in data/manifest/m6_dev_history.jsonl "
+                "before rerunning the dev comparison (rule 14)"
+            )
 
 
 def _guardrail_summary(rows: Sequence[Mapping[str, object]]) -> dict[str, object]:
@@ -685,6 +705,8 @@ def _require_frozen_run_hashes(
             raise RuntimeError("M6 dev run prompt hash mismatch")
         if row.get("guardrail_hash") != guard_hash:
             raise RuntimeError("M6 dev run guardrail hash mismatch")
+        if row.get("finalizer_hash") != finalizer_hash():
+            raise RuntimeError("M6 dev run answer-finalizer hash mismatch")
         if row.get("m5_config_hash") != M5_CONFIG_HASH:
             raise RuntimeError("M6 dev run M5 config hash mismatch")
         if row.get("concurrency") != concurrency:

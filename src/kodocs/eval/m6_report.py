@@ -490,6 +490,40 @@ def _test(results: Sequence[Mapping], runs: Sequence[Mapping]) -> str:
     return "\n\n".join(parts)
 
 
+def _dev_history(entries: Sequence[Mapping]) -> str:
+    rows = [
+        [
+            _num(entry.get("attempt")),
+            entry.get("kind") if entry.get("kind") in {"dev", "pilot"} else None,
+            entry.get("status") if entry.get("status") in {"invalid"} else None,
+            _timestamp(entry.get("invalidated_on")),
+            _num(entry.get("runs_rows")),
+            _reason(entry.get("reason")),
+            _hash(entry.get("runs_sha256")),
+            _hash(entry.get("result_sha256")),
+        ]
+        for entry in entries
+    ]
+    return _table(
+        (
+            "시도",
+            "종류",
+            "상태",
+            "무효 처리일",
+            "행 수",
+            "사유",
+            "runs SHA-256",
+            "결과 SHA-256",
+        ),
+        rows,
+    ) + (
+        "\n\n무효 처리한 실행의 결과(예: 1차 모델 선택)는 선택에 쓰지 않음. "
+        "규칙 14에 따라 dev 비교를 처음부터 재실행한다."
+        if rows
+        else ""
+    )
+
+
 def _costs(dry: Sequence[Mapping], ledger: Sequence[Mapping]) -> str:
     rows = [
         [
@@ -572,6 +606,7 @@ def render_tables(root: Path, *, run_date: date | None = None) -> str:
         _load_optional_json(path)
         for path in sorted((root / MANIFEST / "m6_test_results").glob("run-*.json"))
     ]
+    dev_history = _load_optional_jsonl(root / MANIFEST / "m6_dev_history.jsonl")
     dry = _load_optional_jsonl(root / MANIFEST / "m6_dry_runs.jsonl")
     ledger = _load_optional_jsonl(root / MANIFEST / "costs.jsonl")
     snapshots = _load_optional_json(root / "tests/contract/snapshots/index.json")
@@ -597,6 +632,7 @@ def render_tables(root: Path, *, run_date: date | None = None) -> str:
             _section("입력 요약", _inputs(inputs)),
             _section("is_current 효과", _temporal(temporal)),
             _section("dev 모델 비교", _dev(dev)),
+            _section("dev 실행 이력", _dev_history(dev_history)),
             _section("고정 설정", _config(config)),
             _section("test 실행", _test(results, runs)),
             _section("예상 비용 대 실제 비용", _costs(dry, ledger)),

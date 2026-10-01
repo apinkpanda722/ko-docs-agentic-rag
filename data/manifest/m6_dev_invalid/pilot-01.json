@@ -1,0 +1,170 @@
+{
+  "concurrency": 4,
+  "guardrails_summary": {
+    "agentic": {
+      "guardrail_max_steps": 0,
+      "guardrail_timeout": 0,
+      "guardrail_tokens": 0,
+      "max_cumulative_tokens": 9043
+    },
+    "simple": {
+      "guardrail_max_steps": 0,
+      "guardrail_timeout": 0,
+      "guardrail_tokens": 0,
+      "max_cumulative_tokens": 3408
+    }
+  },
+  "m5_config_hash": "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d",
+  "models": [
+    "gpt-6-luna",
+    "gpt-6.1-sol"
+  ],
+  "operations": {
+    "gpt-6-luna": {
+      "agentic": {
+        "cost_usd": {
+          "mean": 0.001095578,
+          "total": 0.00547789
+        },
+        "guardrail_terminations": {
+          "guardrail_max_steps": 0,
+          "guardrail_timeout": 0,
+          "guardrail_tokens": 0
+        },
+        "init_s": 3.4142750829996658,
+        "latency_s": {
+          "p50": 8.77759474999948
+        },
+        "n": 5,
+        "statuses": {
+          "billing_uncertain": 0,
+          "completed": 5,
+          "infra_error": 0
+        },
+        "steps": {
+          "max": 1.0,
+          "mean": 1.0
+        },
+        "tokens": {
+          "cache_write": 29664,
+          "cached_input": 0,
+          "input": 4319,
+          "output": 1680,
+          "reasoning": 0
+        }
+      },
+      "simple": {
+        "cost_usd": {
+          "mean": 0.00044792,
+          "total": 0.0022396
+        },
+        "guardrail_terminations": {
+          "guardrail_max_steps": 0,
+          "guardrail_timeout": 0,
+          "guardrail_tokens": 0
+        },
+        "init_s": 3.4142750829996658,
+        "latency_s": {
+          "p50": 3.6880720839999412
+        },
+        "n": 5,
+        "statuses": {
+          "billing_uncertain": 0,
+          "completed": 5,
+          "infra_error": 0
+        },
+        "steps": {
+          "max": 1.0,
+          "mean": 1.0
+        },
+        "tokens": {
+          "cache_write": 13196,
+          "cached_input": 0,
+          "input": 15,
+          "output": 770,
+          "reasoning": 0
+        }
+      }
+    },
+    "gpt-6.1-sol": {
+      "agentic": {
+        "cost_usd": {
+          "mean": 0.022613074000000004,
+          "total": 0.11306537000000003
+        },
+        "guardrail_terminations": {
+          "guardrail_max_steps": 0,
+          "guardrail_timeout": 0,
+          "guardrail_tokens": 0
+        },
+        "init_s": 3.4142750829996658,
+        "latency_s": {
+          "p50": 13.027510750000147
+        },
+        "n": 5,
+        "statuses": {
+          "billing_uncertain": 0,
+          "completed": 5,
+          "infra_error": 0
+        },
+        "steps": {
+          "max": 2.0,
+          "mean": 1.2
+        },
+        "tokens": {
+          "cache_write": 29944,
+          "cached_input": 2627,
+          "input": 4322,
+          "output": 1902,
+          "reasoning": 0
+        }
+      },
+      "simple": {
+        "cost_usd": {
+          "mean": 0.009515000000000001,
+          "total": 0.047575000000000006
+        },
+        "guardrail_terminations": {
+          "guardrail_max_steps": 0,
+          "guardrail_timeout": 0,
+          "guardrail_tokens": 0
+        },
+        "init_s": 3.4142750829996658,
+        "latency_s": {
+          "p50": 5.405015292000826
+        },
+        "n": 5,
+        "statuses": {
+          "billing_uncertain": 0,
+          "completed": 5,
+          "infra_error": 0
+        },
+        "steps": {
+          "max": 1.0,
+          "mean": 1.0
+        },
+        "tokens": {
+          "cache_write": 13196,
+          "cached_input": 0,
+          "input": 15,
+          "output": 1023,
+          "reasoning": 0
+        }
+      }
+    }
+  },
+  "question_count": 5,
+  "question_ids": [
+    "g-real-002",
+    "g-real-004",
+    "g-real-008",
+    "g-real-011",
+    "g-real-015"
+  ],
+  "schema_version": 1,
+  "status": "completed",
+  "systems": [
+    "simple",
+    "agentic"
+  ]
+}

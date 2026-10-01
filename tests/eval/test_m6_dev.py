@@ -130,3 +130,109 @@ def test_dry_run_records_300_executions_expected_and_upper_costs() -> None:
         estimate_dev_dry_run(
             questions, configs, concurrency=4, remaining_budget_usd=0.0
         )
+
+
+def _dev_rows(questions, configs, *, finalizer=None):
+    from kodocs.agent.finalize import finalizer_hash
+    from kodocs.agent.prompts import prompt_hashes
+    from kodocs.tools.deps import M5_CONFIG_HASH
+
+    prompts = prompt_hashes()
+    rows = []
+    for question in questions:
+        relevant = sorted({q.doc_id for q in question.qrels if q.rel >= 1})
+        for config in configs:
+            for system in ("simple", "agentic"):
+                cited = []
+                # Only luna cites, and only in the agentic system with a wrong doc
+                # for half of its questions, so the per-model means must differ.
+                if config.model == "gpt-6-luna" and relevant:
+                    cited = [relevant[0]]
+                    if system == "agentic" and question.id.endswith(("1", "3", "5")):
+                        cited.append("not-relevant")
+                rows.append(
+                    {
+                        "question_id": question.id,
+                        "system": system,
+                        "model": config.model,
+                        "model_settings_hash": config.settings_hash(),
+                        "common_prompt_hash": prompts["common"],
+                        "agentic_prompt_hash": prompts["agentic"],
+                        "guardrail_hash": GuardrailConfig().settings_hash(),
+                        "m5_config_hash": M5_CONFIG_HASH,
+                        "finalizer_hash": finalizer or finalizer_hash(),
+                        "concurrency": 4,
+                        "status": "completed",
+                        "answer": "답",
+                        "citations": [{"kind": "doc", "doc_id": d} for d in cited],
+                        "dropped_citations": [],
+                        "refused": False,
+                        "refuse_reason": None,
+                        "tool_refs": [],
+                        "cost_usd": 0.01,
+                        "latency_s": 1.0,
+                        "tokens": {},
+                        "steps": 1,
+                        "cumulative_tokens": 10,
+                        "attempts": [],
+                    }
+                )
+    return rows
+
+
+def test_citation_precision_is_computed_per_model_and_system() -> None:
+    from kodocs.eval.m6_dev import analyze_dev
+
+    questions = load_m6_questions(Path("."), split="dev")
+    configs = [load_answer_config("luna"), load_answer_config("sol")]
+
+    result = analyze_dev(
+        questions,
+        _dev_rows(questions, configs),
+        docs_meta={},
+        canaries={},
+        model_configs=configs,
+        concurrency=4,
+        init_s=0.0,
+        input_manifest_sha256="0" * 64,
+        code_commit=None,
+    )
+
+    luna = result["citation_precision"]["gpt-6-luna"]
+    sol = result["citation_precision"]["gpt-6.1-sol"]
+    assert sol["simple"]["denominator"] == 0 and sol["simple"]["mean"] is None
+    assert luna["simple"]["denominator"] > 0
+    assert luna["simple"]["mean"] == 1.0
+    assert 0.0 < luna["agentic"]["mean"] < 1.0
+    assert luna["agentic"]["mean"] != luna["simple"]["mean"]
+
+
+def test_dev_rows_from_an_older_finalizer_are_rejected() -> None:
+    from kodocs.eval.m6_dev import analyze_dev
+
+    questions = load_m6_questions(Path("."), split="dev")
+    configs = [load_answer_config("luna"), load_answer_config("sol")]
+
+    with pytest.raises(RuntimeError, match="finalizer"):
+        analyze_dev(
+            questions,
+            _dev_rows(questions, configs, finalizer="0" * 64),
+            docs_meta={},
+            canaries={},
+            model_configs=configs,
+            concurrency=4,
+            init_s=0.0,
+            input_manifest_sha256="0" * 64,
+            code_commit=None,
+        )
+
+
+def test_run_dev_refuses_to_mix_rows_from_an_older_finalizer(tmp_path: Path) -> None:
+    from kodocs.eval.m6_dev import _require_current_finalizer_runs
+
+    runs = tmp_path / "runs.jsonl"
+    _require_current_finalizer_runs(runs)  # absent file is fine
+    runs.write_text('{"finalizer_hash": "old"}\n', encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="run-NN-invalid"):
+        _require_current_finalizer_runs(runs)

@@ -376,3 +376,35 @@ def test_m6_report_cost_ledger_only_counts_m6_openai_entries(tmp_path):
     assert "| m6-test-01 | openai.gpt-6-luna.output | 0.4 |" in text
     assert "999" not in text
     assert "998" not in text
+
+
+def test_m6_report_lists_invalidated_dev_runs(tmp_path):
+    entry = {
+        "attempt": 1,
+        "kind": "dev",
+        "status": "invalid",
+        "invalidated_on": "2026-10-01",
+        "reason": "인용 검증 버그",
+        "runs_rows": 300,
+        "runs_sha256": "a" * 64,
+        "result_sha256": "b" * 64,
+        "selection_used": False,
+    }
+    path = tmp_path / "data/manifest/m6_dev_history.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(entry, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    text = render(tmp_path)
+
+    section = text.split("## dev 실행 이력\n", 1)[1].split("\n## ", 1)[0]
+    assert "| 1 | dev | invalid | 2026-10-01 | 300 |" in section
+    assert "인용 검증 버그" in section
+    assert "a" * 64 in section and "b" * 64 in section
+    assert "선택에 쓰지 않음" in section
+
+
+def test_m6_report_dev_history_is_unrun_without_the_file(tmp_path):
+    text = render(tmp_path)
+
+    section = text.split("## dev 실행 이력\n", 1)[1].split("\n## ", 1)[0]
+    assert "미실행" in section

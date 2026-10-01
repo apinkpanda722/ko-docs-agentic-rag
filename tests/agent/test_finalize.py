@@ -6,7 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 from kodocs.agent.evidence import EvidenceLog
-from kodocs.agent.finalize import NO_ANSWER_TEXT, finalize_answer
+from kodocs.agent.finalize import NO_ANSWER_TEXT, finalize_answer, finalizer_hash
 from kodocs.agent.types import Citation, ModelAnswer
 from kodocs.tools import ToolResult
 
@@ -134,3 +134,87 @@ def test_sql_citation_requires_a_successful_run_sql_call_id() -> None:
     assert result.refused is False
     assert result.citations == (Citation(kind="sql", call_id="c1"),)
     assert len(result.trace["dropped_citations"]) == 2
+
+
+def _doc_log(section_key: str | None) -> EvidenceLog:
+    log = EvidenceLog()
+    _record(
+        log,
+        "search_docs",
+        {"results": []},
+        ({"kind": "doc", "doc_id": "syn-meeting-031", "section_key": section_key},),
+    )
+    return log
+
+
+def _answer(section_key: str | None, doc_id: str = "syn-meeting-031") -> ModelAnswer:
+    return ModelAnswer(
+        answer="근거 있는 답",
+        citations=[Citation(kind="doc", doc_id=doc_id, section_key=section_key)],
+        refused=False,
+    )
+
+
+@pytest.mark.parametrize("model_key", ["-", "결정 사항", "", "  ", None])
+def test_document_level_ref_accepts_any_model_section_key(
+    model_key: str | None,
+) -> None:
+    result = finalize_answer(_answer(model_key), _doc_log(None))
+
+    assert result.refused is False
+    assert result.citations == (
+        Citation(kind="doc", doc_id="syn-meeting-031", section_key=None),
+    )
+    assert result.trace["dropped_citations"] == []
+
+
+@pytest.mark.parametrize("blank", ["", "-", "  ", " - "])
+def test_blank_section_key_is_normalized_to_document_level(blank: str) -> None:
+    result = finalize_answer(_answer(blank), _doc_log("제3조"))
+
+    assert result.refused is False
+    assert result.citations == (
+        Citation(kind="doc", doc_id="syn-meeting-031", section_key=None),
+    )
+
+
+def test_sectioned_ref_keeps_the_existing_section_rules() -> None:
+    log = _doc_log("제3조")
+
+    kept = finalize_answer(_answer("제3조"), log)
+    assert kept.citations == (
+        Citation(kind="doc", doc_id="syn-meeting-031", section_key="제3조"),
+    )
+    wrong = finalize_answer(_answer("제9조"), log)
+    assert wrong.refused is True
+    assert wrong.refuse_reason == "no_valid_citation"
+    assert wrong.trace["dropped_citations"] == [
+        {
+            "kind": "doc",
+            "doc_id": "syn-meeting-031",
+            "section_key": "제9조",
+            "call_id": None,
+        }
+    ]
+
+
+@pytest.mark.parametrize("section_key", ["-", "결정 사항", None, "제3조"])
+@pytest.mark.parametrize("ref_key", [None, "제3조"])
+def test_doc_id_missing_from_tool_results_is_always_dropped(
+    section_key: str | None, ref_key: str | None
+) -> None:
+    result = finalize_answer(
+        _answer(section_key, doc_id="other-doc"), _doc_log(ref_key)
+    )
+
+    assert result.refused is True
+    assert result.refuse_reason == "no_valid_citation"
+    assert len(result.trace["dropped_citations"]) == 1
+
+
+def test_finalizer_hash_is_a_stable_sha256() -> None:
+    value = finalizer_hash()
+
+    assert value == finalizer_hash()
+    assert len(value) == 64
+    assert set(value) <= set("0123456789abcdef")
