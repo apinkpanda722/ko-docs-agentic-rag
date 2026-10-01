@@ -250,6 +250,81 @@ def estimate_dev_dry_run(
     }
 
 
+def estimate_test_dry_run(
+    gold_questions: Sequence[Question],
+    silver_questions: Sequence[Question],
+    model_configs: Sequence[AnswerModelConfig],
+) -> dict[str, object]:
+    """Estimate the frozen test run per set: gold test 30 + silver test 83.
+
+    Which model is frozen is unknown before ``m6-dev``, so every candidate model is
+    estimated; the run is one model x two systems per set.
+    """
+    if len(gold_questions) != 30:
+        raise ValueError(
+            f"M6 test gold set must be 30 questions, got {len(gold_questions)}"
+        )
+    if len(silver_questions) != 83:
+        raise ValueError(
+            f"M6 test silver set must be 83 questions, got {len(silver_questions)}"
+        )
+    sets = {"gold_test": gold_questions, "silver_test": silver_questions}
+    guardrails = GuardrailConfig()
+    set_results: dict[str, object] = {}
+    totals: dict[str, dict[str, float]] = {
+        config.model: {"estimated_cost_usd": 0.0, "guarded_estimated_cost_usd": 0.0}
+        for config in model_configs
+    }
+    for set_name, questions in sets.items():
+        by_model: dict[str, object] = {}
+        for config in model_configs:
+            cost = guarded = 0.0
+            calls = 0
+            for system in SYSTEMS:
+                input_tokens = sum(
+                    _expected_input_tokens(question, system) for question in questions
+                )
+                if (
+                    _maximum_single_request_chars(questions, system)
+                    > config.max_input_tokens
+                ):
+                    raise ValueError(
+                        f"{config.model} {system} estimated request exceeds 272K tokens"
+                    )
+                output_calls = 1 if system == "simple" else AGENTIC_TOOL_TURNS + 1
+                calls += len(questions) * output_calls
+                output_tokens = (
+                    len(questions) * output_calls * EXPECTED_OUTPUT_TOKENS_PER_CALL
+                )
+                cost += _token_cost(config.model, input_tokens, output_tokens)
+                guarded += _guarded_token_cost(
+                    config.model, input_tokens, output_tokens
+                )
+            by_model[config.model] = {
+                "model_call_count": calls,
+                "estimated_cost_usd": cost,
+                "guarded_estimated_cost_usd": guarded,
+                "upper_cost_usd": _token_cost(
+                    config.model,
+                    len(questions) * len(SYSTEMS) * guardrails.max_tokens_per_question,
+                    len(questions) * len(SYSTEMS) * guardrails.max_output_tokens,
+                ),
+            }
+            totals[config.model]["estimated_cost_usd"] += cost
+            totals[config.model]["guarded_estimated_cost_usd"] += guarded
+        set_results[set_name] = {
+            "question_count": len(questions),
+            "system_count": len(SYSTEMS),
+            "execution_count": len(questions) * len(SYSTEMS),
+            "by_model": by_model,
+        }
+    return {
+        "execution_count": (len(gold_questions) + len(silver_questions)) * len(SYSTEMS),
+        "sets": set_results,
+        "totals_by_model": totals,
+    }
+
+
 def write_dry_run(
     *,
     root: Path = Path("."),
@@ -271,6 +346,11 @@ def write_dry_run(
         configs,
         concurrency=concurrency,
         remaining_budget_usd=remaining_budget_usd,
+    )
+    payload["test"] = estimate_test_dry_run(
+        load_m6_questions(root, split="test", set_name="gold"),
+        load_m6_questions(root, split="test", set_name="silver"),
+        configs,
     )
     payload.update(
         {

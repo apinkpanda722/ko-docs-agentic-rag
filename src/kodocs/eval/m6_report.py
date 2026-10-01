@@ -129,6 +129,8 @@ def _inputs(data: Mapping) -> str:
         ("dev", "dev_set"),
         ("H5 풀", "h5_pool"),
         ("H5 풀(sql 제외 보조)", "h5_pool_ex_sql"),
+        ("실버 test", "silver_test"),
+        ("H5 실버 방향 확인", "h5_silver_direction"),
         ("정답 값 분모", "answer_match_denominator"),
         ("게이트", "gate_permission_dev"),
         ("답 없음", "unanswerable_dev"),
@@ -465,6 +467,37 @@ def _reason(value: object) -> str | None:
     )
 
 
+def _metrics_table(result: Mapping) -> str:
+    rows = []
+    for system in SYSTEMS:
+        metric = _map(_at(result, "deterministic_metrics", system))
+        if metric:
+            citation = _map(metric.get("citation_precision"))
+            rows.append(
+                [
+                    system,
+                    _rate(metric.get("answer_match")),
+                    _num(citation.get("mean")),
+                    _num(citation.get("denominator")),
+                    _num(citation.get("excluded")),
+                    _rate(metric.get("unanswerable_refusal")),
+                    _rate(metric.get("permission_refusal")),
+                ]
+            )
+    return _table(
+        (
+            "시스템",
+            "정답 값 포함률(값 있는 문항 한정)",
+            "인용 정밀도",
+            "인용 분모",
+            "인용 제외",
+            "답 없음 거절률",
+            "권한 거절률",
+        ),
+        rows,
+    )
+
+
 def _test(results: Sequence[Mapping], runs: Sequence[Mapping]) -> str:
     history = [
         [
@@ -485,37 +518,33 @@ def _test(results: Sequence[Mapping], runs: Sequence[Mapping]) -> str:
     ]
     for result in sorted(results, key=lambda row: _num(row.get("seq")) or 0):
         parts.append(f"### test 시도 {_cell(_num(result.get('seq')))}")
-        rows = []
-        for system in SYSTEMS:
-            metric = _map(_at(result, "deterministic_metrics", system))
-            if metric:
-                citation = _map(metric.get("citation_precision"))
-                rows.append(
+        set_counts = _map(result.get("set_counts"))
+        if set_counts:
+            parts.append(
+                _table(
+                    ("세트", "문항 수", "실행 수"),
                     [
-                        system,
-                        _rate(metric.get("answer_match")),
-                        _num(citation.get("mean")),
-                        _num(citation.get("denominator")),
-                        _num(citation.get("excluded")),
-                        _rate(metric.get("unanswerable_refusal")),
-                        _rate(metric.get("permission_refusal")),
-                    ]
+                        [
+                            name,
+                            _num(_at(set_counts, name, "question_count")),
+                            _num(_at(set_counts, name, "execution_count")),
+                        ]
+                        for name in ("gold_test", "silver_test")
+                        if name in set_counts
+                    ],
                 )
+            )
         parts += [
-            _table(
-                (
-                    "시스템",
-                    "정답 값 포함률(값 있는 문항 한정)",
-                    "인용 정밀도",
-                    "인용 분모",
-                    "인용 제외",
-                    "답 없음 거절률",
-                    "권한 거절률",
-                ),
-                rows,
-            ),
+            _metrics_table(result),
             _operations(result.get("operations"), result.get("concurrency")),
         ]
+        silver = _map(result.get("silver_test"))
+        if silver:
+            parts += [
+                "#### 실버 test 방향 확인(판정 아님)",
+                _metrics_table(silver),
+                _operations(silver.get("operations"), silver.get("concurrency")),
+            ]
     parts += [
         "### H5\n\n"
         + _table(
@@ -523,6 +552,7 @@ def _test(results: Sequence[Mapping], runs: Sequence[Mapping]) -> str:
             [
                 ["13문항 판정", 13, "채점 대기(M7)"],
                 ["9문항 보조(sql 제외, 판정 아님)", 9, MISSING],
+                ["실버 test 방향 확인(29문항, M7 채점 후 채움)", 29, MISSING],
             ],
         )
     ]

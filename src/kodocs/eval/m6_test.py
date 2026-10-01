@@ -1,4 +1,4 @@
-"""Run the frozen M6 gold test once with an append-only rerun lock."""
+"""Run the frozen M6 gold test (plus the silver direction set) once under one lock."""
 
 from __future__ import annotations
 
@@ -17,7 +17,12 @@ from kodocs.costs import DEFAULT_LEDGER_PATH
 from kodocs.eval.golden import Question
 from kodocs.eval.m6_config import CONFIG_PATH, verify_config
 from kodocs.eval.m6_dev import SYSTEMS
-from kodocs.eval.m6_inputs import load_m6_questions, require_input_manifest
+from kodocs.eval.m6_inputs import (
+    EXPECTED_H5_SILVER_DIRECTION_COUNT,
+    EXPECTED_SILVER_TEST_COUNT,
+    load_m6_questions,
+    require_input_manifest,
+)
 from kodocs.eval.m6_metrics import (
     aggregate_by_system_model,
     answer_values_match,
@@ -138,7 +143,12 @@ def execute_experiment(
     answer_fn: AnswerCallable,
     concurrency: int = DEFAULT_CONCURRENCY,
 ) -> ExperimentOutput:
-    """Run 30 gold test questions through both frozen systems exactly once."""
+    """Run gold test 30 and silver test 83 through both frozen systems once each.
+
+    The gold set keeps its original files and result shape (H5 verdict input). The
+    silver test set is auxiliary direction evidence (not a verdict): it is stored
+    separately but runs in the same unit, so one lock and one result cover both.
+    """
     questions = load_m6_questions(preflight.root, split="test", set_name="gold")
     if len(questions) != 30:
         raise PreflightError(f"M6 gold test count must be 30, got {len(questions)}")
@@ -171,6 +181,60 @@ def execute_experiment(
         init_s=init_s,
         concurrency=concurrency,
     )
+
+    silver_questions = load_m6_questions(
+        preflight.root, split="test", set_name="silver"
+    )
+    if len(silver_questions) != EXPECTED_SILVER_TEST_COUNT:
+        raise PreflightError(
+            f"M6 silver test count must be {EXPECTED_SILVER_TEST_COUNT}, "
+            f"got {len(silver_questions)}"
+        )
+    direction_ids = [
+        question.id
+        for question in silver_questions
+        if question.type in {"identifier", "multi_doc"}
+    ]
+    if len(direction_ids) != EXPECTED_H5_SILVER_DIRECTION_COUNT:
+        raise PreflightError(
+            "M6 silver direction pool count must be "
+            f"{EXPECTED_H5_SILVER_DIRECTION_COUNT}, got {len(direction_ids)}"
+        )
+    silver_runs_path = preflight.raw_dir / "silver" / "runs.jsonl"
+    silver_rows = run_answers(
+        silver_questions,
+        systems=SYSTEMS,
+        model_configs={model_config.model: model_config},
+        runtime_factory=runtime_factory,
+        output_path=silver_runs_path,
+        m5_config_hash=M5_CONFIG_HASH,
+        concurrency=concurrency,
+        run_seq=preflight.seq,
+        answer_fn=answer_fn,
+        h5_pool_ids=frozenset(),
+    )
+    silver_expected = len(silver_questions) * len(SYSTEMS)
+    if len(silver_rows) != silver_expected:
+        raise RuntimeError(
+            f"M6 silver test matrix incomplete: {len(silver_rows)}/{silver_expected}"
+        )
+    summary["silver_test"] = analyze_test(
+        silver_questions,
+        silver_rows,
+        init_s=init_s,
+        concurrency=concurrency,
+    )
+    summary["set_counts"] = {
+        "gold_test": {
+            "question_count": len(questions),
+            "execution_count": len(rows),
+        },
+        "silver_test": {
+            "question_count": len(silver_questions),
+            "execution_count": len(silver_rows),
+        },
+    }
+    summary["silver_runs_sha256"] = sha256_file(silver_runs_path)
     return ExperimentOutput(result=summary, runs_sha256=sha256_file(runs_path))
 
 
@@ -421,7 +485,9 @@ def main(
     out_root: Path | None = None,
     experiment_fn: ExperimentFunction | None = None,
 ) -> int:
-    parser = argparse.ArgumentParser(description="M6 frozen gold test를 실행합니다.")
+    parser = argparse.ArgumentParser(
+        description="M6 frozen gold test와 실버 test 방향 확인 세트를 실행합니다."
+    )
     parser.add_argument("--rerun-reason")
     parser.add_argument("--concurrency", type=int, default=DEFAULT_CONCURRENCY)
     parser.add_argument("--root", type=Path)

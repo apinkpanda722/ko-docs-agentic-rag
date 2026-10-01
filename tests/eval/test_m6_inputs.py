@@ -32,6 +32,21 @@ def test_real_m6_input_sets_match_preregistered_counts() -> None:
 
     assert manifest["dev_set"]["count"] == 75
     assert manifest["h5_pool"]["count"] == 13
+    silver_test = manifest["silver_test"]
+    assert silver_test["count"] == 83
+    assert silver_test["by_type"] == {
+        "identifier": 15,
+        "multi_doc": 14,
+        "permission": 9,
+        "semantic": 24,
+        "temporal": 12,
+        "unanswerable": 9,
+    }
+    direction = manifest["h5_silver_direction"]
+    assert direction["count"] == 29
+    assert direction["by_type"] == {"identifier": 15, "multi_doc": 14}
+    assert set(direction["ids"]) < set(silver_test["ids"])
+    assert not set(direction["ids"]) & set(manifest["h5_pool"]["ids"])
     ex_sql = manifest["h5_pool_ex_sql"]
     sql_ids = {
         question.id
@@ -113,6 +128,47 @@ def test_h5_pool_ex_sql_count_drift_fails_closed() -> None:
         build_input_manifest(
             changed,
             silver,
+            gold_sha256="g" * 64,
+            silver_sha256="s" * 64,
+            m5_config_hash=(
+                "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d"
+            ),
+        )
+
+
+def test_silver_direction_pool_count_drift_fails_closed() -> None:
+    gold, silver = _questions()
+    identifier = next(
+        question
+        for question in silver
+        if question.split == "test" and question.type == "identifier"
+    )
+    changed = [
+        replace(question, type="semantic") if question.id == identifier.id else question
+        for question in silver
+    ]
+
+    with pytest.raises(M6InputError, match="h5_silver_direction"):
+        build_input_manifest(
+            gold,
+            changed,
+            gold_sha256="g" * 64,
+            silver_sha256="s" * 64,
+            m5_config_hash=(
+                "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d"
+            ),
+        )
+
+
+def test_silver_test_pool_count_drift_fails_closed() -> None:
+    gold, silver = _questions()
+    removed = next(question for question in silver if question.split == "test")
+    changed = [question for question in silver if question.id != removed.id]
+
+    with pytest.raises(M6InputError, match="silver_test"):
+        build_input_manifest(
+            gold,
+            changed,
             gold_sha256="g" * 64,
             silver_sha256="s" * 64,
             m5_config_hash=(
