@@ -117,7 +117,16 @@
     {
       "step": 8,
       "name": "leak-judge",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-02T01:41:34+0900",
+      "summary": "m7_leak.py의 judge_a/b/c2/c3·detect_c1·judge_response·c1 검수 export/register/load·c1_baseline·h6_verdict 구현, leak_lexicon.json·32명 기준 m7_leak_facts.json 생성. make verify 1756개·전용 테스트 37개 통과. API 호출·golden 수정·커밋 없음.",
+      "completed_at": "2026-10-02T01:56:50+0900",
+      "usage": {
+        "input_tokens": 1897100,
+        "cached_input_tokens": 1797888,
+        "output_tokens": 21478,
+        "attempts": 1
+      }
     },
     {
       "step": 9,
