@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import random
+import subprocess
 from dataclasses import replace
 from pathlib import Path
 
@@ -29,6 +30,12 @@ def rows_file(path, rows):
     path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
 
 
+def git(root, *args):
+    return subprocess.run(
+        ["git", *args], cwd=root, check=True, capture_output=True
+    ).stdout
+
+
 @pytest.fixture
 def inputs(tmp_path):
     # Only committed questions and the existing M6 fake-row helper are reused.
@@ -39,7 +46,28 @@ def inputs(tmp_path):
             tmp_path / f"data/golden/queries/{name}.jsonl",
             [q for q in questions + tests if q.set == name],
         )
-    dump(tmp_path / "data/manifest/m6_eval_inputs.json", {})
+    dump(
+        tmp_path / "data/manifest/m6_eval_inputs.json",
+        {
+            "generated_at": "dev-time",
+            "dev_set": {"ids": [q.id for q in questions]},
+            "optional": None,
+        },
+    )
+    git(tmp_path, "init", "-q")
+    git(tmp_path, "add", "data/manifest/m6_eval_inputs.json")
+    git(
+        tmp_path,
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.test",
+        "-c",
+        "commit.gpgsign=false",
+        "commit",
+        "-qm",
+        "fixture dev inputs",
+    )
     dump(tmp_path / "data/synthetic/canaries.json", {})
     configs = [load_answer_config(n) for n in ("luna", "sol")]
     rows = _dev_rows(questions, configs)
@@ -129,6 +157,77 @@ def test_m7_grading_verify_and_load(inputs):
         sum(sum(counts.values()) for counts in grading.class_counts(runs).values())
         == 526
     )
+
+
+def test_m7_grading_manifest_history_allows_only_added_sections(inputs, monkeypatch):
+    path = inputs / "data/manifest/m6_eval_inputs.json"
+    current = json.loads(path.read_text())
+    current.update(generated_at="test-time", silver_test={"ids": ["s-1"]})
+    dump(path, current)
+    git(inputs, "add", str(path.relative_to(inputs)))
+    git(
+        inputs,
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.test",
+        "-c",
+        "commit.gpgsign=false",
+        "commit",
+        "-qm",
+        "fixture test inputs",
+    )
+    original = grading.m6_dev.analyze_dev
+    recorded_hash = json.loads((inputs / "data/manifest/m6_dev.json").read_text())[
+        "m6_eval_inputs_sha256"
+    ]
+
+    def analyze(*args, **kwargs):
+        assert kwargs["input_manifest_sha256"] == recorded_hash
+        assert recorded_hash != sha256_file(path)
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(grading.m6_dev, "analyze_dev", analyze)
+    check = grading.verify_m6_inputs(inputs)
+    assert "inputs.added_after_dev.silver_test" in check.excluded_fields
+    assert "inputs.generated_at" in check.excluded_fields
+
+
+def test_m7_grading_manifest_history_rejects_changed_dev_section(inputs):
+    path = inputs / "data/manifest/m6_eval_inputs.json"
+    current = json.loads(path.read_text())
+    current["dev_set"]["ids"][0] = "changed"
+    dump(path, current)
+    with pytest.raises(grading.InputHashError, match=r"inputs.dev_set.ids\[0\]"):
+        grading.verify_m6_inputs(inputs)
+
+
+def test_m7_grading_manifest_history_rejects_missing_null_key(inputs):
+    path = inputs / "data/manifest/m6_eval_inputs.json"
+    current = json.loads(path.read_text())
+    del current["optional"]
+    dump(path, current)
+    with pytest.raises(grading.InputHashError, match="inputs.optional"):
+        grading.verify_m6_inputs(inputs)
+
+
+def test_m7_grading_manifest_history_requires_recorded_version(inputs):
+    path = inputs / "data/manifest/m6_dev.json"
+    dev = json.loads(path.read_text())
+    dev["m6_eval_inputs_sha256"] = "0" * 64
+    dump(path, dev)
+    refreeze(inputs)
+    with pytest.raises(grading.InputHashError, match="m6_eval_inputs_sha256.*git"):
+        grading.verify_m6_inputs(inputs)
+
+
+def test_m7_grading_manifest_history_requires_git(inputs, monkeypatch):
+    def unavailable(*args, **kwargs):
+        raise FileNotFoundError("git unavailable")
+
+    monkeypatch.setattr(subprocess, "run", unavailable)
+    with pytest.raises(grading.InputHashError, match="git.*unavailable"):
+        grading.verify_m6_inputs(inputs)
 
 
 @pytest.mark.parametrize(
@@ -445,7 +544,7 @@ def test_m7_grading_cli(inputs, capsys):
     assert out.startswith("OK\n")
     assert "excluded_fields" in out and "dev_runs_sha256" in out
     assert "answer" not in json.loads(out.split("\n", 1)[1])
-    dump(inputs / "data/manifest/m6_eval_inputs.json", {"change": 1})
+    dump(inputs / "data/manifest/m6_eval_inputs.json", {"dev_set": {"ids": []}})
     assert grading.main(["--verify-inputs", "--root", str(inputs)]) == 2
     assert "m6_eval_inputs_sha256" in capsys.readouterr().err
 

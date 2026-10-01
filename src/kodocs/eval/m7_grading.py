@@ -13,6 +13,7 @@ import argparse
 import hashlib
 import json
 import random
+import subprocess
 import sys
 from collections import Counter, defaultdict
 from collections.abc import Callable, Mapping, Sequence
@@ -215,6 +216,47 @@ def _compare(recorded, computed, fields, label):
         raise InputHashError("M6 aggregate mismatch: " + ", ".join(differences))
 
 
+def _verify_input_manifest_history(root: Path, recorded_hash: str) -> list[str]:
+    """Authenticate dev-era bytes, allowing only later top-level additions."""
+    path = m6_dev.M6_INPUTS_PATH.as_posix()
+
+    def git(*args: str) -> bytes:
+        try:
+            return subprocess.run(
+                ["git", *args], cwd=root, check=True, capture_output=True
+            ).stdout
+        except (OSError, subprocess.CalledProcessError) as exc:
+            # Do not include git stderr or manifest contents in diagnostics.
+            raise InputHashError(
+                f"m6_eval_inputs_sha256: git history unavailable ({type(exc).__name__})"
+            ) from exc
+
+    for commit in git("log", "--format=%H", "--", path).decode("ascii").splitlines():
+        historical_bytes = git("show", f"{commit}:{path}")
+        if hashlib.sha256(historical_bytes).hexdigest() != recorded_hash:
+            continue
+        historical = json.loads(historical_bytes)
+        if not isinstance(historical, dict):
+            raise InputHashError("m6_eval_inputs_sha256: git version must be an object")
+        current = _json(root / m6_dev.M6_INPUTS_PATH)
+        keys = set(historical) - {"generated_at"}
+        differences = _differences(
+            {k: historical[k] for k in keys},
+            {k: current[k] for k in keys if k in current},
+            "inputs",
+        )
+        if differences:
+            raise InputHashError(
+                "m6_eval_inputs_sha256: historical input mismatch: "
+                + ", ".join(differences)
+            )
+        return ["inputs.generated_at"] + [
+            f"inputs.added_after_dev.{key}"
+            for key in sorted(set(current) - set(historical))
+        ]
+    raise InputHashError("m6_eval_inputs_sha256: matching git version missing")
+
+
 def verify_m6_inputs(root: Path = Path(".")) -> InputVerification:
     """Recompute M6 aggregates through their original offline analyzers."""
     root = Path(root)
@@ -232,9 +274,8 @@ def _verify_m6_inputs(root: Path) -> InputVerification:
     config = _json(root / "data/manifest/m6_config.json")
     if sha256_file(root / m6_dev.DEV_MANIFEST_PATH) != config["m6_dev_sha256"]:
         raise InputHashError("m6_dev_sha256 mismatch (m6_dev.json)")
-    inputs_hash = sha256_file(root / m6_dev.M6_INPUTS_PATH)
-    if inputs_hash != dev["m6_eval_inputs_sha256"]:
-        raise InputHashError("m6_eval_inputs_sha256 mismatch")
+    inputs_hash = dev["m6_eval_inputs_sha256"]
+    input_excluded = _verify_input_manifest_history(root, inputs_hash)
     configs = [load_answer_config(name) for name in m6_dev.MODEL_CONFIG_NAMES]
     computed = m6_dev.analyze_dev(
         load_m6_questions(root, split="dev"),
@@ -248,7 +289,7 @@ def _verify_m6_inputs(root: Path) -> InputVerification:
         code_commit=dev["code_commit"],
     )
     _compare(dev, computed, DEV_COMPARE_FIELDS, "dev")
-    excluded = [
+    excluded = input_excluded + [
         f"dev.{key}"
         for key in sorted(set(dev) | set(computed))
         if key not in DEV_COMPARE_FIELDS
