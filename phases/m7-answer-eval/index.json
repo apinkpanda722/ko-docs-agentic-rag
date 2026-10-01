@@ -1,0 +1,76 @@
+{
+  "project": "ko-docs-agentic-rag",
+  "phase": "m7-answer-eval",
+  "steps": [
+    {
+      "step": 0,
+      "name": "m6-report-fix",
+      "status": "pending"
+    },
+    {
+      "step": 1,
+      "name": "design-docs",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "name": "gemini-client",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "name": "grading-inputs",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "name": "human-cards",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "name": "grade-runner",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "name": "analysis-stats",
+      "status": "pending"
+    },
+    {
+      "step": 7,
+      "name": "security-set",
+      "status": "pending"
+    },
+    {
+      "step": 8,
+      "name": "leak-judge",
+      "status": "pending"
+    },
+    {
+      "step": 9,
+      "name": "security-runner",
+      "status": "pending"
+    },
+    {
+      "step": 10,
+      "name": "latency-run",
+      "status": "pending"
+    },
+    {
+      "step": 11,
+      "name": "failure-analysis",
+      "status": "pending"
+    },
+    {
+      "step": 12,
+      "name": "threat-model",
+      "status": "pending"
+    },
+    {
+      "step": 13,
+      "name": "m7-report",
+      "status": "pending"
+    }
+  ]
+}

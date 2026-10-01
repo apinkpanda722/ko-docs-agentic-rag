@@ -37,6 +37,10 @@
       "status": "completed",
       "failed_at": "2026-10-01T11:16:34+0900",
       "completed_at": "2026-10-01T15:42:00+0900"
+    },
+    {
+      "dir": "m7-answer-eval",
+      "status": "pending"
     }
   ]
 }
