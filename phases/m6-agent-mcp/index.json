@@ -131,7 +131,16 @@
     {
       "step": 9,
       "name": "mcp-server",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-01T10:25:40+0900",
+      "summary": "`mcp_server/server.py`의 인증 streamable HTTP MCP 앱, `tokens.py`의 해시 기반 토큰 생성·검증, `__main__.py` 실행기와 권한·parity·통합 가드를 구현했으며 `make verify` 1,394개 및 선택 AC 115개 테스트가 통과했습니다.",
+      "completed_at": "2026-10-01T10:42:04+0900",
+      "usage": {
+        "input_tokens": 7771384,
+        "cached_input_tokens": 7379328,
+        "output_tokens": 39674,
+        "attempts": 1
+      }
     },
     {
       "step": 10,
