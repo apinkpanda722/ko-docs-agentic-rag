@@ -800,3 +800,10 @@ def test_m7_evidence_check_reports_empty_reasons_in_manifest_form():
     assert report["empty_evidence_by_reason"] == {"no_tool_refs": 1}
     assert report["items_by_evidence_source"] == {"cited_section": 1}
     assert report["reconstruction_failures"] == []
+
+
+def test_m7_transmitted_schema_hash_is_separate_and_stable():
+    first = grading.transmitted_schema_sha256()
+    assert first == grading.transmitted_schema_sha256()
+    assert first != grading.schema_sha256()
+    assert len(first) == 64

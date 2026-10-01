@@ -5,6 +5,15 @@ errors.py (APIError.code/details, ClientError/ServerError), _api_client.py
 (HttpRetryOptions.attempts=1 disables retries). Quota details are opaque JSON
 in this SDK: no quotaId/quotaMetric typed contract or model-specific support
 matrix is present. Unrecognized 429 bodies therefore stop conservatively.
+
+Structured output: the Gemini Developer API rejects JSON-Schema
+``additionalProperties`` (google-genai 2.26 ``_transformers.py``
+``_raise_for_unsupported_mldev_properties``: "additionalProperties is only
+supported in ... Vertex mode, not in Gemini Developer API mode"). That guard
+tests truthiness, so pydantic's ``"additionalProperties": false`` (``extra="forbid"``)
+slips past the SDK and fails server-side with HTTP 400. The wire schema is
+therefore the pydantic schema with that key removed (``transmitted_response_schema``);
+the response is still validated locally against the strict pydantic model.
 """
 
 from __future__ import annotations
@@ -58,6 +67,7 @@ class GradeAttempt:
     latency_ms: float
     error_type: str | None = None
     status_code: int | None = None
+    error_message: str | None = None  # sanitized, at most ERROR_MESSAGE_LIMIT chars
 
 
 @dataclass(frozen=True)
@@ -89,6 +99,11 @@ class GradeError(RuntimeError):
         super().__init__(message)
         self.attempts = tuple(attempts)
         self.status_code = status_code
+
+    @property
+    def error_message(self) -> str | None:
+        """Sanitized provider message of the last failed attempt, if recorded."""
+        return self.attempts[-1].error_message if self.attempts else None
 
 
 class GradeParseError(GradeError):
@@ -239,6 +254,78 @@ def _sanitize(value: object, secret: str) -> object:
     return value
 
 
+ERROR_MESSAGE_LIMIT = 500
+# JSON-Schema keys the Developer API rejects although pydantic emits them.
+UNSUPPORTED_SCHEMA_KEYS = frozenset({"additionalProperties"})
+
+
+def _strip_schema_keys(value: object) -> object:
+    if isinstance(value, dict):
+        return {
+            key: _strip_schema_keys(item)
+            for key, item in value.items()
+            if key not in UNSUPPORTED_SCHEMA_KEYS
+        }
+    if isinstance(value, list):
+        return [_strip_schema_keys(item) for item in value]
+    return value
+
+
+def transmitted_response_schema(schema: type[BaseModel]) -> dict:
+    """Schema sent to Gemini: the pydantic schema without Developer-API-unsupported keys.
+
+    Local validation keeps using ``schema`` itself (strict, ``extra="forbid"``).
+    Flat schemas only: ``$ref``/``$defs`` are not expanded here.
+    """
+    result = _strip_schema_keys(schema.model_json_schema())
+    if "$ref" in json.dumps(result) or "$defs" in result:
+        raise ValueError("nested schema references are not supported for grading")
+    return result  # type: ignore[return-value]
+
+
+def transmitted_schema_sha256(*schemas: type[BaseModel]) -> str:
+    """Stable hash of the schemas as transmitted (names + stripped JSON schema)."""
+    import hashlib
+
+    payload = {s.__name__: transmitted_response_schema(s) for s in schemas}
+    return hashlib.sha256(
+        json.dumps(
+            payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def _scrub(value: object, bodies: tuple[str, ...]) -> object:
+    if isinstance(value, dict):
+        return {key: _scrub(item, bodies) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_scrub(item, bodies) for item in value]
+    if isinstance(value, str):
+        for body in bodies:
+            if len(body) >= 8:
+                value = value.replace(body, "[REQUEST_BODY]")
+        return value
+    return value
+
+
+def _error_text(exc: Exception, request: GradeRequest, secret: str) -> str:
+    """Provider message and details, minus credentials and request text, <= 500 chars."""
+    payload = {
+        "message": getattr(exc, "message", None) or str(exc),
+        "details": getattr(exc, "details", None),
+    }
+    bodies = (request.user_content, request.system_prompt)
+    text = json.dumps(
+        _scrub(_sanitize(payload, secret), bodies), ensure_ascii=False, default=str
+    )
+    for body in bodies:  # JSON-escaped copies inside a string-typed details blob
+        if len(body) >= 8:
+            text = text.replace(
+                json.dumps(body, ensure_ascii=False)[1:-1], "[REQUEST_BODY]"
+            )
+    return text[:ERROR_MESSAGE_LIMIT]
+
+
 class GeminiGrader:
     """Synchronous grading client with no network activity until grade()."""
 
@@ -329,7 +416,12 @@ class GeminiGrader:
         params = {
             "system_instruction": request.system_prompt,
             "response_mime_type": "application/json",
-            "response_schema": request.schema,
+            # Wire schema without additionalProperties; validation below stays strict.
+            "response_schema": transmitted_response_schema(request.schema),
+            # No tools are used; this also silences the SDK's AFC warning.
+            "automatic_function_calling": types.AutomaticFunctionCallingConfig(
+                disable=True
+            ),
             "max_output_tokens": self.config.max_output_tokens,
             # Per-request override also prevents retries in an injected SDK client.
             "http_options": types.HttpOptions(
@@ -402,6 +494,7 @@ class GeminiGrader:
                         (self._clock() - self._last_start) * 1000,
                         type(exc).__name__,
                         code,
+                        _error_text(exc, request, self._secret),
                     )
                 )
                 reserved = GradeUsage(

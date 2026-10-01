@@ -3,6 +3,7 @@
 import json
 
 from kodocs.config import Settings
+from kodocs.eval.m7_grading import AccGrade
 from kodocs.llm import gemini_probe
 from kodocs.llm.gemini_chat import FatalLLMError
 
@@ -60,9 +61,7 @@ def test_probe_three_calls_record_usage_and_only_integer_scores(monkeypatch, tmp
     def succeed(self, request):
         calls.append(self.config.record())
         return SimpleNamespace(
-            parsed=gemini_probe.ProbeScore(
-                accuracy=3, faithfulness=3, rationale="동일 사유"
-            ),
+            parsed=AccGrade(correctness=3, faithfulness=3, rationale="동일 사유"),
             request_id=f"resp-{len(calls)}",
             usage=GradeUsage(100, 50, 20, 30, 150),
             model_record={"model_version": "reported-version"},
@@ -130,8 +129,8 @@ def test_probe_minimal_rejection_is_recorded_without_retry_and_does_not_stop(
         if self.config.thinking_level == "minimal":
             raise FatalLLMError("safe", status_code=400)
         return SimpleNamespace(
-            parsed=gemini_probe.ProbeScore(
-                accuracy=3, faithfulness=3, rationale=f"사유{len(seen)}"
+            parsed=AccGrade(
+                correctness=3, faithfulness=3, rationale=f"사유{len(seen)}"
             ),
             usage=GradeUsage(100, 50, 20, 30, 150),
             model_record={"model_version": "v"},

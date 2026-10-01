@@ -8,7 +8,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from kodocs.costs import PRICES, ensure_price_valid
-from kodocs.eval.m7_grading import rubric_sha256, schema_sha256, verify_m6_inputs
+from kodocs.eval.m7_grading import (
+    rubric_sha256,
+    schema_sha256,
+    transmitted_schema_sha256,
+    verify_m6_inputs,
+)
 from kodocs.eval.m7_human import CSV_PATH, load_human_grades
 from kodocs.eval.m7_rules import rules_sha256
 from kodocs.llm.grade_settings import load_grade_config
@@ -46,6 +51,7 @@ def current_hashes(root, model):
         "model_settings_hash": model.settings_hash(),
         "rubric_sha256": rubric_sha256(),
         "schema_sha256": schema_sha256(),
+        "transmitted_schema_sha256": transmitted_schema_sha256(),
         "rules_sha256": rules_sha256(root / "docs/results/hypotheses.md"),
     }
 

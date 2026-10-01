@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 import httpx
 import pytest
 from google.genai import errors, types
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from kodocs.config import Settings
 from kodocs.costs import BudgetExceededError, PriceExpiredError, ensure_price_valid
@@ -22,6 +22,8 @@ from kodocs.llm.gemini_chat import (
     GradeRequest,
     UnclassifiedRateLimit,
     next_daily_reset,
+    transmitted_response_schema,
+    transmitted_schema_sha256,
 )
 from kodocs.llm.grade_settings import ConfigError, load_grade_config
 
@@ -145,7 +147,8 @@ def test_success_usage_ledger_and_null_omission(tmp_path):
     params = fake.calls[0]["config"]
     assert "temperature" not in params and "seed" not in params
     assert params["thinking_config"].thinking_level.value == "LOW"
-    assert params["response_schema"] is Score
+    assert params["response_schema"] == transmitted_response_schema(Score)
+    assert params["automatic_function_calling"].disable is True
     lines = [
         json.loads(line) for line in (tmp_path / "costs.jsonl").read_text().splitlines()
     ]
@@ -388,3 +391,104 @@ def test_credit_word_order_is_classified(tmp_path, message):
     with pytest.raises(CreditExhausted):
         managed.grade(REQUEST)
     assert len(fake.calls) == 1
+
+
+class Strict(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    score: int = Field(ge=0, le=3, strict=True)
+    rationale: str = Field(max_length=200)
+
+
+def test_transmitted_schema_drops_additional_properties_everywhere():
+    assert Strict.model_json_schema()["additionalProperties"] is False
+    sent = transmitted_response_schema(Strict)
+    assert "additionalProperties" not in json.dumps(sent)
+    nested = {"a": {"additionalProperties": False, "b": [{"additionalProperties": {}}]}}
+    from kodocs.llm.gemini_chat import _strip_schema_keys
+
+    assert _strip_schema_keys(nested) == {"a": {"b": [{}]}}
+    # The schema contract for the model is unchanged (strict local validation).
+    assert (
+        Strict.model_validate_json('{"score":3,"rationale":"x"}', strict=True).score
+        == 3
+    )
+    with pytest.raises(ValueError):
+        Strict.model_validate_json('{"score":3,"rationale":"x","extra":1}', strict=True)
+    assert transmitted_schema_sha256(Strict) == transmitted_schema_sha256(Strict)
+
+
+def test_grade_schemas_only_use_keys_the_sdk_schema_accepts():
+    from kodocs.eval.m7_grading import AccGrade, FaithGrade
+
+    allowed = {f.alias or name for name, f in types.Schema.model_fields.items()}
+
+    def keys(value):
+        if isinstance(value, dict):
+            for key, item in value.items():
+                yield key
+                if key == "properties":  # property names are data, not schema keys
+                    for sub in item.values():
+                        yield from keys(sub)
+                else:
+                    yield from keys(item)
+        elif isinstance(value, list):
+            for item in value:
+                yield from keys(item)
+
+    for schema in (AccGrade, FaithGrade):
+        sent = transmitted_response_schema(schema)
+        assert set(keys(sent)) <= allowed, set(keys(sent)) - allowed
+
+
+def test_wire_request_has_no_additional_properties_and_error_is_sanitized(tmp_path):
+    from google import genai
+
+    seen = {}
+    secret_body = "참조 답변 원문을 길게 적은 요청 본문 문장입니다"
+    request = GradeRequest("item", "시스템 지시문입니다 길게", secret_body, Strict)
+
+    def handler(http_request):
+        seen["body"] = http_request.content.decode()
+        message = f"Invalid payload {SECRET} {secret_body} " + "x" * 800
+        return httpx.Response(
+            400,
+            json={
+                "error": {"code": 400, "status": "INVALID_ARGUMENT", "message": message}
+            },
+        )
+
+    client = genai.Client(
+        api_key=SECRET,
+        http_options=types.HttpOptions(
+            httpx_client=httpx.Client(transport=httpx.MockTransport(handler))
+        ),
+    )
+    managed = GeminiGrader(
+        load_grade_config(),
+        Settings({"GEMINI_API_KEY": SECRET}, 45),
+        client=client,
+        ledger_path=tmp_path / "costs.jsonl",
+        rate_log_path=tmp_path / "429.jsonl",
+    )
+    with pytest.raises(FatalLLMError) as caught:
+        managed.grade(request)
+    assert "additionalProperties" not in seen["body"]
+    assert "AutomaticFunctionCalling" not in seen["body"]
+    message = caught.value.error_message
+    assert message and len(message) <= 500
+    assert "INVALID_ARGUMENT" in message or "Invalid payload" in message
+    assert SECRET not in message and secret_body not in message
+    assert caught.value.status_code == 400
+    ledger = (tmp_path / "costs.jsonl").read_text()
+    assert SECRET not in ledger and secret_body not in ledger
+    recorded = json.loads(ledger.splitlines()[0])
+    assert recorded["attempts"][0]["error_message"] == message
+
+
+def test_local_validation_stays_strict_after_schema_stripping(tmp_path):
+    managed, _, _ = grader(
+        tmp_path,
+        [response('{"score":3,"rationale":"ok","extra":1}')],
+    )
+    with pytest.raises(GradeParseError):
+        managed.grade(GradeRequest("item", "Return JSON scores", "dummy", Strict))

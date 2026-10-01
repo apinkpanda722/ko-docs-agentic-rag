@@ -6,8 +6,6 @@ from dataclasses import asdict, replace
 from datetime import UTC, datetime
 from pathlib import Path
 
-from pydantic import BaseModel, Field
-
 from kodocs.config import load_settings
 from kodocs.llm.gemini_chat import (
     BillingUncertainError,
@@ -22,18 +20,33 @@ from kodocs.llm.gemini_chat import (
 )
 from kodocs.llm.grade_settings import load_grade_config
 
-
-class ProbeScore(BaseModel):
-    accuracy: int = Field(ge=0, le=3, strict=True)
-    faithfulness: int = Field(ge=0, le=3, strict=True)
-    rationale: str = Field(max_length=200)
-
-
 CONFIRMED_BASIS = (
     "https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash",
     "https://ai.google.dev/gemini-api/docs/gemini-3",
 )
 CHECKED_ON = "2026-10-01"
+
+
+PROBE_USER_CONTENT = (
+    "## 질문\n서비스 A의 월간 가용성 목표는 얼마인가요?\n\n"
+    "## 참조 답변\n월간 가용성 목표는 99.9%입니다.\n\n"
+    "## 시스템 답변\n서비스 A의 월간 가용성 목표는 99.9%입니다.\n\n"
+    "## 인용 근거\n[syn-probe-000]\n서비스 A의 월간 가용성 목표(SLO)는 99.9%이다."
+)
+
+
+def _operational_request() -> GradeRequest:
+    """Same shape as the grading path: Korean rubric prompt + real AccGrade schema."""
+    # Lazy import: the rubric and schema belong to eval, which imports this layer.
+    from kodocs.eval.m7_grading import RUBRIC_PATH, AccGrade
+
+    rubric = RUBRIC_PATH.read_text(encoding="utf-8")
+    return GradeRequest(
+        "m7-probe",
+        rubric + "\n이번 요청 모드: acc",
+        PROBE_USER_CONTENT,
+        AccGrade,
+    )
 
 
 def _call(records, name):
@@ -60,7 +73,9 @@ def _repeat_summary(records):
     a, b = first["scores"], second["scores"]
     return {
         "compared": True,
-        "scores_equal": all(a[key] == b[key] for key in ("accuracy", "faithfulness")),
+        "scores_equal": all(
+            a[key] == b[key] for key in ("correctness", "faithfulness")
+        ),
         "rationale_equal": a["rationale"] == b["rationale"],
     }
 
@@ -76,12 +91,7 @@ def main(argv: list[str] | None = None) -> int:
         ("minimal_check", replace(config, thinking_level="minimal")),
         ("repeat", config),
     )
-    request = GradeRequest(
-        "m7-probe",
-        "Return JSON integer accuracy and faithfulness scores (0 to 3).",
-        "Reference: 2+2=4. Answer: 2+2=4. Evidence: 2+2=4.",
-        ProbeScore,
-    )
+    request = _operational_request()
     settings = load_settings(env={}) if args.dry_run else load_settings()
     grader = GeminiGrader(config, settings)
     estimate = grader.estimate(request)
@@ -137,6 +147,7 @@ def main(argv: list[str] | None = None) -> int:
                 exc.attempts[-1].error_type if exc.attempts else None
             )
             entry["status_code"] = exc.status_code
+            entry["error_message"] = exc.error_message
             entry["accepted"] = isinstance(exc, GradeParseError)
             if isinstance(exc, GradeParseError) and hasattr(exc, "usage"):
                 entry.update(

@@ -751,6 +751,13 @@ def schema_sha256() -> str:
     )
 
 
+def transmitted_schema_sha256() -> str:
+    """Hash of the grade schemas as sent to Gemini (local ``schema_sha256`` is separate)."""
+    from kodocs.llm.gemini_chat import transmitted_schema_sha256 as digest
+
+    return digest(AccGrade, FaithGrade)
+
+
 def parse_rubric_sections(path: Path = RUBRIC_PATH) -> dict[str, str]:
     required = ("공통 지침", "정답성 앵커", "충실성 앵커", "출력 형식")
     sections: dict[str, str] = {}

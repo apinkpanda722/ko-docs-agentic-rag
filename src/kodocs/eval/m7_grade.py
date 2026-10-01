@@ -39,6 +39,7 @@ from kodocs.eval.m7_grading import (
     rubric_sha256,
     select_pilot,
     shuffle_order,
+    transmitted_schema_sha256,
 )
 from kodocs.eval.m7_rawhash import fingerprint, record_fingerprint, verify_fingerprint
 from kodocs.llm.gemini_chat import (
@@ -311,6 +312,8 @@ def _execute(
     hashes = {
         "rubric_sha256": rubric_sha256(),
         "model_settings_hash": model.settings_hash(),
+        # Recorded for audit; not part of the cache key (old rows lack it).
+        "transmitted_schema_sha256": transmitted_schema_sha256(),
     }
     path = root / (PILOT_GRADES_PATH if pilot else GRADES_PATH)
     manifest = root / (PILOT_PATH if pilot else SUMMARY_PATH)
@@ -405,9 +408,23 @@ def _execute(
             reset = getattr(exc, "next_reset_kst", None)
             if reset:
                 entry["next_reset_kst"] = reset.isoformat()
+            if getattr(exc, "status_code", None) is not None:
+                entry["status_code"] = exc.status_code
+            if getattr(exc, "error_message", None):
+                entry["error_message"] = exc.error_message
             stops.append(entry)
             print(
-                f"M7 stopped: {error}; remaining={entry['remaining']}; next_reset_kst={entry.get('next_reset_kst')}",
+                f"M7 stopped: {error}; remaining={entry['remaining']}; next_reset_kst={entry.get('next_reset_kst')}"
+                + (
+                    f"; status_code={entry['status_code']}"
+                    if "status_code" in entry
+                    else ""
+                )
+                + (
+                    f"; message={entry['error_message']}"
+                    if "error_message" in entry
+                    else ""
+                ),
                 flush=True,
             )
 
@@ -458,6 +475,8 @@ def _execute(
                         row["status"] = "stopped"
                         row["error_type"] = type(exc).__name__
                         row["attempts"] = [asdict(a) for a in exc.attempts]
+                        row["status_code"] = exc.status_code
+                        row["error_message"] = exc.error_message
                         stopping = exc
                     else:
                         row.update(parsed.model_dump())

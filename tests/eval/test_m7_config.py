@@ -65,6 +65,8 @@ def test_m7_config_freeze_exclusive_and_hashes(frozen_inputs):
     assert record["dev_runs_rows"] == 300
     assert record["test_runs_rows"]["test_silver"] == 166
     assert record["model_settings_hash"] == env.model.settings_hash()
+    # Transmitted (wire) schema hash is frozen separately from the local schema hash.
+    assert record["transmitted_schema_sha256"] != record["schema_sha256"]
     assert config.verify_config(root=env.root) == record
     with pytest.raises(FileExistsError):
         config.freeze_config(root=env.root)
@@ -149,7 +151,14 @@ def test_m7_config_empty_model_rejected():
 
 
 @pytest.mark.parametrize(
-    "changed", ["rubric_sha256", "schema_sha256", "rules_sha256", "model_settings_hash"]
+    "changed",
+    [
+        "rubric_sha256",
+        "schema_sha256",
+        "transmitted_schema_sha256",
+        "rules_sha256",
+        "model_settings_hash",
+    ],
 )
 def test_m7_config_refuses_current_hash_changes(frozen_inputs, monkeypatch, changed):
     root = frozen_inputs.root

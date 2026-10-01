@@ -13,6 +13,7 @@ from kodocs.llm.gemini_chat import (
     BillingUncertainError,
     DailyQuotaExhausted,
     FatalLLMError,
+    GradeAttempt,
     GradeCostEstimate,
     GradeParseError,
     GradeResult,
@@ -436,3 +437,38 @@ def test_m7_grade_monthly_budget_prevents_send(env):
     summary = run(env, fake)
     assert not fake.calls
     assert summary["stops"][-1]["error_type"] == "BudgetExceededError"
+
+
+def test_m7_grade_stopped_400_records_message_and_is_retried_on_resume(env, capsys):
+    message = '{"message": "Unknown name additionalProperties at response_schema"}'
+    error = FatalLLMError(
+        "Gemini request failed; not retried",
+        attempts=[GradeAttempt(1, "stopped", 1.0, "ClientError", 400, message)],
+        status_code=400,
+    )
+    pilot = {
+        "root": env.root,
+        "answers": env.answers,
+        "settings": env.settings,
+        "evidence_loader": lambda *a: None,
+    }
+    first = Fake({1: error})
+    summary = grade.run_pilot(grader=first, **pilot)
+    assert len(first.calls) == 1
+    row = json.loads((env.root / grade.PILOT_GRADES_PATH).read_text().splitlines()[-1])
+    assert row["status"] == "stopped"
+    assert (row["status_code"], row["error_message"]) == (400, message)
+    assert row["attempts"][0]["error_message"] == message
+    out = capsys.readouterr().out
+    assert "status_code=400" in out and "additionalProperties" in out
+    assert summary["stops"][0]["error_message"] == message
+    ids = json.loads((env.root / grade.PILOT_PATH).read_text())["ids"]
+
+    # A stopped row is not terminal: resuming calls everything again, same pilot ids.
+    second = Fake()
+    summary = grade.run_pilot(grader=second, **pilot)
+    assert len(second.calls) == 30
+    assert json.loads((env.root / grade.PILOT_PATH).read_text())["ids"] == ids
+    latest = grade.load_grades(env.root / grade.PILOT_GRADES_PATH)
+    assert {r["status"] for r in latest.values()} == {"succeeded"}
+    assert summary["status"] == "completed"
