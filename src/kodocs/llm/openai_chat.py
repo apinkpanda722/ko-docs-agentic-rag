@@ -99,6 +99,10 @@ class FatalLLMError(ManagedChatError):
     """Raised when the whole evaluation run must stop."""
 
 
+class InfrastructureLLMError(ManagedChatError):
+    """Raised after retryable local/provider infrastructure failures are exhausted."""
+
+
 class InputTokenLimitError(ManagedChatError):
     """Raised when estimated or observed input exceeds the configured ceiling."""
 
@@ -227,6 +231,11 @@ class ManagedChat:
                 if action == "parse_error":
                     raise ChatParseError(
                         "OpenAI structured response could not be parsed",
+                        attempts,
+                    ) from exc
+                if action == "infra_error":
+                    raise InfrastructureLLMError(
+                        "OpenAI infrastructure retries were exhausted",
                         attempts,
                     ) from exc
                 raise FatalLLMError(
@@ -474,11 +483,11 @@ def _classify_error(exc: BaseException, attempt: int, maximum: int) -> str:
     if status == 429:
         return "retry" if attempt < maximum else "fatal"
     if status is not None and 500 <= status <= 599:
-        return "retry" if attempt < maximum else "fatal"
+        return "retry" if attempt < maximum else "infra_error"
 
     chain_names = {type(item).__name__ for item in _exception_chain(exc)}
     if chain_names.intersection({"ConnectError", "ConnectTimeout"}):
-        return "retry" if attempt < maximum else "fatal"
+        return "retry" if attempt < maximum else "infra_error"
     if chain_names.intersection(
         {
             "ReadTimeout",

@@ -1,0 +1,450 @@
+{
+  "answer_match_denominator": {
+    "by_set": {
+      "gold": 13,
+      "silver": 43
+    },
+    "by_set_source": {
+      "gold": {
+        "real": 3,
+        "synthetic": 10
+      },
+      "silver": {
+        "real": 0,
+        "synthetic": 43
+      }
+    },
+    "by_source": {
+      "real": 3,
+      "synthetic": 53
+    },
+    "count": 56,
+    "excluded": [
+      {
+        "id": "g-real-002",
+        "reasons": [
+          "answer_values_missing"
+        ]
+      },
+      {
+        "id": "g-real-015",
+        "reasons": [
+          "answer_values_missing"
+        ]
+      },
+      {
+        "id": "g-real-016",
+        "reasons": [
+          "answer_values_missing"
+        ]
+      },
+      {
+        "id": "g-real-020",
+        "reasons": [
+          "expected_response_not_answer",
+          "answer_values_missing"
+        ]
+      },
+      {
+        "id": "g-syn-017",
+        "reasons": [
+          "expected_response_not_answer"
+        ]
+      },
+      {
+        "id": "g-syn-019",
+        "reasons": [
+          "expected_response_not_answer"
+        ]
+      },
+      {
+        "id": "g-syn-023",
+        "reasons": [
+          "expected_response_not_answer",
+          "answer_values_missing"
+        ]
+      },
+      {
+        "id": "s-syn-122",
+        "reasons": [
+          "expected_response_not_answer"
+        ]
+      },
+      {
+        "id": "s-syn-127",
+        "reasons": [
+          "expected_response_not_answer"
+        ]
+      },
+      {
+        "id": "s-syn-128",
+        "reasons": [
+          "expected_response_not_answer"
+        ]
+      },
+      {
+        "id": "s-syn-129",
+        "reasons": [
+          "expected_response_not_answer"
+        ]
+      },
+      {
+        "id": "s-syn-130",
+        "reasons": [
+          "expected_response_not_answer"
+        ]
+      },
+      {
+        "id": "s-syn-135",
+        "reasons": [
+          "expected_response_not_answer"
+        ]
+      },
+      {
+        "id": "s-syn-137",
+        "reasons": [
+          "expected_response_not_answer",
+          "answer_values_missing"
+        ]
+      },
+      {
+        "id": "s-syn-142",
+        "reasons": [
+          "expected_response_not_answer",
+          "answer_values_missing"
+        ]
+      },
+      {
+        "id": "s-syn-143",
+        "reasons": [
+          "expected_response_not_answer",
+          "answer_values_missing"
+        ]
+      },
+      {
+        "id": "s-syn-144",
+        "reasons": [
+          "expected_response_not_answer",
+          "answer_values_missing"
+        ]
+      },
+      {
+        "id": "s-syn-145",
+        "reasons": [
+          "expected_response_not_answer",
+          "answer_values_missing"
+        ]
+      },
+      {
+        "id": "s-syn-150",
+        "reasons": [
+          "expected_response_not_answer",
+          "answer_values_missing"
+        ]
+      }
+    ],
+    "ids": [
+      "g-real-004",
+      "g-real-008",
+      "g-real-011",
+      "g-syn-001",
+      "g-syn-004",
+      "g-syn-006",
+      "g-syn-008",
+      "g-syn-010",
+      "g-syn-011",
+      "g-syn-013",
+      "g-syn-014",
+      "g-syn-025",
+      "g-syn-028",
+      "s-syn-001",
+      "s-syn-006",
+      "s-syn-007",
+      "s-syn-008",
+      "s-syn-009",
+      "s-syn-011",
+      "s-syn-012",
+      "s-syn-013",
+      "s-syn-019",
+      "s-syn-024",
+      "s-syn-028",
+      "s-syn-030",
+      "s-syn-031",
+      "s-syn-032",
+      "s-syn-036",
+      "s-syn-037",
+      "s-syn-041",
+      "s-syn-044",
+      "s-syn-047",
+      "s-syn-049",
+      "s-syn-051",
+      "s-syn-057",
+      "s-syn-058",
+      "s-syn-061",
+      "s-syn-062",
+      "s-syn-063",
+      "s-syn-069",
+      "s-syn-071",
+      "s-syn-072",
+      "s-syn-073",
+      "s-syn-074",
+      "s-syn-076",
+      "s-syn-077",
+      "s-syn-080",
+      "s-syn-083",
+      "s-syn-105",
+      "s-syn-107",
+      "s-syn-108",
+      "s-syn-109",
+      "s-syn-111",
+      "s-syn-115",
+      "s-syn-117",
+      "s-syn-119"
+    ]
+  },
+  "dev_set": {
+    "by_set": {
+      "gold": 20,
+      "silver": 55
+    },
+    "count": 75,
+    "ids": [
+      "g-real-002",
+      "g-real-004",
+      "g-real-008",
+      "g-real-011",
+      "g-real-015",
+      "g-real-016",
+      "g-real-020",
+      "g-syn-001",
+      "g-syn-004",
+      "g-syn-006",
+      "g-syn-008",
+      "g-syn-010",
+      "g-syn-011",
+      "g-syn-013",
+      "g-syn-014",
+      "g-syn-017",
+      "g-syn-019",
+      "g-syn-023",
+      "g-syn-025",
+      "g-syn-028",
+      "s-syn-001",
+      "s-syn-006",
+      "s-syn-007",
+      "s-syn-008",
+      "s-syn-009",
+      "s-syn-011",
+      "s-syn-012",
+      "s-syn-013",
+      "s-syn-019",
+      "s-syn-024",
+      "s-syn-028",
+      "s-syn-030",
+      "s-syn-031",
+      "s-syn-032",
+      "s-syn-036",
+      "s-syn-037",
+      "s-syn-041",
+      "s-syn-044",
+      "s-syn-047",
+      "s-syn-049",
+      "s-syn-051",
+      "s-syn-057",
+      "s-syn-058",
+      "s-syn-061",
+      "s-syn-062",
+      "s-syn-063",
+      "s-syn-069",
+      "s-syn-071",
+      "s-syn-072",
+      "s-syn-073",
+      "s-syn-074",
+      "s-syn-076",
+      "s-syn-077",
+      "s-syn-080",
+      "s-syn-083",
+      "s-syn-105",
+      "s-syn-107",
+      "s-syn-108",
+      "s-syn-109",
+      "s-syn-111",
+      "s-syn-115",
+      "s-syn-117",
+      "s-syn-119",
+      "s-syn-122",
+      "s-syn-127",
+      "s-syn-128",
+      "s-syn-129",
+      "s-syn-130",
+      "s-syn-135",
+      "s-syn-137",
+      "s-syn-142",
+      "s-syn-143",
+      "s-syn-144",
+      "s-syn-145",
+      "s-syn-150"
+    ]
+  },
+  "gate_permission_dev": {
+    "by_set": {
+      "gold": 2,
+      "silver": 6
+    },
+    "count": 8,
+    "ids": [
+      "g-syn-017",
+      "g-syn-019",
+      "s-syn-122",
+      "s-syn-127",
+      "s-syn-128",
+      "s-syn-129",
+      "s-syn-130",
+      "s-syn-135"
+    ]
+  },
+  "generated_at": "2026-10-01T11:09:45+09:00",
+  "h5_pool": {
+    "by_type": {
+      "identifier": 4,
+      "multi_doc": 5,
+      "sql": 4
+    },
+    "count": 13,
+    "ids": [
+      "g-real-001",
+      "g-real-013",
+      "g-real-014",
+      "g-syn-002",
+      "g-syn-003",
+      "g-syn-005",
+      "g-syn-012",
+      "g-syn-015",
+      "g-syn-016",
+      "g-syn-026",
+      "g-syn-027",
+      "g-syn-029",
+      "g-syn-030"
+    ]
+  },
+  "inputs": {
+    "gold_sha256": "59ea35da8775955a6fbec615eeffb260b882293851a3a7337f31d03d43d41b81",
+    "m5_config_hash": "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d",
+    "silver_sha256": "a5dd3c65c99a387073f148e000776fa091ac6081896128139ad3b0369329711a"
+  },
+  "router_types": {
+    "below_threshold": {
+      "sql": {
+        "count": 2,
+        "ids": [
+          "g-syn-025",
+          "g-syn-028"
+        ]
+      },
+      "table": {
+        "count": 2,
+        "ids": [
+          "g-real-008",
+          "g-real-011"
+        ]
+      }
+    },
+    "eligible": {
+      "identifier": {
+        "count": 13,
+        "ids": [
+          "g-real-002",
+          "g-syn-001",
+          "g-syn-004",
+          "s-syn-001",
+          "s-syn-006",
+          "s-syn-007",
+          "s-syn-008",
+          "s-syn-009",
+          "s-syn-011",
+          "s-syn-012",
+          "s-syn-013",
+          "s-syn-019",
+          "s-syn-024"
+        ]
+      },
+      "multi_doc": {
+        "count": 12,
+        "ids": [
+          "g-syn-011",
+          "g-syn-013",
+          "g-syn-014",
+          "s-syn-069",
+          "s-syn-071",
+          "s-syn-072",
+          "s-syn-073",
+          "s-syn-074",
+          "s-syn-076",
+          "s-syn-077",
+          "s-syn-080",
+          "s-syn-083"
+        ]
+      },
+      "semantic": {
+        "count": 20,
+        "ids": [
+          "g-real-004",
+          "g-syn-006",
+          "g-syn-008",
+          "g-syn-010",
+          "s-syn-028",
+          "s-syn-030",
+          "s-syn-031",
+          "s-syn-032",
+          "s-syn-036",
+          "s-syn-037",
+          "s-syn-041",
+          "s-syn-044",
+          "s-syn-047",
+          "s-syn-049",
+          "s-syn-051",
+          "s-syn-057",
+          "s-syn-058",
+          "s-syn-061",
+          "s-syn-062",
+          "s-syn-063"
+        ]
+      },
+      "temporal": {
+        "count": 10,
+        "ids": [
+          "g-real-015",
+          "g-real-016",
+          "s-syn-105",
+          "s-syn-107",
+          "s-syn-108",
+          "s-syn-109",
+          "s-syn-111",
+          "s-syn-115",
+          "s-syn-117",
+          "s-syn-119"
+        ]
+      }
+    },
+    "minimum_count": 8
+  },
+  "schema_version": 1,
+  "status": "ok",
+  "unanswerable_dev": {
+    "by_set": {
+      "gold": 2,
+      "silver": 6
+    },
+    "count": 8,
+    "ids": [
+      "g-real-020",
+      "g-syn-023",
+      "s-syn-137",
+      "s-syn-142",
+      "s-syn-143",
+      "s-syn-144",
+      "s-syn-145",
+      "s-syn-150"
+    ]
+  }
+}

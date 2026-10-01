@@ -17,6 +17,7 @@ from kodocs.llm.openai_chat import (
     BillingUncertainError,
     ChatParseError,
     FatalLLMError,
+    InfrastructureLLMError,
     InputTokenLimitError,
     ManagedChat,
 )
@@ -298,6 +299,27 @@ def test_connect_failure_then_success(tmp_path: Path) -> None:
 
     assert calls == 2
     assert result.attempts[0].status == "retry"
+
+
+def test_persistent_connect_failure_is_question_level_infrastructure_error(
+    tmp_path: Path,
+) -> None:
+    calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        raise httpx.ConnectError("connect failed", request=request)
+
+    managed, http_client = _managed(tmp_path, handler)
+    try:
+        with pytest.raises(InfrastructureLLMError) as caught:
+            managed.invoke("질문")
+    finally:
+        http_client.close()
+
+    assert calls == 3
+    assert caught.value.attempts[-1].status == "infra_error"
 
 
 def test_read_timeout_is_not_retried(tmp_path: Path) -> None:

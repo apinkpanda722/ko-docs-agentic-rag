@@ -9,6 +9,7 @@ import threading
 import time
 import uuid
 from collections.abc import Callable, Mapping
+from dataclasses import asdict, is_dataclass
 from datetime import datetime
 from pathlib import Path
 from types import TracebackType
@@ -177,6 +178,7 @@ class TraceSession:
         cost_usd: float = 0.0,
         error: BaseException | str | None = None,
         ttft_ms: float | None = None,
+        attempts: object = (),
     ) -> None:
         """Record model metadata without response content or request secrets."""
         token_record = _token_record(tokens)
@@ -192,6 +194,7 @@ class TraceSession:
                     "tokens": token_record,
                     "cost_usd": float(cost_usd),
                     "error": _error_name(error),
+                    "attempts": _attempt_records(attempts),
                 }
             )
             if ttft_ms is not None and self._timings["ttft_ms"] is None:
@@ -344,6 +347,20 @@ def _tool_error_code(payload: Mapping[str, object]) -> str:
     if isinstance(error, Mapping) and isinstance(error.get("code"), str):
         return error["code"]
     return "ToolError"
+
+
+def _attempt_records(value: object) -> list[object]:
+    if not isinstance(value, tuple | list):
+        return []
+    records: list[object] = []
+    for item in value:
+        if is_dataclass(item) and not isinstance(item, type):
+            records.append(_sanitize(asdict(item)))
+        elif isinstance(item, Mapping):
+            records.append(_sanitize(item))
+        else:
+            records.append(type(item).__name__)
+    return records
 
 
 def _error_name(error: BaseException | str | None) -> str | None:

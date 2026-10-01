@@ -57,6 +57,7 @@ def build_simple_graph(runtime: AgentRuntime):
                 "final_answer",
                 latency_ms=_elapsed_ms(started, agent_runtime.clock()),
                 error=exc,
+                attempts=exc.attempts,
             )
             return {"result": _finish_refusal(ctx, "parse_error")}
 
@@ -68,6 +69,7 @@ def build_simple_graph(runtime: AgentRuntime):
             tokens=tokens,
             cost_usd=chat_result.cost_usd,
             ttft_ms=chat_result.ttft_ms,
+            attempts=chat_result.attempts,
         )
         model_answer = (
             chat_result.parsed if isinstance(chat_result.parsed, ModelAnswer) else None
