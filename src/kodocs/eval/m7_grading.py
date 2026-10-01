@@ -1,0 +1,575 @@
+"""Offline M7 input verification, blind grading inputs and draft rubric schemas.
+
+No answer generation or grading calls occur here. Synthetic reference answers
+live verbatim in the committed Question record; M4 did not store their hashes.
+Real references live in the uncommitted real_drafts.jsonl and must match the
+hash in the committed question. Evidence uses the same composite corpus loader
+as the frozen M5 index, with a section-offset adapter (no new parsing).
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import random
+import sys
+from collections import Counter, defaultdict
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from kodocs.chunking.corpus import CorpusDoc, load_corpus
+from kodocs.eval import m6_dev, m6_test
+from kodocs.eval.golden import Asker, Question
+from kodocs.eval.m6_inputs import load_m6_questions
+from kodocs.eval.m6_runner import (
+    _TERMINAL_CACHE_STATUSES,
+    _load_records,
+)
+from kodocs.ingest.manifest import latest_records, load_records, sha256_file
+from kodocs.llm.answer_settings import load_answer_config
+
+DEV_RUNS_PATH = m6_dev.DEV_RUNS_PATH
+RUN_PATHS = {
+    "dev": DEV_RUNS_PATH,
+    "test_gold": Path("data/interim/m6/test/run-01/runs.jsonl"),
+    "test_silver": Path("data/interim/m6/test/run-01/silver/runs.jsonl"),
+}
+RUBRIC_PATH = Path(__file__).with_name("templates") / "m7_rubric.md"
+REAL_REFERENCES_PATH = Path("data/interim/golden/real_drafts.jsonl")
+INPUT_LIMITATION = (
+    "M6 실행 당시의 runs.jsonl 해시가 없다. "
+    "집계에 영향을 주지 않는 답변 텍스트 변경은 재집계 비교로 탐지하지 못한다."
+)
+DEV_COMPARE_FIELDS = (
+    "answer_match",
+    "citation_precision",
+    "unanswerable_refusal",
+    "gate",
+    "guardrails_summary",
+    "operations",
+    "model_stats",
+    "paired_bootstrap",
+    "selection",
+    "selection_reason",
+)
+RunClass = Literal["det_zero", "gemini_acc", "gemini_faith_only", "not_scored"]
+
+
+class InputHashError(RuntimeError):
+    """Frozen input hash, row identity or exact aggregate comparison failed."""
+
+
+@dataclass(frozen=True)
+class InputVerification:
+    dev_runs_sha256: str
+    dev_runs_rows: int
+    test_runs_sha256: dict[str, str]
+    test_runs_rows: dict[str, int]
+    excluded_fields: tuple[str, ...]
+    limitations: tuple[str, ...] = (INPUT_LIMITATION,)
+
+
+@dataclass(frozen=True)
+class AnsweredRun:
+    answer_id: str
+    run_set: Literal["dev", "test_gold", "test_silver"]
+    question: Question
+    answer: str
+    citations: tuple[Mapping[str, object], ...]
+    refused: bool
+    refuse_reason: str | None
+    status: str
+    system: str
+    model: str
+    tool_refs: tuple[Mapping[str, object], ...]
+    answer_sha256: str
+    reference_answer_path: Path
+    root: Path
+
+    @property
+    def question_id(self) -> str:
+        return self.question.id
+
+    @property
+    def type(self) -> str:
+        return self.question.type
+
+    @property
+    def source(self) -> str:
+        return self.question.source
+
+    @property
+    def expected_response(self) -> str:
+        return self.question.expected_response
+
+    @property
+    def asker(self) -> Asker:
+        return self.question.asker
+
+    @classmethod
+    def from_record(cls, run_set, question, row, *, root):
+        answer = row["answer"]
+        if not isinstance(answer, str):
+            raise InputHashError(f"{run_set}.answer must be a string")
+        if not isinstance(row["refused"], bool):
+            raise InputHashError(f"{run_set}.refused must be a boolean")
+        return cls(
+            answer_id=f"{run_set}|{question.id}|{row['system']}|{row['model']}",
+            run_set=run_set,
+            question=question,
+            answer=answer,
+            citations=tuple(row["citations"]),
+            refused=row["refused"],
+            refuse_reason=row["refuse_reason"],
+            status=row["status"],
+            system=row["system"],
+            model=row["model"],
+            tool_refs=tuple(row["tool_refs"]),
+            answer_sha256=_text_hash(answer),
+            reference_answer_path=root
+            / (
+                REAL_REFERENCES_PATH
+                if question.source == "real"
+                else Path(f"data/golden/queries/{question.set}.jsonl")
+            ),
+            root=root,
+        )
+
+
+def _selected_rows(path: Path) -> list[dict[str, object]]:
+    """Use the M6 row reader and terminal-cache precedence on append-only tries.
+
+    M6 has no standalone selected-row loader: run_answers selects the last
+    terminal row per cache_key, otherwise its latest infra_error. This small
+    adapter uses the shared latest_records helper without running the runner.
+    Distinct cache keys yielding one answer_id are rejected rather than merged.
+    """
+    raw = _load_records(path)
+    if not raw:
+        raise InputHashError(f"{path}: runs.jsonl rows missing")
+    if any(not isinstance(r.get("cache_key"), str) for r in raw):
+        raise InputHashError(f"{path}: cache_key missing")
+    latest = latest_records(raw, key=lambda r: r["cache_key"])
+    terminals = {
+        r["cache_key"]: r
+        for r in latest_records(
+            [r for r in raw if r.get("status") in _TERMINAL_CACHE_STATUSES],
+            key=lambda r: r["cache_key"],
+        )
+    }
+    rows = [terminals.get(r["cache_key"], r) for r in latest]
+    identities = [(r["question_id"], r["system"], r["model"]) for r in rows]
+    if len(identities) != len(set(identities)):
+        raise InputHashError(f"{path}: duplicate answer_id")
+    return rows
+
+
+def _json(path: Path) -> dict:
+    return m6_dev._json_object(path)
+
+
+def _recorded_init(summary: Mapping, label: str):
+    values = [s["init_s"] for m in summary["operations"].values() for s in m.values()]
+    if not values or any(v != values[0] for v in values):
+        raise InputHashError(f"{label}.operations.init_s differs between entries")
+    return values[0]
+
+
+def _differences(left, right, prefix: str) -> list[str]:
+    """Compare exact values and report field paths, never answer/evidence text."""
+    if isinstance(left, Mapping) and isinstance(right, Mapping):
+        return [
+            field
+            for k in sorted(set(left) | set(right))
+            for field in (
+                [f"{prefix}.{k}"]
+                if k not in left or k not in right
+                else _differences(left[k], right[k], f"{prefix}.{k}")
+            )
+        ]
+    if isinstance(left, list) and isinstance(right, list):
+        if len(left) != len(right):
+            return [prefix]
+        return [
+            field
+            for i, (a, b) in enumerate(zip(left, right, strict=True))
+            for field in _differences(a, b, f"{prefix}[{i}]")
+        ]
+    return [] if left == right else [prefix]
+
+
+def _compare(recorded, computed, fields, label):
+    differences = [
+        field
+        for key in fields
+        for field in _differences(
+            recorded.get(key), computed.get(key), f"{label}.{key}"
+        )
+    ]
+    if differences:
+        raise InputHashError("M6 aggregate mismatch: " + ", ".join(differences))
+
+
+def verify_m6_inputs(root: Path = Path(".")) -> InputVerification:
+    """Recompute M6 aggregates through their original offline analyzers."""
+    root = Path(root)
+    try:
+        return _verify_m6_inputs(root)
+    except InputHashError:
+        raise
+    except (RuntimeError, ValueError, TypeError, KeyError, OSError) as exc:
+        # M6 hash guards report only field names, not response bodies.
+        raise InputHashError(f"M6 input verification: {exc}") from exc
+
+
+def _verify_m6_inputs(root: Path) -> InputVerification:
+    dev = _json(root / m6_dev.DEV_MANIFEST_PATH)
+    config = _json(root / "data/manifest/m6_config.json")
+    if sha256_file(root / m6_dev.DEV_MANIFEST_PATH) != config["m6_dev_sha256"]:
+        raise InputHashError("m6_dev_sha256 mismatch (m6_dev.json)")
+    inputs_hash = sha256_file(root / m6_dev.M6_INPUTS_PATH)
+    if inputs_hash != dev["m6_eval_inputs_sha256"]:
+        raise InputHashError("m6_eval_inputs_sha256 mismatch")
+    configs = [load_answer_config(name) for name in m6_dev.MODEL_CONFIG_NAMES]
+    computed = m6_dev.analyze_dev(
+        load_m6_questions(root, split="dev"),
+        _selected_rows(root / DEV_RUNS_PATH),
+        docs_meta=m6_dev._load_docs_meta(root / m6_dev.DOCS_PATH),
+        canaries=_json(root / m6_dev.CANARIES_PATH),
+        model_configs=configs,
+        concurrency=dev["concurrency"],
+        init_s=_recorded_init(dev, "dev"),
+        input_manifest_sha256=inputs_hash,
+        code_commit=dev["code_commit"],
+    )
+    _compare(dev, computed, DEV_COMPARE_FIELDS, "dev")
+    excluded = [
+        f"dev.{key}"
+        for key in sorted(set(dev) | set(computed))
+        if key not in DEV_COMPARE_FIELDS
+    ]
+    # Top-level init_s is an inherited runtime input, not independently measured.
+    # Its nested operations values are nevertheless compared exactly above.
+    excluded.append("dev.init_s (recorded runtime input)")
+    completed = sorted(
+        (
+            r
+            for r in latest_records(
+                load_records(root / m6_test.RUNS_PATH), key=m6_test._record_seq
+            )
+            if r.get("status") == "completed"
+        ),
+        key=m6_test._record_seq,
+    )
+    if not completed:
+        raise InputHashError("m6_test_runs.completed missing")
+    latest = completed[-1]
+    result_path = root / m6_test.RESULTS_DIR / "run-01.json"
+    if latest.get("result_sha256") != sha256_file(result_path):
+        raise InputHashError("test.result_sha256 mismatch (run-01.json)")
+    result = _json(result_path)
+    test_hashes, test_rows = {}, {}
+    for run_set, set_name in [("test_gold", "gold"), ("test_silver", "silver")]:
+        recorded = result if set_name == "gold" else result["silver_test"]
+        path = root / RUN_PATHS[run_set]
+        rows = _selected_rows(path)
+        questions = load_m6_questions(root, split="test", set_name=set_name)
+        expected = {
+            (q.id, system, configs[0].model)
+            for q in questions
+            for system in m6_dev.SYSTEMS
+        }
+        actual = {(r["question_id"], r["system"], r["model"]) for r in rows}
+        if actual != expected:
+            raise InputHashError(f"{run_set}.answer_id matrix mismatch")
+        computed = m6_test.analyze_test(
+            questions,
+            rows,
+            init_s=_recorded_init(recorded, run_set),
+            concurrency=recorded["concurrency"],
+        )
+        # execute_experiment embeds silver under silver_test; run_test adds
+        # lock metadata and raw hashes. The analyzer keys are compared intact.
+        _compare(recorded, computed, tuple(computed), run_set)
+        excluded.extend(f"{run_set}.{k}" for k in sorted(set(recorded) - set(computed)))
+        excluded.append(f"{run_set}.init_s (recorded runtime input)")
+        test_hashes[run_set] = sha256_file(path)
+        test_rows[run_set] = len(_load_records(path))
+    return InputVerification(
+        dev_runs_sha256=sha256_file(root / DEV_RUNS_PATH),
+        dev_runs_rows=len(_load_records(root / DEV_RUNS_PATH)),
+        test_runs_sha256=test_hashes,
+        test_runs_rows=test_rows,
+        excluded_fields=tuple(excluded),
+    )
+
+
+def load_m6_answers(root: Path = Path(".")) -> list[AnsweredRun]:
+    """Verify frozen aggregates before exposing any answer to the grading code."""
+    verify_m6_inputs(root)
+    runs = []
+    seen = set()
+    for run_set, path in RUN_PATHS.items():
+        questions = {
+            q.id: q
+            for q in load_m6_questions(
+                root,
+                split="dev" if run_set == "dev" else "test",
+                set_name=None if run_set == "dev" else run_set.removeprefix("test_"),
+            )
+        }
+        for row in _selected_rows(root / path):
+            run = AnsweredRun.from_record(
+                run_set, questions[row["question_id"]], row, root=root
+            )
+            if run.answer_id in seen:
+                raise InputHashError(f"duplicate answer_id: {run.answer_id}")
+            seen.add(run.answer_id)
+            runs.append(run)
+    return runs
+
+
+def classify_run(run: AnsweredRun, question: Question) -> RunClass:
+    if question.expected_response not in {
+        "answer",
+        "no_answer",
+        "indistinguishable_from_no_answer",
+    }:
+        raise ValueError("unknown expected_response")
+    if run.status != "completed":
+        return "det_zero"
+    if question.expected_response == "answer":
+        return "det_zero" if run.refused or not run.answer.strip() else "gemini_acc"
+    return "not_scored" if run.refused else "gemini_faith_only"
+
+
+def classify_all(runs: Sequence[AnsweredRun]) -> dict[str, RunClass]:
+    result = {r.answer_id: classify_run(r, r.question) for r in runs}
+    if len(result) != len(runs):
+        raise ValueError("duplicate answer_id")
+    return result
+
+
+def class_counts(
+    runs: Sequence[AnsweredRun], classes=None
+) -> dict[str, dict[str, int]]:
+    classes = classify_all(runs) if classes is None else classes
+    counts = defaultdict(Counter)
+    for run in runs:
+        counts[f"{run.run_set}|{run.model}|{run.system}"][classes[run.answer_id]] += 1
+    return {key: dict(sorted(value.items())) for key, value in sorted(counts.items())}
+
+
+@dataclass(frozen=True)
+class GradeItem:
+    answer_id: str
+    mode: Literal["acc", "faith"]
+    request_text: str
+    evidence_chars: int
+    evidence_missing: int = 0
+
+
+class EvidenceLoader:
+    """Section-offset adapter over the frozen index's offline corpus loader.
+
+    A real doc with no section key has no identifiable cited article: it is
+    missing evidence, rather than replacing it with an uncited article/body.
+    """
+
+    def __init__(self, root: Path = Path(".")):
+        documents, _report = load_corpus("composite", root=root)
+        self.documents: dict[str, CorpusDoc] = {d.doc_id: d for d in documents}
+
+    def __call__(self, doc_id: str, section_key: str | None) -> str | None:
+        document = self.documents.get(doc_id)
+        if document is None:
+            return None
+        if document.source == "synthetic":
+            return document.text
+        if section_key is None:
+            return None
+        for section in document.sections:
+            if section.key == section_key:
+                return document.text[section.start : section.end]
+        return None
+
+
+def _reference_text(run: AnsweredRun, question: Question) -> str:
+    if question.source == "synthetic":
+        text = question.reference_answer
+    else:
+        records = _load_records(run.root / REAL_REFERENCES_PATH)
+        matches = [r for r in records if r.get("id") == question.id]
+        if len(matches) != 1:
+            raise InputHashError(
+                f"{question.id}.reference_answer record missing or duplicated"
+            )
+        text = matches[0].get("reference_answer")
+        if question.reference_sha256 is None:
+            raise InputHashError(f"{question.id}.reference_sha256 missing")
+    if not isinstance(text, str):
+        raise InputHashError(f"{question.id}.reference_answer missing")
+    if (
+        question.reference_sha256 is not None
+        and _text_hash(text) != question.reference_sha256
+    ):
+        raise InputHashError(f"{question.id}.reference_sha256 mismatch")
+    return text
+
+
+def build_grade_item(
+    run: AnsweredRun,
+    question: Question,
+    evidence_loader: Callable[[str, str | None], str | None],
+) -> GradeItem:
+    kind = classify_run(run, question)
+    if kind not in {"gemini_acc", "gemini_faith_only"}:
+        raise ValueError("run does not require Gemini grading")
+    reference = _reference_text(run, question)
+    evidence, missing = [], 0
+    for citation in run.citations:
+        if citation.get("kind") != "doc":
+            continue
+        doc_id = citation.get("doc_id")
+        text = (
+            evidence_loader(doc_id, citation.get("section_key"))
+            if isinstance(doc_id, str)
+            else None
+        )
+        if not text:
+            missing += 1
+            continue
+        evidence.append((doc_id, citation.get("section_key"), text))
+    # One character per citation per round, then join each contiguous prefix.
+    # This gives equal access to the budget and redistributes exhausted shares.
+    lengths = [0] * len(evidence)
+    budget = 6000
+    while budget:
+        advanced = False
+        for i, (_, _, text) in enumerate(evidence):
+            if lengths[i] < len(text):
+                lengths[i] += 1
+                budget -= 1
+                advanced = True
+                if not budget:
+                    break
+        if not advanced:
+            break
+    evidence_text = "\n\n".join(
+        f"[{doc_id}" + (f" / {section}" if section else "") + "]\n" + text[:length]
+        for (doc_id, section, text), length in zip(evidence, lengths, strict=True)
+        if length
+    )
+    request = (
+        f"## 질문\n{question.question}\n\n## 참조 답변\n{reference}"
+        f"\n\n## 시스템 답변\n{run.answer}\n\n## 인용 근거\n{evidence_text}"
+    )
+    return GradeItem(
+        run.answer_id,
+        "acc" if kind == "gemini_acc" else "faith",
+        request,
+        sum(lengths),
+        missing,
+    )
+
+
+def shuffle_order(answer_ids: Sequence[str], seed: int = 20261001) -> list[str]:
+    ordered = sorted(answer_ids)
+    random.Random(seed).shuffle(ordered)
+    return ordered
+
+
+def select_pilot(
+    runs: Sequence[AnsweredRun],
+    classes: Mapping[str, RunClass],
+    *,
+    seed: int = 20261001,
+    n: int = 10,
+) -> list[str]:
+    pool = sorted(
+        r.answer_id
+        for r in runs
+        if r.run_set == "dev"
+        and r.model == "gpt-6-luna"
+        and classes[r.answer_id] == "gemini_acc"
+    )
+    if len(pool) != len(set(pool)):
+        raise ValueError("duplicate answer_id")
+    return random.Random(seed).sample(pool, n)
+
+
+class FaithGrade(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+    faithfulness: int = Field(ge=0, le=3)
+    rationale: str = Field(max_length=200)
+
+
+class AccGrade(FaithGrade):
+    correctness: int = Field(ge=0, le=3)
+
+
+def _text_hash(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def rubric_sha256(path: Path = RUBRIC_PATH) -> str:
+    # Decode bytes directly to avoid universal-newline changes.
+    return _text_hash(path.read_bytes().decode("utf-8"))
+
+
+def schema_sha256() -> str:
+    return _text_hash(
+        json.dumps(
+            {
+                "AccGrade": AccGrade.model_json_schema(),
+                "FaithGrade": FaithGrade.model_json_schema(),
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+
+
+def parse_rubric_sections(path: Path = RUBRIC_PATH) -> dict[str, str]:
+    required = ("공통 지침", "정답성 앵커", "충실성 앵커", "출력 형식")
+    sections: dict[str, str] = {}
+    current = None
+    for line in path.read_bytes().decode("utf-8").splitlines(keepends=True):
+        if line.startswith("## "):
+            current = line[3:].strip()
+            if current not in required or current in sections:
+                raise ValueError(f"invalid rubric section: {current}")
+            sections[current] = ""
+        elif current is not None:
+            sections[current] += line
+    if tuple(sections) != required or any(
+        not text.strip() for text in sections.values()
+    ):
+        raise ValueError("rubric sections missing, empty or out of order")
+    return sections
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="M7 채점 입력을 오프라인 검증합니다.")
+    parser.add_argument("--verify-inputs", action="store_true", required=True)
+    parser.add_argument("--root", type=Path, default=Path("."))
+    args = parser.parse_args(argv)
+    try:
+        check = verify_m6_inputs(args.root)
+    except InputHashError as exc:
+        print(f"M7 입력 불일치: {exc}", file=sys.stderr)
+        return 2
+    print(
+        "OK\n" + json.dumps(asdict(check), ensure_ascii=False, indent=2, sort_keys=True)
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
