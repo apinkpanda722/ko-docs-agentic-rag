@@ -135,12 +135,22 @@ def _inputs(data: Mapping) -> str:
         ("게이트", "gate_permission_dev"),
         ("답 없음", "unanswerable_dev"),
     ):
+        section = _map(data.get(key))
+        by_set = _map(section.get("by_set"))
+        ids = section.get("ids")
+        if "by_set" not in section and isinstance(ids, list):
+            by_set = {
+                name: sum(
+                    isinstance(qid, str) and qid.startswith(prefix) for qid in ids
+                )
+                for name, prefix in (("gold", "g-"), ("silver", "s-"))
+            }
         rows.append(
             [
                 label,
                 _num(_at(data, key, "count")),
-                _num(_at(data, key, "by_set", "gold")),
-                _num(_at(data, key, "by_set", "silver")),
+                _num(by_set.get("gold")),
+                _num(by_set.get("silver")),
             ]
         )
     source = _table(

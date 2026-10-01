@@ -91,6 +91,52 @@ def test_m6_report_partial_inputs_and_preservation(tmp_path):
     assert render(tmp_path) == second
 
 
+def test_m6_report_input_counts_fall_back_to_ids(tmp_path):
+    sections = (
+        ("H5 풀", "h5_pool", 13, 0),
+        ("H5 풀(sql 제외 보조)", "h5_pool_ex_sql", 9, 0),
+        ("실버 test", "silver_test", 0, 83),
+        ("H5 실버 방향 확인", "h5_silver_direction", 0, 29),
+    )
+    inputs = {
+        key: {
+            "count": gold + silver,
+            "by_type": {"identifier": gold + silver},
+            "ids": [f"g-syn-{i:03}" for i in range(1, gold + 1)]
+            + [f"s-syn-{i:03}" for i in range(1, silver + 1)],
+        }
+        for _, key, gold, silver in sections
+    }
+    existing = (
+        ("dev", "dev_set", 20, 55),
+        ("정답 값 분모", "answer_match_denominator", 13, 43),
+        ("게이트", "gate_permission_dev", 2, 6),
+        ("답 없음", "unanswerable_dev", 2, 6),
+    )
+    for _, key, gold, silver in existing:
+        inputs[key] = {
+            "count": gold + silver,
+            "by_set": {"gold": gold, "silver": silver},
+            "ids": [],  # Explicit by_set counts take precedence over IDs.
+        }
+    put(tmp_path, "m6_eval_inputs.json", inputs)
+
+    text = render(tmp_path)
+
+    for label, _, gold, silver in (*sections, *existing):
+        assert f"| {label} | {gold + silver} | {gold} | {silver} |" in text
+
+
+def test_m6_report_missing_input_data_is_unrun_but_empty_ids_are_zero(tmp_path):
+    put(tmp_path, "m6_eval_inputs.json", {"h5_pool": {"count": 0, "ids": []}})
+
+    text = render(tmp_path)
+
+    assert "| H5 풀 | 0 | 0 | 0 |" in text
+    assert "| 실버 test | 미실행 | 미실행 | 미실행 |" in text
+    assert "| H5 실버 방향 확인 | 미실행 | 미실행 | 미실행 |" in text
+
+
 def rate(n=2, d=3):
     return {"numerator": n, "denominator": d, "rate": n / d}
 
