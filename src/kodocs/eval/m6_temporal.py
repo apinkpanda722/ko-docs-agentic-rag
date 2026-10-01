@@ -169,7 +169,14 @@ def evaluate_temporal(
 
     changed = sorted(changed_ids)
     temporal_id_set = set(temporal_ids)
-    unexpected = [qid for qid in changed if qid not in temporal_id_set]
+    non_temporal_changes = _classify_non_temporal_changes(
+        inputs.groups,
+        before_by_group,
+        after_by_group,
+        changed=set(changed) - temporal_id_set,
+        prior_doc_ids=_prior_doc_ids(inputs.prior_versions),
+    )
+    membership_changed = sum(row["membership_changed"] for row in non_temporal_changes)
     counts = {name: len(inputs.groups[name]) for name in _GROUP_NAMES}
     return {
         "m5_config_hash": m5_config_hash,
@@ -185,12 +192,68 @@ def evaluate_temporal(
         "top10_changes": {
             "changed_count": len(changed),
             "changed_question_ids": changed,
-            "expected_temporal_question_ids": temporal_ids,
-            "unexpected_change_count": len(unexpected),
-            "unexpected_changes": unexpected,
+            "temporal_question_ids": temporal_ids,
+            "non_temporal_change_count": len(non_temporal_changes),
+            "non_temporal_membership_changed_count": membership_changed,
+            "non_temporal_order_only_count": (
+                len(non_temporal_changes) - membership_changed
+            ),
+            "non_temporal_relevant_all_current_count": sum(
+                row["relevant_docs_all_current"] for row in non_temporal_changes
+            ),
+            "non_temporal_changes": non_temporal_changes,
             "by_group": changes_by_group,
         },
     }
+
+
+def _prior_doc_ids(prior_versions: Mapping[str, object]) -> frozenset[str]:
+    """Return the only non-current document IDs in the index (prior versions)."""
+    versions = prior_versions.get("versions")
+    if isinstance(versions, Sequence) and not isinstance(versions, (str, bytes)):
+        return frozenset(
+            f"law-{value['prior_serial']}"
+            for value in versions
+            if isinstance(value, Mapping)
+        )
+    return frozenset(str(value) for value in prior_versions.values())
+
+
+def _classify_non_temporal_changes(
+    groups: Mapping[str, Sequence[EvalQuestion]],
+    before_by_group: Mapping[str, Sequence[QuestionRun]],
+    after_by_group: Mapping[str, Sequence[QuestionRun]],
+    *,
+    changed: set[str],
+    prior_doc_ids: frozenset[str],
+) -> list[dict[str, object]]:
+    """Describe each changed non-temporal question: membership vs order only.
+
+    Questions whose top 10 differ only in order, or whose relevant documents are all
+    current, are expected side effects of swapping several versions of one rule that
+    both rank highly; they are reported, not treated as failures.
+    """
+    rows: list[dict[str, object]] = []
+    for group_name in _GROUP_NAMES:
+        for item, left, right in zip(
+            groups[group_name],
+            before_by_group[group_name],
+            after_by_group[group_name],
+            strict=True,
+        ):
+            if item.question.id not in changed:
+                continue
+            same_members = set(left.ranked_docs[:10]) == set(right.ranked_docs[:10])
+            relevant = {doc for doc, rel in item.rel_by_doc.items() if rel >= 1}
+            rows.append(
+                {
+                    "question_id": item.question.id,
+                    "membership_changed": not same_members,
+                    "order_only": same_members,
+                    "relevant_docs_all_current": not (relevant & prior_doc_ids),
+                }
+            )
+    return sorted(rows, key=lambda row: str(row["question_id"]))
 
 
 def run_temporal(

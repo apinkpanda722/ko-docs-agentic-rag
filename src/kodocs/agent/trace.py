@@ -274,9 +274,13 @@ class TraceSession:
             (self._recorder._clock() - self._started) * 1000,
         )
         citations = []
+        dropped_citations: list[object] = []
         refused = True
         refuse_reason = None
         if result is not None:
+            dropped = result.trace.get("dropped_citations", [])
+            if isinstance(dropped, list):
+                dropped_citations = list(dropped)
             citations = [
                 citation.model_dump(mode="json") for citation in result.citations
             ]
@@ -298,6 +302,7 @@ class TraceSession:
             "steps": self._steps,
             "timings": timings,
             "citations": citations,
+            "dropped_citations": dropped_citations,
             "refused": refused,
             "refuse_reason": refuse_reason,
             "guardrail": guardrail_record,

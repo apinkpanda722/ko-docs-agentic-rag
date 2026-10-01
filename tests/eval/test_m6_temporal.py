@@ -109,9 +109,24 @@ def test_evaluate_temporal_reuses_m5_runs_and_records_only_ids_ranks_counts() ->
         "all": 6,
         "gold_temporal": 5,
     }
-    assert result["top10_changes"]["changed_question_ids"] == ["g-t1", "s-other"]
-    assert result["top10_changes"]["unexpected_changes"] == ["s-other"]
-    assert result["top10_changes"]["unexpected_change_count"] == 1
+    changes = result["top10_changes"]
+    assert changes["changed_question_ids"] == ["g-t1", "s-other"]
+    assert changes["temporal_question_ids"] == [f"g-t{n}" for n in range(1, 6)]
+    assert "unexpected_changes" not in changes
+    assert "unexpected_change_count" not in changes
+    assert changes["non_temporal_change_count"] == 1
+    # Same two docs in both runs, only the order differs; its relevant doc is current.
+    assert changes["non_temporal_changes"] == [
+        {
+            "question_id": "s-other",
+            "membership_changed": False,
+            "order_only": True,
+            "relevant_docs_all_current": True,
+        }
+    ]
+    assert changes["non_temporal_membership_changed_count"] == 0
+    assert changes["non_temporal_order_only_count"] == 1
+    assert changes["non_temporal_relevant_all_current_count"] == 1
     before = result["temporal"]["prefer_current_off"]["rows"][0]
     after = result["temporal"]["prefer_current_on"]["rows"][0]
     assert before == {
@@ -130,3 +145,74 @@ def test_evaluate_temporal_reuses_m5_runs_and_records_only_ids_ranks_counts() ->
     }
     assert "current_doc_id" not in before
     assert "prior_doc_id" not in before
+
+
+def test_non_temporal_change_classifies_membership_and_prior_relevant_docs() -> None:
+    temporal = tuple(
+        _question(f"g-t{number}", split="dev" if number < 3 else "test", temporal=True)
+        for number in range(1, 6)
+    )
+    membership = _question("s-member", split="test", temporal=False)
+    # Its only relevant document is the prior version of a temporal rule.
+    prior_relevant = _question("s-prior", split="test", temporal=False)
+    prior_relevant = EvalQuestion(
+        prior_relevant.question,
+        {"prior-g-t1": 2},
+        1,
+        1,
+        (),
+        False,
+    )
+    inputs = TemporalInputs(
+        groups={
+            "gold_dev": temporal[:2],
+            "gold_test": temporal[2:],
+            "silver_dev": (),
+            "silver_test": (membership, prior_relevant),
+        },
+        prior_versions={
+            f"current-{question.question.id}": f"prior-{question.question.id}"
+            for question in temporal
+        },
+    )
+
+    def fake_run(_client, _embedder, questions, _config, *, prefer_current=False):
+        values = []
+        for item in questions:
+            qid = item.question.id
+            if qid == "s-member":
+                ranking = ("a", "b", "c") if prefer_current else ("a", "b", "x")
+            elif qid == "s-prior":
+                ranking = ("p2", "p1") if prefer_current else ("p1", "p2")
+            else:
+                ranking = (f"current-{qid}", f"prior-{qid}")
+            values.append(_run(qid, ranking))
+        return values
+
+    result = evaluate_temporal(
+        object(),
+        object(),
+        inputs,
+        RunConfig("composite", "structural", "hybrid_weighted", "nori", 50, 0.7),
+        m5_config_hash="frozen-hash",
+        run_fn=fake_run,
+    )
+
+    changes = result["top10_changes"]
+    assert changes["non_temporal_change_count"] == 2
+    by_id = {row["question_id"]: row for row in changes["non_temporal_changes"]}
+    assert by_id["s-member"] == {
+        "question_id": "s-member",
+        "membership_changed": True,
+        "order_only": False,
+        "relevant_docs_all_current": True,
+    }
+    assert by_id["s-prior"] == {
+        "question_id": "s-prior",
+        "membership_changed": False,
+        "order_only": True,
+        "relevant_docs_all_current": False,
+    }
+    assert changes["non_temporal_membership_changed_count"] == 1
+    assert changes["non_temporal_order_only_count"] == 1
+    assert changes["non_temporal_relevant_all_current_count"] == 1

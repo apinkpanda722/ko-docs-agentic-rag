@@ -9,6 +9,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+from kodocs.agent.finalize import finalizer_hash
 from kodocs.agent.guardrails import GuardrailConfig
 from kodocs.agent.prompts import prompt_hashes
 from kodocs.agent.types import canonical_hash
@@ -52,6 +53,8 @@ def freeze_config(
     recorded_prompts = _mapping(dev.get("prompt_hashes"), "prompt_hashes")
     if dict(recorded_prompts) != current_prompts:
         raise ValueError("prompt hashes changed after M6 dev comparison")
+    if dev.get("finalizer_hash") != finalizer_hash():
+        raise ValueError("answer finalizer changed after M6 dev comparison")
     current_guard = GuardrailConfig()
     recorded_guard = _mapping(dev.get("guardrails"), "guardrails")
     if recorded_guard.get("settings_hash") != current_guard.settings_hash():
@@ -74,6 +77,7 @@ def freeze_config(
             "settings_hash": config.settings_hash(),
         },
         "prompt_hashes": current_prompts,
+        "finalizer_hash": finalizer_hash(),
         "guardrails": {
             "settings": current_guard.record(),
             "settings_hash": current_guard.settings_hash(),
@@ -104,6 +108,8 @@ def verify_config(path: Path | str) -> ConfigCheck:
         mismatches.append("m5_config_hash")
     if config.get("prompt_hashes") != prompt_hashes():
         mismatches.append("prompt_hashes")
+    if config.get("finalizer_hash") != finalizer_hash():
+        mismatches.append("finalizer_hash")
     guard = config.get("guardrails")
     current_guard = GuardrailConfig()
     if not isinstance(guard, Mapping) or (

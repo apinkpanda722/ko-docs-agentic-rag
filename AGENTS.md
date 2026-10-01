@@ -102,7 +102,7 @@ make m5-dev          # dev 튜닝 그리드 → data/manifest/m5_dev.json — �
 make m5-freeze       # 선택 설정을 data/manifest/m5_config.json에 고정(덮어쓰기 거부) — 사용자 실행
 make m5-test         # test 1회 실행(재실행은 RERUN_REASON="사유" make m5-test) — 사용자 실행
 make m5-report       # M5 결과 문서 docs/results/2026-09-30-m5-retrieval.md(고정) 갱신 (네트워크 없음)
-make m6-temporal  # M6 is_current 우선 처리 전후 순위·비 temporal 불변 확인 → data/manifest/m6_temporal.json — OpenSearch 필요(make up), 사용자 실행 (LLM 없음)
+make m6-temporal  # M6 is_current 우선 처리 전후 순위·비 temporal 순서 변경 문항 보고 → data/manifest/m6_temporal.json — OpenSearch 필요(make up), 사용자 실행 (LLM 없음)
 make m6-inputs    # M6 평가 입력 집계(dev 75·H5 풀 13·정답 값 분모 56·게이트·라우터 유형) → data/manifest/m6_eval_inputs.json (네트워크 없음)
 make m6-dry       # dev 비교 예상 토큰·비용(2모델×2시스템×75문항, 예상·상한) — 네트워크 없음
 make m6-dev       # 답변 모델 dev 비교(LIMIT=N 파일럿 가능) — 실제 OpenAI 호출·과금, 사용자 실행

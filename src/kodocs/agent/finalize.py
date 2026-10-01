@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
+import inspect
+
 from kodocs.agent.citations import validate_citations
 from kodocs.agent.evidence import EvidenceLog
 from kodocs.agent.types import AnswerResult, ModelAnswer, RefuseReason
@@ -58,3 +61,19 @@ def finalize_answer(
         refuse_reason=None,
         trace=trace,
     )
+
+
+def finalizer_hash() -> str:
+    """Fingerprint the answer-finalization logic that decides refusals and citations.
+
+    Cached run rows are only comparable when this logic is unchanged, so the hash
+    is part of every run cache key (a changed validator invalidates older rows).
+    """
+    source = "\n".join(
+        (
+            inspect.getsource(validate_citations),
+            inspect.getsource(finalize_answer),
+            NO_ANSWER_TEXT,
+        )
+    )
+    return hashlib.sha256(source.encode("utf-8")).hexdigest()

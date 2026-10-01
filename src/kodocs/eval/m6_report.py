@@ -71,6 +71,12 @@ def _cell(value: object) -> str:
     )
 
 
+def _mapping_rows(value: object) -> list[Mapping]:
+    if not isinstance(value, list):
+        return []
+    return [item for item in value if isinstance(item, Mapping)]
+
+
 def _hash(value: object) -> str | None:
     return (
         value
@@ -202,7 +208,25 @@ def _temporal(data: Mapping) -> str:
             ]
         )
     changes = _map(data.get("top10_changes"))
-    non_temporal = _num(changes.get("unexpected_change_count"))
+    non_temporal = _num(changes.get("non_temporal_change_count"))
+    change_rows = [
+        [
+            _ids([row.get("question_id")]),
+            (
+                "구성 변경"
+                if row.get("membership_changed") is True
+                else "순서만"
+                if row.get("order_only") is True
+                else MISSING
+            ),
+            _cell(
+                row.get("relevant_docs_all_current")
+                if isinstance(row.get("relevant_docs_all_current"), bool)
+                else None
+            ),
+        ]
+        for row in _mapping_rows(changes.get("non_temporal_changes"))
+    ]
     groups = _map(changes.get("by_group"))
     group_rows = [
         [
@@ -229,7 +253,22 @@ def _temporal(data: Mapping) -> str:
             ),
             _table(("옵션", "개정 전 우선 수", "분모"), counts),
             _table(("집합", "검사 문항", "상위 10 변경 문항"), group_rows),
-            f"비 temporal 상위 10 문서 불변 확인: {_cell(non_temporal == 0 if non_temporal is not None else None)}; unexpected_changes: {_ids(changes.get('unexpected_changes'))}; 변경 수: {_cell(non_temporal)}",
+            (
+                "비 temporal 문항 중 상위 10 순서가 바뀐 문항 수: "
+                f"{_cell(non_temporal)} (구성 변경 "
+                f"{_cell(_num(changes.get('non_temporal_membership_changed_count')))}, "
+                "순서만 "
+                f"{_cell(_num(changes.get('non_temporal_order_only_count')))}); "
+                "바뀐 문항의 정답 문서가 모두 현행판인 문항 수: "
+                f"{_cell(_num(changes.get('non_temporal_relevant_all_current_count')))}. "
+                "같은 rule_id의 여러 판이 상위에 함께 오면 temporal이 아니어도 교환이 일어난다 "
+                "(non_temporal_changes)."
+            ),
+            (
+                _table(("문항 ID", "변경 유형", "정답 문서 모두 현행판"), change_rows)
+                if change_rows or non_temporal is None
+                else "변경된 비 temporal 문항 없음"
+            ),
         ]
     )
 
@@ -490,6 +529,40 @@ def _test(results: Sequence[Mapping], runs: Sequence[Mapping]) -> str:
     return "\n\n".join(parts)
 
 
+def _dev_history(entries: Sequence[Mapping]) -> str:
+    rows = [
+        [
+            _num(entry.get("attempt")),
+            entry.get("kind") if entry.get("kind") in {"dev", "pilot"} else None,
+            entry.get("status") if entry.get("status") in {"invalid"} else None,
+            _timestamp(entry.get("invalidated_on")),
+            _num(entry.get("runs_rows")),
+            _reason(entry.get("reason")),
+            _hash(entry.get("runs_sha256")),
+            _hash(entry.get("result_sha256")),
+        ]
+        for entry in entries
+    ]
+    return _table(
+        (
+            "시도",
+            "종류",
+            "상태",
+            "무효 처리일",
+            "행 수",
+            "사유",
+            "runs SHA-256",
+            "결과 SHA-256",
+        ),
+        rows,
+    ) + (
+        "\n\n무효 처리한 실행의 결과(예: 1차 모델 선택)는 선택에 쓰지 않음. "
+        "규칙 14에 따라 dev 비교를 처음부터 재실행한다."
+        if rows
+        else ""
+    )
+
+
 def _costs(dry: Sequence[Mapping], ledger: Sequence[Mapping]) -> str:
     rows = [
         [
@@ -572,6 +645,7 @@ def render_tables(root: Path, *, run_date: date | None = None) -> str:
         _load_optional_json(path)
         for path in sorted((root / MANIFEST / "m6_test_results").glob("run-*.json"))
     ]
+    dev_history = _load_optional_jsonl(root / MANIFEST / "m6_dev_history.jsonl")
     dry = _load_optional_jsonl(root / MANIFEST / "m6_dry_runs.jsonl")
     ledger = _load_optional_jsonl(root / MANIFEST / "costs.jsonl")
     snapshots = _load_optional_json(root / "tests/contract/snapshots/index.json")
@@ -597,6 +671,7 @@ def render_tables(root: Path, *, run_date: date | None = None) -> str:
             _section("입력 요약", _inputs(inputs)),
             _section("is_current 효과", _temporal(temporal)),
             _section("dev 모델 비교", _dev(dev)),
+            _section("dev 실행 이력", _dev_history(dev_history)),
             _section("고정 설정", _config(config)),
             _section("test 실행", _test(results, runs)),
             _section("예상 비용 대 실제 비용", _costs(dry, ledger)),

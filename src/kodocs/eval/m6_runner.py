@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Protocol
 
 from kodocs.agent.answer import AnswerSystem, answer
+from kodocs.agent.finalize import finalizer_hash
 from kodocs.agent.guardrails import GuardrailConfig
 from kodocs.agent.prompts import prompt_hashes
 from kodocs.agent.types import AgentRuntime, AnswerResult, canonical_hash
@@ -129,6 +130,7 @@ def run_answers(
                     guardrail_hash=guard_hash,
                     m5_config_hash=m5_config_hash,
                     run_seq=run_seq,
+                    finalizer_hash=finalizer_hash(),
                 )
                 ordered_keys.append(cache_key)
                 if cache_key in terminal:
@@ -191,6 +193,7 @@ def run_cache_key(
     guardrail_hash: str,
     m5_config_hash: str,
     run_seq: int,
+    finalizer_hash: str,
 ) -> str:
     """Hash every preregistered cache dimension without storing model inputs."""
     return canonical_hash(
@@ -203,6 +206,7 @@ def run_cache_key(
             "guardrail_hash": guardrail_hash,
             "m5_config_hash": m5_config_hash,
             "run_seq": run_seq,
+            "finalizer_hash": finalizer_hash,
         }
     )
 
@@ -411,6 +415,7 @@ def _completed_record(
         "citations": [
             citation.model_dump(mode="json") for citation in result.citations
         ],
+        "dropped_citations": _dropped_citations(trace),
         "refused": result.refused,
         "refuse_reason": result.refuse_reason,
         "tokens": token_totals,
@@ -462,6 +467,7 @@ def _failure_record(
         ),
         "answer": "",
         "citations": [],
+        "dropped_citations": [],
         "refused": False,
         "refuse_reason": None,
         "tokens": {name: 0 for name in _TOKEN_FIELDS},
@@ -505,6 +511,7 @@ def _base_record(
         "agentic_prompt_hash": prompts["agentic"],
         "guardrail_hash": guard_hash,
         "m5_config_hash": m5_config_hash,
+        "finalizer_hash": finalizer_hash(),
         "concurrency": concurrency,
         "infra_attempt": infra_attempt,
         "h5_pool": question.id in h5_pool_ids,
@@ -531,6 +538,13 @@ def _settings_hash(config: ModelConfigLike) -> str:
     if not isinstance(record, Mapping):
         raise TypeError("model config record must be an object")
     return canonical_hash(record)
+
+
+def _dropped_citations(trace: Mapping[str, object]) -> list[object]:
+    value = trace.get("dropped_citations", ())
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
+        return []
+    return list(value)
 
 
 def _trace_steps(trace: Mapping[str, object]) -> Sequence[object]:

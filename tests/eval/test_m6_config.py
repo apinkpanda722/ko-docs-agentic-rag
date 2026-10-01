@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from kodocs.agent.finalize import finalizer_hash
 from kodocs.agent.guardrails import GuardrailConfig
 from kodocs.agent.prompts import prompt_hashes
 from kodocs.eval.m6_config import freeze_config
@@ -31,6 +32,7 @@ def _root(tmp_path: Path) -> Path:
                 }
             },
             "prompt_hashes": prompt_hashes(),
+            "finalizer_hash": finalizer_hash(),
             "guardrails": {
                 "settings": GuardrailConfig().record(),
                 "settings_hash": GuardrailConfig().settings_hash(),
@@ -57,3 +59,16 @@ def test_freeze_is_exclusive_and_rejects_changed_hashes(tmp_path: Path) -> None:
     _write(path, value)
     with pytest.raises(ValueError, match="prompt"):
         freeze_config(root=mismatch)
+
+
+def test_freeze_rejects_a_dev_comparison_from_an_older_finalizer(
+    tmp_path: Path,
+) -> None:
+    root = _root(tmp_path)
+    path = root / "data/manifest/m6_dev.json"
+    value = json.loads(path.read_text())
+    value["finalizer_hash"] = "0" * 64
+    _write(path, value)
+
+    with pytest.raises(ValueError, match="finalizer"):
+        freeze_config(root=root)
