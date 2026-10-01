@@ -120,5 +120,6 @@ make m7-grade-dry  # M7 채점 호출 수·토큰·비용·페이싱 예상, M7_
 make m7-grade  # 고정 설정 Gemini 채점(캐시 재개·원본 해시 기록), M7_CREDIT_USD로 크레딧 상한 — 실제 Gemini 호출·과금, 사용자 실행
 make m7-analyze  # κ·H5·Sol 사후·라우터 dev 판정 → data/manifest/m7_analysis.json — 네트워크 없음, 사용자 실행
 make m7-evidence-check  # 채점 대상 근거 구성(출처별)·근거 0자 건수(사유별)·SQL 재현 대조 → data/manifest/m7_evidence.json — 로컬 오프라인, 네트워크 없음
+make m7-security-set  # 보안 테스트셋 생성 + S6 인젝션 노출 검증 — make up 필요, 인덱스 읽기 전용, LLM 호출 없음, 사용자 실행
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)
