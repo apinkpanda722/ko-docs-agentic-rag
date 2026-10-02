@@ -48,7 +48,16 @@
     {
       "step": 3,
       "name": "streamlit-ui",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-02T18:43:26+0900",
+      "summary": "Streamlit 질의·결과표 GUI, agent 런타임 팩토리, 사용자 38개 조합, 비스트리밍 answer 어댑터·AppTest·계층 검증 구현; Makefile·AGENTS 명령 추가; make verify 통과(2024 tests), make -n ui 확인, M5~M7 확정 파일 보존.",
+      "completed_at": "2026-10-02T18:54:09+0900",
+      "usage": {
+        "input_tokens": 1219654,
+        "cached_input_tokens": 1119232,
+        "output_tokens": 12483,
+        "attempts": 1
+      }
     },
     {
       "step": 4,
