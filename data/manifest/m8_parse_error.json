@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "source": "data/interim/m7/latency/runs.jsonl",
+  "reported_count": 4,
+  "count": 4,
+  "count_matches": true,
+  "class_counts": {
+    "indeterminate": 4
+  },
+  "items": [
+    {
+      "question_id": "s-syn-050",
+      "system": "simple",
+      "model": "gpt-6-luna",
+      "classification": "indeterminate",
+      "reason": "ChatParseError 유형만 기록; 오류 메시지·원시 출력·출력 길이 없음",
+      "matched_traces": 1,
+      "m6_parse_error": false
+    },
+    {
+      "question_id": "s-syn-139",
+      "system": "simple",
+      "model": "gpt-6-luna",
+      "classification": "indeterminate",
+      "reason": "ChatParseError 유형만 기록; 오류 메시지·원시 출력·출력 길이 없음",
+      "matched_traces": 1,
+      "m6_parse_error": false
+    },
+    {
+      "question_id": "g-syn-022",
+      "system": "agentic",
+      "model": "gpt-6-luna",
+      "classification": "indeterminate",
+      "reason": "ChatParseError 유형만 기록; 오류 메시지·원시 출력·출력 길이 없음",
+      "matched_traces": 1,
+      "m6_parse_error": false
+    },
+    {
+      "question_id": "s-syn-034",
+      "system": "agentic",
+      "model": "gpt-6-luna",
+      "classification": "indeterminate",
+      "reason": "ChatParseError 유형만 기록; 오류 메시지·원시 출력·출력 길이 없음",
+      "matched_traces": 1,
+      "m6_parse_error": false
+    }
+  ],
+  "m6_note": "비스트리밍 M6는 참고 정보이며 분류 입력이 아니다.",
+  "raw_fingerprint": {
+    "sha256": "ec579607608c9f3d2837cd16dfaf7e5c5aab4ef2452d95955a289cc63b81f004",
+    "rows": 226
+  }
+}

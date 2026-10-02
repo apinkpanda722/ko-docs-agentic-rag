@@ -328,3 +328,71 @@ def test_inventory_uses_actual_files_without_fixed_counts(repo):
     ]
     assert result["rev_parse"] == expected
     assert result["rev_parse_calls"] == len(expected)
+
+
+def test_hangul_shingles_threshold_and_contiguous_length():
+    for text, expected in [
+        ("가나다라마바사아자차카타파하거너더러머버" + "x" * 10, 1),
+        ("가" * 19 + "x" * 11, 0),
+        ("=" * 40, 0),
+        ("x" * 40, 0),
+        ("print(value); return value; code()", 0),
+    ]:
+        result = audit.scan_text(text, audit.shingle_hashes(text))
+        assert result["hangul_overlap_shingles"] == expected
+        assert result["overlap_shingles"] == len(audit.normalize(text)) - 29
+    text = "가 " * 35
+    result = audit.scan_text(text, audit.shingle_hashes(text))
+    assert result["hangul_max_overlap_chars"] == result["max_overlap_chars"] == 35
+
+
+def test_large_report_is_tables_bounded_and_grouped(repo):
+    root, _ = repo
+    result = audit.run_audit(root)
+    findings = [
+        {
+            "path": f"file-{i}",
+            "patterns": {"phone": i + 1},
+            "overlap_shingles": i,
+            "max_overlap_chars": i + 30,
+            "hangul_overlap_shingles": 0,
+            "hangul_max_overlap_chars": 0,
+        }
+        for i in range(1000)
+    ]
+    result["worktree"]["findings"] = findings
+    result["history"]["findings"] = findings + findings
+    audit.write_outputs(root, result)
+    doc = (root / audit.REPORT).read_text()
+    assert len(doc.splitlines()) <= 300
+    assert "```json" not in doc
+    assert "| file-999 |" in doc
+    assert "생략" in doc
+    grouped = audit.group_history(findings + findings)
+    assert grouped["file-999"]["blobs"] == 2
+    assert grouped["file-999"]["patterns"]["phone"] == 1000
+
+
+def test_report_bound_with_many_domains_paths_and_calls(repo):
+    root, _ = repo
+    result = audit.run_audit(root)
+    findings = [
+        {
+            "path": f"file-{i}",
+            "patterns": dict.fromkeys(audit.PATTERNS, 1),
+            "overlap_shingles": i,
+            "max_overlap_chars": i + 30,
+            "hangul_overlap_shingles": 0,
+            "hangul_max_overlap_chars": 0,
+        }
+        for i in range(1000)
+    ]
+    result["worktree"]["findings"] = result["history"]["findings"] = findings
+    result["email_domains"]["author"] = {
+        f"d{i}.example": {"count": 1, "category": "other"} for i in range(1000)
+    }
+    result["commit_inventory"]["rev_parse"] = [
+        {"path": f"src/f{i}.py", "line": i} for i in range(1000)
+    ]
+    audit.write_outputs(root, result)
+    assert len((root / audit.REPORT).read_text().splitlines()) <= 300

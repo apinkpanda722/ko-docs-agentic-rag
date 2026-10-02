@@ -1,8 +1,8 @@
 {
-  "executed_at": "2026-10-02T09:16:11.656542+00:00",
-  "head_commit": "b635ae386d96c0a5e6bd18322d0842af8f694b5e",
+  "executed_at": "2026-10-02T09:40:39.010965+00:00",
+  "head_commit": "c8ada50ad92b3ec0f833502e97ad4bf800ee4d9a",
   "worktree": {
-    "scanned_files": 1272,
+    "scanned_files": 1277,
     "scanned_blobs": 0,
     "oversized": 1,
     "undecodable": 0,
@@ -14,13 +14,17 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "data/manifest/law_api.jsonl",
         "patterns": {},
         "overlap_shingles": 113,
-        "max_overlap_chars": 48
+        "max_overlap_chars": 48,
+        "hangul_overlap_shingles": 113,
+        "hangul_max_overlap_chars": 48
       },
       {
         "path": "data/manifest/m7_probe.json",
@@ -28,7 +32,9 @@
           "absolute_path": 3
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "data/manifest/m7_security_set.json",
@@ -36,43 +42,57 @@
           "phone": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "data/manifest/table_golden.json",
         "patterns": {},
         "overlap_shingles": 1,
-        "max_overlap_chars": 30
+        "max_overlap_chars": 30,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-27-m2-parsing.md",
         "patterns": {},
         "overlap_shingles": 39,
-        "max_overlap_chars": 47
+        "max_overlap_chars": 47,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-27-m3-synthetic.md",
         "patterns": {},
         "overlap_shingles": 15,
-        "max_overlap_chars": 40
+        "max_overlap_chars": 40,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-28-m4-golden-set.md",
         "patterns": {},
         "overlap_shingles": 16,
-        "max_overlap_chars": 39
+        "max_overlap_chars": 39,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-30-m5-retrieval.md",
         "patterns": {},
         "overlap_shingles": 64,
-        "max_overlap_chars": 51
+        "max_overlap_chars": 51,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-10-01-m6-agent-mcp.md",
         "patterns": {},
         "overlap_shingles": 80,
-        "max_overlap_chars": 51
+        "max_overlap_chars": 51,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-10-02-m7-answer-eval-appendix.md",
@@ -80,7 +100,9 @@
           "absolute_path": 3
         },
         "overlap_shingles": 30,
-        "max_overlap_chars": 39
+        "max_overlap_chars": 39,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "phases/m0-setup/step2.md",
@@ -88,7 +110,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "phases/m1-data-collection/step1.md",
@@ -96,7 +120,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "phases/m1-data-collection/step2.md",
@@ -105,13 +131,17 @@
           "phone": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "phases/m4-golden-set/step0.md",
         "patterns": {},
         "overlap_shingles": 16,
-        "max_overlap_chars": 45
+        "max_overlap_chars": 45,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "phases/m7-answer-eval/step3.md",
@@ -119,7 +149,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "phases/m8-wrap-up/step1.md",
@@ -127,13 +159,27 @@
           "absolute_path": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "scripts/test_execute.py",
         "patterns": {},
         "overlap_shingles": 1196,
-        "max_overlap_chars": 75
+        "max_overlap_chars": 75,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
+      },
+      {
+        "path": "src/kodocs/eval/m8_audit.py",
+        "patterns": {
+          "absolute_path": 1
+        },
+        "overlap_shingles": 0,
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/query_draft.py",
@@ -141,13 +187,17 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/templates/m3_synthetic.md",
         "patterns": {},
         "overlap_shingles": 4,
-        "max_overlap_chars": 32
+        "max_overlap_chars": 32,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/llm/gemini_chat.py",
@@ -155,7 +205,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/llm/openai_chat.py",
@@ -163,7 +215,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/mcp_server/server.py",
@@ -171,7 +225,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/mcp_server/tokens.py",
@@ -179,7 +235,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/parsing/run.py",
@@ -187,7 +245,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/synth/generate.py",
@@ -195,7 +255,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/agent/test_trace.py",
@@ -203,19 +265,25 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_golden_review.py",
         "patterns": {},
         "overlap_shingles": 92,
-        "max_overlap_chars": 75
+        "max_overlap_chars": 75,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_golden_specs.py",
         "patterns": {},
         "overlap_shingles": 552,
-        "max_overlap_chars": 75
+        "max_overlap_chars": 75,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m6_report.py",
@@ -223,7 +291,9 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m7_grading.py",
@@ -231,7 +301,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m7_latency.py",
@@ -239,7 +311,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m7_security.py",
@@ -247,25 +321,33 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_parsing_score.py",
         "patterns": {},
         "overlap_shingles": 4,
-        "max_overlap_chars": 33
+        "max_overlap_chars": 33,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_query_draft.py",
         "patterns": {},
         "overlap_shingles": 92,
-        "max_overlap_chars": 75
+        "max_overlap_chars": 75,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_text_normalize.py",
         "patterns": {},
         "overlap_shingles": 9,
-        "max_overlap_chars": 38
+        "max_overlap_chars": 38,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/ingest/fixtures/law_body_full.json",
@@ -274,7 +356,9 @@
           "phone": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/ingest/fixtures/law_body_scalar.json",
@@ -282,7 +366,9 @@
           "phone": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/ingest/fixtures/law_search_current_page1.json",
@@ -290,7 +376,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/ingest/test_http.py",
@@ -298,7 +386,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/ingest/test_law_api.py",
@@ -307,7 +397,9 @@
           "phone": 4
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/ingest/test_manifest.py",
@@ -315,7 +407,9 @@
           "law_oc": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/llm/test_anthropic_batch.py",
@@ -323,7 +417,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/llm/test_gemini_chat.py",
@@ -331,7 +427,9 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/llm/test_openai_chat.py",
@@ -339,7 +437,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/mcp_server/conftest.py",
@@ -347,13 +447,17 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/parsing/test_articles.py",
         "patterns": {},
         "overlap_shingles": 3,
-        "max_overlap_chars": 32
+        "max_overlap_chars": 32,
+        "hangul_overlap_shingles": 3,
+        "hangul_max_overlap_chars": 32
       },
       {
         "path": "tests/parsing/test_upstage_adapter.py",
@@ -361,7 +465,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/parsing/test_upstage_direct.py",
@@ -369,7 +475,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/test_config.py",
@@ -377,13 +485,28 @@
           "assignment": 10
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
+      },
+      {
+        "path": "tests/test_m8_audit.py",
+        "patterns": {
+          "law_oc": 1,
+          "assignment": 1,
+          "phone": 1,
+          "absolute_path": 1
+        },
+        "overlap_shingles": 0,
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       }
     ]
   },
   "history": {
     "scanned_files": 0,
-    "scanned_blobs": 2216,
+    "scanned_blobs": 2229,
     "oversized": 7,
     "undecodable": 0,
     "excluded_sensitive_worktree": 0,
@@ -394,13 +517,17 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "data/manifest/law_api.jsonl",
         "patterns": {},
         "overlap_shingles": 113,
-        "max_overlap_chars": 48
+        "max_overlap_chars": 48,
+        "hangul_overlap_shingles": 113,
+        "hangul_max_overlap_chars": 48
       },
       {
         "path": "data/manifest/m7_probe.json",
@@ -408,7 +535,9 @@
           "absolute_path": 3
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "data/manifest/m7_security_set.json",
@@ -416,43 +545,57 @@
           "phone": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "data/manifest/table_golden.json",
         "patterns": {},
         "overlap_shingles": 1,
-        "max_overlap_chars": 30
+        "max_overlap_chars": 30,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-27-m2-parsing.md",
         "patterns": {},
         "overlap_shingles": 39,
-        "max_overlap_chars": 47
+        "max_overlap_chars": 47,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-27-m3-synthetic.md",
         "patterns": {},
         "overlap_shingles": 15,
-        "max_overlap_chars": 40
+        "max_overlap_chars": 40,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-28-m4-golden-set.md",
         "patterns": {},
         "overlap_shingles": 16,
-        "max_overlap_chars": 39
+        "max_overlap_chars": 39,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-30-m5-retrieval.md",
         "patterns": {},
         "overlap_shingles": 64,
-        "max_overlap_chars": 51
+        "max_overlap_chars": 51,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-10-01-m6-agent-mcp.md",
         "patterns": {},
         "overlap_shingles": 80,
-        "max_overlap_chars": 51
+        "max_overlap_chars": 51,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-10-02-m7-answer-eval-appendix.md",
@@ -460,7 +603,9 @@
           "absolute_path": 3
         },
         "overlap_shingles": 30,
-        "max_overlap_chars": 39
+        "max_overlap_chars": 39,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "phases/m0-setup/step2.md",
@@ -468,7 +613,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "phases/m1-data-collection/step1.md",
@@ -476,7 +623,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "phases/m1-data-collection/step2.md",
@@ -485,13 +634,17 @@
           "phone": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "phases/m4-golden-set/step0.md",
         "patterns": {},
         "overlap_shingles": 16,
-        "max_overlap_chars": 45
+        "max_overlap_chars": 45,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "phases/m7-answer-eval/step3.md",
@@ -499,7 +652,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "phases/m8-wrap-up/step1.md",
@@ -507,13 +662,27 @@
           "absolute_path": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "scripts/test_execute.py",
         "patterns": {},
         "overlap_shingles": 1196,
-        "max_overlap_chars": 75
+        "max_overlap_chars": 75,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
+      },
+      {
+        "path": "src/kodocs/eval/m8_audit.py",
+        "patterns": {
+          "absolute_path": 1
+        },
+        "overlap_shingles": 0,
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/query_draft.py",
@@ -521,13 +690,17 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/templates/m3_synthetic.md",
         "patterns": {},
         "overlap_shingles": 4,
-        "max_overlap_chars": 32
+        "max_overlap_chars": 32,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/llm/gemini_chat.py",
@@ -535,7 +708,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/llm/openai_chat.py",
@@ -543,7 +718,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/mcp_server/server.py",
@@ -551,7 +728,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/mcp_server/tokens.py",
@@ -559,7 +738,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/parsing/run.py",
@@ -567,7 +748,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/synth/generate.py",
@@ -575,7 +758,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/agent/test_trace.py",
@@ -583,19 +768,25 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_golden_review.py",
         "patterns": {},
         "overlap_shingles": 92,
-        "max_overlap_chars": 75
+        "max_overlap_chars": 75,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_golden_specs.py",
         "patterns": {},
         "overlap_shingles": 552,
-        "max_overlap_chars": 75
+        "max_overlap_chars": 75,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m6_report.py",
@@ -603,7 +794,9 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m7_grading.py",
@@ -611,7 +804,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m7_latency.py",
@@ -619,7 +814,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m7_security.py",
@@ -627,25 +824,33 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_parsing_score.py",
         "patterns": {},
         "overlap_shingles": 4,
-        "max_overlap_chars": 33
+        "max_overlap_chars": 33,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_query_draft.py",
         "patterns": {},
         "overlap_shingles": 92,
-        "max_overlap_chars": 75
+        "max_overlap_chars": 75,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_text_normalize.py",
         "patterns": {},
         "overlap_shingles": 9,
-        "max_overlap_chars": 38
+        "max_overlap_chars": 38,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/ingest/fixtures/law_body_full.json",
@@ -654,7 +859,9 @@
           "phone": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/ingest/fixtures/law_body_scalar.json",
@@ -662,7 +869,9 @@
           "phone": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/ingest/fixtures/law_search_current_page1.json",
@@ -670,7 +879,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/ingest/test_http.py",
@@ -678,7 +889,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/ingest/test_law_api.py",
@@ -687,7 +900,9 @@
           "phone": 4
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/ingest/test_manifest.py",
@@ -695,7 +910,9 @@
           "law_oc": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/llm/test_anthropic_batch.py",
@@ -703,7 +920,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/llm/test_gemini_chat.py",
@@ -711,7 +930,9 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/llm/test_openai_chat.py",
@@ -719,7 +940,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/mcp_server/conftest.py",
@@ -727,13 +950,17 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/parsing/test_articles.py",
         "patterns": {},
         "overlap_shingles": 3,
-        "max_overlap_chars": 32
+        "max_overlap_chars": 32,
+        "hangul_overlap_shingles": 3,
+        "hangul_max_overlap_chars": 32
       },
       {
         "path": "tests/parsing/test_upstage_adapter.py",
@@ -741,7 +968,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/parsing/test_upstage_direct.py",
@@ -749,7 +978,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/test_config.py",
@@ -757,7 +988,22 @@
           "assignment": 10
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
+      },
+      {
+        "path": "tests/test_m8_audit.py",
+        "patterns": {
+          "law_oc": 1,
+          "assignment": 1,
+          "phone": 1,
+          "absolute_path": 1
+        },
+        "overlap_shingles": 0,
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-10-02-m7-answer-eval.md",
@@ -765,7 +1011,9 @@
           "absolute_path": 3
         },
         "overlap_shingles": 30,
-        "max_overlap_chars": 39
+        "max_overlap_chars": 39,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -773,7 +1021,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/llm/openai_chat.py",
@@ -781,7 +1031,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/llm/test_openai_chat.py",
@@ -789,7 +1041,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -797,7 +1051,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m7_security.py",
@@ -805,7 +1061,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m7_security.py",
@@ -813,7 +1071,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m7_security.py",
@@ -821,7 +1081,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -829,7 +1091,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m7_grading.py",
@@ -837,7 +1101,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/llm/gemini_chat.py",
@@ -845,7 +1111,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m7_grading.py",
@@ -853,7 +1121,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/llm/test_gemini_chat.py",
@@ -861,7 +1131,9 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/llm/gemini_chat.py",
@@ -869,7 +1141,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/llm/test_gemini_chat.py",
@@ -877,7 +1151,9 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m7_grading.py",
@@ -885,7 +1161,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m7_grading.py",
@@ -893,7 +1171,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "phases/m7-answer-eval/step3.md",
@@ -901,7 +1181,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -909,7 +1191,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "phases/m7-answer-eval/step3.md",
@@ -917,7 +1201,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -925,13 +1211,17 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-10-01-m6-agent-mcp.md",
         "patterns": {},
         "overlap_shingles": 80,
-        "max_overlap_chars": 51
+        "max_overlap_chars": 51,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m6_report.py",
@@ -939,19 +1229,25 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-10-01-m6-agent-mcp.md",
         "patterns": {},
         "overlap_shingles": 9,
-        "max_overlap_chars": 38
+        "max_overlap_chars": 38,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-10-01-m6-agent-mcp.md",
         "patterns": {},
         "overlap_shingles": 9,
-        "max_overlap_chars": 38
+        "max_overlap_chars": 38,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m6_report.py",
@@ -959,13 +1255,17 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-10-01-m6-agent-mcp.md",
         "patterns": {},
         "overlap_shingles": 9,
-        "max_overlap_chars": 38
+        "max_overlap_chars": 38,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m6_report.py",
@@ -973,7 +1273,9 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/agent/test_trace.py",
@@ -981,7 +1283,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m6_report.py",
@@ -989,7 +1293,9 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_m6_report.py",
@@ -997,13 +1303,17 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "scripts/test_execute.py",
         "patterns": {},
         "overlap_shingles": 1196,
-        "max_overlap_chars": 75
+        "max_overlap_chars": 75,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/llm/openai_chat.py",
@@ -1011,7 +1321,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/llm/test_openai_chat.py",
@@ -1019,7 +1331,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -1027,13 +1341,17 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-30-m5-retrieval.md",
         "patterns": {},
         "overlap_shingles": 62,
-        "max_overlap_chars": 51
+        "max_overlap_chars": 51,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -1041,7 +1359,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/query_draft.py",
@@ -1049,19 +1369,25 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_golden_specs.py",
         "patterns": {},
         "overlap_shingles": 460,
-        "max_overlap_chars": 75
+        "max_overlap_chars": 75,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_query_draft.py",
         "patterns": {},
         "overlap_shingles": 92,
-        "max_overlap_chars": 75
+        "max_overlap_chars": 75,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/query_draft.py",
@@ -1069,19 +1395,25 @@
           "assignment": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_golden_specs.py",
         "patterns": {},
         "overlap_shingles": 368,
-        "max_overlap_chars": 75
+        "max_overlap_chars": 75,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_query_draft.py",
         "patterns": {},
         "overlap_shingles": 92,
-        "max_overlap_chars": 75
+        "max_overlap_chars": 75,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/query_draft.py",
@@ -1089,7 +1421,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/query_draft.py",
@@ -1097,13 +1431,17 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_golden_specs.py",
         "patterns": {},
         "overlap_shingles": 92,
-        "max_overlap_chars": 75
+        "max_overlap_chars": 75,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/query_draft.py",
@@ -1111,7 +1449,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/query_draft.py",
@@ -1119,7 +1459,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/query_draft.py",
@@ -1127,13 +1469,17 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-27-m3-synthetic.md",
         "patterns": {},
         "overlap_shingles": 15,
-        "max_overlap_chars": 40
+        "max_overlap_chars": 40,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/query_draft.py",
@@ -1141,61 +1487,81 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-27-m3-synthetic.md",
         "patterns": {},
         "overlap_shingles": 15,
-        "max_overlap_chars": 40
+        "max_overlap_chars": 40,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-27-m3-synthetic.md",
         "patterns": {},
         "overlap_shingles": 15,
-        "max_overlap_chars": 40
+        "max_overlap_chars": 40,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/templates/m3_synthetic.md",
         "patterns": {},
         "overlap_shingles": 4,
-        "max_overlap_chars": 32
+        "max_overlap_chars": 32,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-27-m3-synthetic.md",
         "patterns": {},
         "overlap_shingles": 15,
-        "max_overlap_chars": 40
+        "max_overlap_chars": 40,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/templates/m3_synthetic.md",
         "patterns": {},
         "overlap_shingles": 4,
-        "max_overlap_chars": 32
+        "max_overlap_chars": 32,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-27-m3-synthetic.md",
         "patterns": {},
         "overlap_shingles": 15,
-        "max_overlap_chars": 40
+        "max_overlap_chars": 40,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/templates/m3_synthetic.md",
         "patterns": {},
         "overlap_shingles": 4,
-        "max_overlap_chars": 32
+        "max_overlap_chars": 32,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-27-m3-synthetic.md",
         "patterns": {},
         "overlap_shingles": 15,
-        "max_overlap_chars": 40
+        "max_overlap_chars": 40,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/templates/m3_synthetic.md",
         "patterns": {},
         "overlap_shingles": 4,
-        "max_overlap_chars": 32
+        "max_overlap_chars": 32,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/synth/generate.py",
@@ -1203,31 +1569,41 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-27-m3-synthetic.md",
         "patterns": {},
         "overlap_shingles": 15,
-        "max_overlap_chars": 40
+        "max_overlap_chars": 40,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/templates/m3_synthetic.md",
         "patterns": {},
         "overlap_shingles": 4,
-        "max_overlap_chars": 32
+        "max_overlap_chars": 32,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-27-m3-synthetic.md",
         "patterns": {},
         "overlap_shingles": 16,
-        "max_overlap_chars": 41
+        "max_overlap_chars": 41,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/templates/m3_synthetic.md",
         "patterns": {},
         "overlap_shingles": 4,
-        "max_overlap_chars": 32
+        "max_overlap_chars": 32,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/synth/generate.py",
@@ -1235,19 +1611,25 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-27-m3-synthetic.md",
         "patterns": {},
         "overlap_shingles": 16,
-        "max_overlap_chars": 41
+        "max_overlap_chars": 41,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/eval/templates/m3_synthetic.md",
         "patterns": {},
         "overlap_shingles": 4,
-        "max_overlap_chars": 32
+        "max_overlap_chars": 32,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/synth/generate.py",
@@ -1255,13 +1637,17 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-27-m3-synthetic.md",
         "patterns": {},
         "overlap_shingles": 12,
-        "max_overlap_chars": 41
+        "max_overlap_chars": 41,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/synth/generate.py",
@@ -1269,7 +1655,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/synth/generate.py",
@@ -1277,7 +1665,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/synth/generate.py",
@@ -1285,7 +1675,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/synth/generate.py",
@@ -1293,7 +1685,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/synth/generate.py",
@@ -1301,7 +1695,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -1309,7 +1705,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -1317,13 +1715,17 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "docs/results/2026-09-27-m2-parsing.md",
         "patterns": {},
         "overlap_shingles": 39,
-        "max_overlap_chars": 47
+        "max_overlap_chars": 47,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -1331,7 +1733,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -1339,7 +1743,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/parsing/run.py",
@@ -1347,7 +1753,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/parsing/test_upstage_adapter.py",
@@ -1355,7 +1763,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/parsing/test_upstage_direct.py",
@@ -1363,7 +1773,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/parsing/run.py",
@@ -1371,7 +1783,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -1379,7 +1793,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/parsing/run.py",
@@ -1387,7 +1803,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/parsing/test_upstage_adapter.py",
@@ -1395,7 +1813,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/parsing/test_upstage_direct.py",
@@ -1403,7 +1823,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -1411,7 +1833,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/parsing/run.py",
@@ -1419,7 +1843,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -1427,7 +1853,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/parsing/run.py",
@@ -1435,7 +1863,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -1443,7 +1873,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -1451,19 +1883,25 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/eval/test_parsing_score.py",
         "patterns": {},
         "overlap_shingles": 4,
-        "max_overlap_chars": 33
+        "max_overlap_chars": 33,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/parsing/test_articles.py",
         "patterns": {},
         "overlap_shingles": 3,
-        "max_overlap_chars": 32
+        "max_overlap_chars": 32,
+        "hangul_overlap_shingles": 3,
+        "hangul_max_overlap_chars": 32
       },
       {
         "path": "src/kodocs/parsing/run.py",
@@ -1471,7 +1909,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/parsing/test_upstage_adapter.py",
@@ -1479,7 +1919,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "src/kodocs/parsing/run.py",
@@ -1487,7 +1929,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/parsing/test_upstage_adapter.py",
@@ -1495,7 +1939,9 @@
           "assignment": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -1503,7 +1949,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/test_config.py",
@@ -1511,7 +1959,9 @@
           "assignment": 10
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -1519,7 +1969,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/ingest/test_law_api.py",
@@ -1528,7 +1980,9 @@
           "phone": 4
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": ".claude/skills/failure-patterns/SKILL.md",
@@ -1536,7 +1990,9 @@
           "law_oc": 1
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/ingest/test_manifest.py",
@@ -1544,7 +2000,9 @@
           "law_oc": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/ingest/test_law_api.py",
@@ -1552,7 +2010,9 @@
           "phone": 2
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       },
       {
         "path": "tests/test_config.py",
@@ -1560,7 +2020,9 @@
           "assignment": 10
         },
         "overlap_shingles": 0,
-        "max_overlap_chars": 0
+        "max_overlap_chars": 0,
+        "hangul_overlap_shingles": 0,
+        "hangul_max_overlap_chars": 0
       }
     ]
   },
@@ -1571,7 +2033,7 @@
   "email_domains": {
     "author": {
       "gmail.com": {
-        "count": 327,
+        "count": 331,
         "category": "personal_service"
       },
       "liveuou.kr": {
@@ -1589,7 +2051,7 @@
         "category": "other"
       },
       "gmail.com": {
-        "count": 327,
+        "count": 331,
         "category": "personal_service"
       },
       "mediazen.co.kr": {
@@ -1609,7 +2071,8 @@
         "path": "data/interim/parsed",
         "files": 359
       }
-    ]
+    ],
+    "definition": "NFC·공백 제거 후 원문 30자 창으로 해시 대조. 한글 슁글은 해시 전 이 창의 U+AC00–U+D7A3 음절이 20자 이상. 원/한글 건수는 중복 창 포함 위치 수; 최대 길이는 연속 일치 창 수+29(없으면 0). 한글 최대 길이는 필터도 연속 통과한 창 기준."
   },
   "commit_inventory": {
     "definition": "서로 다른 (파일, 해시) 쌍: 커밋|commit JSON 키의 값 또는 커밋|commit|code_commit이 있는 줄의 7~40자 소문자 16진 토큰. SHA-256은 제외.",
@@ -1662,15 +2125,19 @@
       },
       {
         "path": "src/kodocs/eval/m8_audit.py",
-        "line": 268
+        "line": 279
       },
       {
         "path": "src/kodocs/eval/m8_audit.py",
-        "line": 460
+        "line": 471
       },
       {
         "path": "src/kodocs/eval/m8_audit.py",
-        "line": 461
+        "line": 472
+      },
+      {
+        "path": "src/kodocs/eval/m8_audit.py",
+        "line": 647
       },
       {
         "path": "src/kodocs/eval/parsing_report.py",
@@ -1698,7 +2165,7 @@
       }
     ],
     "rev_parse_files": 10,
-    "rev_parse_calls": 14
+    "rev_parse_calls": 15
   },
   "hygiene": {
     "LICENSE": false,

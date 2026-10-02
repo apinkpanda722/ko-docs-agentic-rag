@@ -126,10 +126,18 @@ def scan_text(text: str, reference: set[bytes] | None = None) -> dict:
         if matches:
             counts[name] = len(matches)
     overlap = longest = run = 0
+    hangul_overlap = hangul_longest = hangul_run = 0
     if reference:
         text = normalize(text)
         for i in range(len(text) - 29):
-            hit = hashlib.sha256(text[i : i + 30].encode()).digest() in reference
+            window = text[i : i + 30]
+            hit = hashlib.sha256(window.encode()).digest() in reference
+            # Count Hangul on the same NFC, whitespace-removed plaintext window
+            # used for original hashing (before hashing, never on a digest).
+            hangul_hit = hit and sum("가" <= c <= "힣" for c in window) >= 20
+            hangul_run = hangul_run + 1 if hangul_hit else 0
+            hangul_overlap += int(hangul_hit)
+            hangul_longest = max(hangul_longest, hangul_run + 29 if hangul_run else 0)
             run = run + 1 if hit else 0
             overlap += int(hit)
             longest = max(longest, run + 29 if run else 0)
@@ -137,6 +145,8 @@ def scan_text(text: str, reference: set[bytes] | None = None) -> dict:
         "patterns": counts,
         "overlap_shingles": overlap,
         "max_overlap_chars": longest,
+        "hangul_overlap_shingles": hangul_overlap,
+        "hangul_max_overlap_chars": hangul_longest,
     }
 
 
@@ -177,6 +187,7 @@ def load_sources(root: Path) -> tuple[set[bytes], dict]:
     return reference, {
         "status": "available" if reference else "skipped: 로컬 원문 없음",
         "sources": sources,
+        "definition": "NFC·공백 제거 후 원문 30자 창으로 해시 대조. 한글 슁글은 해시 전 이 창의 U+AC00–U+D7A3 음절이 20자 이상. 원/한글 건수는 중복 창 포함 위치 수; 최대 길이는 연속 일치 창 수+29(없으면 0). 한글 최대 길이는 필터도 연속 통과한 창 기준.",
     }
 
 
@@ -473,6 +484,207 @@ DECISIONS = """## 사용자 결정 (사용자 보존 영역)
 """
 
 
+def group_history(findings):
+    grouped = {}
+    for item in findings:
+        bucket = grouped.setdefault(item["path"], {"blobs": 0, "patterns": {}})
+        bucket["blobs"] += 1
+        for pattern, count in item["patterns"].items():
+            bucket["patterns"][pattern] = max(bucket["patterns"].get(pattern, 0), count)
+    return grouped
+
+
+def render_report(result, gh, *, max_lines=250, detail_limit=45):
+    lines = [
+        "## 결정론 점검 집계",
+        "",
+        "발견 건수는 공개 판정이 아니다. 패턴은 참고 위치이며 매치 값은 기록하지 않는다. 원본 전체는 `data/manifest/m8_audit.json`에 있다.",
+    ]
+
+    def cell(value):
+        return (
+            safe_path(str(value))
+            .replace("|", r"\|")
+            .replace("\n", " ")
+            .replace("\r", " ")
+        )
+
+    def table(title, headers, rows, limit=20):
+        rows = list(rows)
+        # Keep all top-30 shingle rows; progressively bound other location
+        # tables if their combined size would exceed the document line budget.
+        if not title.startswith("슁글"):
+            limit = min(limit, detail_limit)
+        lines.extend(
+            [
+                "",
+                f"### {title}",
+                "",
+                "| " + " | ".join(headers) + " |",
+                "| " + " | ".join(["---"] * len(headers)) + " |",
+            ]
+        )
+        lines.extend(
+            "| " + " | ".join(cell(v) for v in row) + " |" for row in rows[:limit]
+        )
+        if len(rows) > limit:
+            lines.append(
+                f"\n{len(rows) - limit}행 생략; 전체 위치·건수는 manifest 참조."
+            )
+
+    table(
+        "실행 정보",
+        ["항목", "값"],
+        [(k, result[k]) for k in ("executed_at", "head_commit")],
+    )
+    totals = {}
+    for area in ("worktree", "history"):
+        totals[area] = Counter()
+        for item in result[area]["findings"]:
+            totals[area].update(item["patterns"])
+    table(
+        "패턴별 합계",
+        ["패턴", "작업 트리", "이력"],
+        [
+            (k, totals["worktree"][k], totals["history"][k])
+            for k in sorted(set(totals["worktree"]) | set(totals["history"]))
+        ],
+        limit=20,
+    )
+    work = [
+        (r["path"], k, n)
+        for r in result["worktree"]["findings"]
+        for k, n in sorted(r["patterns"].items())
+    ]
+    table("작업 트리 발견", ["경로", "패턴", "건수"], work, limit=45)
+    grouped = group_history(result["history"]["findings"])
+    table(
+        "이력 발견(경로 단위)",
+        ["경로", "해당 blob 수", "패턴별 최대 건수"],
+        [
+            (
+                p,
+                g["blobs"],
+                ", ".join(f"{k}: {n}" for k, n in sorted(g["patterns"].items())) or "—",
+            )
+            for p, g in sorted(grouped.items())
+            if g["patterns"]
+        ],
+        limit=45,
+    )
+    # One row per file across worktree/history, with independent maxima for
+    # each statistic. Full per-blob observations remain in the manifest.
+    overlap = {}
+    keys = (
+        "overlap_shingles",
+        "max_overlap_chars",
+        "hangul_overlap_shingles",
+        "hangul_max_overlap_chars",
+    )
+    for area in ("worktree", "history"):
+        for r in result[area]["findings"]:
+            if r["overlap_shingles"]:
+                bucket = overlap.setdefault(r["path"], dict.fromkeys(keys, 0))
+                for key in keys:
+                    bucket[key] = max(bucket[key], r.get(key, 0))
+    ranked = sorted(
+        overlap.items(), key=lambda pair: (-pair[1]["max_overlap_chars"], pair[0])
+    )
+    table(
+        "슁글 겹침 상위 30개 파일",
+        ["경로", "원 겹침 슁글 수", "최대 길이", "한글 슁글 수", "한글 최대 길이"],
+        [(p, *(r[k] for k in keys)) for p, r in ranked],
+        limit=30,
+    )
+    lines += [
+        "",
+        result["shingles"].get(
+            "definition", "NFC·공백 제거 후 30자 창. 최대 길이=연속 일치 창 수+29."
+        ),
+        "파일별 열은 작업 트리·이력 관측값의 각각 최대값이다.",
+    ]
+    table(
+        "원문 대조 상태",
+        ["상태", "입력 위치·파일 수"],
+        [
+            (
+                result["shingles"]["status"],
+                "; ".join(
+                    f"{s['path']}: {s['files']}" for s in result["shingles"]["sources"]
+                ),
+            )
+        ],
+    )
+    table(
+        "이메일 도메인",
+        ["도메인", "건수", "구분", "역할"],
+        [
+            (domain, r["count"], r["category"], role)
+            for role, domains in result["email_domains"].items()
+            for domain, r in sorted(domains.items())
+        ],
+        limit=15,
+    )
+    inventory = result["commit_inventory"]
+    table(
+        "커밋 해시 인벤토리",
+        ["항목", "건수"],
+        [
+            (k, inventory[k])
+            for k in (
+                "pairs",
+                "distinct_hashes",
+                "files",
+                "existing",
+                "missing",
+                "rev_parse_files",
+                "rev_parse_calls",
+            )
+        ],
+    )
+    lines += ["", inventory["definition"]]
+    table(
+        "rev-parse 호출 위치",
+        ["파일", "줄"],
+        [(r["path"], r["line"]) for r in inventory["rev_parse"]],
+        limit=20,
+    )
+    table("저장소 위생", ["항목", "값"], sorted(result["hygiene"].items()))
+    table(
+        "민감 경로 인벤토리",
+        ["구분", "종류", "건수"],
+        [
+            (area, k, v["count"])
+            for area, kinds in result["paths"].items()
+            for k, v in kinds.items()
+        ],
+    )
+    table(
+        "스캔·제외 건수",
+        ["구분", "항목", "건수"],
+        [
+            (area, k, v)
+            for area in ("worktree", "history")
+            for k, v in result[area].items()
+            if k != "findings"
+        ],
+    )
+    table("ref 개수", ["종류", "건수"], sorted(result["refs"].items()))
+    table(
+        "GitHub 점검",
+        ["항목", "값"],
+        [("status", gh.get("status", "기록 있음")), *(gh.get("counts", {}).items())],
+    )
+    rendered = "\n".join(lines)
+    if len(rendered.splitlines()) > max_lines:
+        if detail_limit <= 1:
+            raise AuditError("보존 영역을 유지하며 300줄 이내 보고 불가")
+        return render_report(
+            result, gh, max_lines=max_lines, detail_limit=max(1, detail_limit - 5)
+        )
+    return rendered
+
+
 def write_outputs(root: Path, result: dict) -> None:
     try:
         (root / MANIFEST).parent.mkdir(parents=True, exist_ok=True)
@@ -484,11 +696,6 @@ def write_outputs(root: Path, result: dict) -> None:
             json.loads(read(gh_path))
             if gh_path.is_file()
             else {"status": "미실행: 사용자 실행 필요"}
-        )
-        body = (
-            "## 결정론 점검 집계\n\n발견 건수는 공개 판정이 아니다. 패턴은 참고 위치이며 매치 값은 기록하지 않는다.\n\n```json\n"
-            + json.dumps({**result, "github": gh}, ensure_ascii=False, indent=2)
-            + "\n```"
         )
         path = root / REPORT
         document = (
@@ -504,6 +711,8 @@ def write_outputs(root: Path, result: dict) -> None:
             raise AuditError("결과 문서 생성 영역 형식 오류")
         before, rest = document.split(BEGIN)
         _, after = rest.split(END)
+        remaining = 300 - len((before + BEGIN + "\n" + END + after).splitlines())
+        body = render_report(result, gh, max_lines=remaining)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(
             before + BEGIN + "\n" + body + "\n" + END + after, encoding="utf-8"

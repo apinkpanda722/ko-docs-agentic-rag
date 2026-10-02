@@ -44,6 +44,9 @@
 - 커밋 메시지는 conventional commits 형식을 따를 것 (feat:, fix:, docs:, refactor:)
 
 ## 명령어
+make adr-index  # ADR 상태·상호 참조 색인 생성 → docs/ADR-INDEX.md — 네트워크 없음
+make m8-parse-error  # M7 지연 원본 해시 대조·parse_error 오프라인 분류 → data/manifest/m8_parse_error.json — 네트워크 없음
+make m8-wrap-report  # M7 환경 정정·parse_error·별표 규정 단위 상한 보고 → docs/results/2026-10-03-m8-wrap-up.md — 네트워크 없음
 make m8-audit  # 공개 전환 점검(작업 트리·git 이력·슁글 겹침·이메일 도메인·해시 인벤토리) → data/manifest/m8_audit.json·docs/results/2026-10-03-m8-public-readiness.md — 네트워크 없음
 make m8-audit-gh  # GitHub 이슈·PR·댓글 점검(gh 읽기 전용, 건수·위치만) — 네트워크, 사용자 실행
 make verify      # ruff + pytest (Stop hook, execute.py, CI가 모두 이 명령을 부른다)
