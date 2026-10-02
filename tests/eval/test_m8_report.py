@@ -14,7 +14,15 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def source(root):
-    shutil.copytree(ROOT / "data/manifest", root / "data/manifest")
+    # Real M8 run artifacts (ledger, results, latency) would pollute the fixtures
+    # as soon as the experiment has actually been run.
+    shutil.copytree(
+        ROOT / "data/manifest",
+        root / "data/manifest",
+        ignore=shutil.ignore_patterns(
+            "m8_test_runs.jsonl", "m8_test_results", "m8_latency.json"
+        ),
+    )
     completed(root, raw_present=True)
     put(
         root,
@@ -115,3 +123,58 @@ def test_every_rerun_metric_is_reported(tmp_path):
     (root / RUNS_PATH).write_text("".join(json.dumps(r) + "\n" for r in ledger))
     completed(root, run=3)
     assert "0.145" in m.render(root)
+
+
+def failed_attempt(root, error_type="AttributeError"):
+    """Prepend a failed attempt 1 whose raw archive is preserved (as m8_test does)."""
+    import hashlib
+
+    from kodocs.eval.m8_contract import RUNS_PATH
+
+    raw_path = "data/interim/m8/test/run-01/failed-attempt-01/runs.jsonl"
+    target = root / raw_path
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(b'{"question_id":"x"}\n')
+    record = {
+        "attempt": 1,
+        "seq": 1,
+        "status": "failed",
+        "error_type": error_type,
+        "raw_path": raw_path,
+        "raw": {"sha256": hashlib.sha256(target.read_bytes()).hexdigest(), "rows": 1},
+    }
+    existing = (root / RUNS_PATH).read_text()
+    (root / RUNS_PATH).write_text(json.dumps(record) + "\n" + existing)
+    return record
+
+
+def test_failed_first_attempt_is_reported_and_its_record_is_kept(tmp_path):
+    root = source(tmp_path)
+    failed_attempt(root)
+    text = m.render(root)
+    assert "### 실패·중단 시도(원본 보존, 결과 파일 없음)" in text
+    assert "AttributeError" in text and "failed-attempt-01/runs.jsonl" in text
+    assert "첫 시도 실패 공개(사후 정정)" in text
+    assert "class_descriptions.d1" in text and "명시 경로" in text
+
+
+def test_other_failures_get_the_table_but_not_the_d1_explanation(tmp_path):
+    root = source(tmp_path)
+    failed_attempt(root, error_type="PreflightError")
+    text = m.render(root)
+    assert "PreflightError" in text
+    assert "첫 시도 실패 공개(사후 정정)" not in text
+
+
+def test_no_failed_attempt_means_no_failure_section(tmp_path):
+    assert "실패·중단 시도" not in m.render(source(tmp_path))
+
+
+def test_tampered_failed_archive_refuses_the_report(tmp_path):
+    from kodocs.eval.m7_rawhash import RawHashMismatch
+
+    root = source(tmp_path)
+    record = failed_attempt(root)
+    (root / record["raw_path"]).write_bytes(b'{"question_id":"changed"}\n')
+    with pytest.raises(RawHashMismatch):
+        m.render(root)

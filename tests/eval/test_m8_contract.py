@@ -85,6 +85,46 @@ def test_not_run_and_freeze_only(tmp_path):
     assert load_h8_state(tmp_path).status == "not_run"
 
 
+def failed_record(attempt=1, status="failed", error="AttributeError"):
+    return {"attempt": attempt, "seq": 1, "status": status, "error_type": error}
+
+
+def test_failed_attempts_only_is_not_run_but_the_failure_is_kept(tmp_path):
+    """No result artifact at all: not run, yet never shown as a plain not-run."""
+    ledger = tmp_path / RUNS_PATH
+    ledger.parent.mkdir(parents=True)
+    ledger.write_text(
+        json.dumps(failed_record())
+        + "\n"
+        + json.dumps(failed_record(2, "stopped", "KeyboardInterrupt"))
+        + "\n"
+    )
+    state = load_h8_state(tmp_path)
+    assert state.status == "not_run"
+    assert state.failed_attempts == (
+        (1, "failed", "AttributeError"),
+        (2, "stopped", "KeyboardInterrupt"),
+    )
+    assert load_h8_state(tmp_path / "empty").failed_attempts == ()
+
+
+def test_failed_attempts_with_a_result_trace_remain_an_error(tmp_path):
+    ledger = tmp_path / RUNS_PATH
+    ledger.parent.mkdir(parents=True)
+    ledger.write_text(json.dumps(failed_record()) + "\n")
+    (tmp_path / RESULTS_DIR).mkdir(parents=True)  # a result directory but no result
+    with pytest.raises(H8ResultError):
+        load_h8_state(tmp_path)
+
+
+def test_failed_attempt_then_a_completed_run_is_the_normal_result(tmp_path):
+    payload = completed(tmp_path)
+    ledger = tmp_path / RUNS_PATH
+    ledger.write_text(json.dumps(failed_record()) + "\n" + ledger.read_text())
+    state = load_h8_state(tmp_path)
+    assert state.status == "result" and state.result == payload
+
+
 @pytest.mark.parametrize("raw_present", [True, False])
 def test_completed(tmp_path, raw_present):
     payload = completed(tmp_path, raw_present=raw_present)

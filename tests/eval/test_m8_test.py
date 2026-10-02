@@ -27,6 +27,42 @@ class Model:
         return {"device": "cpu", "revision": "fixture"}
 
 
+def m7_failures_document(sets):
+    """Shape of the committed m7_failures.json (verified on the real file).
+
+    ``class_descriptions.d1`` is a plain STRING, ``by_type`` repeats the same
+    classes per type, and ``d1_partial`` is a different class; none of them may
+    be read as the d1 list.
+    """
+    by_system_set = {}
+    for key, ids in sets.items():
+        by_system_set[key] = {
+            "by_type": {
+                "semantic": {"classes": {"d1": {"count": len(ids), "ids": ["dup"]}}}
+            },
+            "classes": {
+                "d1": {"count": len(ids), "ids": list(ids)},
+                "d2": {"count": 0, "ids": []},
+            },
+            "d1_partial": {"count": 1, "ids": ["partial-only"]},
+            "total_runs": 30,
+        }
+    return {
+        "by_system_set": by_system_set,
+        "class_descriptions": {"d1": "d1 검색 실패: M8 리랭커 근거"},
+        "schema_version": 1,
+    }
+
+
+REAL_LIKE_SETS = {
+    "agentic|test_gold": ["gold-0"],
+    "agentic|test_silver": ["silver-1", "excluded"],
+    "simple|test_gold": [],
+    "simple|test_silver": [],
+    "agentic|dev_other": ["not-a-test-set"],
+}
+
+
 @pytest.fixture
 def experiment(tmp_path, monkeypatch):
     Model.calls = 0
@@ -87,6 +123,7 @@ def experiment(tmp_path, monkeypatch):
             }
         )
     local = put(tmp_path, m.M5_LOCAL_PATH, {"runs": runs})
+    put(tmp_path, m.M7_FAILURES_PATH, m7_failures_document(REAL_LIKE_SETS))
     put(
         tmp_path,
         m.M5_RESULT_PATH,
@@ -296,12 +333,6 @@ def test_interrupted_scoring_pins_partial_raw(experiment):
 
 def test_d1_visible_rel2_presence_and_ranks(experiment):
     kwargs, _ = experiment
-    root = kwargs["root"]
-    put(
-        root,
-        "data/manifest/m7_failures.json",
-        {"classes": {"d1": {"ids": ["gold-0", "excluded"]}}},
-    )
     rows = [
         {
             "question_id": "gold-0",
@@ -309,11 +340,107 @@ def test_d1_visible_rel2_presence_and_ranks(experiment):
             "reranked_docs": ["doc-0", "other"],
         }
     ]
-    table = m.d1_table(root, rows, kwargs["questions"])
+    ids = m.load_d1_ids(kwargs["root"])
+    table = m.d1_table(ids, rows, kwargs["questions"])
+    assert [r["question_id"] for r in table] == ["excluded", "gold-0", "silver-1"]
     assert table[0]["status"] == "대상 외"
     assert table[1]["candidate_rel2_count"] == 1
     assert table[1]["control_ranks"] == {"doc-0": 2}
     assert table[1]["reranked_ranks"] == {"doc-0": 1}
+
+
+def test_d1_ids_come_only_from_the_explicit_test_set_path(experiment):
+    kwargs, _ = experiment
+    ids = m.load_d1_ids(kwargs["root"])
+    assert ids == ["excluded", "gold-0", "silver-1"]
+    assert "dup" not in ids and "partial-only" not in ids  # by_type / d1_partial
+    assert "not-a-test-set" not in ids  # only test_gold and test_silver
+
+
+def test_d1_ids_of_the_committed_m7_failures_manifest():
+    """The real file, no network: class_descriptions.d1 is a string there."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]
+    document = m.read_json(root / m.M7_FAILURES_PATH)
+    assert isinstance(document["class_descriptions"]["d1"], str)
+    groups = document["by_system_set"]
+    ids = m.load_d1_ids(root)
+    assert groups["agentic|test_gold"]["classes"]["d1"]["ids"] == [
+        "g-syn-007",
+        "g-syn-012",
+    ]
+    assert groups["simple|test_gold"]["classes"]["d1"]["ids"] == []
+    assert groups["simple|test_silver"]["classes"]["d1"]["ids"] == []
+    expected_silver = groups["agentic|test_silver"]["classes"]["d1"]["ids"]
+    assert expected_silver[:3] == ["s-syn-003", "s-syn-014", "s-syn-033"]
+    assert ids == sorted({"g-syn-007", "g-syn-012", *expected_silver})
+
+
+@pytest.mark.parametrize(
+    "mutate, match",
+    [
+        (lambda d: d.pop("by_system_set"), "by_system_set"),
+        (
+            lambda d: [
+                d["by_system_set"].pop(key)
+                for key in ("agentic|test_gold", "simple|test_gold")
+            ],
+            "test_gold",
+        ),
+        (
+            lambda d: d["by_system_set"]["agentic|test_gold"]["classes"].pop("d1"),
+            "classes.d1.ids",
+        ),
+        (
+            lambda d: d["by_system_set"]["agentic|test_gold"]["classes"]["d1"].update(
+                ids="g-syn-007"
+            ),
+            "classes.d1.ids",
+        ),
+        (
+            lambda d: d["by_system_set"]["agentic|test_gold"]["classes"]["d1"].update(
+                ids=[1]
+            ),
+            "classes.d1.ids",
+        ),
+    ],
+)
+def test_d1_structure_errors_stop_clearly(experiment, mutate, match):
+    kwargs, _ = experiment
+    sets = {k: v for k, v in REAL_LIKE_SETS.items() if k != "agentic|dev_other"}
+    document = m7_failures_document(sets)
+    mutate(document)
+    put(kwargs["root"], m.M7_FAILURES_PATH, document)
+    with pytest.raises(PreflightError, match=match):
+        m.load_d1_ids(kwargs["root"])
+    (kwargs["root"] / m.M7_FAILURES_PATH).unlink()
+    with pytest.raises(PreflightError, match="없음"):
+        m.load_d1_ids(kwargs["root"])
+
+
+def test_structure_error_stops_before_the_model_and_leaves_no_attempt(experiment):
+    kwargs, _ = experiment
+    root = kwargs["root"]
+    put(root, m.M7_FAILURES_PATH, {"by_system_set": {}})
+    with pytest.raises(PreflightError):
+        m.run_test(**kwargs)
+    assert Model.calls == 0
+    assert not (root / RUNS_PATH).exists()  # no failed attempt is burned
+
+
+def test_analysis_is_rehearsed_before_the_model_is_loaded(experiment, monkeypatch):
+    kwargs, _ = experiment
+    root = kwargs["root"]
+
+    def broken(rows, d1_ids, questions):
+        raise AttributeError("analysis bug")
+
+    monkeypatch.setattr(m, "analyze", broken)
+    with pytest.raises(AttributeError):
+        m.run_test(**kwargs)
+    assert Model.calls == 0  # the model never loaded
+    assert not (root / RUNS_PATH).exists()
 
 
 def test_m5_span_hit_and_candidate_recall(experiment):

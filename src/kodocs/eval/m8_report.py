@@ -51,7 +51,10 @@ def render(root=Path(".")):
     ):
         raise RawHashMismatch("M8 latency 원본 SHA-256/행 수 불일치")
     if state.status == "not_run":
-        return "리랭커 실험(H8)은 미실행이다."
+        failed = state.failed_attempts
+        return "리랭커 실험(H8)은 미실행이다." + (
+            f" 실행 시도 {len(failed)}회가 실패했고 결과 파일은 없다." if failed else ""
+        )
     result = state.result
     h8 = result["h8"]
     lines = [
@@ -243,6 +246,41 @@ def render(root=Path(".")):
         ),
         "",
     ]
+    failed = [r for r in read_rows(root / RUNS_PATH) if r["status"] != "completed"]
+    if failed:
+        lines += [
+            "### 실패·중단 시도(원본 보존, 결과 파일 없음)",
+            "",
+            table(
+                ["시도", "상태", "오류 유형", "원본 행 수", "보존 경로"],
+                [
+                    [
+                        r["attempt"],
+                        r["status"],
+                        r.get("error_type"),
+                        r["raw"]["rows"],
+                        r["raw_path"],
+                    ]
+                    for r in failed
+                ],
+            ),
+            "",
+            "실패 시도는 결과 번호를 쓰지 않고 원본을 `failed-attempt-NN/`에 보존한다. 실행 기록은 지우지 않으며 재실행은 `RERUN_REASON`과 함께 했다.",
+            "",
+        ]
+        if (
+            failed[0].get("attempt") == 1
+            and failed[0].get("error_type") == "AttributeError"
+        ):
+            lines += [
+                (
+                    "첫 시도 실패 공개(사후 정정): 첫 시도(attempt 1)는 점수 계산을 마친 뒤 분석 마지막 단계에서 AttributeError로 실패했다. "
+                    "d1 문항 입력을 `m7_failures.json` 전체에서 키 `d1`을 일반 순회로 찾아 읽었는데 `class_descriptions.d1`이 문자열이었기 때문이다. "
+                    "d1 입력을 `by_system_set[…].classes.d1.ids`의 명시 경로로 읽도록 고쳤고, 보조 입력 구조 검사와 분석 리허설을 리랭커 로딩 전으로 옮겼다. "
+                    "판정 규칙·설정·후보는 바꾸지 않았다."
+                ),
+                "",
+            ]
     for label, value in [("첫 실행", state.first_result), ("최신 실행", result)]:
         lines += [
             label,

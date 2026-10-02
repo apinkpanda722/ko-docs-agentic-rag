@@ -317,27 +317,53 @@ def metric_row(q, chunks, docs):
     }
 
 
-def d1_table(root, rows, questions):
-    path = root / "data/manifest/m7_failures.json"
-    ids = set()
+M7_FAILURES_PATH = Path("data/manifest/m7_failures.json")
+D1_SETS = ("test_gold", "test_silver")
 
-    def walk(value):
-        if isinstance(value, dict):
-            for key, v in value.items():
-                if key == "d1":
-                    ids.update(v.get("ids", []))
-                else:
-                    walk(v)
-        elif isinstance(value, list):
-            for v in value:
-                walk(v)
 
-    if path.exists():
-        walk(read_json(path))
+def load_d1_ids(root):
+    """d1 question IDs of the test sets, read from one explicit path.
+
+    ``by_system_set[<system>|<set>]["classes"]["d1"]["ids"]`` for the test_gold
+    and test_silver sets only. ``by_type`` repeats the same IDs, ``d1_partial``
+    is a different class and ``class_descriptions.d1`` is a plain string, so a
+    generic walk for the key "d1" is wrong. A structural problem stops the run
+    BEFORE the reranker is loaded (it once failed after scoring finished).
+    """
+    path = Path(root) / M7_FAILURES_PATH
+    if not path.exists():
+        raise PreflightError("M7 실패 분석 manifest 없음: m7_failures.json")
+    document = read_json(path)
+    groups = document.get("by_system_set") if isinstance(document, dict) else None
+    if not isinstance(groups, dict) or not groups:
+        raise PreflightError("m7_failures.json 형식 오류: by_system_set")
+    ids, seen = set(), set()
+    for key, group in groups.items():
+        split = str(key).partition("|")[2]
+        if split not in D1_SETS:
+            continue
+        seen.add(split)
+        entry = (
+            group.get("classes", {}).get("d1")
+            if isinstance(group, dict) and isinstance(group.get("classes"), dict)
+            else None
+        )
+        values = entry.get("ids") if isinstance(entry, dict) else None
+        if not isinstance(values, list) or not all(isinstance(v, str) for v in values):
+            raise PreflightError(
+                f"m7_failures.json 형식 오류: by_system_set[{key}].classes.d1.ids"
+            )
+        ids.update(values)
+    if seen != set(D1_SETS):
+        raise PreflightError("m7_failures.json에 test_gold·test_silver d1 집합 없음")
+    return sorted(ids)
+
+
+def d1_table(ids, rows, questions):
     by_id = {r["question_id"]: r for r in rows}
     truths = {q.question.id: q.rel_by_doc for q in questions}
     output = []
-    for qid in sorted(ids):
+    for qid in sorted(set(ids)):
         r = by_id.get(qid)
         if r is None:
             output.append({"question_id": qid, "status": "대상 외"})
@@ -359,7 +385,7 @@ def d1_table(root, rows, questions):
     return output
 
 
-def analyze(rows, root, questions):
+def analyze(rows, d1_ids, questions):
     result = {
         "harm": {},
         "auxiliary": {"by_source": {}, "by_type": {}},
@@ -403,8 +429,43 @@ def analyze(rows, root, questions):
         "n": primary["n"],
     }
     result["auxiliary"]["silver_direction"] = result["comparisons"]["silver"]["ndcg10"]
-    result["auxiliary"]["d1"] = d1_table(root, rows, questions)
+    result["auxiliary"]["d1"] = d1_table(d1_ids, rows, questions)
     return result
+
+
+def make_row(r, q, chunks):
+    docs = list(dict.fromkeys(c["doc_id"] for c in chunks))
+    control = control_docs(r)
+    return {
+        "question_id": r["question_id"],
+        "set": r["set"],
+        "source": q.question.source,
+        "type": q.question.type,
+        "control_docs": control,
+        "reranked_docs": docs,
+        "control_chunk_ids": [c["chunk_id"] for c in r["chunks"]],
+        "reranked_chunk_ids": [c["chunk_id"] for c in chunks],
+        "control": metric_row(q, r["chunks"], control),
+        "reranked": metric_row(q, chunks, docs),
+        "recall50": recall_at_k(control, q.rel_by_doc, k=50),
+    }
+
+
+def rehearse_analysis(records, questions, d1_ids, config):
+    """Run the whole analysis on the control ordering before any model exists.
+
+    Uses the real candidates and auxiliary inputs with an identity reordering
+    (descending scores follow the control rank), so a structural error in the
+    analysis surfaces here and not after scoring. The result is discarded.
+    """
+    by_id = {q.question.id: q for q in questions}
+    rows = []
+    for r in records:
+        scores = [float(len(r["chunks"]) - i) for i in range(len(r["chunks"]))]
+        rows.append(
+            make_row(r, by_id[r["question_id"]], reranked_chunks(r, scores, config))
+        )
+    analyze(rows, d1_ids, questions)
 
 
 def pair_lengths(model, record):
@@ -441,8 +502,10 @@ def run_test(
         questions = [*inputs.gold_test, *inputs.silver_test]
     if any(q.question.split != "test" for q in questions):
         raise PreflightError("M8 test 이외 문항 거부")
+    d1_ids = load_d1_ids(root)  # structure of every auxiliary input, before scoring
     records = collect_fn(client, embedder, questions, m5)
     local_fingerprint = verify_control(root, records, questions)
+    rehearse_analysis(records, questions, d1_ids, config)
     # No outputs or reranker have been created before this point.
     lock = root / "data/interim/m8/test/.lock"
     lock.parent.mkdir(parents=True, exist_ok=True)
@@ -510,28 +573,14 @@ def run_test(
                     )
                 q = by_id[r["question_id"]]
                 chunks = reranked_chunks(r, values, config)
-                docs = list(dict.fromkeys(c["doc_id"] for c in chunks))
-                control = control_docs(r)
-                row = {
-                    "question_id": r["question_id"],
-                    "set": r["set"],
-                    "source": q.question.source,
-                    "type": q.question.type,
-                    "control_docs": control,
-                    "reranked_docs": docs,
-                    "control_chunk_ids": [c["chunk_id"] for c in r["chunks"]],
-                    "reranked_chunk_ids": [c["chunk_id"] for c in chunks],
-                    "control": metric_row(q, r["chunks"], control),
-                    "reranked": metric_row(q, chunks, docs),
-                    "recall50": recall_at_k(control, q.rel_by_doc, k=50),
-                }
+                row = make_row(r, q, chunks)
                 rows.append(row)
                 append_record(raw_path, row)
             write_private_jsonl(root / SCORES_PATH, scores, root=root)
             if sha256_file(root / FREEZE_PATH) != config_file_sha256:
                 raise PreflightError("M8 freeze 파일이 실행 중 변경됨")
             result = {
-                **analyze(rows, root, questions),
+                **analyze(rows, d1_ids, questions),
                 "selected": {
                     "depth": config["depth"],
                     "fusion": "단독" if config["fusion"] == "alone" else "RRF",

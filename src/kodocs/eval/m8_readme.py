@@ -145,15 +145,26 @@ def latest(document, *, kind=None):
     return document | records[-1]["result"] if records else document
 
 
+def _failed_note(state):
+    """Never hide a failed attempt behind a plain "not run"."""
+    if not state.failed_attempts:
+        return ""
+    kinds = ", ".join(
+        sorted({str(kind or status) for _, status, kind in state.failed_attempts})
+    )
+    return f"(실행 시도 {len(state.failed_attempts)}회 실패: {kinds}, 결과 없음)"
+
+
 def _h8(state):
     if state.status == "not_run":
+        failed = _failed_note(state)
         return [
             "H8",
             "미실행",
             "해당 없음",
             "해당 없음",
-            "리랭커 실험(H8)은 미실행",
-        ], "리랭커 실험(H8)은 미실행."
+            "리랭커 실험(H8)은 미실행" + failed,
+        ], "리랭커 실험(H8)은 미실행" + failed + "."
     result, first = state.result, state.first_result
     h8 = result["h8"]
     row = [

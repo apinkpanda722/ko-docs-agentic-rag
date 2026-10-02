@@ -60,6 +60,8 @@ class H8State:
     local_raw_checked: bool = False
     first_local_raw_checked: bool = False
     latency: dict | None = None
+    # Failed/stopped attempts of a run that never completed (shown, never hidden).
+    failed_attempts: tuple = ()
 
 
 def _keys(payload, schema, prefix=""):
@@ -212,6 +214,17 @@ def load_h8_state(root=Path(".")) -> H8State:
             if line.strip()
         ]
         completed = [r for r in records if r["status"] == "completed"]
+        if records and not completed and not (root / RESULTS_DIR).exists():
+            # Only failed/stopped attempts and no result artifact at all: the
+            # experiment has no result yet, but the failure is reported with
+            # its error type rather than reported as a plain "not run".
+            return H8State(
+                "not_run",
+                failed_attempts=tuple(
+                    (r.get("attempt"), r["status"], r.get("error_type"))
+                    for r in records
+                ),
+            )
         if not completed or not (root / RESULT_PATH).is_file():
             raise H8ResultError("완료 기록 또는 첫 실행 결과 파일 없음")
         if completed[0]["seq"] != 1:

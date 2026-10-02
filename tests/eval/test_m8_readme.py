@@ -16,7 +16,13 @@ ROOT = Path(__file__).resolve().parents[2]
 
 @pytest.fixture
 def source(tmp_path):
-    shutil.copytree(ROOT / "data/manifest", tmp_path / "data/manifest")
+    shutil.copytree(
+        ROOT / "data/manifest",
+        tmp_path / "data/manifest",
+        ignore=shutil.ignore_patterns(
+            "m8_test_runs.jsonl", "m8_test_results", "m8_latency.json"
+        ),
+    )
     shutil.copytree(ROOT / "docs/results", tmp_path / "docs/results")
     shutil.copy(ROOT / "README.md", tmp_path / "README.md")
     for path in (tmp_path / RESULTS_DIR).glob("*"):
@@ -169,3 +175,19 @@ def test_h8_internal_and_file_hash_errors_do_not_rewrite_readme(source, field):
     with pytest.raises(H8ResultError, match=field):
         write_readme(source)
     assert original == (source / "README.md").read_bytes()
+
+
+def test_readme_shows_a_failed_attempt_instead_of_a_plain_not_run(tmp_path):
+    from kodocs.eval import m8_readme as m
+    from kodocs.eval.m8_contract import RUNS_PATH, H8State
+
+    state = H8State("not_run", failed_attempts=((1, "failed", "AttributeError"),))
+    row, sentence = m._h8(state)
+    assert "실행 시도 1회 실패: AttributeError" in row[-1]
+    assert sentence.endswith("결과 없음).")
+    plain_row, plain = m._h8(H8State("not_run"))
+    assert (
+        plain_row[-1] == "리랭커 실험(H8)은 미실행"
+        and plain == "리랭커 실험(H8)은 미실행."
+    )
+    assert RUNS_PATH  # the ledger path itself is part of the contract
