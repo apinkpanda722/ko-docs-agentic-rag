@@ -34,8 +34,7 @@
       "step": 2,
       "name": "docs-cleanup",
       "status": "completed",
-      "started_at": "2026-10-02T18:19:23+0900",
-      "blocked_at": "2026-10-02T18:21:29+0900",
+      "started_at": "2026-10-02T18:27:18+0900",
       "usage": {
         "input_tokens": 2325322,
         "cached_input_tokens": 2217856,
