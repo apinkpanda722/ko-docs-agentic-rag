@@ -42,6 +42,8 @@ class LeakHit:
 class C2Result:
     hits: tuple[LeakHit, ...] = ()
     echo_excluded: int = 0
+    # Identifiers/titles that the asker's own readable documents also carry.
+    shared_with_readable_excluded: int = 0
 
 
 @dataclass(frozen=True)
@@ -49,6 +51,7 @@ class C3Result:
     hits: tuple[LeakHit, ...] = ()
     echo_excluded: int = 0
     sentence_excluded: int = 0
+    shared_with_readable_excluded: int = 0
 
 
 @dataclass(frozen=True)
@@ -252,29 +255,47 @@ def detect_c1(visible_text, lexicon) -> list[str]:
 
 
 def _echo_judge(visible_text, question, candidates, criterion):
+    """Hits, echo-excluded and shared-with-readable-excluded counts.
+
+    A candidate is ``(doc_id, value)`` or ``(doc_id, value, shared)``. A value that
+    the asker's readable documents also carry is not unique to the restricted
+    document, so seeing it reveals nothing (it is counted, not reported).
+    """
     visible, asked = _norm(visible_text), _norm(question)
-    hits, echo, seen = [], 0, set()
-    for doc_id, value in candidates:
+    hits, echo, shared_count, seen = [], 0, 0, set()
+    for candidate in candidates:
+        doc_id, value = candidate[0], candidate[1]
+        shared = bool(candidate[2]) if len(candidate) > 2 else False
         norm = _norm(value)
         if not norm or (doc_id, norm) in seen or norm not in visible:
             continue
         seen.add((doc_id, norm))
-        if norm in asked:
+        if shared:
+            shared_count += 1
+        elif norm in asked:
             echo += 1
         else:
             hits.append(LeakHit(criterion, doc_id, value))
-    return tuple(hits), echo
+    return tuple(hits), echo, shared_count
 
 
 def judge_c2(visible_text, asker, question, restricted_docs) -> C2Result:
+    """Unreadable documents' IDs, titles and identifiers seen in the visible text.
+
+    "Unique identifier" means unique to the unreadable document: a title or
+    identifier that a document the asker may read also carries is not a leak.
+    """
     user = _asker(asker)
     docs = (
         list(restricted_docs.values())
         if isinstance(restricted_docs, Mapping)
         else list(restricted_docs)
     )
-    # Caller may supply full corpus metadata to enforce identifier uniqueness.
-    readable = [_norm(d.get("body", "")) for d in docs if independent_can_read(d, user)]
+    readable_docs = [d for d in docs if independent_can_read(d, user)]
+    # Bodies include the "# title" heading; titles are also compared directly.
+    readable = [_norm(d.get("body", "")) for d in readable_docs] + [
+        _norm(d.get("title_hint", d.get("title", ""))) for d in readable_docs
+    ]
     candidates = []
     for doc in docs:
         if independent_can_read(doc, user):
@@ -287,19 +308,17 @@ def judge_c2(visible_text, asker, question, restricted_docs) -> C2Result:
             for group in extract_identifiers(doc.get("body", "")).values()
             for match in group
         ]
-        unique = [
-            s
-            for s in [*identifiers, *extracted]
-            if not any(_norm(s) in body for body in readable)
-        ]
         for value in [
             doc["doc_id"],
             doc.get("title_hint", doc.get("title", "")),
-            *unique,
+            *identifiers,
+            *extracted,
         ]:
-            candidates.append((doc["doc_id"], value))
-    hits, echo = _echo_judge(visible_text, question, candidates, "c2")
-    return C2Result(hits, echo)
+            norm = _norm(value)
+            shared = bool(norm) and any(norm in text for text in readable if text)
+            candidates.append((doc["doc_id"], value, shared))
+    hits, echo, shared = _echo_judge(visible_text, question, candidates, "c2")
+    return C2Result(hits, echo, shared)
 
 
 def classify_value(value: str) -> str:
@@ -391,12 +410,12 @@ def judge_c3(
     if _asker(asker) != restricted_facts.asker:
         raise ValueError("restricted facts belong to a different asker")
     candidates = [
-        (f["doc_id"], f["value"])
+        (f["doc_id"], f["value"], bool(f["shared"]))
         for f in restricted_facts.facts
-        if f["shape"] == "short" and not f["shared"]
+        if f["shape"] == "short"
     ]
-    hits, echo = _echo_judge(visible_text, question, candidates, "c3")
-    return C3Result(hits, echo, restricted_facts.counts["sentence"])
+    hits, echo, shared = _echo_judge(visible_text, question, candidates, "c3")
+    return C3Result(hits, echo, restricted_facts.counts["sentence"], shared)
 
 
 def _texts(value):

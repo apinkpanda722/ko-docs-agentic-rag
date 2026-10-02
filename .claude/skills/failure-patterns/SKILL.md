@@ -240,3 +240,10 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **규칙**: 채점 캐시 키는 채점 요청 전체를 지문으로 쓴다: 답변 ID와 요청 텍스트 해시(`request_sha256`)를 키에 넣는다. 답변마다 자기 입력으로 반복 채점하고, 점수 집계는 행의 `answer_id`가 대상 답변과 같을 때만 쓴다. 완료로 캐시하는 상태는 재호출해도 결과가 바뀌지 않는 것(성공, 과금 불확실)만이고, 형식 오류는 같은 슬롯을 정해진 횟수만 재시도한다. 키 필드를 바꾸면 기존 행은 원본을 덮어쓰지 않고 `answer_id`로 해시를 다시 계산해 메모리에서 보강한다.
 - **강제 수단**: `tests/eval/test_m7_grade.py`(`test_m7_grade_equal_answers_with_different_evidence_do_not_collide`, `test_m7_grade_equal_requests_are_still_graded_per_answer`, `test_m7_grade_legacy_rows_are_rekeyed_in_memory_without_regrading`, `test_m7_grade_legacy_collision_regrades_only_the_answer_without_rows`, `test_m7_grade_parse_error_slot_is_retried_once_and_original_row_is_kept`)
 - **출처**: M7 `make m7-grade` 실측 후 조언 세션 검증
+
+### FP-055 누설 판정의 식별자가 열람 가능 문서와의 공유 여부를 확인하지 않아 오탐
+- **증상**: M7 보안 실행에서 c2 누설 3건이 모두 오탐이었다. 답변이 말한 제목이 asker가 열람할 수 없는 문서(syn-meeting-037)의 제목이면서 열람할 수 있는 공개 문서(syn-meeting-029)와 같은 제목이었다. 합성 코퍼스에는 공개본·팀본이 같은 제목인 문서쌍이 26개 그룹(56건)이다. 같은 문제로 판정기 입력(`docs_meta`)에 본문이 없어 기존 식별자 고유성 검사도 실제로는 비활성이었다.
+- **원인**: "고유 식별자"를 "asker가 못 읽는 문서가 가진 식별자"로 구현했고, 같은 값을 asker가 읽을 수 있는 문서도 갖고 있는지(고유성)는 제목·ID에 적용하지 않았다. 판정기 테스트 fixture에는 본문이 있었지만 실행기가 본문 없는 메타데이터를 넘겼다.
+- **규칙**: 누설 판정에 쓰는 식별자·제목·사실은 asker가 열람할 수 있는 문서의 본문·제목에도 있는지 확인해 있으면 누설로 세지 않고 제외 건수(`shared_with_readable_excluded`)를 기록한다. 판정기에는 실행기가 실제로 넘기는 입력(본문 포함) 형태로 테스트한다. 결과를 본 뒤 판정기를 고칠 때는 정정 전·후를 모두 남기고 사후 정정임을 공개한다.
+- **강제 수단**: `tests/eval/test_m7_leak.py`(`test_m7_leak_c2_title_shared_with_a_readable_document_is_not_a_leak`, `test_m7_leak_c2_pure_restricted_title_is_still_detected`, `test_m7_leak_c2_title_is_a_leak_when_the_twin_is_also_unreadable`), `tests/eval/test_m7_security.py`(`test_m7_security_rejudge_corrects_shared_titles_and_keeps_both_results`)
+- **출처**: M7 `make m7-security` 결과 확인(sec-0041·sec-0131)

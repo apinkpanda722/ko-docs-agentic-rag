@@ -124,5 +124,6 @@ make m7-security-set  # 보안 테스트셋 생성 + S6 인젝션 노출 검증 
 make m7-security-dry  # 보안 실행 수·M6 test 평균 기반 예상 비용·상한·월 상한 비교 — 네트워크 없음, 사용자 실행
 make m7-security  # 실제 OpenAI 호출·과금 + MCP 서버 필요, 인덱스 읽기 전용, 사용자 실행. make up과 함께 make m6-serve를 별도 터미널에서 실행해 둔다(MCP 재생이 실행 중인 서버에 연결). 순서: make m7-security-set → make m7-security-dry → make m7-security → make m7-leak-review-register. 재실행: RERUN_REASON="사유" make m7-security
 make m7-leak-review-register  # 사람 c1 확인 CSV 검증·해시 등록 → data/manifest/m7_leak_review.json — 네트워크 없음, 사용자 실행
+make m7-security-rejudge  # 기록된 보안 실행을 결정론으로 재판정(c2 식별자 고유성·도구 호출 오류 분류·S6 노출 확정), 정정 전·후를 data/manifest/m7_security_results.json history에 보존 — 모델 호출·새 검색 없음, 사용자 실행
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)

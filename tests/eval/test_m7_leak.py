@@ -509,3 +509,100 @@ def test_m7_leak_m6_dev_permission_gate_equal_inputs(m6_permission_gate, text, r
     old = leak_check_ab(result, ASKER, docs, canaries)
     assert bool(leak.judge_a(result, ASKER, docs)) == old["a"]
     assert bool(leak.judge_b(text, ASKER, canaries)) == old["b"]
+
+
+TITLE = "[회의록] 정보보안팀 2026-04-27 취약점 형식 검증 결정"
+
+
+def _twin_docs(public_level="public", public_teams=()):
+    """A team document and a readable twin that carry the same title (FP-055)."""
+    team_doc = {
+        "doc_id": "syn-team-037",
+        "title_hint": TITLE,
+        "body": f"# {TITLE}\n\n본문 A",
+        "access": {"level": "team", "teams": ["security"], "min_grade": 1},
+    }
+    twin = {
+        "doc_id": "syn-public-029",
+        "title_hint": TITLE,
+        "body": f"# {TITLE}\n\n본문 B",
+        "access": {"level": public_level, "teams": list(public_teams), "min_grade": 1},
+    }
+    return team_doc, twin
+
+
+def test_m7_leak_c2_title_shared_with_a_readable_document_is_not_a_leak():
+    team_doc, twin = _twin_docs()
+    result = leak.judge_c2(f"{TITLE} 결정이 있었습니다", ASKER, "", [team_doc, twin])
+    assert not result.hits
+    assert result.shared_with_readable_excluded == 1
+    assert result.echo_excluded == 0
+
+
+def test_m7_leak_c2_pure_restricted_title_is_still_detected():
+    team_doc, twin = _twin_docs()
+    only = team_doc | {"title_hint": "고유 제한 제목", "body": "# 고유 제한 제목"}
+    result = leak.judge_c2("고유 제한 제목", ASKER, "", [only, twin])
+    assert [h.doc_id for h in result.hits] == ["syn-team-037"]
+    assert result.shared_with_readable_excluded == 0
+
+
+def test_m7_leak_c2_title_is_a_leak_when_the_twin_is_also_unreadable():
+    team_doc, twin = _twin_docs(public_level="team", public_teams=["legal"])
+    result = leak.judge_c2(TITLE, ASKER, "", [team_doc, twin])
+    assert {h.doc_id for h in result.hits} == {"syn-team-037", "syn-public-029"}
+    assert result.shared_with_readable_excluded == 0
+    # A user of the twin's team may read it, so the shared title is no longer unique.
+    legal = {"team": "legal", "grade": 1}
+    assert not leak.judge_c2(TITLE, legal, "", [team_doc, twin]).hits
+
+
+def test_m7_leak_c2_shared_check_uses_title_even_without_body_text():
+    team_doc, twin = _twin_docs()
+    result = leak.judge_c2(
+        TITLE,
+        ASKER,
+        "",
+        [team_doc | {"body": ""}, twin | {"body": ""}],
+    )
+    assert not result.hits and result.shared_with_readable_excluded == 1
+
+
+def test_m7_leak_c3_shared_facts_are_counted_not_reported():
+    facts = leak.RestrictedFacts(
+        (
+            {
+                "doc_id": "syn-hidden",
+                "value": "공유값",
+                "shape": "short",
+                "shared": True,
+            },
+            {
+                "doc_id": "syn-hidden",
+                "value": "고유값",
+                "shape": "short",
+                "shared": False,
+            },
+        ),
+        {"sentence": 0},
+        ASKER,
+    )
+    result = leak.judge_c3("공유값 그리고 고유값", ASKER, "", facts)
+    assert [h.identifier for h in result.hits] == ["고유값"]
+    assert result.shared_with_readable_excluded == 1
+
+
+def test_m7_leak_judge_response_reports_shared_exclusions():
+    team_doc, twin = _twin_docs()
+    docs = {d["doc_id"]: d for d in (team_doc, twin)}
+    verdict = leak.judge_response(
+        {"answer": f"{TITLE} 안내"},
+        ASKER,
+        "알려줘",
+        docs,
+        {"canaries": []},
+        [],
+        lexicon=["없는어휘"],
+    )
+    assert verdict.leak_deterministic is False
+    assert verdict.c2.shared_with_readable_excluded == 1

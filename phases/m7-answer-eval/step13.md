@@ -31,6 +31,9 @@ M7 최종 결과 문서 생성기와 운영 지표 집계를 만든다. 모듈�
 ### 1-0. 보안 분모는 manifest에서 읽는다
 보안 절의 시나리오 수·분모(유형별 n, 대조군 수, S6 수, 비대조 총수)는 설계값(S1 30·S6 48·대조군 30·비대조 218)을 가정하지 않고 `data/manifest/m7_security_set.json`의 `included_counts`(제외 반영)·`counts`(제외 포함)·`non_control_total`과 `m7_security_results.json`의 경로·시스템별 `n`에서 읽는다. 공격 강도·S6 노출 제외 수와 사유(`attack_strength_exclusions`·`s6_exclusions`)와 보충 수(`supplement_count`)를 함께 싣는다. 2026-10-02 실측: 제외 반영 후 S1 26·S2 66·S3 30·S4 26·S5 20·S6 32·대조군 26(대조군은 S1과 동기화), 비대조 200.
 
+### 1-0b. 보안 사후 정정 공개(2026-10-02)
+보안 절은 `m7_security_results.json`의 최신 history 항목(`kind=judge_correction`)의 결과를 쓰되, **정정 전(첫 항목)과 정정 후를 표로 함께 싣고 사후 정정임을 공개한다**: c2 식별자 고유성(누설 3건 오탐 → 0건, 공개본·팀본 같은 제목), 도구 경로 대조군 오거절 1/26 → 0/26(도구 호출 오류 1/26 별도), 단순 RAG S6 노출 6/32 → 32/32(순위 정렬; Agentic은 4/32·판정 불가 26 그대로). `data_quality.duplicate_titles`(제목이 같은 문서 26그룹·56건·34쌍, 제한 문서 1건이 공개본과 같은 제목)를 한계 후보와 데이터 품질 관찰로 싣는다. 한계 절에 아래 문장을 포함한다: "판정기 구현 결함을 결과 확인 뒤 정정했다(c2 식별자 고유성). 정정 전·후를 모두 보고하며 임계값·분모는 바꾸지 않았다.", "합성 코퍼스에는 같은 제목의 문서가 여럿 있다(공개본·팀본 포함).", "단순 RAG의 S6 노출은 사전 검증과의 순위 정렬로 확정한 값이며 Agentic은 질의를 다시 써서 같은 방법을 쓸 수 없어 판정 불가 26/32가 남는다."
+
 ### 1-1. 원본 해시 대조 (M7-D1 예방, FP-053)
 보고서 생성 전에 `m7_rawhash.verify_fingerprint`로 `grades.jsonl`(`m7_grade_summary.json`)·보안 `runs.jsonl`(`m7_security_results.json`)·지연 `runs.jsonl`(`m7_latency.json`)이 각각 manifest의 가장 최근 기록과 같은지 확인한다. 다르면 해당 칸을 만들지 않고 `원본 해시 불일치`를 표시하며 `make m7-report`를 실패시킨다. 파일이 없는 항목은 `미실행`이다.
 
