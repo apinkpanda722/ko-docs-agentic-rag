@@ -577,3 +577,160 @@ def test_m7_security_set_manifest_records_attack_strength(inputs, tmp_path):
     unchecked = security.write_set(rows, inputs, tmp_path / "unchecked", dry_run=True)
     assert unchecked["attack_strength_checked"] is False
     assert unchecked["attack_strength_remaining_all_authorized"] is False
+
+
+def _counting(searcher):
+    calls = []
+
+    def run(question, asker):
+        calls.append(question)
+        return searcher(question, asker)
+
+    return run, calls
+
+
+def test_m7_security_set_verification_terminates_with_unreachable_documents(inputs):
+    """Regression: excluded supplement candidates were proposed again forever."""
+    unreachable = {d["doc_id"] for d in inputs.restricted[:4]}
+    base = _attack_searcher(inputs)
+
+    def searcher(question, asker):
+        found = base(question, asker)
+        return result([c for c in found.chunks if c.doc_id not in unreachable])
+
+    run, calls = _counting(searcher)
+    rows = security.generate_scenarios(inputs)
+    report = security.verify_set(rows, run, inputs=inputs)
+    assert security.count_unique(report.scenarios) >= 200
+    assert len(calls) < 3000  # the old loop ran past 12,000 searches without ending
+    candidates = [r["candidate"] for r in report.scenarios if r["candidate"]]
+    assert candidates and len(candidates) == len(set(candidates))
+    # Supplements never target a document the metadata attack cannot reach.
+    assert not any(
+        r["target_doc_ids"][0] in unreachable
+        for r in report.scenarios
+        if r["supplement"]
+    )
+    # The base scenarios of the unreachable documents are excluded with a reason.
+    excluded = [
+        r
+        for r in report.scenarios
+        if r["kind"] in {"S1", "S2", "S4", "control"} and r["excluded"]
+    ]
+    assert {r["exclusion_reason"] for r in excluded} == {
+        "authorized_not_in_final_context"
+    }
+    assert {r["target_doc_ids"][0] for r in excluded} == unreachable
+
+
+def test_m7_security_set_verification_fails_fast_when_pool_is_exhausted(inputs):
+    run, calls = _counting(lambda q, a: result([]))  # nothing is ever retrievable
+    with pytest.raises(ValueError, match="pool exhausted"):
+        security.verify_set(security.generate_scenarios(inputs), run, inputs=inputs)
+    assert len(calls) < 2000
+
+
+def test_m7_security_set_excluded_supplement_candidates_are_not_retried(inputs):
+    base = _attack_searcher(inputs)
+
+    def searcher(question, asker):
+        # S2 variants 2 and 3 are never retrievable; everything else is.
+        if any(security.BYPASS[v] in question for v in (2, 3)):
+            return result([])
+        return base(question, asker)
+
+    run, calls = _counting(searcher)
+    report = security.verify_set(
+        security.generate_scenarios(inputs), run, inputs=inputs
+    )
+    assert len(calls) < 3000
+    candidates = [r["candidate"] for r in report.scenarios if r["candidate"]]
+    assert len(candidates) == len(set(candidates))
+    failed = [r for r in report.scenarios if r["supplement"] and r["excluded"]]
+    assert failed and all(r["attempt"] == 3 for r in failed)
+    # Replacement keeps the phrase, so each failed candidate cost exactly four searches.
+    assert security.count_unique(report.scenarios) >= 200
+
+
+def test_m7_security_set_prose_cache_does_not_change_question_checks(inputs):
+    from dataclasses import replace
+
+    def reference(question, doc):
+        """The pre-optimization algorithm: prose recomputed for every window."""
+        import unicodedata
+
+        errors = []
+        normalized = security.normalize(question)
+        if any(security.normalize(c["value"]) in normalized for c in inputs.canaries):
+            errors.append("canary")
+        if any(ch in question for ch in security.ARTIFICIAL):
+            errors.append("artificial_delimiter")
+        masked = unicodedata.normalize("NFC", question)
+        if doc is not None:
+            known = {
+                security.doc_team_name(doc),
+                security.doc_label(doc),
+                security.date_phrase(doc),
+                doc["date"],
+                security.title_topic(doc),
+            }
+            for text in sorted(known, key=len, reverse=True):
+                masked = masked.replace(text, "\0")
+        size = security.BODY_WINDOW
+        windows = {
+            masked[i : i + size]
+            for i in range(len(masked) - size + 1)
+            if "\0" not in masked[i : i + size]
+        }
+        if windows and any(
+            w in security.prose_text(inputs.bodies[d["doc_id"]])
+            for d in inputs.restricted
+            for w in windows
+        ):
+            errors.append("restricted_body")
+        return errors
+
+    docs = {d["doc_id"]: d for d in inputs.plan}
+    fresh = replace(inputs)  # a new object with an empty cache
+    samples = []
+    for row in security.generate_scenarios(inputs):
+        doc = docs[row["target_doc_ids"][0]] if row["target_doc_ids"] else None
+        samples.append((row["question"], doc))
+        prose = security.prose_text(inputs.bodies[inputs.restricted[0]["doc_id"]])
+        samples.append((row["question"] + " " + prose[200:230], doc))
+        samples.append((row["question"] + " 《부록》", doc))
+    assert len(samples) > 600
+    for question, doc in samples:
+        assert security._question_errors(question, fresh, doc) == reference(
+            question, doc
+        )
+    # The cache is built once per inputs object, not once per question.
+    assert fresh._prose_cache  # type: ignore[attr-defined] is security._restricted_prose(fresh)
+
+
+def test_m7_security_set_progress_lines_and_timings(inputs, capsys):
+    clock = iter(x / 10 for x in range(10000))
+    progress = security._Progress(clock=lambda: next(clock))
+    base = _attack_searcher(inputs)
+
+    def noisy(question, asker):
+        print("embedding cache progress 1/1")  # the embedder prints on every call
+        return base(question, asker)
+
+    rows = security.generate_scenarios(inputs)
+    report = security.verify_set(
+        rows, progress.timed(noisy), inputs=inputs, progress=progress
+    )
+    progress.finish()
+    out = capsys.readouterr().out
+    assert "embedding cache progress" not in out
+    assert "[S6 노출] 48/48" in out
+    assert "[공격 강도] 120/120" in out
+    assert "보충 라운드 1" in out and "보충 검증 1" in out
+    assert "평균" in out and "ms" in out and "검색" in out
+    assert out.strip().splitlines()[-1].startswith("단계별 요약:")
+    # After finish() every search belongs to exactly one stage summary.
+    assert progress.searches == sum(
+        int(x.rsplit("검색 ", 1)[1].rstrip("회")) for x in progress.summaries
+    )
+    assert security.count_unique(report.scenarios) >= 200

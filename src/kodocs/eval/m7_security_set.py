@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
+import io
 import json
 import re
 import sqlite3
+import time
 import unicodedata
 from collections import Counter
 from collections.abc import Callable, Sequence
@@ -290,6 +293,7 @@ def _record(
         "template_id": template,
         "variant": variant,
         "supplement": supplement,
+        "candidate": None,
         "attempt": 0,
         "in_final_context": None,
         "authorized_in_final_context": None,
@@ -419,6 +423,17 @@ def prose_text(body: str) -> str:
     return "\n".join(kept)
 
 
+def _restricted_prose(inputs: SecurityInputs) -> tuple[str, ...]:
+    """Restricted-document prose, computed once per inputs object."""
+    cached = getattr(inputs, "_prose_cache", None)
+    if cached is None:
+        cached = tuple(
+            prose_text(inputs.bodies[d["doc_id"]]) for d in inputs.restricted
+        )
+        object.__setattr__(inputs, "_prose_cache", cached)  # frozen dataclass
+    return cached
+
+
 def _question_errors(
     question: str, inputs: SecurityInputs, doc: dict | None = None
 ) -> list[str]:
@@ -446,9 +461,7 @@ def _question_errors(
         if "\0" not in masked[i : i + BODY_WINDOW]
     }
     if windows and any(
-        w in prose_text(inputs.bodies[d["doc_id"]])
-        for d in inputs.restricted
-        for w in windows
+        w in text for text in _restricted_prose(inputs) for w in windows
     ):
         errors.append("restricted_body")
     return errors
@@ -502,10 +515,27 @@ def _supplement_pool(inputs: SecurityInputs):
 def supplement(rows: list[dict], inputs: SecurityInputs, *, count: int) -> list[str]:
     """Append up to ``count`` S1/S2 candidates (unverified; attack strength checks them)."""
     pairs = {(r["asker"]["label"], r["question"]) for r in rows}
+    # A candidate is identified by what it is, not by its final question text: a
+    # candidate excluded after template replacement must never be proposed again.
+    tried = {r["candidate"] for r in rows if r.get("candidate")}
+    # A document whose plain metadata question (the base S1, all four templates) never
+    # reached an authorized user cannot yield a retrievable attack. Excluded
+    # *supplements* say nothing about the document, only about their own wording.
+    unreachable = {
+        r["target_doc_ids"][0]
+        for r in rows
+        if r["kind"] == "S1"
+        and not r["supplement"]
+        and r["excluded"]
+        and r["exclusion_reason"] == "authorized_not_in_final_context"
+    }
     added: list[str] = []
     for kind, index, doc, variant, shift in _supplement_pool(inputs):
         if len(added) >= count:
             break
+        candidate = f"{kind}|{doc['doc_id']}|{variant}|{shift}"
+        if candidate in tried or doc["doc_id"] in unreachable:
+            continue
         user = _asker(inputs, doc["team"], index + 3 * shift)
         question = question_for(kind, doc, variant if kind == "S2" else 0, 0)
         if (user["label"], question) in pairs or _question_errors(
@@ -522,7 +552,9 @@ def supplement(rows: list[dict], inputs: SecurityInputs, *, count: int) -> list[
             variant=variant,
             supplement=True,
         )
+        row["candidate"] = candidate
         rows.append(row)
+        tried.add(candidate)
         pairs.add((user["label"], question))
         added.append(row["scenario_id"])
     return added
@@ -542,15 +574,21 @@ def check_s6_exposure(
     searcher: Callable[[str, dict], SearchResult],
     *,
     inputs: SecurityInputs | None = None,
+    progress: Callable[[str, int, int], None] | None = None,
 ) -> ExposureReport:
     """Try draft + three replacements; count only fully exposed final chunks."""
     inputs = inputs or load_inputs()
     rows = [dict(r, asker=dict(r["asker"])) for r in scenarios]
     docs = {d["doc_id"]: d for d in inputs.plan}
     history = []
+    total = sum(1 for r in rows if r["kind"] == "S6")
+    done = 0
     for row in rows:
         if row["kind"] != "S6":
             continue
+        done += 1
+        if progress:
+            progress("S6 노출", done, total)
         doc_id = row["target_doc_ids"][0]
         injection = normalize(inputs.injections[doc_id]["text"])
         variant = int(row["template_id"].split("-")[1])
@@ -623,6 +661,8 @@ def check_attack_strength(
     *,
     inputs: SecurityInputs | None = None,
     only: set[str] | None = None,
+    progress: Callable[[str, int, int], None] | None = None,
+    stage: str = "공격 강도",
 ) -> ExposureReport:
     """S1/S2/S4 must retrieve their target for an authorized user (owner grade 4).
 
@@ -633,11 +673,16 @@ def check_attack_strength(
     rows = [dict(r, asker=dict(r["asker"])) for r in scenarios]
     docs = {d["doc_id"]: d for d in inputs.plan}
     history = []
-    for row in rows:
-        if row["kind"] not in {"S1", "S2", "S4"} or row["excluded"]:
-            continue
-        if only is not None and row["scenario_id"] not in only:
-            continue
+    targets = [
+        r
+        for r in rows
+        if r["kind"] in {"S1", "S2", "S4"}
+        and not r["excluded"]
+        and (only is None or r["scenario_id"] in only)
+    ]
+    for done, row in enumerate(targets, 1):
+        if progress:
+            progress(stage, done, len(targets))
         doc = docs[row["target_doc_ids"][0]]
         owner = _owner(inputs, doc)
         for attempt in range(4):
@@ -693,22 +738,43 @@ def verify_set(
     *,
     inputs: SecurityInputs | None = None,
     minimum: int = 200,
+    progress: Callable[[str, int, int], None] | None = None,
 ) -> ExposureReport:
     """S6 exposure, attack strength, then verified supplements until the minimum."""
     inputs = inputs or load_inputs()
-    s6 = check_s6_exposure(scenarios, searcher, inputs=inputs)
-    attack = check_attack_strength(s6.scenarios, searcher, inputs=inputs)
+    s6 = check_s6_exposure(scenarios, searcher, inputs=inputs, progress=progress)
+    attack = check_attack_strength(
+        s6.scenarios, searcher, inputs=inputs, progress=progress
+    )
     rows, attack_history, supplement_ids = (
         attack.scenarios,
         list(attack.attack_history),
         [],
     )
+    rounds = 0
     while count_unique(rows) < minimum:
-        added = supplement(rows, inputs, count=minimum - count_unique(rows))
+        need = minimum - count_unique(rows)
+        added = supplement(rows, inputs, count=need)
         if not added:
-            raise ValueError("supplement template pool exhausted")
+            raise ValueError(
+                "supplement template pool exhausted "
+                f"(non-control {count_unique(rows)}/{minimum}, "
+                f"{len(supplement_ids)} supplements tried)"
+            )
+        rounds += 1
         supplement_ids += added
-        more = check_attack_strength(rows, searcher, inputs=inputs, only=set(added))
+        if progress:
+            progress(
+                f"보충 라운드 {rounds}: 후보 {len(added)}개 추가, 필요", need, minimum
+            )
+        more = check_attack_strength(
+            rows,
+            searcher,
+            inputs=inputs,
+            only=set(added),
+            progress=progress,
+            stage=f"보충 검증 {rounds}",
+        )
         rows = more.scenarios
         attack_history += more.attack_history
     return ExposureReport(
@@ -841,6 +907,68 @@ def _index_searcher(root: Path):
     return searcher
 
 
+class _Progress:
+    """One flushed line per scenario (and per stage change) with search timings."""
+
+    def __init__(self, clock: Callable[[], float] = time.perf_counter) -> None:
+        self._clock = clock
+        self.started = clock()
+        self.stage_started = self.started
+        self.stage = None
+        self.searches = 0
+        self.search_seconds = 0.0
+        self.stage_searches = 0
+        self.summaries: list[str] = []
+
+    def timed(self, searcher):
+        def run(question: str, asker: dict):
+            started = self._clock()
+            try:
+                # The cached embedder prints "embedding cache progress 1/1" on every
+                # call; hundreds of those would bury the scenario progress lines.
+                with contextlib.redirect_stdout(io.StringIO()):
+                    return searcher(question, asker)
+            finally:
+                self.searches += 1
+                self.stage_searches += 1
+                self.search_seconds += self._clock() - started
+
+        return run
+
+    def __call__(self, stage: str, done: int, total: int) -> None:
+        now = self._clock()
+        if stage != self.stage:
+            self._close(now)
+            self.stage, self.stage_started, self.stage_searches = stage, now, 0
+        average = (self.search_seconds / self.searches * 1000) if self.searches else 0
+        print(
+            f"[{stage}] {done}/{total} | 검색 {self.searches}회 누적, "
+            f"평균 {average:.0f}ms | 단계 {now - self.stage_started:.1f}s, "
+            f"전체 {now - self.started:.1f}s",
+            flush=True,
+        )
+
+    def _close(self, now: float) -> None:
+        if self.stage is not None:
+            self.summaries.append(
+                f"{self.stage}: {now - self.stage_started:.1f}s, 검색 {self.stage_searches}회"
+            )
+
+    def finish(self) -> None:
+        self._close(self._clock())
+        print("단계별 요약: " + " / ".join(self.summaries), flush=True)
+
+
+def _verify_with_progress(rows, inputs, root: Path):
+    print("임베더·인덱스 초기화 중...", flush=True)
+    progress = _Progress()
+    searcher = progress.timed(_index_searcher(root))
+    print(f"초기화 완료 ({progress._clock() - progress.started:.1f}s)", flush=True)
+    report = verify_set(rows, searcher, inputs=inputs, progress=progress)
+    progress.finish()
+    return report
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("."))
@@ -852,7 +980,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     rows = generate_scenarios(inputs)
     report = None
     if not args.no_index and not args.dry_run:
-        report = verify_set(rows, _index_searcher(args.root), inputs=inputs)
+        report = _verify_with_progress(rows, inputs, args.root)
         rows = report.scenarios
     manifest = write_set(
         rows, inputs, args.output_root or args.root, report=report, dry_run=args.dry_run
