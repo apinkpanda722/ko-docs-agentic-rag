@@ -127,5 +127,6 @@ make m7-leak-review-register  # 사람 c1 확인 CSV 검증·해시 등록 → d
 make m7-security-rejudge  # 기록된 보안 실행을 결정론으로 재판정(c2 식별자 고유성·도구 호출 오류 분류·S6 노출 확정), 정정 전·후를 data/manifest/m7_security_results.json history에 보존 — 모델 호출·새 검색 없음, 사용자 실행
 make m7-latency-dry  # 지연 113 × 2 + 예열 6 실행 수·M6 test 평균 기반 예상 비용·월 상한 — 네트워크 없음
 make m7-latency  # 실제 OpenAI 호출·과금, 동시성 1 단독 실행, 사용자 실행. 재실행: RERUN_REASON="사유" make m7-latency
+make m7-failures  # M6 test 틀린 문항 결정론 실패 분류(기록 부족은 indeterminate, 재검색·모델 호출 없음) → data/manifest/m7_failures.json — 네트워크 없음
 make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)
