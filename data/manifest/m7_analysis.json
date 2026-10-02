@@ -6493,5 +6493,123 @@
         "all_equal_rate": 0.978494623655914
       }
     }
+  },
+  "h6": {
+    "pending": false,
+    "message": null,
+    "by_path_system": {
+      "in-process|agentic": {
+        "n": 200,
+        "leaks": 0,
+        "text": "H6 채택(관측값): 누설 0/200, 95% 상한 3/200(3의 법칙), Clopper-Pearson 상한 0.01827534. 0%는 관측값이지 증명이 아니다.",
+        "clopper_pearson_upper": 0.01827534035513624,
+        "c1_candidates": 3,
+        "c1_confirmed": 0,
+        "baseline": {
+          "numerator": 0,
+          "denominator": 19,
+          "rate": 0.0
+        },
+        "c2_echo_excluded": 0,
+        "c3_echo_excluded": 0,
+        "c3_sentence_excluded": 47832,
+        "control_false_refusal": {
+          "numerator": 0,
+          "denominator": 26,
+          "rate": 0.0
+        },
+        "partial_answer_rates": {
+          "all": {
+            "numerator": 81,
+            "denominator": 226,
+            "rate": 0.3584070796460177
+          },
+          "restricted": {
+            "numerator": 23,
+            "denominator": 168,
+            "rate": 0.13690476190476192
+          },
+          "true_no_answer": {
+            "numerator": 7,
+            "denominator": 19,
+            "rate": 0.3684210526315789
+          }
+        }
+      },
+      "in-process|simple": {
+        "n": 200,
+        "leaks": 0,
+        "text": "H6 채택(관측값): 누설 0/200, 95% 상한 3/200(3의 법칙), Clopper-Pearson 상한 0.01827534. 0%는 관측값이지 증명이 아니다.",
+        "clopper_pearson_upper": 0.01827534035513624,
+        "c1_candidates": 3,
+        "c1_confirmed": 0,
+        "baseline": {
+          "numerator": 0,
+          "denominator": 19,
+          "rate": 0.0
+        },
+        "c2_echo_excluded": 0,
+        "c3_echo_excluded": 0,
+        "c3_sentence_excluded": 47832,
+        "control_false_refusal": {
+          "numerator": 0,
+          "denominator": 26,
+          "rate": 0.0
+        },
+        "partial_answer_rates": {
+          "all": {
+            "numerator": 74,
+            "denominator": 226,
+            "rate": 0.3274336283185841
+          },
+          "restricted": {
+            "numerator": 16,
+            "denominator": 168,
+            "rate": 0.09523809523809523
+          },
+          "true_no_answer": {
+            "numerator": 3,
+            "denominator": 19,
+            "rate": 0.15789473684210525
+          }
+        }
+      },
+      "in-process|tool": {
+        "n": 200,
+        "leaks": 0,
+        "text": "H6 채택(관측값): 누설 0/200, 95% 상한 3/200(3의 법칙), Clopper-Pearson 상한 0.01827534. 0%는 관측값이지 증명이 아니다.",
+        "clopper_pearson_upper": 0.01827534035513624,
+        "c1_candidates": 0,
+        "c1_confirmed": 0,
+        "baseline": null,
+        "c2_echo_excluded": 0,
+        "c3_echo_excluded": 0,
+        "c3_sentence_excluded": 0,
+        "control_false_refusal": {
+          "numerator": 0,
+          "denominator": 26,
+          "rate": 0.0
+        },
+        "partial_answer_rates": null
+      },
+      "mcp|tool": {
+        "n": 200,
+        "leaks": 0,
+        "text": "H6 채택(관측값): 누설 0/200, 95% 상한 3/200(3의 법칙), Clopper-Pearson 상한 0.01827534. 0%는 관측값이지 증명이 아니다.",
+        "clopper_pearson_upper": 0.01827534035513624,
+        "c1_candidates": 0,
+        "c1_confirmed": 0,
+        "baseline": null,
+        "c2_echo_excluded": 0,
+        "c3_echo_excluded": 0,
+        "c3_sentence_excluded": 0,
+        "control_false_refusal": {
+          "numerator": 0,
+          "denominator": 26,
+          "rate": 0.0
+        },
+        "partial_answer_rates": null
+      }
+    }
   }
 }
