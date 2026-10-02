@@ -156,6 +156,7 @@ def test_failed_first_attempt_is_reported_and_its_record_is_kept(tmp_path):
     assert "AttributeError" in text and "failed-attempt-01/runs.jsonl" in text
     assert "첫 시도 실패 공개(사후 정정)" in text
     assert "class_descriptions.d1" in text and "명시 경로" in text
+    assert "[변경 기록](hypotheses.md#변경-기록)" in text
 
 
 def test_other_failures_get_the_table_but_not_the_d1_explanation(tmp_path):
