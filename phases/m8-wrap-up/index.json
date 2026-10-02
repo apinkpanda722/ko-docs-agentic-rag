@@ -117,7 +117,16 @@
     {
       "step": 8,
       "name": "rerank-test",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-02T22:51:26+0900",
+      "summary": "M8 test 실행기·지연 측정기·보고서 생성기·템플릿과 명령 안내 구현; config_hash 내부 해시·config_file_sha256 파일 해시 계약 통일; make verify 2236 tests·타깃 dry-run 통과, README 멱등·M5~M7 보존 확인, 실제 실험 미실행.",
+      "completed_at": "2026-10-02T23:14:46+0900",
+      "usage": {
+        "input_tokens": 3435168,
+        "cached_input_tokens": 3280000,
+        "output_tokens": 33057,
+        "attempts": 1
+      }
     }
   ],
   "created_at": "2026-10-02T17:52:16+0900"
