@@ -339,3 +339,83 @@ def test_reusing_graph_with_alternating_users_never_mixes_context(
     assert "team-b-0" not in evidence_messages[0]
     assert "team-a-0" not in evidence_messages[1]
     assert "team-b-0" not in evidence_messages[2]
+
+
+def test_stream_parse_diagnostics_in_trace_without_raw_and_events_finish(
+    tmp_path, monkeypatch
+):
+    failure = ChatParseError(
+        "PRIVATE RAW",
+        diagnostics={
+            "status": "incomplete",
+            "incomplete_reason": "max_output_tokens",
+            "output_tokens": 4000,
+            "output_chars": 10000,
+            "raw_output": "PRIVATE RAW",
+        },
+    )
+    runtime = replace(_runtime(_Chat(failure)), trace_dir=tmp_path)
+    trace = TraceRecorder(tmp_path, clock=runtime.clock).start(
+        question_id="q",
+        system="simple",
+        user=UserContext("platform", 1),
+        model_record=runtime.model_record,
+        hashes={},
+    )
+    events = []
+    ctx = replace(
+        _context(UserContext("platform", 1), runtime, trace=trace),
+        event_sink=events.append,
+    )
+    monkeypatch.setattr("kodocs.agent.tools.run_tool", lambda *args: _search_result())
+    result = build_simple_graph(runtime).invoke({"question": "q"}, context=ctx)[
+        "result"
+    ]
+    assert result.refuse_reason == "parse_error"
+    recorded = json.dumps(trace.record)
+    assert "PRIVATE RAW" not in recorded
+    assert trace.record["steps"][-1]["diagnostics"]["output_tokens"] == 4000
+    assert [e["kind"] for e in events] == [
+        "tool_start",
+        "tool_end",
+        "final_start",
+        "model_start",
+        "model_end",
+    ]
+    assert events[-1]["error"] == "ChatParseError"
+    assert "parse_error" not in str(events)  # no guardrail/final refusal reason
+
+
+def test_event_sink_none_and_failing_sink_preserve_same_public_contract(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr("kodocs.agent.tools.time.perf_counter", lambda: 0)
+    monkeypatch.setattr("kodocs.agent.tools.run_tool", lambda *args: _search_result())
+    model = ModelAnswer(
+        answer="same",
+        citations=[Citation(kind="doc", doc_id="doc-0", section_key="s0")],
+        refused=False,
+    )
+    results = []
+
+    def fail(event):
+        raise RuntimeError("PRIVATE")
+
+    for sink in (None, fail):
+        runtime = _runtime(_Chat(model))
+        user = UserContext("platform", 1)
+        trace = TraceRecorder(tmp_path, clock=runtime.clock).start(
+            question_id="q",
+            system="simple",
+            user=user,
+            model_record=runtime.model_record,
+            hashes={},
+            trace_id="same",
+        )
+        ctx = replace(_context(user, runtime, trace=trace), event_sink=sink)
+        result = build_simple_graph(runtime).invoke({"question": "q"}, context=ctx)[
+            "result"
+        ]
+        results.append((result, trace.record))
+        assert ctx._event_state["errors"] == (5 if sink else 0)
+    assert results[0] == results[1]

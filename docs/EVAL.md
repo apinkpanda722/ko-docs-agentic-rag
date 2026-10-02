@@ -167,3 +167,4 @@ ADR-022의 법제처 조문과 ALIO 원본 사이 편집 차이는 N2 주석이 
 |---|---|---|
 | 2026-09-30 | 답변 모델 `temperature 0` → reasoning.effort 고정, temperature 미지원 모델은 null 기록 | 답변 모델 gpt-6-luna·gpt-6.1-sol은 reasoning 모델이라 effort가 none이 아니면 temperature·top_p 미지원(ADR-029) |
 | 2026-10-01 | M7 채점·보안·지연 규칙 구체화(hypotheses.md 'M7 판정 규칙' 참조) | M7 착수 전 사전 등록 |
+| 2026-10-03 | M8 리랭커(H8)·지연 규칙 사전 등록(hypotheses.md 'M8 판정 규칙' 참조) | M8 착수 전 사전 등록 |

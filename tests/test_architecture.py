@@ -566,3 +566,111 @@ def test_only_gemini_chat_imports_google_sdk() -> None:
         and _find_imports_matching(path, SOURCE_ROOT, ("google",))
     ]
     assert not violations
+
+
+UI_FORBIDDEN_IMPORTS = (
+    "kodocs.retrieval",
+    "kodocs.tools",
+    "kodocs.mcp_server",
+    "mcp",
+    "openai",
+    "langchain*",
+    "langgraph*",
+)
+
+
+def _ui_violations(path: Path, package_root: Path) -> list[str]:
+    allowed_lines = {
+        node.lineno
+        for node in ast.walk(ast.parse(path.read_text()))
+        if isinstance(node, ast.ImportFrom)
+        and _resolve_relative_module(
+            node.module or "", node.level, _current_package(path, package_root)
+        )
+        == "kodocs.tools"
+        and all(alias.name == "UserContext" for alias in node.names)
+    }
+    return [
+        f"line {line}: {module}"
+        for line, module in _import_references(path, package_root)
+        if any(_matches_forbidden_pattern(module, p) for p in UI_FORBIDDEN_IMPORTS)
+        and not (
+            path.name == "streaming.py"
+            and module
+            in {
+                "langchain_core.utils.json",
+                "langchain_core.utils.json.parse_partial_json",
+            }
+        )
+        and not (
+            line in allowed_lines
+            and module in {"kodocs.tools", "kodocs.tools.UserContext"}
+        )
+    ]
+
+
+def test_ui_respects_layer_boundary():
+    violations = [
+        f"{path}: {item}"
+        for path in (SOURCE_ROOT / "kodocs/ui").rglob("*.py")
+        for item in _ui_violations(path, SOURCE_ROOT)
+    ]
+    assert not violations
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "import kodocs.retrieval",
+        "from ..retrieval import search",
+        "from .. import retrieval",
+        "import kodocs.tools",
+        "from ..tools import run_tool",
+        "from kodocs.tools import UserContext, run_tool",
+        "from .. import mcp_server",
+        "from mcp import ClientSession",
+    ],
+)
+def test_ui_guard_detects_absolute_and_relative_imports(tmp_path, source):
+    path = tmp_path / "kodocs/ui/probe.py"
+    path.parent.mkdir(parents=True)
+    path.write_text(source)
+    assert _ui_violations(path, tmp_path)
+
+
+@pytest.mark.parametrize(
+    "source",
+    ["from kodocs.tools import UserContext", "from ..tools import UserContext"],
+)
+def test_ui_guard_allows_only_context_reexport(tmp_path, source):
+    path = tmp_path / "kodocs/ui/probe.py"
+    path.parent.mkdir(parents=True)
+    path.write_text(source)
+    assert not _ui_violations(path, tmp_path)
+
+
+def test_ui_streaming_is_confined_to_final_wrapper():
+    for path in (SOURCE_ROOT / "kodocs/ui").rglob("*.py"):
+        source = path.read_text()
+        assert not any(
+            marker in source
+            for marker in (
+                ".stream(",
+                "astream",
+                "os.environ",
+                '".env"',
+                "'.env'",
+            )
+        ), path
+        for node in ast.walk(ast.parse(source)):
+            if isinstance(node, ast.Call) and path.name != "streaming.py":
+                assert not any(kw.arg == "stream" for kw in node.keywords), path
+        if path.name != "streaming.py":
+            assert "stream=True" not in source
+
+
+def test_rerank_file_is_in_existing_architecture_guard():
+    path = RETRIEVAL_PACKAGE / "rerank.py"
+    assert path.is_file()
+    assert path in list(RETRIEVAL_PACKAGE.rglob("*.py"))
+    assert find_forbidden_imports(path, SOURCE_ROOT) == []

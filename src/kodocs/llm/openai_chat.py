@@ -3,16 +3,19 @@
 from __future__ import annotations
 
 import json
+import logging
 import math
 import time
 import uuid
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import openai
 from langchain_openai import ChatOpenAI
+from langchain_openai.chat_models.base import _convert_to_openai_response_format
+from openai.lib._pydantic import to_strict_json_schema
 
 from kodocs.config import Settings
 from kodocs.costs import (
@@ -90,6 +93,26 @@ class ManagedChatError(RuntimeError):
 class ChatParseError(ManagedChatError):
     """Raised when a billed structured response does not match its schema."""
 
+    def __init__(self, message, attempts=(), *, diagnostics=None):
+        super().__init__(message, attempts)
+        source = diagnostics or {}
+        self.diagnostics = {}
+        for name in ("output_tokens", "reasoning_tokens", "output_chars"):
+            value = source.get(name)
+            if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+                self.diagnostics[name] = value
+            elif name in source:
+                self.diagnostics[name] = None
+        for name, allowed in {
+            "status": {"completed", "incomplete", "failed", "in_progress"},
+            "incomplete_reason": {"max_output_tokens", "content_filter"},
+        }.items():
+            if name in source:
+                value = source[name]
+                self.diagnostics[name] = (
+                    value if isinstance(value, str) and value in allowed else None
+                )
+
 
 class BillingUncertainError(ManagedChatError):
     """Raised for failures that may have happened after the request was sent."""
@@ -107,6 +130,42 @@ class InputTokenLimitError(ManagedChatError):
     """Raised when estimated or observed input exceeds the configured ceiling."""
 
 
+SchemaStyle = Literal["sdk", "langchain"]
+
+
+def callback_response_format(
+    response_schema: type[object], style: SchemaStyle
+) -> dict[str, Any]:
+    """Strict ``json_schema`` response_format built only by installed libraries.
+
+    ``"sdk"``: ``openai.lib._pydantic.to_strict_json_schema`` (openai/lib/_pydantic.py:16-24),
+    the schema the frozen M6 non-streaming path (``responses.parse``) sends.
+    ``"langchain"``: ``_convert_to_openai_response_format(model_json_schema(),
+    strict=True)`` (langchain_openai/chat_models/base.py:4396-4433, called the
+    same way for a streamed pydantic class at base.py:4698-4713), the schema the
+    frozen M7 streaming path sends. A raw ``model_json_schema()`` violates the
+    strict rules (every property must be required) and must never be sent.
+    """
+    if style == "sdk":
+        return {
+            "type": "json_schema",
+            "json_schema": {
+                "name": response_schema.__name__,
+                "strict": True,
+                "schema": to_strict_json_schema(response_schema),  # type: ignore[arg-type]
+            },
+        }
+    if style == "langchain":
+        converted = _convert_to_openai_response_format(
+            response_schema.model_json_schema(),  # type: ignore[attr-defined]
+            strict=True,
+        )
+        if not isinstance(converted, dict):
+            raise TypeError("langchain response format must be a dict")
+        return converted
+    raise ValueError("schema_style must be 'sdk' or 'langchain'")
+
+
 class ManagedChat:
     """Own ChatOpenAI construction, retries, usage parsing, and cost recording."""
 
@@ -122,6 +181,14 @@ class ManagedChat:
         monotonic: Callable[[], float] = time.perf_counter,
     ) -> None:
         self.config = config
+        self._derive_args = {
+            "settings": settings,
+            "http_client": http_client,
+            "ledger_path": ledger_path,
+            "run_id": run_id,
+            "sleep": sleep,
+            "monotonic": monotonic,
+        }
         self._ledger = CostLedger(ledger_path)
         self._guard = BudgetGuard(self._ledger, settings.monthly_budget_usd)
         self._run_id = run_id
@@ -137,6 +204,20 @@ class ManagedChat:
             timeout=config.request_timeout_s,
             include_response_headers=True,
             **({"http_client": http_client} if http_client is not None else {}),
+        )
+
+    def with_max_output_tokens(self, max_output_tokens: int) -> ManagedChat:
+        """Same settings, ledger and client but a different output cap.
+
+        The derived chat has its own ``settings_hash``; this chat and the frozen
+        M6/M7 settings it was built from are left untouched.
+        """
+        args = dict(self._derive_args)
+        settings = args.pop("settings")
+        return ManagedChat(
+            replace(self.config, max_output_tokens=max_output_tokens),
+            settings,
+            **args,
         )
 
     @property
@@ -189,8 +270,28 @@ class ManagedChat:
         tools: Sequence[object] | None = None,
         response_schema: type[object] | None = None,
         stream: bool = False,
+        on_text_delta: Callable[[str], None] | None = None,
+        on_attempt_start: Callable[[int], None] | None = None,
+        schema_style: SchemaStyle = "sdk",
+        regenerate_on_truncation: bool = False,
     ) -> ChatResult:
-        """Invoke the Responses API under the registered retry and billing rules."""
+        """Invoke the Responses API under the registered retry and billing rules.
+
+        ``regenerate_on_truncation`` (default off, frozen paths never set it)
+        generates once more when a structured response stopped with
+        ``incomplete_details.reason == "max_output_tokens"`` and failed parsing.
+        Both requests are billed and recorded; the first attempt is marked
+        ``truncated_regenerate`` in ``attempts``.
+
+        ``on_text_delta`` is meaningful only with ``stream=True``; the frozen
+        non-streaming path ignores it. With a streamed callback the structured
+        schema is generated by an installed library (``schema_style``), never by
+        hand; see ``callback_response_format``.
+
+        ``on_attempt_start`` receives the 1-based attempt number just before each
+        attempt so a display fed by ``on_text_delta`` can discard text of a
+        previous attempt. ``None`` leaves behavior unchanged.
+        """
         estimate = self.estimate(
             messages,
             tools=tools,
@@ -199,9 +300,15 @@ class ManagedChat:
         self._guard.check(estimate.budget_estimate_usd)
 
         attempts: list[ChatAttempt] = []
+        regenerated = False
         overall_started = self._monotonic()
         for number in range(1, self.config.max_attempts + 1):
             attempt_started = self._monotonic()
+            if on_attempt_start is not None:
+                try:
+                    on_attempt_start(number)
+                except Exception:  # noqa: BLE001, S110 - observer only
+                    pass
             try:
                 message, parsed, parsing_error, ttft_ms = self._invoke_once(
                     messages,
@@ -209,6 +316,8 @@ class ManagedChat:
                     response_schema=response_schema,
                     stream=stream,
                     overall_started=overall_started,
+                    on_text_delta=on_text_delta,
+                    schema_style=schema_style,
                 )
             except Exception as exc:
                 elapsed_ms = _elapsed_ms(attempt_started, self._monotonic())
@@ -229,9 +338,18 @@ class ManagedChat:
                         attempts,
                     ) from exc
                 if action == "parse_error":
+                    diagnostics = getattr(exc, "diagnostics", {})
+                    if stream:
+                        safe = ChatParseError(
+                            "stream parse failure", diagnostics=diagnostics
+                        ).diagnostics
+                        logging.getLogger(__name__).warning(
+                            "Structured stream parse failure: %s", safe
+                        )
                     raise ChatParseError(
                         "OpenAI structured response could not be parsed",
                         attempts,
+                        diagnostics=getattr(exc, "diagnostics", {}),
                     ) from exc
                 if action == "infra_error":
                     raise InfrastructureLLMError(
@@ -274,11 +392,39 @@ class ManagedChat:
                     f"{self.config.max_input_tokens} token limit",
                     attempts,
                 )
+            if (
+                parsing_error is not None
+                and regenerate_on_truncation
+                and not regenerated
+                and number < self.config.max_attempts
+                and _stream_diagnostics(message).get("incomplete_reason")
+                == "max_output_tokens"
+            ):
+                regenerated = True
+                attempts[-1] = replace(attempts[-1], status="truncated_regenerate")
+                logging.getLogger(__name__).warning(
+                    "Structured response truncated at max_output_tokens; "
+                    "regenerating once: %s",
+                    _stream_diagnostics(message),
+                )
+                self._guard.check(estimate.budget_estimate_usd)
+                continue
             if parsing_error is not None:
-                raise ChatParseError(
+                failure = ChatParseError(
                     "OpenAI structured response could not be parsed",
                     attempts,
-                ) from parsing_error
+                    diagnostics=_stream_diagnostics(message)
+                    if stream or on_text_delta is not None
+                    else {},
+                )
+                if stream:
+                    logging.getLogger(__name__).warning(
+                        "Structured stream parse failure: %s", failure.diagnostics
+                    )
+                failure.response_message = (
+                    message  # in-memory only; repro writes ignored raw
+                )
+                raise failure from parsing_error
             return ChatResult(
                 message=message,
                 parsed=parsed,
@@ -303,6 +449,8 @@ class ManagedChat:
         response_schema: type[object] | None,
         stream: bool,
         overall_started: float,
+        on_text_delta: Callable[[str], None] | None = None,
+        schema_style: SchemaStyle = "sdk",
     ) -> tuple[object, object | None, BaseException | None, float | None]:
         if stream:
             runnable: Any = self._model
@@ -313,27 +461,72 @@ class ManagedChat:
                 if response_schema is not None
                 else {}
             )
+            # With a callback, defer Pydantic validation until usage/metadata are
+            # received. base.py:5464 validates inside the last chunk converter;
+            # a truncated Pydantic response would otherwise discard that chunk.
+            if response_schema is not None and on_text_delta is not None:
+                kwargs["response_format"] = callback_response_format(
+                    response_schema, schema_style
+                )
             combined = None
             ttft_ms = None
-            for chunk in runnable.stream(messages, **kwargs):
-                # Responses emits created/usage/reasoning chunks before output text.
-                content = getattr(chunk, "content", "")
-                has_text = (
-                    bool(content)
-                    if isinstance(content, str)
-                    else any(
-                        isinstance(block, Mapping)
-                        and block.get("type") in {"text", "output_text"}
-                        and bool(block.get("text"))
-                        for block in content
+            try:
+                for chunk in runnable.stream(messages, **kwargs):
+                    # Responses emits created/usage/reasoning chunks before output text.
+                    content = getattr(chunk, "content", "")
+                    has_text = (
+                        bool(content)
+                        if isinstance(content, str)
+                        else any(
+                            isinstance(block, Mapping)
+                            and block.get("type") in {"text", "output_text"}
+                            and bool(block.get("text"))
+                            for block in content
+                        )
                     )
-                )
-                if ttft_ms is None and has_text:
-                    ttft_ms = _elapsed_ms(overall_started, self._monotonic())
-                combined = chunk if combined is None else combined + chunk
+                    if on_text_delta is not None:
+                        for delta in _text_deltas(chunk):
+                            try:
+                                on_text_delta(delta)
+                            except Exception:  # noqa: BLE001, S110 - observer only
+                                pass
+                    if ttft_ms is None and has_text:
+                        ttft_ms = _elapsed_ms(overall_started, self._monotonic())
+                    combined = chunk if combined is None else combined + chunk
+            except Exception as exc:
+                diagnostics = _stream_diagnostics(combined)
+                try:
+                    exc.diagnostics = diagnostics
+                except AttributeError:
+                    pass  # extension exceptions may prohibit attributes
+                if (
+                    on_text_delta is not None
+                    and diagnostics["output_chars"]
+                    and not (
+                        isinstance(exc, ChatParseError)
+                        or _is_pydantic_validation_error(exc)
+                    )
+                ):
+                    # A text delta proves transmission; no retries after output.
+                    raise BillingUncertainError(
+                        "stream interrupted after text"
+                    ) from exc
+                raise
             if combined is None or _usage_from_message(combined) is None:
                 raise BillingUncertainError("OpenAI stream ended without usage")
             parsed = getattr(combined, "additional_kwargs", {}).get("parsed")
+            if response_schema is not None and on_text_delta is not None:
+                try:
+                    parsed = response_schema.model_validate_json(
+                        "".join(_text_deltas(combined))
+                    )
+                except Exception:  # noqa: BLE001 - safe parse error, no raw text in logs
+                    return (
+                        combined,
+                        None,
+                        ChatParseError("invalid structured stream"),
+                        ttft_ms,
+                    )
             if response_schema is not None and parsed is None:
                 return (
                     combined,
@@ -600,3 +793,40 @@ def _response_model(message: object) -> str | None:
 
 def _elapsed_ms(started: float, ended: float) -> float:
     return max(0.0, (ended - started) * 1000)
+
+
+def _text_deltas(message):
+    content = getattr(message, "content", "")
+    if isinstance(content, str):
+        if content:
+            yield content
+    elif isinstance(content, (list, tuple)):
+        for block in content:
+            if isinstance(block, Mapping) and block.get("type") in {
+                "text",
+                "output_text",
+            }:
+                text = block.get("text")
+                if isinstance(text, str) and text:
+                    yield text
+
+
+def _stream_diagnostics(message):
+    # langchain_openai/chat_models/base.py:5160-5180,5464-5482 copies
+    # status/incomplete_details and usage into the terminal response chunk.
+    metadata = getattr(message, "response_metadata", {})
+    details = metadata.get("incomplete_details") or {}
+    usage = _usage_from_message(message)
+    reason = details.get("reason") if isinstance(details, Mapping) else None
+    return {
+        "status": metadata.get("status")
+        if metadata.get("status")
+        in {"completed", "incomplete", "failed", "in_progress"}
+        else None,
+        "incomplete_reason": reason
+        if reason in {"max_output_tokens", "content_filter"}
+        else None,
+        "output_tokens": usage.output_tokens if usage else None,
+        "reasoning_tokens": usage.reasoning_tokens if usage else None,
+        "output_chars": sum(len(t) for t in _text_deltas(message)),
+    }

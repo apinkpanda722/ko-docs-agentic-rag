@@ -162,6 +162,10 @@ def test_structural_chunk_rejects_out_of_bounds_section() -> None:
         chunk_structural(document)
 
 
+@pytest.mark.skipif(
+    not (Path(__file__).resolve().parents[2] / "data/interim/law").is_dir(),
+    reason="비커밋 로컬 원문(data/interim/law)이 없는 clone에서는 건너뜀",
+)
 def test_all_loaded_structural_chunk_bodies_are_exact_document_slices() -> None:
     documents, _ = load_corpus("composite")
 

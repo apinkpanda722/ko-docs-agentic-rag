@@ -489,7 +489,10 @@ def test_structured_output_returns_parsed_model_and_raises_parse_error(
 
 
 @pytest.mark.parametrize("with_usage", [True, False])
-def test_structured_stream_sdk_events_ttft_and_missing_usage(tmp_path, with_usage):
+@pytest.mark.parametrize("observe", [False, True])
+def test_structured_stream_sdk_events_ttft_and_missing_usage(
+    tmp_path, with_usage, observe
+):
     from openai.types.responses import (
         Response,
         ResponseCompletedEvent,
@@ -548,18 +551,26 @@ def test_structured_stream_sdk_events_ttft_and_missing_usage(tmp_path, with_usag
             200, content=body(), headers={"content-type": "text/event-stream"}
         )
 
+    seen = []
+    callback = seen.append if observe else None
     managed, client = _managed(tmp_path, handler)
     managed._monotonic = lambda: ticks[0]
     try:
         if with_usage:
-            result = managed.invoke("질문", response_schema=Answer, stream=True)
+            result = managed.invoke(
+                "질문", response_schema=Answer, stream=True, on_text_delta=callback
+            )
             assert result.parsed == Answer(answer="완료")
             assert result.ttft_ms == 3000
             assert result.usage.output_tokens == 40
             assert result.cost_usd > 0
         else:
             with pytest.raises(BillingUncertainError):
-                managed.invoke("질문", response_schema=Answer, stream=True)
+                managed.invoke(
+                    "질문", response_schema=Answer, stream=True, on_text_delta=callback
+                )
+        if observe:
+            assert seen == ['{"answer":"완료"}']
         assert len(requests) == 1
         assert requests[0]["stream"] is True
         assert requests[0]["text"]["format"]["type"] == "json_schema"
@@ -617,3 +628,391 @@ def test_stream_default_request_snapshot_preserves_m6_settings(tmp_path):
     assert prompt_hashes() == frozen["prompt_hashes"]
     assert finalizer_hash() == frozen["finalizer_hash"]
     assert result.ttft_ms is None
+
+
+def test_text_callback_only_text_and_failure_is_isolated(tmp_path):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessageChunk
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    chunks = [
+        AIMessageChunk(content=[{"type": "reasoning", "reasoning": "hidden"}]),
+        AIMessageChunk(content=[{"type": "text", "text": "shown"}]),
+        AIMessageChunk(
+            content="",
+            usage_metadata={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+        ),
+    ]
+    managed._model = Mock(stream=Mock(return_value=iter(chunks)))
+    seen = []
+
+    def callback(delta):
+        seen.append(delta)
+        raise ValueError("private")
+
+    try:
+        actual = managed.invoke("q", stream=True, on_text_delta=callback)
+    finally:
+        client.close()
+    assert seen == ["shown"]
+    assert actual.usage.output_tokens == 2
+
+
+def test_parse_diagnostics_are_content_free_and_billed(tmp_path, caplog):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessageChunk
+
+    class Schema(BaseModel):
+        answer: str
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    chunk = AIMessageChunk(
+        content='{"answer":"PRIVATE',
+        usage_metadata={"input_tokens": 1, "output_tokens": 4000, "total_tokens": 4001},
+        response_metadata={
+            "status": "incomplete",
+            "incomplete_details": {"reason": "max_output_tokens"},
+        },
+    )
+    managed._model = Mock(stream=Mock(return_value=iter([chunk])))
+    try:
+        with pytest.raises(ChatParseError) as caught:
+            managed.invoke(
+                "q", stream=True, response_schema=Schema, on_text_delta=lambda _: None
+            )
+    finally:
+        client.close()
+    assert caught.value.diagnostics["output_tokens"] == 4000
+    assert caught.value.diagnostics["output_chars"] == len(chunk.content)
+    assert caught.value.diagnostics["incomplete_reason"] == "max_output_tokens"
+    assert "PRIVATE" not in json.dumps(caught.value.diagnostics)
+    assert managed._model.stream.call_count == 1
+    assert "PRIVATE" not in caplog.text
+    assert "4000" in caplog.text
+
+
+def test_callback_retry_before_text_never_duplicates_and_post_send_never_retries(
+    tmp_path,
+):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessageChunk
+
+    seen = []
+    count = [0]
+
+    def chunks(messages, **kwargs):
+        count[0] += 1
+        if count[0] == 1:
+            raise httpx.ConnectTimeout("private")
+        yield AIMessageChunk(content="delta")
+        raise httpx.ReadTimeout("private")
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    managed._model = Mock(stream=chunks)
+    try:
+        with pytest.raises(BillingUncertainError):
+            managed.invoke("q", stream=True, on_text_delta=seen.append)
+    finally:
+        client.close()
+    assert count[0] == 2
+    assert seen == ["delta"]
+
+
+def test_explicit_none_observer_preserves_existing_stream_result(tmp_path):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessageChunk
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+
+    def chunks(*args, **kwargs):
+        yield AIMessageChunk(
+            content="same",
+            usage_metadata={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+        )
+
+    managed._model = Mock(stream=chunks)
+    try:
+        default = managed.invoke("q", stream=True)
+        explicit = managed.invoke("q", stream=True, on_text_delta=None)
+    finally:
+        client.close()
+    assert default.message == explicit.message
+    assert default.parsed == explicit.parsed
+    assert default.usage == explicit.usage
+    assert default.cost_usd == explicit.cost_usd
+    assert default.generation == explicit.generation
+
+
+def _status_error(status_code: int):
+    import openai
+
+    return openai.InternalServerError(
+        "private",
+        response=httpx.Response(
+            status_code, request=httpx.Request("POST", "https://example.invalid")
+        ),
+        body=None,
+    )
+
+
+def test_attempt_start_signals_each_attempt_and_retry_before_text_shows_only_last(
+    tmp_path,
+):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessageChunk
+
+    log: list[tuple[str, object]] = []
+    count = [0]
+
+    def chunks(messages, **kwargs):
+        count[0] += 1
+        if count[0] == 1:
+            raise _status_error(503)  # 5xx before any text: retried
+        yield AIMessageChunk(content="second")
+        yield AIMessageChunk(
+            content="",
+            usage_metadata={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+        )
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    managed._model = Mock(stream=chunks)
+    try:
+        managed.invoke(
+            "q",
+            stream=True,
+            on_text_delta=lambda delta: log.append(("delta", delta)),
+            on_attempt_start=lambda number: log.append(("attempt", number)),
+        )
+    finally:
+        client.close()
+    assert log == [("attempt", 1), ("attempt", 2), ("delta", "second")]
+
+
+def test_5xx_after_text_is_not_retried_and_attempt_signal_is_not_repeated(tmp_path):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessageChunk
+
+    log: list[tuple[str, object]] = []
+    count = [0]
+
+    def chunks(messages, **kwargs):
+        count[0] += 1
+        yield AIMessageChunk(content="first")
+        raise _status_error(502)  # status error after text was already shown
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    managed._model = Mock(stream=chunks)
+    try:
+        with pytest.raises(BillingUncertainError):
+            managed.invoke(
+                "q",
+                stream=True,
+                on_text_delta=lambda delta: log.append(("delta", delta)),
+                on_attempt_start=lambda number: log.append(("attempt", number)),
+            )
+    finally:
+        client.close()
+    assert count[0] == 1
+    assert log == [("attempt", 1), ("delta", "first")]
+
+
+def test_attempt_start_none_and_failing_observer_keep_result_and_settings_hash(
+    tmp_path,
+):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessageChunk
+
+    def chunks(*args, **kwargs):
+        yield AIMessageChunk(
+            content="same",
+            usage_metadata={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+        )
+
+    def failing(number):
+        raise ValueError("private")
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    managed._model = Mock(stream=chunks)
+    try:
+        default = managed.invoke("q", stream=True)
+        none = managed.invoke("q", stream=True, on_attempt_start=None)
+        isolated = managed.invoke(
+            "q", stream=True, on_text_delta=lambda _: None, on_attempt_start=failing
+        )
+    finally:
+        client.close()
+    for other in (none, isolated):
+        assert default.message == other.message
+        assert default.usage == other.usage
+        assert default.settings_hash == other.settings_hash
+    frozen = json.loads(Path("data/manifest/m6_config.json").read_text())
+    assert default.settings_hash == frozen["answer"]["settings_hash"]
+
+
+GOOD = '{"answer":"ok","citations":[],"refused":false}'
+CUT = '{"answer":"cut","citations":[{"kind":"doc","doc_id":"d","section_key":"'
+
+
+def _truncated_chunk():
+    from langchain_core.messages import AIMessageChunk
+
+    return AIMessageChunk(
+        content=CUT,
+        usage_metadata={
+            "input_tokens": 10,
+            "output_tokens": 1500,
+            "total_tokens": 1510,
+        },
+        response_metadata={
+            "status": "incomplete",
+            "incomplete_details": {"reason": "max_output_tokens"},
+        },
+    )
+
+
+def _good_chunk():
+    from langchain_core.messages import AIMessageChunk
+
+    return AIMessageChunk(
+        content=GOOD,
+        usage_metadata={"input_tokens": 10, "output_tokens": 12, "total_tokens": 22},
+        response_metadata={"status": "completed"},
+    )
+
+
+def _scripted(tmp_path, *chunks):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessageChunk  # noqa: F401
+
+    calls = []
+
+    def stream(messages, **kwargs):
+        calls.append(kwargs)
+        yield chunks[min(len(calls), len(chunks)) - 1]
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    managed._model = Mock(stream=stream)
+    return managed, client, calls
+
+
+def _output_rows(tmp_path):
+    path = tmp_path / "costs.jsonl"
+    rows = [json.loads(line) for line in path.read_text().splitlines()]
+    return [r for r in rows if str(r.get("service", "")).endswith(".output")]
+
+
+def test_truncated_response_is_regenerated_once_and_both_requests_are_billed(
+    tmp_path,
+):
+    from kodocs.agent.types import ModelAnswer
+
+    managed, client, calls = _scripted(tmp_path, _truncated_chunk(), _good_chunk())
+    log = []
+    try:
+        result = managed.invoke(
+            "q",
+            stream=True,
+            response_schema=ModelAnswer,
+            on_text_delta=lambda delta: log.append(("delta", delta)),
+            on_attempt_start=lambda number: log.append(("attempt", number)),
+            regenerate_on_truncation=True,
+        )
+    finally:
+        client.close()
+    assert len(calls) == 2
+    assert result.parsed.answer == "ok"
+    assert [a.status for a in result.attempts] == ["truncated_regenerate", "success"]
+    assert log == [
+        ("attempt", 1),
+        ("delta", CUT),
+        ("attempt", 2),
+        ("delta", GOOD),
+    ]
+    assert len(_output_rows(tmp_path)) == 2  # both requests are in the ledger
+
+
+def test_two_truncations_in_a_row_raise_with_diagnostics_not_a_third_call(tmp_path):
+    from kodocs.agent.types import ModelAnswer
+
+    managed, client, calls = _scripted(tmp_path, _truncated_chunk(), _truncated_chunk())
+    try:
+        with pytest.raises(ChatParseError) as caught:
+            managed.invoke(
+                "q",
+                stream=True,
+                response_schema=ModelAnswer,
+                on_text_delta=lambda _: None,
+                regenerate_on_truncation=True,
+            )
+    finally:
+        client.close()
+    assert len(calls) == 2
+    assert caught.value.diagnostics["incomplete_reason"] == "max_output_tokens"
+    assert [a.status for a in caught.value.attempts] == [
+        "truncated_regenerate",
+        "success",
+    ]
+    assert len(_output_rows(tmp_path)) == 2
+
+
+def test_normal_response_is_not_regenerated_and_default_off_never_regenerates(
+    tmp_path,
+):
+    from kodocs.agent.types import ModelAnswer
+
+    managed, client, calls = _scripted(tmp_path, _good_chunk())
+    try:
+        managed.invoke(
+            "q",
+            stream=True,
+            response_schema=ModelAnswer,
+            on_text_delta=lambda _: None,
+            regenerate_on_truncation=True,
+        )
+    finally:
+        client.close()
+    assert len(calls) == 1
+
+    managed, client, calls = _scripted(tmp_path, _truncated_chunk(), _good_chunk())
+    try:
+        with pytest.raises(ChatParseError):
+            managed.invoke(
+                "q",
+                stream=True,
+                response_schema=ModelAnswer,
+                on_text_delta=lambda _: None,
+            )
+    finally:
+        client.close()
+    assert len(calls) == 1  # frozen behavior: no regeneration unless asked
+
+
+def test_derived_chat_has_its_own_cap_and_hash_and_leaves_the_original_alone(
+    tmp_path,
+):
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    try:
+        original_hash = managed.config.settings_hash()
+        derived = managed.with_max_output_tokens(1500)
+    finally:
+        client.close()
+    assert derived.config.max_output_tokens == 1500
+    assert managed.config.max_output_tokens == 4000
+    assert managed.config.settings_hash() == original_hash
+    assert derived.config.settings_hash() != original_hash
+    other = {
+        k: v for k, v in derived.config.record().items() if k != "max_output_tokens"
+    }
+    assert other == {
+        k: v for k, v in managed.config.record().items() if k != "max_output_tokens"
+    }
+    frozen = json.loads(Path("data/manifest/m6_config.json").read_text())
+    assert original_hash == frozen["answer"]["settings_hash"]

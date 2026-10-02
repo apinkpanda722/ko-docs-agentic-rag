@@ -17,6 +17,8 @@
 - 테스트·린트: pytest, ruff
 
 ## 아키텍처 규칙
+- `retrieval/rerank.py`는 `authorized_*`가 돌려준 후보만 입력으로 받고 새 검색·권한 로직을 만들지 않는다(M8-R1).
+- CRITICAL: `event_sink` 이벤트에는 결과 본문·문서 제목·근거 텍스트·가드레일 거절 사유를 넣지 않는다(trace expander에만).
 - CRITICAL: `src/kodocs/retrieval/`은 `langchain`·`langgraph`를 import하지 않는다. 검색은 측정 대상이므로 추상화 없이 OpenSearch·SQLite를 직접 호출한다. 이 경계는 테스트로 강제한다.
 - CRITICAL: `agent`·`mcp_server`는 `retrieval`을 `tools`를 통해서만 호출한다. 이 경계는 계층 가드 테스트로 강제한다.
 - CRITICAL: 모든 검색은 `retrieval`의 `authorized_*` 함수를 거친다. 권한 필터는 검색 **전에** 적용한다(pre-filter). LangGraph 도구와 MCP 서버는 이 함수를 호출하는 얇은 래퍼일 뿐, 권한 로직을 따로 두지 않는다.
@@ -44,6 +46,25 @@
 - 커밋 메시지는 conventional commits 형식을 따를 것 (feat:, fix:, docs:, refactor:)
 
 ## 명령어
+make m8-test  # test 1회 실행, 재실행은 RERUN_REASON="사유" make m8-test, make up·freeze 필요, 사용자 실행
+make m8-latency  # 113문항 검색+재정렬 지연, 동시성 1, LLM 없음, 사용자 실행
+make m8-report  # M8 결과 문서 생성, 네트워크 없음
+# 사용자 실행 순서: make m8-test → make m8-latency → make m8-report → make readme → make m8-audit
+make m8-candidates  # dev 후보 캐시 — make up 필요·OpenSearch 읽기 전용·리랭커 점수 계산 없음, 사용자 실행
+make m8-tokens  # dev max_length 측정 — 모델 가중치 없이 리랭커 토크나이저만, 사용자 실행
+make m8-dev  # dev 리랭커 6개 격자 — 리랭커 로딩·MPS, 사용자 실행
+make m8-freeze  # M8 선택 설정 고정 — 덮어쓰기 거부, 사용자 실행
+make rerank-models  # bge-reranker-v2-m3 다운로드(revision 고정, 약 2.3GB급) — 네트워크, 사용자 실행, embed 그룹 설치 후
+make m8-stream-repro-dry  # 스트리밍 폭주 재현 예상 비용 — 네트워크 없음
+make m8-stream-repro  # 실제 API 호출·과금, 사용자 실행, 1단계 300회(4문항×3경로×25), STAGE=2로 2단계 452회(B·C 113문항×2시스템), 재실행은 RERUN_REASON="사유"
+make m8-repro-shapes  # 재현 폭주 건의 형태 사후 분류(로컬 원시 파일 필요) → data/manifest/m8_stream_repro_shapes.json — 네트워크 없음
+make readme  # README 생성 영역 갱신(manifest에서 생성, H8은 결과 없으면 '미실행', 결과 흔적이 있는데 검증 실패면 오류) — 네트워크 없음
+make ui  # Streamlit 데모 GUI 기동(OpenSearch·API 키 필요, 실제 호출 시 과금) — 사용자 실행
+make adr-index  # ADR 상태·상호 참조 색인 생성 → docs/ADR-INDEX.md — 네트워크 없음
+make m8-parse-error  # M7 지연 원본 해시 대조·parse_error 오프라인 분류 → data/manifest/m8_parse_error.json — 네트워크 없음
+make m8-wrap-report  # M7 환경 정정·parse_error·별표 규정 단위 상한 보고 → docs/results/2026-10-03-m8-wrap-up.md — 네트워크 없음
+make m8-audit  # 공개 전환 점검(작업 트리·git 이력·슁글 겹침·이메일 도메인·해시 인벤토리) → data/manifest/m8_audit.json·docs/results/2026-10-03-m8-public-readiness.md — 네트워크 없음
+make m8-audit-gh  # GitHub 이슈·PR·댓글 점검(gh 읽기 전용, 건수·위치만) — 네트워크, 사용자 실행
 make verify      # ruff + pytest (Stop hook, execute.py, CI가 모두 이 명령을 부른다)
 make up          # OpenSearch 기동 (docker compose, 이미지 빌드 포함)
 make down        # OpenSearch 중지
@@ -129,5 +150,6 @@ make m7-latency-dry  # 지연 113 × 2 + 예열 6 실행 수·M6 test 평균 기
 make m7-latency  # 실제 OpenAI 호출·과금, 동시성 1 단독 실행, 사용자 실행. 재실행: RERUN_REASON="사유" make m7-latency
 make m7-failures  # M6 test 틀린 문항 결정론 실패 분류(기록 부족은 indeterminate, 재검색·모델 호출 없음) → data/manifest/m7_failures.json — 네트워크 없음
 make m7-report  # M7 결과 문서 docs/results/2026-10-02-m7-answer-eval.md(고정) 생성 영역만 갱신 — 네트워크 없음
+uv run python -m kodocs.eval.m8_rules  # M8 사전 등록 규칙 ID 수·SHA-256 출력 — 네트워크 없음
 # 검색·답변 평가는 make m5-test·make m6-test, 채점은 make m7-grade로 각각 실행한다.
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)

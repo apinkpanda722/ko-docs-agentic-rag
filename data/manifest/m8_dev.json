@@ -1,0 +1,100 @@
+{
+  "baseline": {
+    "gold": {
+      "ndcg10": 0.5862806633051312,
+      "recall10": 0.6833333333333333
+    },
+    "silver": {
+      "ndcg10": 0.35960804885508896,
+      "recall10": 0.41220930232558145
+    }
+  },
+  "baseline_note": "M5 dev 격자는 고정 청킹 기준이라 구조 청킹 대조군의 dev 값은 M5에 기록이 없다. M8에서 처음 기록한다.",
+  "batch_size": 4,
+  "candidate_manifest_sha256": "15ca89341ba15adb26441883a205cca92307babe905e243839f9e187b28eeea6",
+  "code_commit": "45b6f472cd5a7b941f914567967f2b607b418d6d",
+  "device": "mps:0",
+  "grid": [
+    {
+      "depth": 20,
+      "fusion": "alone",
+      "gold_dev_mean_ndcg10": 0.6727807328515377,
+      "selection_score": 0.5237808249951936,
+      "silver_dev_mean_ndcg10": 0.3747809171388494
+    },
+    {
+      "depth": 20,
+      "fusion": "rrf",
+      "gold_dev_mean_ndcg10": 0.6099746249035645,
+      "selection_score": 0.4872304458315843,
+      "silver_dev_mean_ndcg10": 0.36448626675960416
+    },
+    {
+      "depth": 30,
+      "fusion": "alone",
+      "gold_dev_mean_ndcg10": 0.6833034216722558,
+      "selection_score": 0.5371039366435142,
+      "silver_dev_mean_ndcg10": 0.3909044516147727
+    },
+    {
+      "depth": 30,
+      "fusion": "rrf",
+      "gold_dev_mean_ndcg10": 0.6102306108625305,
+      "selection_score": 0.4899901142326352,
+      "silver_dev_mean_ndcg10": 0.36974961760273994
+    },
+    {
+      "depth": 50,
+      "fusion": "alone",
+      "gold_dev_mean_ndcg10": 0.7010555724022793,
+      "selection_score": 0.5546320855631406,
+      "silver_dev_mean_ndcg10": 0.4082085987240019
+    },
+    {
+      "depth": 50,
+      "fusion": "rrf",
+      "gold_dev_mean_ndcg10": 0.6216416366957498,
+      "selection_score": 0.4972693727550038,
+      "silver_dev_mean_ndcg10": 0.3728971088142579
+    }
+  ],
+  "init_s": 2.0362880829998176,
+  "max_length": 1024,
+  "max_length_sha256": "9f91421a44296c79d58a26e37b47a7b8d7f7dfc182eace1c731bb1338cb66435",
+  "model_id": "BAAI/bge-reranker-v2-m3",
+  "model_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+  "mps_memory": {
+    "current_allocated_memory": 4576744704,
+    "driver_allocated_memory": 5344018432,
+    "recommended_max_memory": 40200896512
+  },
+  "reranker": {
+    "activation_fn": "torch.nn.Identity",
+    "batch_size": 4,
+    "device": "mps:0",
+    "local_files_only": true,
+    "max_length": 1024,
+    "model_id": "BAAI/bge-reranker-v2-m3",
+    "predict": {
+      "activation_fn": "torch.nn.Identity",
+      "apply_softmax": false,
+      "convert_to_numpy": true,
+      "convert_to_tensor": false,
+      "show_progress_bar": false
+    },
+    "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+  },
+  "rules_sha256": "f59ded7f91461eb8d37a43b7429d32bd6c497cf0a3be29ad7c278a159d3d44da",
+  "score_cache": {
+    "rows": 2850,
+    "sha256": "34097593ce94891773c7934d4f1673f085c9a55999d626d707e25a0ee9524985"
+  },
+  "score_s": 150.24583208299737,
+  "selected": {
+    "depth": 50,
+    "fusion": "alone",
+    "gold_dev_mean_ndcg10": 0.7010555724022793,
+    "selection_score": 0.5546320855631406,
+    "silver_dev_mean_ndcg10": 0.4082085987240019
+  }
+}

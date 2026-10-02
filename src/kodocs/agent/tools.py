@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import json
+import threading
 import time
-from dataclasses import dataclass
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass, field
+from types import MappingProxyType
 from typing import Any
 
 from langchain.tools import ToolRuntime, tool
@@ -12,7 +15,7 @@ from langchain_core.tools import BaseTool, StructuredTool
 
 from kodocs.agent.evidence import EvidenceLog
 from kodocs.agent.guardrails import Guard
-from kodocs.agent.trace import TraceSession
+from kodocs.agent.trace import TraceSession, _sanitize
 from kodocs.agent.types import RefuseReason
 from kodocs.tools import (
     INVALID_ARGUMENT,
@@ -47,6 +50,53 @@ class AgentContext:
     evidence: EvidenceLog
     guard: Guard
     trace: TraceSession
+    event_sink: Callable[[Mapping[str, object]], None] | None = None
+    _event_state: dict = field(default_factory=lambda: {"index": 0, "errors": 0})
+    _event_lock: object = field(default_factory=threading.Lock)
+
+    def emit(
+        self,
+        kind,
+        name,
+        *,
+        index=None,
+        args=None,
+        latency_ms=0.0,
+        error=None,
+        refs_count=0,
+    ):
+        """Publish an immutable, content-free snapshot; observers cannot fail RAG."""
+        if self.event_sink is None:
+            return 0
+        with self._event_lock:
+            if index is None:
+                self._event_state["index"] += 1
+                index = self._event_state["index"]
+        snapshot = _freeze_event(
+            {
+                "kind": kind,
+                "name": name,
+                "args": _sanitize(args or {}),
+                "latency_ms": latency_ms,
+                "error": error,
+                "refs_count": refs_count,
+                "index": index,
+            }
+        )
+        try:
+            self.event_sink(snapshot)
+        except Exception:  # noqa: BLE001 - observer errors must not affect answers
+            with self._event_lock:
+                self._event_state["errors"] += 1
+        return index
+
+
+def _freeze_event(value):
+    if isinstance(value, dict):
+        return MappingProxyType({k: _freeze_event(v) for k, v in value.items()})
+    if isinstance(value, (list, tuple)):
+        return tuple(_freeze_event(v) for v in value)
+    return value
 
 
 class _RuntimeStructuredTool(StructuredTool):
@@ -90,11 +140,32 @@ def execute_tool_call(
         if not ctx.guard.consume_registered_tool_call():
             raise RuntimeError("registered tool call could not be claimed")
 
+    index = ctx.emit("tool_start", name, args=args)
     started = time.perf_counter()
-    result = run_tool(name, args, ctx.user, deps)
+    try:
+        result = run_tool(name, args, ctx.user, deps)
+    except Exception as exc:
+        ctx.emit(
+            "tool_end",
+            name,
+            index=index,
+            args=args,
+            latency_ms=max(0.0, (time.perf_counter() - started) * 1000),
+            error=type(exc).__name__,
+        )
+        raise
     latency_ms = max(0.0, (time.perf_counter() - started) * 1000)
     ctx.evidence.record(name, args, result)
     ctx.trace.add_tool_step(name, args, result, latency_ms=latency_ms)
+    ctx.emit(
+        "tool_end",
+        name,
+        index=index,
+        args=args,
+        latency_ms=latency_ms,
+        error=result.payload.get("error", {}).get("code") if result.is_error else None,
+        refs_count=len(result.refs),
+    )
     return result
 
 

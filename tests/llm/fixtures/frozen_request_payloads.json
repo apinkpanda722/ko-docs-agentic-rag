@@ -1,0 +1,222 @@
+{
+ "m6_nonstream": {
+  "input": [
+   {
+    "content": "질문",
+    "role": "user",
+    "type": "message"
+   }
+  ],
+  "max_output_tokens": 4000,
+  "model": "gpt-6-luna",
+  "reasoning": {
+   "effort": "low"
+  },
+  "stream": false,
+  "text": {
+   "format": {
+    "name": "ModelAnswer",
+    "schema": {
+     "$defs": {
+      "Citation": {
+       "additionalProperties": false,
+       "description": "One model-proposed citation tied to retrieved or structured evidence.",
+       "properties": {
+        "call_id": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "title": "Call Id"
+        },
+        "doc_id": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "title": "Doc Id"
+        },
+        "kind": {
+         "$ref": "#/$defs/CitationKind"
+        },
+        "section_key": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "title": "Section Key"
+        }
+       },
+       "required": [
+        "kind",
+        "doc_id",
+        "section_key",
+        "call_id"
+       ],
+       "title": "Citation",
+       "type": "object"
+      },
+      "CitationKind": {
+       "enum": [
+        "doc",
+        "sql"
+       ],
+       "type": "string"
+      }
+     },
+     "additionalProperties": false,
+     "description": "Structured output requested from the final answer-model call.",
+     "properties": {
+      "answer": {
+       "title": "Answer",
+       "type": "string"
+      },
+      "citations": {
+       "items": {
+        "$ref": "#/$defs/Citation"
+       },
+       "title": "Citations",
+       "type": "array"
+      },
+      "refused": {
+       "title": "Refused",
+       "type": "boolean"
+      }
+     },
+     "required": [
+      "answer",
+      "citations",
+      "refused"
+     ],
+     "title": "ModelAnswer",
+     "type": "object"
+    },
+    "strict": true,
+    "type": "json_schema"
+   }
+  }
+ },
+ "m7_stream": {
+  "input": [
+   {
+    "content": "질문",
+    "role": "user",
+    "type": "message"
+   }
+  ],
+  "max_output_tokens": 4000,
+  "model": "gpt-6-luna",
+  "reasoning": {
+   "effort": "low"
+  },
+  "stream": true,
+  "text": {
+   "format": {
+    "description": "Structured output requested from the final answer-model call.",
+    "name": "ModelAnswer",
+    "schema": {
+     "$defs": {
+      "Citation": {
+       "additionalProperties": false,
+       "description": "One model-proposed citation tied to retrieved or structured evidence.",
+       "properties": {
+        "call_id": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "default": null,
+         "title": "Call Id"
+        },
+        "doc_id": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "default": null,
+         "title": "Doc Id"
+        },
+        "kind": {
+         "$ref": "#/$defs/CitationKind"
+        },
+        "section_key": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "default": null,
+         "title": "Section Key"
+        }
+       },
+       "required": [
+        "kind",
+        "doc_id",
+        "section_key",
+        "call_id"
+       ],
+       "title": "Citation",
+       "type": "object"
+      },
+      "CitationKind": {
+       "enum": [
+        "doc",
+        "sql"
+       ],
+       "type": "string"
+      }
+     },
+     "additionalProperties": false,
+     "properties": {
+      "answer": {
+       "title": "Answer",
+       "type": "string"
+      },
+      "citations": {
+       "items": {
+        "$ref": "#/$defs/Citation"
+       },
+       "title": "Citations",
+       "type": "array"
+      },
+      "refused": {
+       "title": "Refused",
+       "type": "boolean"
+      }
+     },
+     "required": [
+      "answer",
+      "citations",
+      "refused"
+     ],
+     "type": "object"
+    },
+    "strict": true,
+    "type": "json_schema"
+   }
+  }
+ }
+}

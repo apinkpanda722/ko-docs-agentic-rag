@@ -46,6 +46,8 @@ def build_simple_graph(runtime: AgentRuntime):
             budget=agent_runtime.guardrails.context_char_budget,
         )
         messages = build_final_messages(state["question"], context_text)
+        index = ctx.emit("final_start", "final_answer")
+        ctx.emit("model_start", "final_answer", index=index)
         started = agent_runtime.clock()
         try:
             chat_result = agent_runtime.chat.invoke(
@@ -53,6 +55,13 @@ def build_simple_graph(runtime: AgentRuntime):
                 response_schema=ModelAnswer,
             )
         except ChatParseError as exc:
+            ctx.emit(
+                "model_end",
+                "final_answer",
+                index=index,
+                latency_ms=_elapsed_ms(started, agent_runtime.clock()),
+                error="ChatParseError",
+            )
             ctx.trace.add_model_step(
                 "final_answer",
                 latency_ms=_elapsed_ms(started, agent_runtime.clock()),
@@ -60,7 +69,19 @@ def build_simple_graph(runtime: AgentRuntime):
                 attempts=exc.attempts,
             )
             return {"result": _finish_refusal(ctx, "parse_error")}
+        except Exception as exc:
+            ctx.emit(
+                "model_end",
+                "final_answer",
+                index=index,
+                latency_ms=_elapsed_ms(started, agent_runtime.clock()),
+                error=type(exc).__name__,
+            )
+            raise
 
+        ctx.emit(
+            "model_end", "final_answer", index=index, latency_ms=chat_result.latency_ms
+        )
         tokens = _usage_record(chat_result.usage)
         ctx.guard.add_usage(sum(tokens.values()))
         ctx.trace.add_model_step(

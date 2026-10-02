@@ -1,10 +1,13 @@
-.PHONY: verify up down logs test-integration collect-law collect-alio match-versions convert-hwp parse-targets parse-pypdf docling-models parse-docling parse-upstage-dry parse-upstage parse-upstage-direct-dry parse-upstage-direct parse-score table-drafts table-golden table-score parse-report reg-index seed-names build-db plan-docs generate-dry generate-pilot generate-pilot-rerun generate synth-validate synth-metrics synth-report review-sample review-score query-specs queries-dry queries queries-batch-dry queries-batch query-validate lexical-report golden-real-candidates golden-real-check golden-split-preview golden-packets golden-promote m4-report m5-annex-map m5-chunking m5-eval-inputs embed-models m5-index-dry m5-index m5-dev m5-freeze m5-test m5-report m6-temporal m6-inputs m6-dry m6-dev m6-freeze m6-test m6-tokens m6-serve m6-report m7-probe m7-cards m7-human-register m7-pilot m7-freeze m7-grade-dry m7-grade m7-analyze m7-evidence-check m7-security-set m7-security-dry m7-security m7-leak-review-register m7-security-rejudge m7-latency-dry m7-latency m7-failures m7-report
+.PHONY: m8-test m8-latency m8-report m8-candidates m8-tokens m8-dev m8-freeze rerank-models m8-stream-repro m8-stream-repro-dry m8-repro-shapes readme ui adr-index m8-wrap-report m8-parse-error verify up down logs test-integration collect-law collect-alio match-versions convert-hwp parse-targets parse-pypdf docling-models parse-docling parse-upstage-dry parse-upstage parse-upstage-direct-dry parse-upstage-direct parse-score table-drafts table-golden table-score parse-report reg-index seed-names build-db plan-docs generate-dry generate-pilot generate-pilot-rerun generate synth-validate synth-metrics synth-report review-sample review-score query-specs queries-dry queries queries-batch-dry queries-batch query-validate lexical-report golden-real-candidates golden-real-check golden-split-preview golden-packets golden-promote m4-report m5-annex-map m5-chunking m5-eval-inputs embed-models m5-index-dry m5-index m5-dev m5-freeze m5-test m5-report m6-temporal m6-inputs m6-dry m6-dev m6-freeze m6-test m6-tokens m6-serve m6-report m7-probe m7-cards m7-human-register m7-pilot m7-freeze m7-grade-dry m7-grade m7-analyze m7-evidence-check m7-security-set m7-security-dry m7-security m7-leak-review-register m7-security-rejudge m7-latency-dry m7-latency m7-failures m7-report m8-audit m8-audit-gh
 
 # 하네스의 단일 검증 진입점. Stop hook, scripts/execute.py, step AC가 모두 이 타깃을 호출한다.
 verify:
 	uv run ruff check .
 	uv run ruff format --check .
-	uv run pytest -q
+	uv run --group ui pytest -q
+
+ui:
+	uv run --group ui streamlit run src/kodocs/ui/app.py
 
 up:
 	docker compose -f infra/docker-compose.yml up -d --build
@@ -165,6 +168,10 @@ m5-eval-inputs:
 embed-models:
 	uv run --group embed python -c "from pathlib import Path; from huggingface_hub import snapshot_download; from kodocs.retrieval.embedding import BGE_M3_ALLOW_PATTERNS, BGE_M3_IGNORE_PATTERNS, BGE_M3_MODEL_ID, BGE_M3_REVISION; p = Path(snapshot_download(BGE_M3_MODEL_ID, revision=BGE_M3_REVISION, allow_patterns=list(BGE_M3_ALLOW_PATTERNS), ignore_patterns=list(BGE_M3_IGNORE_PATTERNS))); print(f'path={p}'); print(f'revision={p.name}')"
 
+# embed 그룹 설치 후 약 2.3GB급 모델만 내려받는다. 사용자 실행
+rerank-models:
+	uv run --group embed python -c "from huggingface_hub import snapshot_download; from kodocs.retrieval.rerank import RERANKER_MODEL_ID, RERANKER_REVISION, RERANKER_ALLOW_PATTERNS, RERANKER_IGNORE_PATTERNS, RERANKER_EXPECTED_FILES, resolve_local_reranker_snapshot; snapshot_download(RERANKER_MODEL_ID, revision=RERANKER_REVISION, allow_patterns=list(RERANKER_ALLOW_PATTERNS), ignore_patterns=list(RERANKER_IGNORE_PATTERNS)); p = resolve_local_reranker_snapshot(); print(f'path={p}'); print(f'revision={RERANKER_REVISION}'); print('model.safetensors bytes=' + str((p / 'model.safetensors').stat().st_size) + ', expected=' + str(RERANKER_EXPECTED_FILES['model.safetensors']))"
+
 m5-index-dry:
 	uv run --group embed python -m kodocs.retrieval.index_build --all --dry-run
 
@@ -271,3 +278,53 @@ m7-failures:
 
 m7-report:
 	uv run python -m kodocs.eval.m7_report
+
+m8-audit:
+	uv run python -m kodocs.eval.m8_audit
+
+m8-audit-gh:
+	uv run python -m kodocs.eval.m8_audit_gh
+
+adr-index:
+	uv run python -m kodocs.eval.m8_adr_index
+
+m8-wrap-report:
+	uv run python -m kodocs.eval.m8_wrap_report
+
+m8-parse-error:
+	uv run python -m kodocs.eval.m8_parse_error
+
+readme:
+	uv run python -m kodocs.eval.m8_readme
+
+M8_RERUN_FLAGS = $(if $(RERUN_REASON),--rerun-reason "$(RERUN_REASON)")
+
+m8-stream-repro:
+	uv run --group embed python -m kodocs.eval.m8_stream_repro $(M8_RERUN_FLAGS) $(if $(STAGE),--stage $(STAGE))
+
+m8-stream-repro-dry:
+	uv run --group embed python -m kodocs.eval.m8_stream_repro --dry-run $(if $(STAGE),--stage $(STAGE))
+
+m8-repro-shapes:
+	uv run python -m kodocs.eval.m8_stream_repro --shapes
+
+m8-candidates:
+	uv run --group embed python -m kodocs.eval.m8_dev --candidates
+
+m8-tokens:
+	uv run --group embed python -m kodocs.eval.m8_dev --tokens
+
+m8-dev:
+	uv run --group embed python -m kodocs.eval.m8_dev
+
+m8-freeze:
+	uv run python -m kodocs.eval.m8_dev --freeze
+
+m8-test:
+	uv run --group embed python -m kodocs.eval.m8_test $(M8_RERUN_FLAGS)
+
+m8-latency:
+	uv run --group embed python -m kodocs.eval.m8_latency $(M8_RERUN_FLAGS)
+
+m8-report:
+	uv run python -m kodocs.eval.m8_report
