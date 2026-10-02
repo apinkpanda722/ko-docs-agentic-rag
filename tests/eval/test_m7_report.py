@@ -1,6 +1,7 @@
 """Offline report contracts: missing data, preserved bytes and authenticated input."""
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -16,8 +17,14 @@ def put(root, name, value):
     return path
 
 
+def render(root):
+    """Body and appendix together, for tests that inspect every generated section."""
+    body, appendix, errors = report.render_tables(root)
+    return body + "\n\n" + appendix, errors
+
+
 def test_m7_report_missing(tmp_path):
-    text, errors = report.render_tables(tmp_path)
+    text, errors = render(tmp_path)
     assert not errors
     assert "미실행" in text
     assert "PRD 성공 기준" in text
@@ -38,7 +45,7 @@ def test_m7_report_data_presence_and_fallback(tmp_path):
             "variability": {"n": 1},
         },
     )
-    text, _ = report.render_tables(tmp_path)
+    text, _ = render(tmp_path)
     assert report.HUMAN_FALLBACK in text
     assert "quadratic_kappa | 0.4" in text
     assert "launch | false" in text
@@ -60,7 +67,7 @@ def test_m7_report_c1_pending(tmp_path):
             },
         },
     )
-    assert "판정 대기(c1 후보 확인 필요)" in report.render_tables(tmp_path)[0]
+    assert "판정 대기(c1 후보 확인 필요)" in render(tmp_path)[0]
 
 
 def test_m7_report_hash_failure_writes_error(tmp_path):
@@ -192,7 +199,7 @@ def test_m7_report_all_aggregate_sections_filled(tmp_path):
         "config",
     ):
         put(tmp_path, f"m7_{name}.json", {"n": 1, "score_distribution": {"3": 50}})
-    text, _ = report.render_tables(tmp_path)
+    text, _ = render(tmp_path)
     for title in (
         "채점 모델 검증(정답성)",
         "표본 구성",
@@ -243,7 +250,7 @@ def test_m7_report_security_denominators_and_correction(tmp_path):
             "supplement_count": 1,
         },
     )
-    text, _ = report.render_tables(tmp_path)
+    text, _ = render(tmp_path)
     assert "included_counts.S6 | 3" in text
     assert "non_control_total | 5" in text
     assert "정정 전(첫 항목)" in text
@@ -270,7 +277,7 @@ def test_m7_report_latest_history_and_latency_failure(tmp_path):
             ],
         },
     )
-    text, _ = report.render_tables(tmp_path)
+    text, _ = render(tmp_path)
     assert "systems.simple.p95_s | 3" in text
     assert "FP-056" in text and "first-hash" in text and "API 호출 0건" in text
 
@@ -307,7 +314,7 @@ def test_m7_report_other_raw_hash_failure(tmp_path, key):
     manifest = put(tmp_path, name, {"status": "completed"})
     record_fingerprint(manifest, key, raw, "completed")
     raw.write_text("{}\n{}\n")
-    text, errors = report.render_tables(tmp_path)
+    text, errors = render(tmp_path)
     assert errors and "원본 해시 불일치" in text
 
 
@@ -322,7 +329,7 @@ def test_m7_report_stale_analysis_fingerprint(tmp_path):
         "m7_analysis.json",
         {"raw": {"sha256": "old", "rows": 1}, "kappa": {"passed": True}},
     )
-    text, errors = report.render_tables(tmp_path)
+    text, errors = render(tmp_path)
     assert errors and "원본 해시 불일치" in text
     assert "passed | true" not in text
 
@@ -364,6 +371,8 @@ def test_m7_report_complete_fixture_has_no_false_missing(tmp_path, monkeypatch):
                 "leaks": 0,
                 "c1_candidates": 0,
                 "c1_confirmed": 0,
+                "clopper_pearson_upper": 0.4,
+                "control_false_refusal": {"numerator": 0, "denominator": 5},
             }
         },
     }
@@ -412,11 +421,37 @@ def test_m7_report_complete_fixture_has_no_false_missing(tmp_path, monkeypatch):
             }
         if key == "latency":
             values |= {
-                "systems": {"simple": {"verdict": "P95 목표 달성"}},
+                "systems": {
+                    "simple": {
+                        "verdict": "P95 목표 달성",
+                        "p95_s": 3.7,
+                        "p95_ci95_s": [3.1, 6.6],
+                        "target_s": 5.0,
+                        "total": {"p50_s": 1.9},
+                        "execution_count": 113,
+                        "failure_count": 2,
+                        "segments": {
+                            "ttft_s": {"p50_s": 0.7, "p95_s": 1.3},
+                            "search_s": {"p50_s": 0.02, "p95_s": 0.03},
+                            "embed_s": {"max_s": 0.378},
+                        },
+                    },
+                    "agentic": {
+                        "p95_s": 13.4,
+                        "p95_ci95_s": [10.8, 15.5],
+                        "total": {"p50_s": 6.7},
+                        "execution_count": 113,
+                        "failure_count": 5,
+                        "segments": {
+                            "ttft_s": {"p50_s": 0.7, "p95_s": 1.3},
+                            "search_s": {"p50_s": 0.02, "p95_s": 0.03},
+                            "embed_s": {"max_s": 0.378},
+                        },
+                    },
+                },
                 "history": [{"seq": 1, "status": "completed", "result": {}}],
                 "environment": {"python": "fixture"},
                 "code_commit": "measured",
-                "noncache_correction": {"p95_s": 4.1},
             }
         manifest = put(tmp_path, name, values)
         record_fingerprint(manifest, key, tmp_path / raw_name, "completed")
@@ -426,8 +461,16 @@ def test_m7_report_complete_fixture_has_no_false_missing(tmp_path, monkeypatch):
         {
             "raw": fingerprint(raw_grade),
             "h6": h6,
-            "kappa": {"passed": True, "quadratic_kappa": 0.8},
-            "h5": {"verdict_text": H5_ACCEPT},
+            "kappa": {
+                "passed": True,
+                "quadratic_kappa": 0.8,
+                "ci_low": 0.7,
+                "ci_high": 0.9,
+            },
+            "h5": {
+                "verdict_text": H5_ACCEPT,
+                "primary": {"n": 13, "mean_diff": 1.5, "ci_low": 0.9, "ci_high": 2.0},
+            },
             "sol": {"n": 1},
             "router": {"launch": False},
             "faithfulness": {"n": 1},
@@ -457,6 +500,38 @@ def test_m7_report_complete_fixture_has_no_false_missing(tmp_path, monkeypatch):
             "non_control_total": 5,
             "supplement_count": 0,
         },
+    )
+    put(tmp_path, "m6_dev.json", {"operations": {}})
+    stat = {"mean_diff": 0.1, "ci_low": 0.0, "ci_high": 0.2, "n": 21}
+    m5_run = tmp_path / "data/manifest/m5_test_results/run-01.json"
+    m5_run.parent.mkdir(parents=True)
+    m5_run.write_text(
+        json.dumps(
+            {
+                "analysis": {
+                    "hypotheses": {
+                        **{
+                            h: {
+                                "verdict": "채택",
+                                "statistic": stat,
+                                "n": 21,
+                                "comparison": "a - b",
+                                "metric": "recall10",
+                            }
+                            for h in ("H1", "H2", "H3", "H4")
+                        },
+                        "H7": {
+                            "verdict": "기각(반대 방향)",
+                            "statistic": stat,
+                            "n_synthetic": 8,
+                            "n_real": 6,
+                            "comparison": "합성 - 실제",
+                            "metric": "recall10",
+                        },
+                    }
+                }
+            }
+        )
     )
     m5 = tmp_path / "docs/results/2026-09-30-m5-retrieval.md"
     m5.parent.mkdir(parents=True)
@@ -491,7 +566,7 @@ def test_m7_report_complete_fixture_has_no_false_missing(tmp_path, monkeypatch):
     )
     dry = tmp_path / "data/manifest/m7_dry_runs.jsonl"
     dry.write_text("{}\n")
-    text, errors = report.render_tables(tmp_path)
+    text, errors = render(tmp_path)
     assert not errors
     assert "미실행" not in text
 
@@ -507,8 +582,112 @@ def test_m7_report_registered_raw_missing_is_unexecuted(tmp_path):
         "m7_analysis.json",
         {"kappa": {"passed": True}, "h5": {"verdict_text": H5_ACCEPT}},
     )
-    text, errors = report.render_tables(tmp_path)
+    text, errors = render(tmp_path)
     assert not errors
     section = next(s for s in text.split("## ") if s.startswith("채점 실행·"))
     assert "미실행" in section and "calls | 3" not in section
     assert H5_ACCEPT not in text
+
+
+def test_m7_report_formatting_and_placeholder_fill():
+    assert report.f3(1.6153846) == "1.615"
+    assert report.f3(-0.0004) == "0.000"
+    assert report.f3(0.0, signed=True) == "0.000"
+    assert report.stat3(
+        {"mean_diff": 1.6153846, "ci_low": 0.923, "ci_high": 2.3077}
+    ) == ("+1.615 [0.923, 2.308]")
+    primary = {"n": 13, "mean_diff": 1.6153846, "ci_low": 0.923, "ci_high": 2.3077}
+    filled = report.fill_verdict(H5_ACCEPT, primary)
+    assert "차이 +1.615, 95% CI [0.923, 2.308], n=13" in filled
+    assert "(차이, 95% CI" not in filled
+
+
+def test_m7_report_noncache_bound_from_committed_latency_manifest():
+    """Regression: the bound must come from the real manifest shape, not an invented key."""
+    latency = json.loads(Path("data/manifest/m7_latency.json").read_text())
+    completed = [h for h in latency["history"] if h["status"] == "completed"]
+    latency = latency | completed[-1]["result"]
+    bound = report.noncache_bound(latency)
+    assert bound is not None
+    assert bound["bound_s"] == pytest.approx(
+        bound["simple_p95_s"] + bound["agentic_embed_max_s"]
+    )
+    assert report.f3(bound["bound_s"]) == "4.109"
+    assert report.latency_rows(latency)
+
+
+def test_m7_report_bound_section_never_missing_when_data_exists(tmp_path):
+    latency = json.loads(Path("data/manifest/m7_latency.json").read_text())
+    raw = tmp_path / report.RAW_INPUTS["latency"][1]
+    raw.parent.mkdir(parents=True)
+    raw.write_text("{}\n")
+    manifest = put(tmp_path, "m7_latency.json", latency)
+    record_fingerprint(manifest, "latency", raw, "completed")
+    text, _, _ = report.render_tables(tmp_path)
+    assert "= 4.109s(반올림 전 값의 합)" in text and "판정 아님, 보수적 상한" in text
+    section = next(s for s in text.split("## ") if s.startswith("지연 비캐시 보정치"))
+    assert "미실행" not in section
+
+
+def test_m7_report_summary_first_and_appendix_split(tmp_path):
+    body, appendix, _ = report.render_tables(tmp_path)
+    assert body.startswith("## 핵심 결과 요약")
+    for title in (
+        "probe",
+        "운영 지표 test_gold",
+        "지연 측정 이력 전체",
+        "해시·고정 조건",
+    ):
+        assert f"## {title}" in appendix and f"## {title}" not in body
+    assert "부록" in body
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    ["보정값이 있으면", "원문을 옮기지 않는다", "그대로 옮기고", "9개 규정 이상"],
+)
+def test_m7_report_preserved_text_reads_as_statements(phrase):
+    assert phrase not in report.initial_document()
+
+
+def test_m7_report_partial_achievement_status(tmp_path):
+    h6 = {
+        "pending": False,
+        "message": None,
+        "by_path_system": {"a|b": {"n": 5, "leaks": 0, "clopper_pearson_upper": 0.4}},
+    }
+    put(
+        tmp_path,
+        "m7_analysis.json",
+        {
+            "kappa": {"passed": True},
+            "h5": {
+                "verdict_text": H5_ACCEPT,
+                "primary": {"n": 13, "mean_diff": 1.0, "ci_low": 0.5, "ci_high": 1.5},
+            },
+            "h6": h6,
+        },
+    )
+    run = tmp_path / "data/manifest/m5_test_results/run-01.json"
+    run.parent.mkdir(parents=True)
+    hold = "판정 보류(차이 입증 못 함)"
+    run.write_text(
+        json.dumps(
+            {
+                "analysis": {
+                    "hypotheses": {
+                        "H1": {"verdict": "채택"},
+                        "H2": {"verdict": hold},
+                        "H3": {"verdict": hold},
+                        "H4": {"verdict": hold},
+                        "H7": {"verdict": "기각(반대 방향)"},
+                    }
+                }
+            }
+        )
+    )
+    body, _, _ = report.render_tables(tmp_path)
+    assert (
+        "부분 달성(7개 모두 사전 등록 규칙대로 판정·원인 분석 완료, "
+        "H2·H3·H4는 판정 보류)"
+    ) in body

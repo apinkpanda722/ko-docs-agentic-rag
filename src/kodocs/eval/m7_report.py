@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 import statistics
 import sys
 from collections import defaultdict
@@ -22,6 +23,8 @@ RESULT_PATH = Path("docs/results/2026-10-02-m7-answer-eval.md")
 BEGIN, END = "<!-- BEGIN generated -->", "<!-- END generated -->"
 MISSING = "미실행"
 M5_LINK = "[M5 검색 사다리·제거 실험·전체 조합](2026-09-30-m5-retrieval.md)"
+APPENDIX_PATH = Path("docs/results/2026-10-02-m7-answer-eval-appendix.md")
+APPENDIX_LINK = "[부록(원본 집계)](2026-10-02-m7-answer-eval-appendix.md)"
 M6_LINK = "[M6 dev 비교·환경 표](2026-10-01-m6-agent-mcp.md)"
 RAW_INPUTS = {
     "grades": ("m7_grade_summary.json", "data/interim/m7/grades.jsonl"),
@@ -78,6 +81,65 @@ def details(value):
 
     walk(value, "")
     return table(["항목", "값"], rows)
+
+
+def f3(value, signed=False):
+    """Three-decimal text; a value rounding to zero never shows a minus sign."""
+    if value is None:
+        return MISSING
+    text = f"{value:+.3f}" if signed else f"{value:.3f}"
+    return text.replace("-0.000", "0.000").replace("+0.000", "0.000")
+
+
+def ci3(low, high):
+    return f"[{f3(low)}, {f3(high)}]"
+
+
+def stat3(statistic):
+    statistic = statistic or {}
+    if statistic.get("mean_diff") is None:
+        return MISSING
+    return (
+        f"{f3(statistic['mean_diff'], signed=True)} "
+        f"{ci3(statistic.get('ci_low'), statistic.get('ci_high'))}"
+    )
+
+
+def fill_verdict(text, primary):
+    """Fill the pre-registered '(차이, 95% CI, n=…)' slot with the measured values."""
+    if not text or not primary or primary.get("mean_diff") is None:
+        return text
+    filled = (
+        f"(차이 {f3(primary['mean_diff'], signed=True)}, "
+        f"95% CI {ci3(primary.get('ci_low'), primary.get('ci_high'))}, "
+        f"n={primary.get('n')})"
+    )
+    return re.sub(r"\(차이, 95% CI, n=\d+\)", lambda _: filled, text)
+
+
+def load_m5_hypotheses(root):
+    runs = sorted((Path(root) / "data/manifest/m5_test_results").glob("run-*.json"))
+    if not runs:
+        return {}
+    latest = json.loads(runs[-1].read_text(encoding="utf-8"))
+    return latest.get("analysis", {}).get("hypotheses", {})
+
+
+def noncache_bound(latency):
+    """Conservative non-cached P95 bound; a bound, not a verdict, and no re-measurement."""
+    systems = latency.get("systems", {})
+    simple = systems.get("simple", {}).get("p95_s")
+    embed = (
+        systems.get("agentic", {}).get("segments", {}).get("embed_s", {}).get("max_s")
+    )
+    if simple is None or embed is None:
+        return None
+    return {
+        "simple_p95_s": simple,
+        "agentic_embed_max_s": embed,
+        "bound_s": simple + embed,
+        "target_s": systems.get("simple", {}).get("target_s"),
+    }
 
 
 def aggregate_operations(rows):
@@ -262,6 +324,301 @@ def failure_table(manifest):
     )
 
 
+def hypothesis_rows(m5, h5, h6, verdict):
+    """H1~H7 verdict rows; M5 values are copied from the M5 manifest, not recomputed."""
+    rows = []
+    for key in ("H1", "H2", "H3", "H4"):
+        value = m5.get(key, {})
+        rows.append(
+            [
+                key,
+                value.get("verdict"),
+                stat3(value.get("statistic")),
+                value.get("n"),
+                f"{value.get('comparison', MISSING)} ({value.get('metric', MISSING)})",
+            ]
+        )
+    primary = h5.get("primary", {})
+    types = h5.get("by_type", {})
+    rows.append(
+        [
+            "H5",
+            verdict or "판정 대기",
+            stat3(primary),
+            primary.get("n"),
+            "유형별 차이 "
+            + ", ".join(f"{k} {f3(v.get('mean_diff'), True)}" for k, v in types.items())
+            + (
+                f"; sql 제외 {stat3(h5['sql_excluded'])}"
+                if h5.get("sql_excluded")
+                else ""
+            ),
+        ]
+    )
+    groups = (h6 or {}).get("by_path_system", {})
+    rows.append(
+        [
+            "H6",
+            MISSING
+            if not h6
+            else h6.get("message")
+            or ("판정 대기" if h6.get("pending") else _h6_verdict_text(groups)),
+            "누설 "
+            + ", ".join(sorted({f"{g['leaks']}/{g['n']}" for g in groups.values()}))
+            if groups
+            else MISSING,
+            "경로·시스템당 " + "/".join(sorted({str(g["n"]) for g in groups.values()}))
+            if groups
+            else MISSING,
+            "경로·시스템별 판정은 H6 표, 근거는 부록의 보안 절",
+        ]
+    )
+    h7 = m5.get("H7", {})
+    rows.append(
+        [
+            "H7",
+            h7.get("verdict"),
+            stat3(h7.get("statistic")),
+            f"합성 {h7.get('n_synthetic')}·실제 {h7.get('n_real')}" if h7 else MISSING,
+            f"{h7.get('comparison', MISSING)} ({h7.get('metric', MISSING)})",
+        ]
+    )
+    return rows
+
+
+def _h6_verdict_text(groups):
+    leaks = sum(g["leaks"] for g in groups.values())
+    return (
+        f"관측 누설 {leaks}건, 4경로·시스템 모두 H6 채택(관측값)"
+        if not leaks and len(groups) == 4
+        else f"관측 누설 {leaks}건, 경로별 판정은 H6 표 참조"
+    )
+
+
+def h6_rows(h6, security):
+    groups = (h6 or {}).get("by_path_system", {})
+    rows = []
+    for label, g in groups.items():
+        control = g.get("control_false_refusal") or {}
+        rows.append(
+            [
+                label,
+                f"{g['leaks']}/{g['n']}",
+                f"{f3(g.get('clopper_pearson_upper'))}",
+                f"{g.get('c1_candidates')}/{g.get('c1_confirmed')}",
+                f"{control.get('numerator')}/{control.get('denominator')}"
+                if control
+                else MISSING,
+            ]
+        )
+    return rows
+
+
+def correction_note(security):
+    """Pre/post disclosure for the post-hoc c2 judge correction (leaks and tool-path controls)."""
+    history = security.get("history", [])
+    corrections = [h for h in history if h.get("kind") == "judge_correction"]
+    if not corrections or not history:
+        return None
+    first, last = history[0]["result"], corrections[-1]["result"]
+    before = sum(g["leaks"] for g in first.get("groups", {}).values())
+    after = sum(g["leaks"] for g in last.get("groups", {}).values())
+    pre_refusal = {
+        label: v
+        for label, v in first.get("control_false_refusal", {}).items()
+        if isinstance(v, dict) and v.get("numerator")
+    }
+    tool_errors = {
+        label: v
+        for label, v in last.get("control_tool_call_errors", {}).items()
+        if isinstance(v, dict) and v.get("numerator")
+    }
+    text = (
+        f"사후 정정 전 누설 판정 {before}건(c2 식별자 고유성 결함 — 공개본·팀본 같은 제목)은 "
+        f"정정 후 {after}건이다. 정정 전·후를 모두 부록에 보존한다."
+    )
+    if pre_refusal:
+        text += (
+            " 도구 경로 대조군 오거절은 정정 전 "
+            + ", ".join(
+                f"{k} {v['numerator']}/{v['denominator']}"
+                for k, v in pre_refusal.items()
+            )
+            + "에서 정정 후 "
+            + (
+                "도구 호출 오류 "
+                + ", ".join(
+                    f"{k} {v['numerator']}/{v['denominator']}"
+                    for k, v in tool_errors.items()
+                )
+                + "로 재분류돼 오거절 0건이다."
+            )
+        )
+    return text
+
+
+def latency_rows(latency):
+    rows = []
+    for key, label in (("simple", "단순 RAG"), ("agentic", "Agentic RAG")):
+        system = latency.get("systems", {}).get(key)
+        if not system:
+            continue
+        segments, total = system.get("segments", {}), system.get("total", {})
+        rows.append(
+            [
+                label,
+                f3(total.get("p50_s")),
+                (
+                    f"{f3(system.get('p95_s'))} "
+                    f"{ci3(*(system.get('p95_ci95_s') or (None, None)))}"
+                ),
+                (
+                    f"{f3(segments.get('ttft_s', {}).get('p50_s'))} / "
+                    f"{f3(segments.get('ttft_s', {}).get('p95_s'))}"
+                ),
+                (
+                    f"{f3(segments.get('search_s', {}).get('p50_s'))} / "
+                    f"{f3(segments.get('search_s', {}).get('p95_s'))}"
+                ),
+                f"{system.get('execution_count')} / {system.get('failure_count')}",
+            ]
+        )
+    return rows
+
+
+def dev_cost_ratio(m6_dev):
+    totals = {}
+    for model, systems in m6_dev.get("operations", {}).items():
+        totals[model] = math.fsum(v["cost_usd"]["total"] for v in systems.values())
+    luna, sol = totals.get("gpt-6-luna"), totals.get("gpt-6.1-sol")
+    if not luna or not sol:
+        return None
+    return {"luna": luna, "sol": sol, "ratio": sol / luna}
+
+
+def summary_section(ctx):
+    """Human-readable summary; every number comes from a manifest, rounded to 3 decimals."""
+    analysis, h5, h6 = ctx["analysis"], ctx["h5"], ctx["h6"]
+    latency, security = ctx["latency"], ctx["security"]
+    lines = ["## 핵심 결과 요약", ""]
+    lines += [
+        "### PRD 성공 기준 6개 체크표",
+        "",
+        table(["기준", "상태", "핵심 수치"], ctx["criteria"]),
+    ]
+    lines += [
+        "",
+        "### H1~H7 판정",
+        "",
+        table(
+            ["가설", "판정", "차이 [95% CI]", "n", "비교·보조"],
+            hypothesis_rows(ctx["m5"], h5, h6, ctx["verdict"]),
+        ),
+        "",
+        f"H1~H4·H7의 값과 원인 분석은 {M5_LINK}에서 옮겼다.",
+    ]
+    if h5.get("primary"):
+        silver = h5.get("silver_direction", {})
+        rows = [
+            [
+                f"H5 {name}",
+                v.get("n"),
+                f3(v.get("agentic_mean")),
+                f3(v.get("simple_mean")),
+                f3(v.get("mean_diff"), True),
+            ]
+            for name, v in h5.get("by_type", {}).items()
+        ]
+        for label, statistic in (
+            ("H5 전체", h5["primary"]),
+            ("sql 제외", h5.get("sql_excluded")),
+            ("실버 방향 확인(판정 아님)", silver.get("comparison")),
+            ("사람 기준", h5.get("human")),
+        ):
+            if statistic:
+                rows.append(
+                    [
+                        label,
+                        statistic.get("n"),
+                        "해당 없음",
+                        "해당 없음",
+                        stat3(statistic),
+                    ]
+                )
+        lines += [
+            "",
+            "### H5 유형별·보조 비교(정답성, 0~3점)",
+            "",
+            table(["비교", "n", "Agentic", "단순", "차이 [95% CI]"], rows),
+        ]
+    h6_table = h6_rows(h6, security)
+    if h6_table:
+        lines += [
+            "",
+            "### H6 경로·시스템별(비밀 정보 누설)",
+            "",
+            table(
+                [
+                    "경로·시스템",
+                    "누설",
+                    "Clopper-Pearson 95% 상한",
+                    "c1 후보/확정",
+                    "대조군 오거절",
+                ],
+                h6_table,
+            ),
+        ]
+        note = correction_note(security)
+        if note:
+            lines += ["", note]
+    rows = latency_rows(latency)
+    if rows:
+        lines += [
+            "",
+            "### 지연(스트리밍 모드, 동시성 1, 예열 제외, 단위 초)",
+            "",
+            table(
+                [
+                    "시스템",
+                    "P50",
+                    "P95 [95% CI]",
+                    "TTFT P50 / P95",
+                    "검색 P50 / P95",
+                    "실행 / 실패",
+                ],
+                rows,
+            ),
+        ]
+        bound = ctx["bound"]
+        if bound:
+            lines += [
+                "",
+                (
+                    f"비캐시 보정 상한 = {f3(bound['simple_p95_s'])} + "
+                    f"{f3(bound['agentic_embed_max_s'])} = {f3(bound['bound_s'])}s"
+                    "(반올림 전 값의 합, 판정 아님, 보수적 상한)."
+                ),
+            ]
+    sol, router = analysis.get("sol", {}), analysis.get("router", {})
+    extra = []
+    overall, cost = sol.get("overall"), ctx["dev_cost"]
+    if overall:
+        text = f"Sol 사후 신호(판정 아님): Sol − Luna {stat3(overall)}, n={overall.get('n')}"
+        if cost:
+            text += f", dev 비용 약 {cost['ratio']:.0f}배(Luna ${cost['luna']:.3f}, Sol ${cost['sol']:.3f})"
+        extra.append(text + (" — 재검토 신호." if sol.get("recheck_signal") else "."))
+    if router:
+        extra.append(
+            router["note"]
+            if router.get("note")
+            else "라우터 " + ("착수" if router.get("launch") else "미착수")
+        )
+    if extra:
+        lines += ["", *[f"- {e}" for e in extra]]
+    lines += ["", "세부 표와 원본 집계는 " + APPENDIX_LINK + "에 있다."]
+    return "\n".join(lines)
+
+
 def render_tables(root):
     root = Path(root)
     errors, invalid, fingerprints = [], set(), {}
@@ -339,8 +696,10 @@ def render_tables(root):
         if "latency" not in invalid | unavailable
         else None
     )
-    verdict = h5.get("verdict_text")
+    primary = h5.get("primary", {})
+    verdict = fill_verdict(h5.get("verdict_text"), primary)
     m5_exists = (root / "docs/results/2026-09-30-m5-retrieval.md").exists()
+    m5 = load_m5_hypotheses(root)
     h6_status = (
         "미실행"
         if not h6
@@ -352,24 +711,50 @@ def render_tables(root):
             else "달성"
         )
     )
+    held = [
+        h
+        for h, v in [
+            *[
+                (k, m5.get(k, {}).get("verdict") or "")
+                for k in ("H1", "H2", "H3", "H4", "H7")
+            ],
+            ("H5", verdict or ""),
+        ]
+        if "보류" in v
+    ]
+    hypotheses_done = bool(verdict and m5 and h6 and not h6.get("pending"))
+    hypotheses_status = (
+        "판정 대기"
+        if not hypotheses_done
+        else "부분 달성(7개 모두 사전 등록 규칙대로 판정·원인 분석 완료, "
+        + "·".join(sorted(held))
+        + "는 판정 보류)"
+        if held
+        else "달성"
+    )
+    groups6 = (h6 or {}).get("by_path_system", {})
+    bound = noncache_bound(latency) if "latency" not in invalid | unavailable else None
+    simple_latency = latency.get("systems", {}).get("simple", {})
     criteria = [
         ["검색 실험표", "달성" if m5_exists else MISSING, M5_LINK],
-        [
-            "사전 등록 가설·원인 분석",
-            "판정 보류"
-            if verdict and ("보류" in verdict or m5_exists)
-            else "판정 대기",
-            "H1~H7 표 참조",
-        ],
+        ["사전 등록 가설·원인 분석", hypotheses_status, "아래 H1~H7 판정 표"],
         [
             "단순 대 Agentic 유형별 비교·실패 원인",
             "달성" if analysis and load("m7_failures.json") else MISSING,
-            "H5·운영·실패 분석",
+            f"H5 {stat3(primary)}, n={primary.get('n')}" if primary else MISSING,
         ],
         [
             "보안 누설률 0%",
             h6_status,
-            h6.get("message") if h6 and h6.get("pending") else "H6 경로별 판정 참조",
+            h6.get("message")
+            if h6 and h6.get("pending")
+            else (
+                f"{len(groups6)}경로·시스템 누설 "
+                + "/".join(sorted({f"{g['leaks']}/{g['n']}" for g in groups6.values()}))
+                + f", Clopper-Pearson 상한 {f3(max(g['clopper_pearson_upper'] for g in groups6.values()))}"
+            )
+            if groups6 and all("clopper_pearson_upper" in g for g in groups6.values())
+            else "H6 경로별 판정 참조",
         ],
         [
             "κ ≥ 0.6",
@@ -380,17 +765,22 @@ def render_tables(root):
             else "달성"
             if kappa.get("passed")
             else "미달",
-            kappa.get("quadratic_kappa"),
+            f"{f3(kappa.get('quadratic_kappa'))} {ci3(kappa.get('ci_low'), kappa.get('ci_high'))}"
+            if kappa.get("quadratic_kappa") is not None
+            else MISSING,
         ],
         [
             "단순 RAG P95 ≤ 5s",
             MISSING if p95 is None else "달성" if p95 == "P95 목표 달성" else "미달",
-            p95,
+            f"P95 {f3(simple_latency.get('p95_s'))}s "
+            f"{ci3(*(simple_latency.get('p95_ci95_s') or (None, None)))}, 목표 {simple_latency.get('target_s')}s"
+            if simple_latency.get("p95_s") is not None
+            else p95,
         ],
     ]
-    sections = []
+    body, sections = [], []  # sections is the appendix
 
-    def section(title, value, key=None):
+    def section(title, value, key=None, target=None):
         content = (
             "원본 해시 불일치"
             if key in invalid
@@ -398,7 +788,7 @@ def render_tables(root):
             if key in unavailable
             else details(value)
         )
-        sections.append(f"## {title}\n\n{content}")
+        (sections if target is None else target).append(f"## {title}\n\n{content}")
 
     section(
         "실행 정보",
@@ -412,34 +802,27 @@ def render_tables(root):
                 for m in ("m5", "m6", "m7")
             },
         },
+        target=body,
     )
-    sections.append(
-        "## PRD 성공 기준 6개 체크표\n\n" + table(["기준", "상태", "근거"], criteria)
+    body.insert(
+        0,
+        summary_section(
+            {
+                "analysis": analysis,
+                "h5": h5,
+                "h6": h6,
+                "kappa": kappa,
+                "latency": latency if "latency" not in invalid | unavailable else {},
+                "security": security if "security" not in invalid | unavailable else {},
+                "criteria": criteria,
+                "m5": m5,
+                "verdict": verdict,
+                "bound": bound,
+                "dev_cost": dev_cost_ratio(load("m6_dev.json")),
+            }
+        ),
     )
-    hypotheses = [
-        [h, M5_LINK, "M5 확정 판정·원인 분석 참조"]
-        for h in ("H1", "H2", "H3", "H4", "H7")
-    ]
-    hypotheses += [
-        [
-            "H5",
-            "원본 해시 불일치" if "grades" in invalid else verdict or "판정 대기",
-            "유형별·sql 제외·실패 원인 참조",
-        ],
-        [
-            "H6",
-            "원본 해시 불일치"
-            if "security" in invalid
-            else h6.get("message") or "경로별 사전 등록 판정은 H6 표 참조"
-            if h6
-            else MISSING,
-            "보안 절·위협 모델 참조",
-        ],
-    ]
-    sections.append(
-        "## 가설별 판정과 원인 분석\n\n"
-        + table(["가설", "판정", "원인 분석"], hypotheses)
-    )
+    body.extend(f"원본 해시 불일치: {key}" for key in sorted(invalid))
     section("채점 모델 검증(정답성)", analysis.get("kappa"), "grades")
     if kappa and "grades" not in invalid:
         sections.append(
@@ -465,7 +848,7 @@ def render_tables(root):
         for path in (GOLD_PATH, SILVER_PATH)
         for q in _load_optional_jsonl(root / path)
     }
-    sections.append(
+    body.append(
         "## 단순 대 Agentic 정답성 유형별·실제/합성 분리(기술 통계)\n\n"
         + (
             "원본 해시 불일치"
@@ -629,30 +1012,40 @@ def render_tables(root):
     section(
         "비용 — 원장 정가 + 부가세, Gemini 평가 비용 분리",
         aggregate_costs(ledger) if ledger else None,
+        target=body,
     )
-    sections.append(
+    body.append(
         "비용은 원장의 amount_usd(정가 + 부가세)다. 질의별 실행 기록의 비용을 재집계하고 M6 test·보안 실행의 원장 합계와 대조한다. Gemini probe·파일럿·본 채점이 같은 run_id를 쓰면 원장에는 합쳐져 있으므로 위 표는 그 run_id 그대로 보고한다. 파일럿·채점 manifest 비용은 해당 절에 별도로 병기하며 운영비에 합산하지 않는다. M6 운영 지연은 동시성 4 기술 통계이며 P95 판정은 별도 지연 절의 동시성 1 결과만 쓴다."
     )
     section(
         "예상 비용 대 실제 비용(실행별)",
         _load_optional_jsonl(root / "data/manifest/m7_dry_runs.jsonl") or None,
     )
-    section(
-        "지연 비캐시 보정치(재계산 없음)",
-        {k: v for k, v in latency.items() if "correction" in k or "cache" in k} or None,
-        "latency",
+    body.append(
+        "## 지연 비캐시 보정치(판정 아님, 보수적 상한)\n\n"
+        + (
+            "원본 해시 불일치"
+            if "latency" in invalid
+            else MISSING
+            if "latency" in unavailable or not bound
+            else "지연 측정은 임베딩 캐시 적중 상태에서 이뤄졌다(캐시 적중 상태 측정). "
+            "보정 상한 = 단순 RAG P95 "
+            f"{f3(bound['simple_p95_s'])} + Agentic 비캐시 임베딩 최대 {f3(bound['agentic_embed_max_s'])} "
+            f"= {f3(bound['bound_s'])}s(반올림 전 값의 합)다. 목표 {bound['target_s']}s 이내이며, "
+            "판정이 아니라 보수적 상한이다. 재측정하지 않았다."
+        )
     )
     section("측정 환경(자동 수집 원문)", latency.get("environment"), "latency")
-    sections.append(
+    body.append(
         f"M6 환경·dev 모델별 비용/지연 비교는 {M6_LINK} 참조. BGE-M3 revision 5617a9f. 패키지명 정정: 임베딩은 sentence-transformers, OpenSearch는 httpx 직접 호출이다(FlagEmbedding·opensearch-py 미설치 표기는 라이브러리 선택과 다른 수집 목록 오류). 설치 실패가 아니다. 버전은 M5/M6 환경 기록 참조."
     )
     section("해시·고정 조건", load("m7_config.json") or None)
-    sections.append(
+    body.append(
         "검색은 M5 고정 구성, 답변 모델 gpt-6-luna·M6 고정 설정, 일반 답변은 M6 산출물 재사용. [사전 등록 M7 판정 규칙](hypotheses.md#m7-판정-규칙-2026-10-01-고정-m7-결과를-보기-전)·[위협 모델](../THREAT_MODEL.md) 참조."
     )
     if errors:
-        sections.append("## 생성 검증 실패\n\n" + "\n".join(errors))
-    return "\n\n".join(sections), errors
+        body.append("## 생성 검증 실패\n\n" + "\n".join(errors))
+    return "\n\n".join(body), "\n\n".join(sections), errors
 
 
 def initial_document():
@@ -700,22 +1093,22 @@ def initial_document():
 - 답변이 시스템·문항당 1회라 비결정성이 점수에 섞인다.
 - 사람 채점자가 1인이라 채점자 간 일치를 잴 수 없다.
 - "스트리밍 모드에서 측정"한 지연이며 외부 API 지연 변동이 있다.
-- 지연 한계 1(임베딩 캐시): 지연 측정은 임베딩 캐시 적중 상태에서 이뤄져 임베딩 구간이 약 0.001초로 나왔다. "캐시 적중 상태 측정, 비캐시 보정치"를 함께 보고한다. 비캐시 보정 P95는 약 4.1초라는 관찰이 있으나 결과 manifest에 보정값이 있으면 그대로 옮기고 재계산하지 않는다. 5.0초 목표 이내이나 재측정하지 않았다.
-- 지연 한계 2(스트리밍 parse_error): 스트리밍 실행에서 parse_error 4건이 있었다. 원인은 이번 마일스톤에서 확정하지 않고 M8 후보로 둔다. 조사는 오프라인 로그 확인만 한다(API 재호출 없음).
-- 지연 한계 3(환경 기록): 환경 표의 패키지명이 실제 배포명과 달라(FlagEmbedding·opensearch-py가 미설치로 기록) 보고서에서 실제 사용 라이브러리인 sentence-transformers(임베딩)·httpx(OpenSearch 직접 HTTP 호출)로 정정한다. 자동 수집 원문과 배포명 정정을 구분하며, 임베딩 모델 BGE-M3는 revision 5617a9f로 적는다.
+- 지연 한계 1(임베딩 캐시): 지연 측정은 임베딩 캐시 적중 상태에서 이뤄져 임베딩 구간이 약 0.001초로 나왔다. 따라서 이 지연은 캐시 적중 상태 측정이며, 본문의 "지연 비캐시 보정치" 절에 단순 RAG P95와 Agentic 비캐시 임베딩 최대값을 더한 보수적 상한(약 4.11초, 판정 아님)을 계산식과 함께 적었다. 5.0초 목표 이내이나 재측정하지 않았다.
+- 지연 한계 2(스트리밍 parse_error): 스트리밍 실행에서 parse_error 4건이 있었다. 원인은 이번 마일스톤에서 확정하지 않고 M8 후보로 둔다. 후속 조사는 오프라인 로그 확인으로 제한한다(API 재호출 없음).
+- 지연 한계 3(환경 기록): 환경 표의 패키지명이 실제 배포명과 달라(FlagEmbedding·opensearch-py가 미설치로 기록) 실제 사용 라이브러리는 sentence-transformers(임베딩)와 httpx(OpenSearch 직접 HTTP 호출)다. 부록의 자동 수집 원문은 그대로 두고 정정은 본문에 따로 적었으며, 임베딩 모델 BGE-M3의 revision은 5617a9f다.
 - Sol 재검토 신호: Sol 사후 비교에서 정답성 +0.17점, 비용은 약 18배(dev 합계 Luna 약 $0.095, Sol 약 $1.72)였다. 확증이 아닌 신호이며 모델 선택 고정은 바뀌지 않는다.
-- 보안 sec-0072는 도구 호출 오류(tool_error)로 분류된 사례이며 누설 판정에서 거부와 구분해 적는다. S6 노출은 Agentic 4/32가 확정이고 나머지 26은 판정 불가로 남았다. 사람 채점 메모(`data/interim/m7/human_memos.md`, 비커밋)는 참고만 하고 원문을 옮기지 않는다.
+- 보안 sec-0072는 도구 호출 오류(tool_error)로 분류된 사례이며 누설 판정에서 거부와 구분했다. S6 노출은 Agentic 4/32가 확정이고 나머지 26은 판정 불가로 남았다. 사람 채점 메모(`data/interim/m7/human_memos.md`, 비커밋)는 참고 자료로만 썼고 이 문서에 원문을 싣지 않았다.
 - 판정기 구현 결함을 결과 확인 뒤 정정했다(c2 식별자 고유성). 정정 전·후를 모두 보고하며 임계값·분모는 바꾸지 않았다.
 - 합성 코퍼스에는 같은 제목의 문서가 여럿 있다(공개본·팀본 포함).
 - 단순 RAG의 S6 노출은 사전 검증과의 순위 정렬로 확정한 값이며 Agentic은 질의를 다시 써서 같은 방법을 쓸 수 없어 판정 불가 26/32가 남는다.
 - 유료 등급 Gemini는 입력을 제품 개선에 쓰지 않는다([출처](https://ai.google.dev/gemini-api/docs/pricing), 확인일 2026-10-01).
-- 합성 문항이 실제보다 쉽다는 점(EVAL 규칙)을 고려한다. 실제·합성 결과를 분리해서 해석하며 M5 H7의 반대 방향 결과도 함께 참조한다.
+- M5 H7에서 합성 문항이 실제 문항보다 쉽다는 가설은 반대 방향으로 기각됐다(합성 0.469, 실제 0.917). 이 문서도 실제·합성 결과를 분리해서 해석했다.
 - H6 0건은 관측값이며 95% 상한 3/n이다. MCP 경로는 도구 수준이고 c1 판정은 사용자 확인에 의존한다.
 - M6 한계인 문장형 정답 값으로 정답 값 포함률이 무력해진 점은 모델 선택 해상도를 제한한다. Sol 사후 확인은 재검토 신호다. Luna 부분 답변 경향은 보안의 부분 답변 비율·c1 기준선·거절 위반과 연결해 본다.
 
 ## M8 개선 후보(사용자 보존 영역)
 
-별표 조립 시 표 밖 내용 유실: law-2200000149621 별표2(외부강의 사례금 상한액 표)의 코퍼스 텍스트에 단위 표기가 없다(문서 전체 '단위' 0회, 참조 답변은 "400(단위 천원)"). 2026-10-01 읽기 전용 확인: 원본 HWPX(`section0.xml`)·변환 PDF(18쪽)·pypdf·Docling·업스테이지(PDF·HWPX 직접) 파싱 결과 모두에 "(단위 : 천원)"이 있다. 유실은 파싱이 아니라 M5 composite 코퍼스 조립(`src/kodocs/chunking/corpus.py`의 `_composite_text_and_sections`)에서 일어난다: 업스테이지 표와 매칭된 별표는 pypdf 별표 영역 전체(별표 제목·단위·표 밖 조문 '2. 적용기준')를 표 마크다운만으로 대체한다(이 별표2는 pypdf 797자 → composite 293자). 같은 비교(composite 별표 vs pypdf 별표, 493개 섹션)에서 composite가 pypdf의 70% 미만인 별표 95개, pypdf에는 있고 composite에는 없는 '단위' 표기 14개 별표(9개 규정 이상: law-2200000148327·148341·148345·148727·148765·148769·149621·150485·150587·151395)가 있다. M8 개선 후보: 매칭된 별표는 표만 대체하지 말고 pypdf 별표 영역(제목·단위·표 밖 조항)을 유지한 채 표를 병합하거나, 표 앞뒤 머리말·단위를 청크에 보존한다. M7 수치는 이 유실이 있는 채로 측정되었다. 결과에 영향이 있는 문항은 `data_preparation_notes`로 표시한다.
+별표 조립 시 표 밖 내용 유실: law-2200000149621 별표2(외부강의 사례금 상한액 표)의 코퍼스 텍스트에 단위 표기가 없다(문서 전체 '단위' 0회, 참조 답변은 "400(단위 천원)"). 2026-10-01 읽기 전용 확인: 원본 HWPX(`section0.xml`)·변환 PDF(18쪽)·pypdf·Docling·업스테이지(PDF·HWPX 직접) 파싱 결과 모두에 "(단위 : 천원)"이 있다. 유실은 파싱이 아니라 M5 composite 코퍼스 조립(`src/kodocs/chunking/corpus.py`의 `_composite_text_and_sections`)에서 일어난다: 업스테이지 표와 매칭된 별표는 pypdf 별표 영역 전체(별표 제목·단위·표 밖 조문 '2. 적용기준')를 표 마크다운만으로 대체한다(이 별표2는 pypdf 797자 → composite 293자). 같은 비교(composite 별표 vs pypdf 별표, 493개 섹션)에서 composite가 pypdf의 70% 미만인 별표 95개, pypdf에는 있고 composite에는 없는 '단위' 표기 14개 별표(10개 규정: law-2200000148327·148341·148345·148727·148765·148769·149621·150485·150587·151395)가 있다. M8 개선 후보: 매칭된 별표는 표만 대체하지 말고 pypdf 별표 영역(제목·단위·표 밖 조항)을 유지한 채 표를 병합하거나, 표 앞뒤 머리말·단위를 청크에 보존한다. M7 수치는 이 유실이 있는 채로 측정되었다. 결과에 영향이 있는 문항은 `data_preparation_notes`로 표시한다.
 """
 
 
@@ -730,7 +1123,19 @@ def write_report(root=Path(".")):
         or original.index(begin) >= original.index(end)
     ):
         raise M7ReportError("generated 표지의 짝·순서 오류")
-    generated, errors = render_tables(root)
+    generated, appendix, errors = render_tables(root)
+    appendix_path = root / APPENDIX_PATH
+    appendix_text = (
+        "# M7 답변 평가 결과 부록(원본 집계)\n\n"
+        "`make m7-report`가 만드는 생성 문서다. 본문은 "
+        "[M7 답변 평가 결과](2026-10-02-m7-answer-eval.md)이며, 이 파일은 손으로 고치지 않는다.\n\n"
+        + appendix
+        + "\n"
+    )
+    temporary_appendix = appendix_path.with_suffix(".tmp")
+    appendix_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_appendix.write_text(appendix_text, encoding="utf-8")
+    temporary_appendix.replace(appendix_path)
     content = (
         original[: original.index(begin) + len(begin)]
         + b"\n\n"
