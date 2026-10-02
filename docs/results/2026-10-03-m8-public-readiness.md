@@ -9,17 +9,17 @@
 
 | 항목 | 값 |
 | --- | --- |
-| executed_at | 2026-10-02T09:40:39.010965+00:00 |
-| head_commit | c8ada50ad92b3ec0f833502e97ad4bf800ee4d9a |
+| executed_at | 2026-10-02T14:53:05.665034+00:00 |
+| head_commit | e9545e55e494599d9120b47c00fb8cb8de1cc9a7 |
 
 ### 패턴별 합계
 
 | 패턴 | 작업 트리 | 이력 |
 | --- | --- | --- |
-| absolute_path | 9 | 12 |
-| assignment | 33 | 108 |
-| law_oc | 16 | 46 |
-| phone | 10 | 16 |
+| absolute_path | 9 | 15 |
+| assignment | 35 | 121 |
+| law_oc | 16 | 47 |
+| phone | 10 | 17 |
 
 ### 작업 트리 발견
 
@@ -48,6 +48,7 @@
 | tests/eval/test_m7_grading.py | law_oc | 1 |
 | tests/eval/test_m7_latency.py | assignment | 1 |
 | tests/eval/test_m7_security.py | assignment | 1 |
+| tests/eval/test_m8_stream_repro.py | assignment | 1 |
 | tests/ingest/fixtures/law_body_full.json | law_oc | 2 |
 | tests/ingest/fixtures/law_body_full.json | phone | 1 |
 | tests/ingest/fixtures/law_body_scalar.json | phone | 1 |
@@ -67,6 +68,7 @@
 | tests/test_m8_audit.py | assignment | 1 |
 | tests/test_m8_audit.py | law_oc | 1 |
 | tests/test_m8_audit.py | phone | 1 |
+| tests/ui/test_users_service.py | assignment | 1 |
 
 ### 이력 발견(경로 단위)
 
@@ -81,11 +83,11 @@
 | phases/m1-data-collection/step1.md | 1 | law_oc: 1 |
 | phases/m1-data-collection/step2.md | 1 | law_oc: 2, phone: 2 |
 | phases/m7-answer-eval/step3.md | 3 | law_oc: 1 |
-| phases/m8-wrap-up/step1.md | 1 | absolute_path: 1 |
-| src/kodocs/eval/m8_audit.py | 1 | absolute_path: 1 |
+| phases/m8-wrap-up/step1.md | 2 | absolute_path: 1 |
+| src/kodocs/eval/m8_audit.py | 2 | absolute_path: 1 |
 | src/kodocs/eval/query_draft.py | 9 | assignment: 2 |
 | src/kodocs/llm/gemini_chat.py | 3 | assignment: 1 |
-| src/kodocs/llm/openai_chat.py | 3 | assignment: 1 |
+| src/kodocs/llm/openai_chat.py | 7 | assignment: 1 |
 | src/kodocs/mcp_server/server.py | 1 | assignment: 1 |
 | src/kodocs/mcp_server/tokens.py | 1 | assignment: 1 |
 | src/kodocs/parsing/run.py | 8 | assignment: 1 |
@@ -95,6 +97,7 @@
 | tests/eval/test_m7_grading.py | 5 | law_oc: 1 |
 | tests/eval/test_m7_latency.py | 1 | assignment: 1 |
 | tests/eval/test_m7_security.py | 4 | assignment: 1 |
+| tests/eval/test_m8_stream_repro.py | 3 | assignment: 1 |
 | tests/ingest/fixtures/law_body_full.json | 1 | law_oc: 2, phone: 1 |
 | tests/ingest/fixtures/law_body_scalar.json | 1 | phone: 1 |
 | tests/ingest/fixtures/law_search_current_page1.json | 1 | law_oc: 1 |
@@ -103,12 +106,13 @@
 | tests/ingest/test_manifest.py | 2 | law_oc: 2 |
 | tests/llm/test_anthropic_batch.py | 1 | assignment: 1 |
 | tests/llm/test_gemini_chat.py | 3 | assignment: 2 |
-| tests/llm/test_openai_chat.py | 3 | assignment: 1 |
+| tests/llm/test_openai_chat.py | 7 | assignment: 1 |
 | tests/mcp_server/conftest.py | 1 | assignment: 2 |
 | tests/parsing/test_upstage_adapter.py | 5 | assignment: 1 |
 | tests/parsing/test_upstage_direct.py | 3 | assignment: 1 |
 | tests/test_config.py | 3 | assignment: 10 |
-| tests/test_m8_audit.py | 1 | absolute_path: 1, assignment: 1, law_oc: 1, phone: 1 |
+| tests/test_m8_audit.py | 2 | absolute_path: 1, assignment: 1, law_oc: 1, phone: 1 |
+| tests/ui/test_users_service.py | 1 | assignment: 1 |
 
 ### 슁글 겹침 상위 30개 파일
 
@@ -146,21 +150,21 @@ NFC·공백 제거 후 원문 30자 창으로 해시 대조. 한글 슁글은 �
 
 | 도메인 | 건수 | 구분 | 역할 |
 | --- | --- | --- | --- |
-| gmail.com | 331 | personal_service | author |
+| gmail.com | 355 | personal_service | author |
 | liveuou.kr | 21 | other | author |
 | mediazen.co.kr | 5 | other | author |
 | github.com | 21 | other | committer |
-| gmail.com | 331 | personal_service | committer |
+| gmail.com | 355 | personal_service | committer |
 | mediazen.co.kr | 5 | other | committer |
 
 ### 커밋 해시 인벤토리
 
 | 항목 | 건수 |
 | --- | --- |
-| pairs | 25 |
-| distinct_hashes | 15 |
-| files | 19 |
-| existing | 15 |
+| pairs | 31 |
+| distinct_hashes | 17 |
+| files | 24 |
+| existing | 17 |
 | missing | 0 |
 | rev_parse_files | 10 |
 | rev_parse_calls | 15 |
@@ -205,14 +209,14 @@ NFC·공백 제거 후 원문 30자 창으로 해시 대조. 한글 슁글은 �
 
 | 구분 | 항목 | 건수 |
 | --- | --- | --- |
-| worktree | scanned_files | 1277 |
+| worktree | scanned_files | 1326 |
 | worktree | scanned_blobs | 0 |
 | worktree | oversized | 1 |
 | worktree | undecodable | 0 |
 | worktree | excluded_sensitive_worktree | 0 |
 | history | scanned_files | 0 |
-| history | scanned_blobs | 2229 |
-| history | oversized | 7 |
+| history | scanned_blobs | 2393 |
+| history | oversized | 8 |
 | history | undecodable | 0 |
 | history | excluded_sensitive_worktree | 0 |
 

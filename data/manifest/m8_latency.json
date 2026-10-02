@@ -1,0 +1,230 @@
+{
+  "status": "completed",
+  "ran_at": "2026-10-02T23:47:18+09:00",
+  "code_commit": "e9545e55e494599d9120b47c00fb8cb8de1cc9a7",
+  "concurrency": 1,
+  "config_hash": "e28cde55e8e0c2571480777b9e8e3d2510284cddc6754387d97d918fffab0951",
+  "m5_config_hash": "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d",
+  "warmup_ids": [
+    "g-real-002",
+    "g-real-004",
+    "g-real-008"
+  ],
+  "warmup_excluded_count": 3,
+  "note": "두 P95를 단순히 더한 보수적 근사이며 분포를 합성한 값이 아니다. M7 값은 임베딩 캐시 적중 상태에서 쟀다",
+  "init_s": 1.7610830000048736,
+  "embed_init_s": 4.541756792001252,
+  "environment": {
+    "device": "mps:0",
+    "batch_size": 4,
+    "max_length": 1024,
+    "reranker": {
+      "model_id": "BAAI/bge-reranker-v2-m3",
+      "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+      "device": "mps:0",
+      "batch_size": 4,
+      "max_length": 1024,
+      "activation_fn": "torch.nn.Identity",
+      "local_files_only": true,
+      "predict": {
+        "show_progress_bar": false,
+        "activation_fn": "torch.nn.Identity",
+        "apply_softmax": false,
+        "convert_to_numpy": true,
+        "convert_to_tensor": false
+      }
+    },
+    "embedder": {
+      "model_id": "BAAI/bge-m3",
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "settings": {
+        "batch_size": 16,
+        "device": "mps",
+        "dim": 1024,
+        "local_files_only": true,
+        "max_batch_tokens": 16384,
+        "max_position_embeddings": 8194,
+        "max_seq_length": 8192,
+        "model_id": "BAAI/bge-m3",
+        "normalize": true,
+        "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+      }
+    },
+    "embedding_cache_used": true,
+    "embedding_cache_stats": {
+      "hits": 2,
+      "misses": 114
+    },
+    "mps_memory": {
+      "current_allocated_memory": 4576744704,
+      "driver_allocated_memory": 5344018432,
+      "recommended_max_memory": 40200896512
+    },
+    "packages": {
+      "sentence-transformers": "6.1.0",
+      "torch": "2.14.0",
+      "transformers": "5.17.0"
+    }
+  },
+  "embed_s": {
+    "n": 113,
+    "missing_count": 0,
+    "p50_s": 0.0353114169993205,
+    "p95_s": 0.04795474999991711,
+    "max_s": 0.05048900000110734,
+    "mean_s": 0.0358822237961257
+  },
+  "search_s": {
+    "n": 113,
+    "missing_count": 0,
+    "p50_s": 0.030733083993254695,
+    "p95_s": 0.040750790998572484,
+    "max_s": 0.059065792003821116,
+    "mean_s": 0.03168908037165174
+  },
+  "rerank_s": {
+    "n": 113,
+    "missing_count": 0,
+    "p50_s": 2.501113541999075,
+    "p95_s": 3.2642977080031415,
+    "max_s": 3.63679950000369,
+    "mean_s": 2.569007325593155,
+    "p95_ci95_s": [
+      3.1415930000002845,
+      3.4414456660015276
+    ]
+  },
+  "simple_p95_m7": 3.731509291999828,
+  "conservative_sum_s": 6.995807000002969,
+  "margin_to_5s": -1.9958070000029693,
+  "failure_count": 0,
+  "bootstrap_repetitions": 10000,
+  "bootstrap_seed": 20261001,
+  "p95_method": "nearest-rank",
+  "raw": {
+    "sha256": "ab4d830cbfcadd666fb93614db87f675f08f17ff8914d5294c94ea10b0ee13a7",
+    "rows": 113
+  },
+  "history": [
+    {
+      "seq": 1,
+      "ran_at": "2026-10-02T23:47:18+09:00",
+      "status": "completed",
+      "rerun_reason": null,
+      "previous_result_sha256": null,
+      "raw": {
+        "sha256": "ab4d830cbfcadd666fb93614db87f675f08f17ff8914d5294c94ea10b0ee13a7",
+        "rows": 113
+      },
+      "result": {
+        "status": "completed",
+        "ran_at": "2026-10-02T23:47:18+09:00",
+        "code_commit": "e9545e55e494599d9120b47c00fb8cb8de1cc9a7",
+        "concurrency": 1,
+        "config_hash": "e28cde55e8e0c2571480777b9e8e3d2510284cddc6754387d97d918fffab0951",
+        "m5_config_hash": "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d",
+        "warmup_ids": [
+          "g-real-002",
+          "g-real-004",
+          "g-real-008"
+        ],
+        "warmup_excluded_count": 3,
+        "note": "두 P95를 단순히 더한 보수적 근사이며 분포를 합성한 값이 아니다. M7 값은 임베딩 캐시 적중 상태에서 쟀다",
+        "init_s": 1.7610830000048736,
+        "embed_init_s": 4.541756792001252,
+        "environment": {
+          "device": "mps:0",
+          "batch_size": 4,
+          "max_length": 1024,
+          "reranker": {
+            "model_id": "BAAI/bge-reranker-v2-m3",
+            "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+            "device": "mps:0",
+            "batch_size": 4,
+            "max_length": 1024,
+            "activation_fn": "torch.nn.Identity",
+            "local_files_only": true,
+            "predict": {
+              "show_progress_bar": false,
+              "activation_fn": "torch.nn.Identity",
+              "apply_softmax": false,
+              "convert_to_numpy": true,
+              "convert_to_tensor": false
+            }
+          },
+          "embedder": {
+            "model_id": "BAAI/bge-m3",
+            "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+            "settings": {
+              "batch_size": 16,
+              "device": "mps",
+              "dim": 1024,
+              "local_files_only": true,
+              "max_batch_tokens": 16384,
+              "max_position_embeddings": 8194,
+              "max_seq_length": 8192,
+              "model_id": "BAAI/bge-m3",
+              "normalize": true,
+              "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+            }
+          },
+          "embedding_cache_used": true,
+          "embedding_cache_stats": {
+            "hits": 2,
+            "misses": 114
+          },
+          "mps_memory": {
+            "current_allocated_memory": 4576744704,
+            "driver_allocated_memory": 5344018432,
+            "recommended_max_memory": 40200896512
+          },
+          "packages": {
+            "sentence-transformers": "6.1.0",
+            "torch": "2.14.0",
+            "transformers": "5.17.0"
+          }
+        },
+        "embed_s": {
+          "n": 113,
+          "missing_count": 0,
+          "p50_s": 0.0353114169993205,
+          "p95_s": 0.04795474999991711,
+          "max_s": 0.05048900000110734,
+          "mean_s": 0.0358822237961257
+        },
+        "search_s": {
+          "n": 113,
+          "missing_count": 0,
+          "p50_s": 0.030733083993254695,
+          "p95_s": 0.040750790998572484,
+          "max_s": 0.059065792003821116,
+          "mean_s": 0.03168908037165174
+        },
+        "rerank_s": {
+          "n": 113,
+          "missing_count": 0,
+          "p50_s": 2.501113541999075,
+          "p95_s": 3.2642977080031415,
+          "max_s": 3.63679950000369,
+          "mean_s": 2.569007325593155,
+          "p95_ci95_s": [
+            3.1415930000002845,
+            3.4414456660015276
+          ]
+        },
+        "simple_p95_m7": 3.731509291999828,
+        "conservative_sum_s": 6.995807000002969,
+        "margin_to_5s": -1.9958070000029693,
+        "failure_count": 0,
+        "bootstrap_repetitions": 10000,
+        "bootstrap_seed": 20261001,
+        "p95_method": "nearest-rank",
+        "raw": {
+          "sha256": "ab4d830cbfcadd666fb93614db87f675f08f17ff8914d5294c94ea10b0ee13a7",
+          "rows": 113
+        }
+      },
+      "result_sha256": "9624dad48009c935c8997160c30d50a035960180cec575bcd1bed4117ddf388f"
+    }
+  ]
+}
