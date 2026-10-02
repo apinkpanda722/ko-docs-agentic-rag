@@ -1,0 +1,22 @@
+{
+  "candidate_cache": {
+    "rows": 57,
+    "sha256": "601a3c5b4434badff4aed1a2181c30471de279ea2a3e961419f15d442ae9999a"
+  },
+  "candidate_manifest_sha256": "15ca89341ba15adb26441883a205cca92307babe905e243839f9e187b28eeea6",
+  "capped": true,
+  "code_commit": "45b6f472cd5a7b941f914567967f2b607b418d6d",
+  "max": 14180,
+  "max_length": 1024,
+  "measured_at": "2026-10-02T22:41:33+09:00",
+  "n_pairs": 2850,
+  "p50": 220,
+  "p90": 913,
+  "p99": 3400,
+  "rule": "P99 이상 최소 2의 거듭제곱, 상한 1024 (nearest-rank)",
+  "rules_sha256": "f59ded7f91461eb8d37a43b7429d32bd6c497cf0a3be29ad7c278a159d3d44da",
+  "tokenizer_path_sha256": "196e892701ec937011fdd90cfb971926bd0e38c86c483c10eedcc23d09a937c5",
+  "tokenizer_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+  "truncated_pairs": 126,
+  "truncated_ratio": 0.04421052631578947
+}

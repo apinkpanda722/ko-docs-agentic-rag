@@ -1,0 +1,25 @@
+{
+  "batch_size": 4,
+  "candidate_cache": {
+    "rows": 57,
+    "sha256": "601a3c5b4434badff4aed1a2181c30471de279ea2a3e961419f15d442ae9999a"
+  },
+  "code_commit": "45b6f472cd5a7b941f914567967f2b607b418d6d",
+  "config_hash": "e28cde55e8e0c2571480777b9e8e3d2510284cddc6754387d97d918fffab0951",
+  "depth": 50,
+  "device": "mps:0",
+  "frozen_at": "2026-10-02T22:47:50+09:00",
+  "fusion": "alone",
+  "m5_config_hash": "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d",
+  "m8_dev_sha256": "bd54d78739284e6a601d0a9acfa0b41ac9a215b88c1e8167366697f0060bc636",
+  "m8_max_length_sha256": "9f91421a44296c79d58a26e37b47a7b8d7f7dfc182eace1c731bb1338cb66435",
+  "max_length": 1024,
+  "model_id": "BAAI/bge-reranker-v2-m3",
+  "model_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+  "rerank_rank_constant": 60,
+  "rules_sha256": "f59ded7f91461eb8d37a43b7429d32bd6c497cf0a3be29ad7c278a159d3d44da",
+  "score_cache": {
+    "rows": 2850,
+    "sha256": "34097593ce94891773c7934d4f1673f085c9a55999d626d707e25a0ee9524985"
+  }
+}
