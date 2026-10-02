@@ -24,37 +24,153 @@ def config():
     return json.loads(Path("data/manifest/m5_config.json").read_text())
 
 
+@pytest.fixture
+def m5_index():
+    return json.loads(Path("data/manifest/m5_index.json").read_text())
+
+
+def seed_m5_index(root):
+    """Copy the committed M5 index records into a temporary root."""
+    put(
+        root,
+        m.M5_INDEX_PATH,
+        json.loads(Path("data/manifest/m5_index.json").read_text()),
+    )
+
+
+def live_mapping(config):
+    """Shape of the real OpenSearch mapping: what was sent plus server defaults.
+
+    Observed read-only on the real index (key paths only): the only key the
+    server added is ``vector.method.parameters``; ``_meta`` carries the embedder
+    settings hash.
+    """
+    properties = index_body()["mappings"]["properties"]
+    properties["vector"]["method"]["parameters"] = {
+        "ef_construction": 100,
+        "m": 16,
+    }
+    return {
+        "properties": properties,
+        "_meta": {
+            "condition": "composite",
+            "chunking": "structural",
+            "embedder_settings_hash": config["embedder"]["settings_hash"],
+        },
+    }
+
+
 class Client:
-    def __init__(self):
+    def __init__(self, config=None):
+        config = config or json.loads(Path("data/manifest/m5_config.json").read_text())
         self.count = 4811
-        self.properties = index_body()["mappings"]["properties"]
+        self.mapping = live_mapping(config)
+        self.fail = None
         self.calls = []
 
     def request(self, method, path):
         self.calls.append((method, path))
         assert method == "GET"
+        if self.fail:
+            raise self.fail
         if path.endswith("_count"):
             return {"count": self.count}
-        return {m.INDEX: {"mappings": {"properties": self.properties}}}
+        return {m.INDEX: {"mappings": self.mapping}}
 
 
-@pytest.mark.parametrize("field", ["name", "count", "schema", "config_hash"])
-def test_preflight_independent_mismatches(config, field):
-    client = Client()
-    if field == "name":
-        del config["indexes"][m.INDEX]
-    elif field == "count":
-        client.count += 1
-    elif field == "schema":
-        client.properties["extra"] = {"type": "keyword"}
-    else:
-        config["config_hash"] = "changed"
+def test_live_mapping_with_server_defaults_passes(config, m5_index):
+    client = Client(config)
+    m.preflight_indexes(client, config, m5_index)
+    assert {method for method, _ in client.calls} == {"GET"}  # read-only
+
+
+def test_the_raw_live_mapping_hash_is_not_what_m5_recorded(config, m5_index):
+    """The bug: hashing the stored mapping never equals the builder-side hash."""
+    live = live_mapping(config)["properties"]
+    recorded = m5_index["indexes"][m.INDEX]["index_field_schema_hash"]
+    assert m._canonical_hash(live) != recorded
+    assert m._canonical_hash(index_body()["mappings"]["properties"]) == recorded
+
+
+def _fail(config, m5_index, client=None, match=None):
+    with pytest.raises(PreflightError, match=match):
+        m.preflight_indexes(client or Client(config), config, m5_index)
+
+
+def test_changed_analyzer_fails(config, m5_index):
+    client = Client(config)
+    client.mapping["properties"]["text_nori"]["analyzer"] = "standard"
+    _fail(config, m5_index, client, "text_nori.analyzer")
+
+
+def test_missing_field_fails(config, m5_index):
+    client = Client(config)
+    del client.mapping["properties"]["doc_id"]
+    _fail(config, m5_index, client, "doc_id")
+
+
+def test_extra_top_level_field_fails(config, m5_index):
+    client = Client(config)
+    client.mapping["properties"]["extra"] = {"type": "keyword"}
+    _fail(config, m5_index, client, "extra")
+
+
+def test_server_added_nested_defaults_are_allowed_but_changed_values_are_not(
+    config, m5_index
+):
+    client = Client(config)
+    client.mapping["properties"]["vector"]["method"]["name"] = "ivf"
+    _fail(config, m5_index, client, "vector.method.name")
+
+
+def test_recorded_mismatch_fails(config, m5_index):
+    recorded = json.loads(json.dumps(m5_index))
+    recorded["indexes"][m.INDEX]["index_field_schema_hash"] = "changed"
+    _fail(config, recorded, None, "스키마 해시")
+    changed_config = json.loads(json.dumps(config))
+    changed_config["indexes"][m.INDEX]["schema_hash"] = "changed"
     with pytest.raises(PreflightError):
-        m.preflight_indexes(client, config)
+        m.preflight_indexes(Client(changed_config), changed_config, m5_index)
 
 
-def test_live_preflight_uses_m5_hash(config):
-    m.preflight_indexes(Client(), config)
+def test_code_schema_that_drifted_from_the_record_fails(config, m5_index, monkeypatch):
+    drifted = lambda **kw: {"mappings": {"properties": {"x": {"type": "keyword"}}}}
+    monkeypatch.setattr(m, "index_body", drifted)
+    _fail(config, m5_index, None, "현재 코드")
+
+
+def test_meta_embedder_hash_mismatch_fails(config, m5_index):
+    client = Client(config)
+    client.mapping["_meta"]["embedder_settings_hash"] = "other"
+    _fail(config, m5_index, client, "임베더")
+    del client.mapping["_meta"]
+    _fail(config, m5_index, client, "임베더")
+
+
+def test_count_mismatch_fails(config, m5_index):
+    client = Client(config)
+    client.count += 1
+    _fail(config, m5_index, client, "chunk_count")
+
+
+def test_name_and_config_hash_mismatches_fail(config, m5_index):
+    changed = json.loads(json.dumps(config))
+    del changed["indexes"][m.INDEX]
+    with pytest.raises(PreflightError):
+        m.preflight_indexes(Client(config), changed, m5_index)
+    changed = json.loads(json.dumps(config))
+    changed["config_hash"] = "changed"
+    with pytest.raises(PreflightError):
+        m.preflight_indexes(Client(config), changed, m5_index)
+
+
+def test_lookup_failure_names_only_the_exception_type(config, m5_index):
+    client = Client(config)
+    client.fail = ConnectionError("PRIVATE response body")
+    with pytest.raises(PreflightError) as caught:
+        m.preflight_indexes(client, config, m5_index)
+    assert "조회 실패(ConnectionError)" in str(caught.value)
+    assert "PRIVATE" not in str(caught.value)
 
 
 def row(qid="g", scope="gold"):
@@ -83,6 +199,7 @@ def row(qid="g", scope="gold"):
 def cached(tmp_path, monkeypatch):
     monkeypatch.setattr(m, "current_rules_hash", lambda root: "a" * 64)
     m.write_candidates([row(), row("s", "silver")], root=tmp_path)
+    seed_m5_index(tmp_path)
     return tmp_path
 
 
@@ -360,6 +477,7 @@ def test_candidate_collection_reuses_authorized_m5_parameters(
     from kodocs.retrieval.search import ChunkHit
 
     root = cached / "new"
+    seed_m5_index(root)
     monkeypatch.setattr(
         m, "embedder_settings_hash", lambda e: config["embedder"]["settings_hash"]
     )

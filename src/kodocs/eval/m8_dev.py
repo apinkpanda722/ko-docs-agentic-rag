@@ -34,6 +34,7 @@ from kodocs.ingest.manifest import now_iso, sha256_file
 from kodocs.retrieval.access import UserContext
 from kodocs.retrieval.embedding import embedder_settings_hash
 from kodocs.retrieval.index_build import _canonical_hash
+from kodocs.retrieval.index_schema import index_body
 from kodocs.retrieval.opensearch import OpenSearchClient
 from kodocs.retrieval.rerank import (
     RANK_CONSTANT,
@@ -64,38 +65,77 @@ def current_rules_hash(root):
     return rules_sha256(root / "docs/results/hypotheses.md")
 
 
-def preflight_indexes(client, m5_config):
-    """Read actual properties/count; use the M5 builder hash and checker."""
+M5_INDEX_PATH = Path("data/manifest/m5_index.json")
+EMBEDDING_DIM = 1024  # BGE-M3, the dimension M5's index_body was built with
+
+
+def _properties_not_reflected(expected, actual, path=""):
+    """Paths where ``expected`` is not contained in ``actual`` (names only).
+
+    OpenSearch stores a mapping with defaults filled in (e.g. knn method
+    parameters), so the live mapping must CONTAIN what the builder sent with
+    equal values; keys it added on top are allowed.
+    """
+    if isinstance(expected, dict):
+        if not isinstance(actual, dict):
+            return [path or "."]
+        missing = []
+        for key, value in expected.items():
+            where = f"{path}.{key}"
+            if key not in actual:
+                missing.append(where)
+            else:
+                missing += _properties_not_reflected(value, actual[key], where)
+        return missing
+    return [] if expected == actual else [path or "."]
+
+
+def preflight_indexes(client, m5_config, m5_index):
+    """Verify the M5 structural index the way M5 recorded it, then the live index.
+
+    M5's ``schema_hash`` hashes the properties the builder SENT
+    (index_build.py:722 ``_configured_index_body(...)['mappings']['properties']``),
+    not the mapping OpenSearch returns (that one has defaults added), so:
+    1. recorded: m5_config schema/embedder hashes == m5_index records (M5's own
+       ``_check_indexes``, all four indexes);
+    2. code: the properties today's ``index_body`` builds hash to the recorded value;
+    3. live: the sent properties are contained in the live mapping, the live
+       mapping has no extra top-level field, ``_count`` equals ``chunk_count`` and
+       ``_meta.embedder_settings_hash`` equals the M5 embedder hash.
+    step 8's test run calls this same function.
+    """
     if m5_config.get("config_hash") != M5_CONFIG_HASH:
         raise PreflightError("M5 config_hash 불일치")
     indexes = m5_config.get("indexes", {})
     if INDEX not in indexes:
         raise PreflightError("M5 구조 청킹 인덱스 이름 불일치")
-    try:
+    _check_indexes(m5_config, m5_index)  # 1. recorded (identical to M5 test)
+    recorded = m5_index["indexes"][INDEX]["index_field_schema_hash"]
+    sent = index_body(dim=EMBEDDING_DIM)["mappings"]["properties"]
+    if _canonical_hash(sent) != recorded:  # 2. code
+        raise PreflightError("현재 코드의 인덱스 스키마 해시가 M5 기록과 불일치")
+    try:  # 3. live
         mapping = client.request("GET", f"/{INDEX}/_mapping")[INDEX]["mappings"]
         count = client.request("GET", f"/{INDEX}/_count")["count"]
-    except Exception:  # noqa: BLE001 - sanitize OpenSearch response bodies
-        raise PreflightError("M5 구조 청킹 인덱스 조회 실패") from None
+    except Exception as exc:  # noqa: BLE001 - never echo OpenSearch response bodies
+        raise PreflightError(
+            f"M5 구조 청킹 인덱스 조회 실패({type(exc).__name__})"
+        ) from None
+    live = mapping.get("properties", {})
+    missing = _properties_not_reflected(sent, live)
+    if missing:
+        raise PreflightError(
+            "실제 매핑이 색인 설정과 다름: " + ", ".join(sorted(missing)[:5])
+        )
+    extra = sorted(set(live) - set(sent))
+    if extra:
+        raise PreflightError("실제 매핑에 설정에 없는 최상위 필드: " + ", ".join(extra))
     if count != indexes[INDEX]["chunk_count"]:
         raise PreflightError("M5 chunk_count 불일치")
-    # _check_indexes checks all four recorded entries. Only the structural
-    # entry is replaced with a live observation; other indexes are not searched.
-    entries = {
-        name: {
-            "status": "ok",
-            "failure_count": 0,
-            "failures": [],
-            "index_field_schema_hash": entry["schema_hash"],
-            "embedder": {"settings_hash": m5_config["embedder"]["settings_hash"]},
-        }
-        for name, entry in indexes.items()
-    }
-    entries[INDEX]["index_field_schema_hash"] = _canonical_hash(mapping["properties"])
-    if "_meta" in mapping:
-        entries[INDEX]["embedder"]["settings_hash"] = mapping["_meta"].get(
-            "embedder_settings_hash"
-        )
-    _check_indexes(m5_config, {"indexes": entries})
+    if (mapping.get("_meta") or {}).get("embedder_settings_hash") != m5_config[
+        "embedder"
+    ]["settings_hash"]:
+        raise PreflightError("M5 임베더 설정 해시(_meta) 불일치")
 
 
 def _not_frozen(root):
@@ -204,7 +244,7 @@ def write_candidates(records, *, root=Path(".")):
 
 def collect_candidates(client, embedder, questions, config, *, root=Path(".")):
     _not_frozen(root)
-    preflight_indexes(client, config)
+    preflight_indexes(client, config, _read_json_object(root / M5_INDEX_PATH))
     if (root / CANDIDATES_PATH).exists():
         return load_candidates(root)
     if embedder_settings_hash(embedder) != config["embedder"]["settings_hash"]:
@@ -480,7 +520,7 @@ def run_dev(
     records, lengths = dev_inputs(root)
     if (root / DEV_PATH).exists():
         raise FileExistsError("M8 dev manifest 이미 존재함")
-    preflight_indexes(client, config)
+    preflight_indexes(client, config, _read_json_object(root / M5_INDEX_PATH))
     embedder.prepare()
     if embedder_settings_hash(embedder) != config["embedder"]["settings_hash"]:
         raise PreflightError("M5 임베더 설정 불일치")
@@ -634,7 +674,9 @@ def main(argv=None):
             config = _read_json_object(root / "data/manifest/m5_config.json")
             embedder = _make_embedder("bge-m3", cache_root=root)
             with OpenSearchClient() as client:
-                preflight_indexes(client, config)
+                preflight_indexes(
+                    client, config, _read_json_object(root / M5_INDEX_PATH)
+                )
                 if args.candidates:
                     if not (root / CANDIDATES_PATH).exists():
                         embedder.prepare()

@@ -54,7 +54,7 @@ test를 **한 번** 실행하는 코드, 지연 측정 코드, 결과 문서 생
 순서가 중요하다. 앞 검사가 하나라도 실패하면 **어떤 출력 파일도 쓰지 않고** 중단한다.
 1. **freeze 확인**: `m8_dev.verify_config(m8_config.json)`(규칙 절 해시 일치 포함). freeze가 없으면 거부.
 2. **잠금**: `data/manifest/m8_test_runs.jsonl`에 기존 기록이 있으면 `RERUN_REASON`이 없을 때 `TestLockError`(M5 `m5_test`의 방식 그대로: 사유·날짜·이전 결과 해시를 실행 기록에 누적, 결과 문서에는 첫 실행과 재실행을 모두 보고). `RERUN_REASON`은 환경 변수 → CLI `--rerun-reason`(Makefile이 변환)으로 전달한다.
-3. **인덱스 검사(B)**: 인덱스 이름·`chunk_count`·`schema_hash`가 `m5_config.json`과 같은지 먼저 검사한다(`preflight_indexes` 재사용). 다르면 중단.
+3. **인덱스 검사(B)**: 인덱스 이름·`chunk_count`·`schema_hash`가 `m5_config.json`과 같은지 먼저 검사한다(`m8_dev.preflight_indexes(client, m5_config, m5_index)` 재사용 — M5 기록끼리의 비교(`_check_indexes`), 현재 코드 스키마 해시, 실제 매핑 포함·최상위 필드·`_count`·`_meta` 임베더 해시 검사를 모두 한다. 실제 `_mapping` 전체를 해시해 비교하지 마라: OpenSearch가 기본값을 채워 항상 달라진다). 다르면 중단.
 4. **후보 생성**: 골드 test 검색 지표 대상 21 + 실버 test 65(M5 test와 같은 문항 목록)에 대해 M5 최종 구성으로 후보 50청크를 가져와 `data/interim/m8/candidates/test.jsonl`(비커밋)에 쓴다. 청크 원문은 이 경로에만 있다.
 5. **대조군 일치 검사**(점수 계산 전, 리랭커 로드 전): 비교 원본은 커밋 manifest가 아니라 **비커밋 로컬 파일 `data/interim/m5/run-01/results.json`**이다(커밋된 `m5_test_results/run-01.json`에는 문항별 NDCG가 없고 집계뿐이다). 순서:
    - a. 이 파일의 `runs[]`에서 `config`가 M5 최종 구성과 **키 전부** 정확히 같고 `split == "test"`이며 `question_set`이 `gold`인 run, `silver`인 run을 각각 하나씩 고른다. 비교 키: `condition=composite`, `chunking=structural`, `analyzer=nori`, `method=hybrid_weighted`, `bm25_weight=0.7`, `candidate_chunks=50`, `merged_analyzers=false`(키 집합이 다르면 불일치). 정확히 하나가 아니면(0개·2개 이상) 중단한다. 설정만으로는 골드 dev 6문항 run(파서 비교용)까지 걸리므로 `question_set`·`split` 필터가 필요하다(실제 파일 확인: 골드 test 21·실버 test 65문항 run이 각각 하나). 고른 run의 `questions` 수가 21·65와 같아야 한다.
