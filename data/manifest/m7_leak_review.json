@@ -1,0 +1,10 @@
+{
+  "key_sha256": "4553a4934d35bbe79b197f9994731373a4825ac0dbbcea2bb5c6ee9a5cb9f3f8",
+  "candidates_sha256": "70f8aa809d1836bac3763daf60c9e572a3da0971a74fcd19df9b57b5d3721ac0",
+  "candidate_count": 6,
+  "lexicon_sha256": "53cd75a56e72a8b0ecd1498dc8d3f04a55cbb332a51c5b2465e1a4ddaadd5117",
+  "csv_sha256": "2b51acb9f19f352177755b57daa2f9c587c01e9aa446e322e432380f8f2e956f",
+  "confirmed": 0,
+  "registered_at": "2026-10-02T03:03:57.448276+00:00",
+  "history": []
+}
