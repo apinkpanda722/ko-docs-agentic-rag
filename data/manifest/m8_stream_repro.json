@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "history": [
+    {
+      "stage": 1,
+      "seq": 1,
+      "ran_at": "2026-10-02T20:04:39+09:00",
+      "status": "stopped",
+      "rerun_reason": null,
+      "config_hash": "ba5ee42864360f3af13a26b4581b0ce6044c395c0aef524af6195c5a98d199ef",
+      "seed": 20261003,
+      "concurrency": 1,
+      "runs": [
+        {
+          "question_id": "s-syn-139",
+          "system": "simple",
+          "mode": "nonstreaming",
+          "status": "FatalLLMError",
+          "output_tokens": null,
+          "reasoning_tokens": null,
+          "incomplete_reason": null,
+          "latency_s": 1.8228550830026506,
+          "runaway": false,
+          "raw": {
+            "path": "data/interim/m8/repro/stage-1-run-01-0000.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "rows": 0
+          },
+          "shape": {
+            "active_field": null,
+            "field_chars": {},
+            "whitespace_ratio": 0,
+            "newline_ratio": 0,
+            "repetition_length": 0,
+            "repetition_count": 0,
+            "repetition_definition": "longest repeated substring, overlapping occurrences included",
+            "citations_count": 0
+          }
+        }
+      ],
+      "previous_result_sha256": null,
+      "error_type": "FatalLLMError",
+      "result_sha256": "6dc24990b280e7f7a438fce389759b20cd285446d8026cbd8ea1e92e3d31ea4b"
+    }
+  ],
+  "result_sha256": "70f7b65a3dcccf5eba201f6de6bae156e690c5f839e14e885b789eab196e9610"
+}

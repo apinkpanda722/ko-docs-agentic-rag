@@ -10,6 +10,7 @@ import time
 from dataclasses import replace
 from pathlib import Path
 
+import httpx
 from langchain_core.utils.json import parse_partial_json
 
 from kodocs.agent.answer import answer
@@ -32,6 +33,7 @@ from kodocs.llm.openai_chat import (
     ChatParseError,
     FatalLLMError,
     ManagedChat,
+    _stream_diagnostics,
     _text_deltas,
 )
 from kodocs.tools import UserContext, build_tool_deps
@@ -48,19 +50,36 @@ TARGETS = (
 PROGRESS_EVERY = 10
 
 
+# Three request paths. Schemas come from installed libraries only
+# (openai_chat.callback_response_format); "A" is the frozen M6 request untouched.
+PATHS = {
+    "A": ("nonstreaming", "sdk"),  # M6: with_structured_output -> responses.parse
+    "B": ("streaming", "langchain"),  # M7: streamed pydantic class schema
+    "C": ("streaming", "sdk"),  # UI path: streaming + the M6 (sdk) schema
+}
+
+
+def _item(question_id, system, path):
+    mode, schema = PATHS[path]
+    return {
+        "question_id": question_id,
+        "system": system,
+        "path": path,
+        "mode": mode,
+        "schema": schema,
+    }
+
+
 def stage_one():
-    """Shuffle paired modes and questions; every adjacent pair crosses modes."""
+    """4 questions x 3 paths x 25; seeded shuffle, every triple crosses paths."""
     rng = random.Random(SEED)
     pairs = list(TARGETS) * 25
     rng.shuffle(pairs)
     result = []
     for question_id, system in pairs:
-        modes = ["streaming", "nonstreaming"]
-        rng.shuffle(modes)
-        result.extend(
-            {"question_id": question_id, "system": system, "mode": mode}
-            for mode in modes
-        )
+        paths = list(PATHS)
+        rng.shuffle(paths)
+        result.extend(_item(question_id, system, path) for path in paths)
     return result
 
 
@@ -225,10 +244,12 @@ def preflight(root, stage):
             (q, s) for q in population for s in ("simple", "agentic")
         }:
             raise ValueError("M7 latency system/question pairs mismatch")
-        plan = [
-            {k: r[k] for k in ("question_id", "system")} | {"mode": "streaming"}
-            for r in source
-        ]
+        rng = random.Random(SEED)
+        plan = []
+        for r in source:
+            paths = ["B", "C"]
+            rng.shuffle(paths)
+            plan.extend(_item(r["question_id"], r["system"], path) for path in paths)
     else:
         raise ValueError("stage must be 1 or 2")
     questions = {
@@ -288,11 +309,76 @@ def dry_run(root, stage=1):
     return result
 
 
-class CaptureChat:
-    """Same final-only mode selection as M7, retaining raw text only in memory."""
+class RecordingTransport(httpx.BaseTransport):
+    """Keep the last NON-streaming Responses body in memory (path A only).
 
-    def __init__(self, inner, mode):
-        self.inner, self.mode = inner, mode
+    The frozen M6 path raises before returning anything when a truncated JSON
+    fails SDK parsing, so neither raw text nor usage would survive. The request
+    is untouched; streaming bodies are never read (that would defeat streaming).
+    Never written to disk or committed from here.
+    """
+
+    def __init__(self, inner=None):
+        self.inner = inner or httpx.HTTPTransport()
+        self.last_body = None
+
+    def handle_request(self, request):
+        response = self.inner.handle_request(request)
+        try:
+            non_streaming = json.loads(request.content or b"{}").get("stream") is False
+        except ValueError:
+            non_streaming = False
+        if non_streaming and response.status_code == 200:
+            response.read()
+            self.last_body = response.content
+        return response
+
+    def close(self):
+        self.inner.close()
+
+
+def parse_recorded_body(body):
+    """Text and content-free diagnostics from a Responses JSON body."""
+    try:
+        data = json.loads(body)
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    text = "".join(
+        part.get("text", "")
+        for item in data.get("output") or []
+        if isinstance(item, dict)
+        for part in item.get("content") or []
+        if isinstance(part, dict) and part.get("type") == "output_text"
+    )
+    usage = data.get("usage") or {}
+    details = data.get("incomplete_details") or {}
+    reason = details.get("reason") if isinstance(details, dict) else None
+    status = data.get("status")
+    return {
+        "text": text,
+        "diagnostics": {
+            "status": status
+            if status in {"completed", "incomplete", "failed", "in_progress"}
+            else None,
+            "incomplete_reason": reason
+            if reason in {"max_output_tokens", "content_filter"}
+            else None,
+            "output_tokens": usage.get("output_tokens"),
+            "reasoning_tokens": (usage.get("output_tokens_details") or {}).get(
+                "reasoning_tokens"
+            ),
+            "output_chars": len(text),
+        },
+    }
+
+
+class CaptureChat:
+    """Final-only path selection (A/B/C); raw text stays in memory only."""
+
+    def __init__(self, inner, path, recorder=None):
+        self.inner, self.path, self.recorder = inner, path, recorder
         self.text = []
         self.final_usage = None
         self.diagnostics = {}
@@ -307,27 +393,35 @@ class CaptureChat:
         on_text_delta=None,
     ):
         kwargs = {"tools": tools} if tools is not None else {}
+        mode, schema = PATHS[self.path]
         if response_schema is not None:
             kwargs["response_schema"] = response_schema
-            # Explicit observer retains non-streaming response text before schema
-            # validation; ManagedChat's default frozen path is unchanged.
-            kwargs["on_text_delta"] = self.text.append
-            if self.mode == "streaming":
-                kwargs.update(stream=True, on_text_delta=self.text.append)
+            if mode == "streaming":
+                kwargs.update(
+                    stream=True, on_text_delta=self.text.append, schema_style=schema
+                )
+            elif self.recorder is not None:
+                self.recorder.last_body = None
+            # Path A adds nothing: the request is the frozen M6 one.
         try:
             result = self.inner.invoke(messages, **kwargs)
         except ChatParseError as exc:
-            self.diagnostics = exc.diagnostics
+            self.diagnostics = dict(exc.diagnostics or {})
             raw = getattr(exc, "response_message", None)
-            if self.mode == "nonstreaming" and raw is not None and not self.text:
-                self.text.extend(_text_deltas(raw))
+            if raw is not None:
+                self.diagnostics = self.diagnostics or _stream_diagnostics(raw)
+                if not self.text:
+                    self.text.extend(_text_deltas(raw))
+            if mode == "nonstreaming" and self.recorder is not None:
+                recorded = parse_recorded_body(self.recorder.last_body)
+                if recorded is not None:
+                    self.diagnostics = recorded["diagnostics"]
+                    self.text[:] = [recorded["text"]]
             raise
         if response_schema is not None:
             self.final_usage = result.usage
-            from kodocs.llm.openai_chat import _stream_diagnostics
-
             self.diagnostics = _stream_diagnostics(result.message)
-            if self.mode == "nonstreaming" and not self.text:
+            if mode == "nonstreaming" and not self.text:
                 self.text.extend(_text_deltas(result.message))
         return result
 
@@ -387,12 +481,15 @@ def run(
         else None,
     }
     deps = None
+    recorder = None
     try:
         if runtime_factory is None:
             settings = load_settings()  # FP-056: real .env, never the offline mapping
+            recorder = RecordingTransport()
             chat = ManagedChat(
                 model,
                 settings,
+                http_client=httpx.Client(transport=recorder),
                 ledger_path=root / DEFAULT_LEDGER_PATH,
                 run_id=f"m8-stream-repro-stage-{stage}",
             )
@@ -414,7 +511,7 @@ def run(
         ):
             raise ValueError("runtime frozen config mismatch")
         for index, item in enumerate(plan):
-            capture = CaptureChat(runtime.chat, item["mode"])
+            capture = CaptureChat(runtime.chat, item["path"], recorder)
             q = questions[item["question_id"]]
             row = {
                 **item,
@@ -489,7 +586,12 @@ def report(root):
     if result is None:
         return "재현 실행 미실행"
     lines = [
-        "모드별·질문별 폭주 건수·비율은 기술 통계로만 보고한다(가설 검정 없음). 원시 출력은 인용하지 않는다."
+        (
+            "경로별·질문별 폭주 건수·비율은 기술 통계로만 보고한다(가설 검정 없음). "
+            "경로 A=비스트리밍+sdk 스키마(M6 동일), B=스트리밍+langchain 스키마(M7 동일), "
+            "C=스트리밍+sdk 스키마(UI 경로). 해석은 B 대 C=스트리밍 아래 스키마 차이, "
+            "A 대 C=같은 스키마에서 스트리밍 여부로만 한다. 원시 출력은 인용하지 않는다."
+        )
     ]
     for entry in result["history"]:
         runs = entry["runs"]
@@ -500,16 +602,17 @@ def report(root):
             if entry["status"] == "completed" and total == 0
             else f"{label}: {entry['status']}, 폭주 {total}건"
         )
-        for mode in sorted({r["mode"] for r in runs}):
-            group = [r for r in runs if r["mode"] == mode]
+        # First-run rows (HTTP 400 stop) predate the path field.
+        for path in sorted({r.get("path", r["mode"]) for r in runs}):
+            group = [r for r in runs if r.get("path", r["mode"]) == path]
             lines.append(
-                f"{mode}: {sum(r['runaway'] for r in group)}/{len(group)} ({sum(r['runaway'] for r in group) / len(group):.2%})"
+                f"경로 {path}: {sum(r['runaway'] for r in group)}/{len(group)} ({sum(r['runaway'] for r in group) / len(group):.2%})"
             )
             for q in sorted({r["question_id"] for r in group}):
                 subset = [r for r in group if r["question_id"] == q]
                 count = sum(r["runaway"] for r in subset)
                 lines.append(
-                    f"{q} {mode}: {count}/{len(subset)} ({count / len(subset):.2%})"
+                    f"{q} 경로 {path}: {count}/{len(subset)} ({count / len(subset):.2%})"
                 )
     return "\n\n".join(lines)
 

@@ -747,39 +747,6 @@ def test_explicit_none_observer_preserves_existing_stream_result(tmp_path):
     assert default.generation == explicit.generation
 
 
-def test_nonstream_reproduction_observer_keeps_raw_before_validation(tmp_path):
-    from unittest.mock import Mock
-
-    from langchain_core.messages import AIMessage
-
-    class Schema(BaseModel):
-        answer: str
-
-    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
-    raw = '{"answer":"PRIVATE'
-    message = AIMessage(
-        content=raw,
-        usage_metadata={"input_tokens": 1, "output_tokens": 4000, "total_tokens": 4001},
-    )
-    managed._model = Mock(invoke=Mock(return_value=message))
-    seen = []
-    try:
-        with pytest.raises(ChatParseError) as caught:
-            managed.invoke("q", response_schema=Schema, on_text_delta=seen.append)
-    finally:
-        client.close()
-    assert seen == [raw]
-    assert caught.value.diagnostics["output_tokens"] == 4000
-    assert "PRIVATE" not in json.dumps(caught.value.diagnostics)
-    assert (
-        managed._model.invoke.call_args.kwargs["response_format"]["json_schema"][
-            "strict"
-        ]
-        is True
-    )
-    managed._model.stream.assert_not_called()
-
-
 def _status_error(status_code: int):
     import openai
 

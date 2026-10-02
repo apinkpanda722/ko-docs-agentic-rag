@@ -10,12 +10,19 @@ from kodocs.eval import m8_stream_repro as repro
 REAL_ESTIMATE = repro.estimate
 
 
-def test_stage_one_crosses_modes_deterministically():
+def test_stage_one_crosses_three_paths_deterministically():
     plan = repro.stage_one()
     assert plan == repro.stage_one()
-    assert len(plan) == 200
-    assert set(Counter((p["question_id"], p["mode"]) for p in plan).values()) == {25}
-    assert all(plan[i]["mode"] != plan[i + 1]["mode"] for i in range(0, 200, 2))
+    assert len(plan) == 300  # 4 questions x 3 paths x 25
+    assert set(Counter((p["question_id"], p["path"]) for p in plan).values()) == {25}
+    for i in range(0, 300, 3):  # every triple crosses all three paths
+        assert {p["path"] for p in plan[i : i + 3]} == {"A", "B", "C"}
+        assert len({(p["question_id"], p["system"]) for p in plan[i : i + 3]}) == 1
+    assert {(p["path"], p["mode"], p["schema"]) for p in plan} == {
+        ("A", "nonstreaming", "sdk"),
+        ("B", "streaming", "langchain"),
+        ("C", "streaming", "sdk"),
+    }
 
 
 def test_runaway_boundary_and_shape_only():
@@ -54,10 +61,7 @@ def sandbox(tmp_path, monkeypatch):
     q = SimpleNamespace(
         id="q", question="PRIVATE QUESTION", asker=SimpleNamespace(team="a", grade=1)
     )
-    plan = [
-        {"question_id": "q", "system": "simple", "mode": m}
-        for m in ("streaming", "nonstreaming")
-    ]
+    plan = [repro._item("q", "simple", path) for path in ("A", "B")]
     monkeypatch.setattr(
         repro, "preflight", lambda root, stage: (frozen, model, {"q": q}, plan)
     )
@@ -281,7 +285,7 @@ def test_report_missing_and_invalid_result_never_hides_failure(tmp_path):
         repro.report(tmp_path)
 
 
-def test_report_is_descriptive_by_mode_question_and_quotes_no_raw(sandbox):
+def test_report_is_descriptive_by_path_question_and_quotes_no_raw(sandbox):
     from types import SimpleNamespace
 
     root, runtime, _plan = sandbox
@@ -292,6 +296,176 @@ def test_report_is_descriptive_by_mode_question_and_quotes_no_raw(sandbox):
     )
     text = repro.report(root)
     assert "재현 안 됨" in text and "가설 검정 없음" in text
-    assert "q streaming: 0/1" in text
-    assert "q nonstreaming: 0/1" in text
+    assert "q 경로 A: 0/1" in text
+    assert "q 경로 B: 0/1" in text
+    assert "B 대 C" in text and "A 대 C" in text
     assert "PRIVATE" not in text
+
+
+def test_stage_two_plan_is_b_and_c_once_per_source_row(tmp_path, monkeypatch):
+    """113 questions x 2 systems x {B, C}; no frozen M7 files needed here."""
+    from types import SimpleNamespace
+
+    from kodocs.llm.answer_settings import load_answer_config
+
+    model = load_answer_config("luna")
+    source = [
+        {"question_id": f"q{i}", "system": system, "run_seq": 1}
+        for i in range(113)
+        for system in ("simple", "agentic")
+    ]
+    config = tmp_path / repro.CONFIG_PATH
+    config.parent.mkdir(parents=True)
+    config.write_text(json.dumps({"answer": {"settings": model.record()}}))
+    done = {
+        "stage": 1,
+        "status": "completed",
+        "runs": [{"runaway": False}],
+        "previous_result_sha256": None,
+    }
+    done["result_sha256"] = repro.canonical_hash(done)
+    result = {"schema_version": 1, "history": [done]}
+    result["result_sha256"] = repro.canonical_hash(result)
+    (tmp_path / repro.MANIFEST).parent.mkdir(parents=True, exist_ok=True)
+    (tmp_path / repro.MANIFEST).write_text(json.dumps(result))
+    latency = tmp_path / repro.LATENCY
+    latency.parent.mkdir(parents=True, exist_ok=True)
+    latency.write_text(json.dumps({"history": [{"seq": 1}]}))
+    monkeypatch.setattr(repro, "verify_config", lambda path: SimpleNamespace(ok=True))
+    monkeypatch.setattr(repro, "verify_fingerprint", lambda *args: None)
+    monkeypatch.setattr(repro, "load_rows", lambda path: source)
+    monkeypatch.setattr(
+        repro,
+        "load_m6_questions",
+        lambda root, split: [SimpleNamespace(id=f"q{i}") for i in range(113)],
+    )
+    _frozen, _model, _questions, plan = repro.preflight(tmp_path, 2)
+    assert len(plan) == 452
+    assert Counter(p["path"] for p in plan) == {"B": 226, "C": 226}
+    assert all(p["mode"] == "streaming" for p in plan)
+    for i in range(0, 452, 2):
+        assert {plan[i]["path"], plan[i + 1]["path"]} == {"B", "C"}
+        assert plan[i]["question_id"] == plan[i + 1]["question_id"]
+
+
+class _Inner:
+    def __init__(self, fail_with=None):
+        self.calls, self.fail_with = [], fail_with
+
+    def invoke(self, messages, **kwargs):
+        self.calls.append(kwargs)
+        if self.fail_with:
+            raise self.fail_with
+        raise AssertionError("unused")
+
+
+def test_capture_chat_adds_nothing_for_path_a_and_library_schema_for_b_and_c():
+    from kodocs.agent.types import ModelAnswer
+    from kodocs.llm.openai_chat import ChatParseError
+
+    for path, expected in {
+        "A": {"response_schema": ModelAnswer},
+        "B": {
+            "response_schema": ModelAnswer,
+            "stream": True,
+            "schema_style": "langchain",
+        },
+        "C": {"response_schema": ModelAnswer, "stream": True, "schema_style": "sdk"},
+    }.items():
+        inner = _Inner(ChatParseError("x"))
+        capture = repro.CaptureChat(inner, path)
+        with pytest.raises(ChatParseError):
+            capture.invoke("m", response_schema=ModelAnswer)
+        call = inner.calls[0]
+        call.pop("on_text_delta", None)
+        assert call == expected, path
+        assert "on_text_delta" not in expected  # A must keep the frozen request
+    # Non-final (tool selection) calls never stream.
+    inner = _Inner(RuntimeError("stop"))
+    with pytest.raises(RuntimeError):
+        repro.CaptureChat(inner, "C").invoke("m", tools=["t"])
+    assert inner.calls[0] == {"tools": ["t"]}
+
+
+def test_recording_transport_keeps_only_non_streaming_bodies_in_memory():
+    import httpx
+
+    seen = []
+
+    def handler(request):
+        seen.append(json.loads(request.content)["stream"])
+        return httpx.Response(200, json={"id": "r"})
+
+    recorder = repro.RecordingTransport(httpx.MockTransport(handler))
+    with httpx.Client(transport=recorder) as client:
+        client.post("https://example.invalid/v1/responses", json={"stream": True})
+        assert recorder.last_body is None  # streaming body is never read
+        client.post("https://example.invalid/v1/responses", json={"stream": False})
+    assert seen == [True, False]
+    assert json.loads(recorder.last_body) == {"id": "r"}
+
+
+def test_parse_recorded_body_is_content_free_in_diagnostics():
+    body = json.dumps(
+        {
+            "status": "incomplete",
+            "incomplete_details": {"reason": "max_output_tokens"},
+            "output": [
+                {
+                    "type": "message",
+                    "content": [{"type": "output_text", "text": '{"answer":"PRIVATE'}],
+                }
+            ],
+            "usage": {
+                "output_tokens": 4000,
+                "output_tokens_details": {"reasoning_tokens": 0},
+            },
+        }
+    )
+    parsed = repro.parse_recorded_body(body)
+    assert parsed["text"] == '{"answer":"PRIVATE'
+    assert parsed["diagnostics"] == {
+        "status": "incomplete",
+        "incomplete_reason": "max_output_tokens",
+        "output_tokens": 4000,
+        "reasoning_tokens": 0,
+        "output_chars": len('{"answer":"PRIVATE'),
+    }
+    assert "PRIVATE" not in json.dumps(parsed["diagnostics"])
+    assert repro.parse_recorded_body("not json") is None
+    assert repro.parse_recorded_body(None) is None
+
+
+def test_path_a_failure_recovers_raw_and_usage_from_the_recorded_body():
+    from types import SimpleNamespace
+
+    from kodocs.agent.types import ModelAnswer
+    from kodocs.llm.openai_chat import ChatParseError
+
+    body = json.dumps(
+        {
+            "status": "incomplete",
+            "incomplete_details": {"reason": "max_output_tokens"},
+            "output": [
+                {"content": [{"type": "output_text", "text": '{"answer":"cut'}]}
+            ],
+            "usage": {
+                "output_tokens": 4000,
+                "output_tokens_details": {"reasoning_tokens": 0},
+            },
+        }
+    )
+    recorder = SimpleNamespace(last_body="stale body of an earlier request")
+
+    class Failing(_Inner):
+        def invoke(self, messages, **kwargs):
+            recorder.last_body = body  # the transport sees the response mid-call
+            return super().invoke(messages, **kwargs)
+
+    # The frozen path raises a bare ChatParseError (no diagnostics, no message).
+    capture = repro.CaptureChat(Failing(ChatParseError("x")), "A", recorder)
+    with pytest.raises(ChatParseError):
+        capture.invoke("m", response_schema=ModelAnswer)
+    assert "".join(capture.text) == '{"answer":"cut'
+    assert capture.diagnostics["output_tokens"] == 4000
+    assert capture.diagnostics["incomplete_reason"] == "max_output_tokens"
