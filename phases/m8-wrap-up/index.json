@@ -33,15 +33,17 @@
     {
       "step": 2,
       "name": "docs-cleanup",
-      "status": "pending",
+      "status": "completed",
       "started_at": "2026-10-02T18:19:23+0900",
       "blocked_at": "2026-10-02T18:21:29+0900",
       "usage": {
-        "input_tokens": 233244,
-        "cached_input_tokens": 169088,
-        "output_tokens": 1436,
+        "input_tokens": 2325322,
+        "cached_input_tokens": 2217856,
+        "output_tokens": 20219,
         "attempts": 1
-      }
+      },
+      "summary": "ADR 상태·색인, M8 정정 생성기·parse_error manifest, 공개 점검 표·한글 슁글 구현; parse_error 4건 모두 indeterminate, 규정 단위 상한은 gold test 1문항·나머지 0; ADR 30줄 추가·삭제 0, 모호 상태 없음, M7 지정 한 줄만 변경; 점검 문서 250줄, 오프라인 AC·make verify 통과(1989 tests), M5~M7 확정 manifest 보존.",
+      "completed_at": "2026-10-02T18:43:26+0900"
     },
     {
       "step": 3,
