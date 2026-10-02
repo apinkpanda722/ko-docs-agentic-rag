@@ -19,7 +19,16 @@
     {
       "step": 1,
       "name": "public-audit",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-02T18:00:25+0900",
+      "summary": "M8 로컬·GitHub 읽기 전용 점검 스캐너, 테스트, Makefile·AGENTS 명령, 로컬 manifest·공개 점검 문서 구현; AC 통과(1968 tests), M5~M7 유지. 패턴 합계: absolute_path 17, assignment 139, law_oc 60, phone 24건.",
+      "completed_at": "2026-10-02T18:19:23+0900",
+      "usage": {
+        "input_tokens": 1939817,
+        "cached_input_tokens": 1855104,
+        "output_tokens": 21692,
+        "attempts": 1
+      }
     },
     {
       "step": 2,
