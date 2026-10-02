@@ -120,17 +120,19 @@ def order_links(rows, traces, requests):
 
 
 def comparison_stats(requests, maximum, excluded=()):
+    """Ledger output sizes per run.
+
+    Only the streaming M7 latency run bills a parse failure (its request is
+    recorded before the failure is raised). The frozen non-streaming M6/M7 path
+    raises before ``_record_usage``, so its ledger rows are SUCCESSFUL responses
+    only: their maximum is not evidence about truncation.
+    """
     result = {}
     for run in ("m7-latency", "m6-dev", "m6-test-01", "m7-security"):
         group = [r for r in requests if r["run_id"] == run]
         outputs = [
             r["output_tokens"] for r in group if isinstance(r["output_tokens"], int)
         ]
-        result[run] = {
-            "count": len(group),
-            "max_output_tokens": max(outputs, default=None),
-            "max_output_tokens_reached_count": sum(v >= maximum for v in outputs),
-        }
         if run == "m7-latency":
             remaining = [
                 r["output_tokens"]
@@ -138,12 +140,82 @@ def comparison_stats(requests, maximum, excluded=()):
                 if r["request_id"] not in excluded
                 and isinstance(r["output_tokens"], int)
             ]
-            result[run]["remaining_max_output_tokens"] = max(remaining, default=None)
+            result[run] = {
+                "count": len(group),
+                "records_parse_failures": True,
+                "max_output_tokens": max(outputs, default=None),
+                "max_output_tokens_reached_count": sum(v >= maximum for v in outputs),
+                "remaining_max_output_tokens": max(remaining, default=None),
+            }
+        else:
+            result[run] = {
+                "count": len(group),
+                "records_parse_failures": False,
+                "max_successful_output_tokens": max(outputs, default=None),
+            }
     return result
 
 
+NON_STREAM_THRESHOLD_S = 15
+NON_STREAM_TOKENS_NOTE = "토큰 미기록(원장 누락 경로)"
+NON_STREAM_DEFINITION = (
+    "trace의 final_answer 단계가 ChatParseError이고 그 시도 기록이 error_type=ValidationError·status=parse_error인 것"
+    "(비스트리밍 SDK 파싱이 예외로 끝난 경로; 스트리밍 파싱 실패는 시도 status가 success이고 error_type이 없다). "
+    "재현 실행 경로 A의 실패는 재현 manifest와 질문·시스템·총 지연(±0.25초)이 같은 trace를 제외한다. "
+    "분류는 final_answer 지연 15초 이상이면 '폭주 의심(지연 근거)', 아니면 '폭주 아님(지연 근거)'이며 토큰·원시 출력으로 확인한 값이 아니다."
+)
+
+
+def non_streaming_parse_failures(traces, repro_runs=()):
+    """Non-streaming parse failures that never reached the cost ledger."""
+    items = []
+    for trace in traces:
+        for step in trace.get("steps", []):
+            if (
+                step.get("name") != "final_answer"
+                or step.get("error") != "ChatParseError"
+            ):
+                continue
+            if not any(
+                a.get("error_type") == "ValidationError"
+                and a.get("status") == "parse_error"
+                for a in step.get("attempts") or []
+            ):
+                continue
+            total_ms = (trace.get("timings") or {}).get("total_ms")
+            if isinstance(total_ms, (int, float)) and any(
+                r["question_id"] == trace.get("question_id")
+                and r["system"] == trace.get("system")
+                and abs(r["latency_s"] - total_ms / 1000) <= LATENCY_TOLERANCE_S
+                for r in repro_runs
+            ):
+                continue
+            latency_s = step["latency_ms"] / 1000
+            items.append(
+                {
+                    "question_id": trace.get("question_id"),
+                    "system": trace.get("system"),
+                    "date": trace.get("_date"),
+                    "final_answer_latency_s": latency_s,
+                    "tokens": NON_STREAM_TOKENS_NOTE,
+                    "classification": "폭주 의심(지연 근거)"
+                    if latency_s >= NON_STREAM_THRESHOLD_S
+                    else "폭주 아님(지연 근거)",
+                }
+            )
+    return sorted(items, key=lambda i: (i["date"] or "", i["question_id"] or ""))
+
+
 def analyze(
-    rows, *, expected, model, traces=(), m6_rows=(), ledger=(), max_output_tokens=4000
+    rows,
+    *,
+    expected,
+    model,
+    traces=(),
+    m6_rows=(),
+    ledger=(),
+    max_output_tokens=4000,
+    repro_runs=(),
 ):
     requests = ledger_requests(ledger)
     latency_requests = [r for r in requests if r["run_id"] == "m7-latency"]
@@ -230,6 +302,12 @@ def analyze(
         "cause_note": CAUSE_NOTE,
         "comparisons": comparison_stats(requests, max_output_tokens, excluded),
         "m6_note": "비스트리밍 M6는 참고 정보이며 분류 입력이 아니다.",
+        "non_streaming_parse_failures": {
+            "definition": NON_STREAM_DEFINITION,
+            "threshold_s": NON_STREAM_THRESHOLD_S,
+            "ledger_note": "M6·M7 비스트리밍 평가 실행과 재현 경로 A에서 파싱 실패한 요청은 원장에 기록되지 않는다(고정 경로가 비용 기록 전에 예외를 던짐). 비스트리밍 행의 원장 최대 출력은 성공한 응답의 값일 뿐이다.",
+            "items": non_streaming_parse_failures(traces, repro_runs),
+        },
     }
 
 
@@ -242,10 +320,23 @@ def build(root=Path(".")):
         raise ValueError("M7 지연 parse_error 보고 건수 없음")
     latency = json.loads((root / LATENCY).read_text())
     traces = [
-        row
+        {**row, "_date": path.stem}
         for path in sorted((root / "logs/traces").glob("*.jsonl"))
         for row in load_rows(path)
     ]
+    repro_path = root / "data/manifest/m8_stream_repro.json"
+    repro_runs = (
+        [
+            r
+            for entry in json.loads(repro_path.read_text())["history"]
+            for r in entry["runs"]
+            if r.get("path") == "A"
+            and r["status"] == "parse_error"
+            and isinstance(r.get("latency_s"), (int, float))
+        ]
+        if repro_path.exists()
+        else []
+    )
     m6 = [
         row
         for path in sorted((root / "data/interim/m6/test/run-01").rglob("runs.jsonl"))
@@ -269,6 +360,7 @@ def build(root=Path(".")):
         m6_rows=m6,
         ledger=load_rows(root / LEDGER) if (root / LEDGER).exists() else (),
         max_output_tokens=config.get("settings", {}).get("max_output_tokens", 4000),
+        repro_runs=repro_runs,
     )
     result["raw_fingerprint"] = raw_hash
     return result

@@ -8,6 +8,7 @@ from pathlib import Path
 
 from kodocs.eval import m5_report, m7_report
 from kodocs.eval.m8_contract import H8ResultError, load_h8_state
+from kodocs.ui.settings import UI_FINAL_MAX_OUTPUT_TOKENS
 
 BEGIN, END = "<!-- BEGIN generated -->", "<!-- END generated -->"
 M5 = "docs/results/2026-09-30-m5-retrieval.md"
@@ -68,6 +69,67 @@ REPRODUCTION = (
         "오프라인; parse_error는 로컬 원본이 필요",
     ),
 )
+
+
+def runaway_limits(root):
+    repro = repro_summary(root)
+    ledger = (
+        "M6·M7 비스트리밍 평가 실행과 재현 경로 A에서 파싱 실패한 요청은 원장에 기록되지 않았다(고정 경로가 비용 기록 전에 예외를 던진다). "
+        "10월 원장과 콘솔 차이 $0.01과 규모가 맞는다(정황). 고정 경로 코드는 고치지 않았다"
+        f"([M8 원장 누락 정리]({WRAP}{NON_STREAM_ANCHOR}))."
+    )
+    if repro is None:
+        return [ledger, ""]
+    paths = ", ".join(f"{p} {n}" for p, n in repro["by_path"].items())
+    return [
+        f"출력 폭주(최종 답변이 출력 상한까지 이어져 JSON이 잘림): 재현 실행 {repro['stage']}단계 {repro['attempts']}회에서 경로별 {paths}건(경로 A 비스트리밍·B/C 스트리밍). 스트리밍·스키마와 무관하게 발생했고 건수가 작아 경로 간 차이는 판단하지 않는다. 왜 길어졌는지는 원시 출력 미보존(M7)으로 미확정이다([M8 재현]({WRAP}#스트리밍-폭주-재현)).",
+        "",
+        ledger,
+        "",
+    ]
+
+
+def nonstream_correction(root, errors):
+    items = errors["non_streaming_parse_failures"]["items"]
+    repro = repro_summary(root)
+    reproduced = (
+        f" 재현 경로 A(비스트리밍)에서 폭주 {repro['by_path'].get('A', 0)}/{repro['attempts_by_path'].get('A', 0)}회가 나왔고,"
+        if repro
+        else ""
+    )
+    return [
+        "- 비스트리밍 폭주 0건 근거 정정: 원장 비교(비스트리밍 최대 출력)를 근거로 삼았으나 고정 비스트리밍 경로는 파싱 실패 요청을 원장에 남기지 않아 근거가 될 수 없었다."
+        + reproduced
+        + f" trace에서 비스트리밍 parse 실패 {len(items)}건을 찾았다([M8]({WRAP}{NON_STREAM_ANCHOR})). 첫 재현 실행은 손으로 만든 스키마의 HTTP 400으로 중단됐고 라이브러리 스키마로 수정해 재실행했다.",
+    ]
+
+
+NON_STREAM_ANCHOR = "#비스트리밍-parse-실패m6m7-평가-실행-원장-누락-경로"
+
+
+def repro_summary(root):
+    """Counts of the last completed reproduction stage, from the committed manifest."""
+    path = root / "data/manifest/m8_stream_repro.json"
+    if not path.exists():
+        return None
+    done = [
+        e
+        for e in json.loads(path.read_text(encoding="utf-8"))["history"]
+        if e["status"] == "completed"
+    ]
+    if not done:
+        return None
+    runs = done[-1]["runs"]
+    by_path = {
+        p: sum(r["runaway"] for r in runs if r.get("path") == p)
+        for p in sorted({r.get("path") for r in runs if r.get("path")})
+    }
+    return {
+        "stage": done[-1]["stage"],
+        "attempts": len(runs),
+        "by_path": by_path,
+        "attempts_by_path": {p: sum(r.get("path") == p for r in runs) for p in by_path},
+    }
 
 
 def load(root, name):
@@ -251,7 +313,7 @@ def render(root=Path(".")):
             "검증 통과." if kappa["passed"] else "검증 미달; 사람 기준 판정을 확인한다."
         ),
         "",
-        f"단순 RAG {simple['verdict']}, 목표 {simple['target_s']}초. 지연은 스트리밍·동시성 단독 측정이며 GUI의 비스트리밍 답변과 구분한다.",
+        f"단순 RAG {simple['verdict']}, 목표 {simple['target_s']}초. 지연은 스트리밍·동시성 단독 측정이며 GUI의 답변(최종 답변 출력 상한과 자동 재생성이 평가 설정과 다름)과 구분한다.",
         "",
         f"출처: [M7 판정·H5·H6·지연]({M7}#핵심-결과-요약).",
         "",
@@ -328,6 +390,7 @@ def render(root=Path(".")):
         "",
         f"출처: [M7 한계]({M7}#한계사용자-보존-영역) · [위협 모델](docs/THREAT_MODEL.md).",
         "",
+        *runaway_limits(root),
         "## 사후 정정 공개",
         "",
         f"- M5 정답 집합: 검색 전 인가로 반환 불가능한 문서를 분모에서 제외했다. test 결과를 보기 전에 변경했다([가설 변경 기록]({HYPOTHESES}), [M5]({M5})).",
@@ -340,11 +403,16 @@ def render(root=Path(".")):
     ]
     errors = load(root, "m8_parse_error.json")
     lines += [
+        *nonstream_correction(root, errors),
         f"- 스트리밍 parse_error: {errors['count']}건, "
         + ", ".join(f"{key} {n}건" for key, n in errors["class_counts"].items())
         + ". "
         + errors.get("cause_note", "원인 판정 기록 부족; 원시 출력 미보존으로 미확정.")
         + f" API를 재호출하지 않았다([M8 오프라인 분류]({WRAP}#스트리밍-parse_error-오프라인-분류)).",
+        "",
+        "## 다음 개선",
+        "",
+        "- 인용을 자유 문자열 대신 근거 목록 중 선택(근거별 enum)으로 바꿔 인용 생성 루프를 원천 차단한다. 답변 계약 변경이라 재평가가 필요하며 이번에는 구현하지 않았다.",
         "",
         "## 데모",
         "",
@@ -362,8 +430,12 @@ def render(root=Path(".")):
             else f"{label}: 촬영 예정.",
             "",
         ]
+    eval_cap = json.loads((root / "data/manifest/m6_config.json").read_text())[
+        "answer"
+    ]["settings"]["max_output_tokens"]
+    ui_cap = UI_FINAL_MAX_OUTPUT_TOKENS
     lines += [
-        "보조 GUI는 `make ui`로 실행한다(OpenSearch·API 키 필요, 실제 답변은 과금·사용자 실행). 같은 질문을 사용자 전환으로 비교하고 답변·인용·거절·도구 트레이스·비용을 표시한다. 결과표 화면은 저장된 문서를 읽으며, 질의 화면은 `answer()`의 실제 모델 스트리밍(최종 답변), 도구 호출 실시간 표시, 폭주 시 진단 기록·재시도를 제공한다."
+        f"보조 GUI는 `make ui`로 실행한다(OpenSearch·API 키 필요, 실제 답변은 과금·사용자 실행). 같은 질문을 사용자 전환으로 비교하고 답변·인용·거절·도구 트레이스·비용을 표시한다. 결과표 화면은 저장된 문서를 읽으며, 질의 화면은 `answer()`의 실제 모델 스트리밍(최종 답변), 도구 호출 실시간 표시, 폭주 시 진단 기록·재시도를 제공한다. 최종 답변 출력 상한은 GUI에서 {ui_cap}토큰(평가 설정은 {eval_cap}토큰)이며 상한에서 잘리면 1회 자동 재생성한다."
     ]
     return "\n".join(lines)
 

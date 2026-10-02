@@ -854,3 +854,165 @@ def test_attempt_start_none_and_failing_observer_keep_result_and_settings_hash(
         assert default.settings_hash == other.settings_hash
     frozen = json.loads(Path("data/manifest/m6_config.json").read_text())
     assert default.settings_hash == frozen["answer"]["settings_hash"]
+
+
+GOOD = '{"answer":"ok","citations":[],"refused":false}'
+CUT = '{"answer":"cut","citations":[{"kind":"doc","doc_id":"d","section_key":"'
+
+
+def _truncated_chunk():
+    from langchain_core.messages import AIMessageChunk
+
+    return AIMessageChunk(
+        content=CUT,
+        usage_metadata={
+            "input_tokens": 10,
+            "output_tokens": 1500,
+            "total_tokens": 1510,
+        },
+        response_metadata={
+            "status": "incomplete",
+            "incomplete_details": {"reason": "max_output_tokens"},
+        },
+    )
+
+
+def _good_chunk():
+    from langchain_core.messages import AIMessageChunk
+
+    return AIMessageChunk(
+        content=GOOD,
+        usage_metadata={"input_tokens": 10, "output_tokens": 12, "total_tokens": 22},
+        response_metadata={"status": "completed"},
+    )
+
+
+def _scripted(tmp_path, *chunks):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessageChunk  # noqa: F401
+
+    calls = []
+
+    def stream(messages, **kwargs):
+        calls.append(kwargs)
+        yield chunks[min(len(calls), len(chunks)) - 1]
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    managed._model = Mock(stream=stream)
+    return managed, client, calls
+
+
+def _output_rows(tmp_path):
+    path = tmp_path / "costs.jsonl"
+    rows = [json.loads(line) for line in path.read_text().splitlines()]
+    return [r for r in rows if str(r.get("service", "")).endswith(".output")]
+
+
+def test_truncated_response_is_regenerated_once_and_both_requests_are_billed(
+    tmp_path,
+):
+    from kodocs.agent.types import ModelAnswer
+
+    managed, client, calls = _scripted(tmp_path, _truncated_chunk(), _good_chunk())
+    log = []
+    try:
+        result = managed.invoke(
+            "q",
+            stream=True,
+            response_schema=ModelAnswer,
+            on_text_delta=lambda delta: log.append(("delta", delta)),
+            on_attempt_start=lambda number: log.append(("attempt", number)),
+            regenerate_on_truncation=True,
+        )
+    finally:
+        client.close()
+    assert len(calls) == 2
+    assert result.parsed.answer == "ok"
+    assert [a.status for a in result.attempts] == ["truncated_regenerate", "success"]
+    assert log == [
+        ("attempt", 1),
+        ("delta", CUT),
+        ("attempt", 2),
+        ("delta", GOOD),
+    ]
+    assert len(_output_rows(tmp_path)) == 2  # both requests are in the ledger
+
+
+def test_two_truncations_in_a_row_raise_with_diagnostics_not_a_third_call(tmp_path):
+    from kodocs.agent.types import ModelAnswer
+
+    managed, client, calls = _scripted(tmp_path, _truncated_chunk(), _truncated_chunk())
+    try:
+        with pytest.raises(ChatParseError) as caught:
+            managed.invoke(
+                "q",
+                stream=True,
+                response_schema=ModelAnswer,
+                on_text_delta=lambda _: None,
+                regenerate_on_truncation=True,
+            )
+    finally:
+        client.close()
+    assert len(calls) == 2
+    assert caught.value.diagnostics["incomplete_reason"] == "max_output_tokens"
+    assert [a.status for a in caught.value.attempts] == [
+        "truncated_regenerate",
+        "success",
+    ]
+    assert len(_output_rows(tmp_path)) == 2
+
+
+def test_normal_response_is_not_regenerated_and_default_off_never_regenerates(
+    tmp_path,
+):
+    from kodocs.agent.types import ModelAnswer
+
+    managed, client, calls = _scripted(tmp_path, _good_chunk())
+    try:
+        managed.invoke(
+            "q",
+            stream=True,
+            response_schema=ModelAnswer,
+            on_text_delta=lambda _: None,
+            regenerate_on_truncation=True,
+        )
+    finally:
+        client.close()
+    assert len(calls) == 1
+
+    managed, client, calls = _scripted(tmp_path, _truncated_chunk(), _good_chunk())
+    try:
+        with pytest.raises(ChatParseError):
+            managed.invoke(
+                "q",
+                stream=True,
+                response_schema=ModelAnswer,
+                on_text_delta=lambda _: None,
+            )
+    finally:
+        client.close()
+    assert len(calls) == 1  # frozen behavior: no regeneration unless asked
+
+
+def test_derived_chat_has_its_own_cap_and_hash_and_leaves_the_original_alone(
+    tmp_path,
+):
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    try:
+        original_hash = managed.config.settings_hash()
+        derived = managed.with_max_output_tokens(1500)
+    finally:
+        client.close()
+    assert derived.config.max_output_tokens == 1500
+    assert managed.config.max_output_tokens == 4000
+    assert managed.config.settings_hash() == original_hash
+    assert derived.config.settings_hash() != original_hash
+    other = {
+        k: v for k, v in derived.config.record().items() if k != "max_output_tokens"
+    }
+    assert other == {
+        k: v for k, v in managed.config.record().items() if k != "max_output_tokens"
+    }
+    frozen = json.loads(Path("data/manifest/m6_config.json").read_text())
+    assert original_hash == frozen["answer"]["settings_hash"]

@@ -8,7 +8,7 @@ import math
 import time
 import uuid
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any, Literal
 
@@ -181,6 +181,14 @@ class ManagedChat:
         monotonic: Callable[[], float] = time.perf_counter,
     ) -> None:
         self.config = config
+        self._derive_args = {
+            "settings": settings,
+            "http_client": http_client,
+            "ledger_path": ledger_path,
+            "run_id": run_id,
+            "sleep": sleep,
+            "monotonic": monotonic,
+        }
         self._ledger = CostLedger(ledger_path)
         self._guard = BudgetGuard(self._ledger, settings.monthly_budget_usd)
         self._run_id = run_id
@@ -196,6 +204,20 @@ class ManagedChat:
             timeout=config.request_timeout_s,
             include_response_headers=True,
             **({"http_client": http_client} if http_client is not None else {}),
+        )
+
+    def with_max_output_tokens(self, max_output_tokens: int) -> ManagedChat:
+        """Same settings, ledger and client but a different output cap.
+
+        The derived chat has its own ``settings_hash``; this chat and the frozen
+        M6/M7 settings it was built from are left untouched.
+        """
+        args = dict(self._derive_args)
+        settings = args.pop("settings")
+        return ManagedChat(
+            replace(self.config, max_output_tokens=max_output_tokens),
+            settings,
+            **args,
         )
 
     @property
@@ -251,8 +273,15 @@ class ManagedChat:
         on_text_delta: Callable[[str], None] | None = None,
         on_attempt_start: Callable[[int], None] | None = None,
         schema_style: SchemaStyle = "sdk",
+        regenerate_on_truncation: bool = False,
     ) -> ChatResult:
         """Invoke the Responses API under the registered retry and billing rules.
+
+        ``regenerate_on_truncation`` (default off, frozen paths never set it)
+        generates once more when a structured response stopped with
+        ``incomplete_details.reason == "max_output_tokens"`` and failed parsing.
+        Both requests are billed and recorded; the first attempt is marked
+        ``truncated_regenerate`` in ``attempts``.
 
         ``on_text_delta`` is meaningful only with ``stream=True``; the frozen
         non-streaming path ignores it. With a streamed callback the structured
@@ -271,6 +300,7 @@ class ManagedChat:
         self._guard.check(estimate.budget_estimate_usd)
 
         attempts: list[ChatAttempt] = []
+        regenerated = False
         overall_started = self._monotonic()
         for number in range(1, self.config.max_attempts + 1):
             attempt_started = self._monotonic()
@@ -362,6 +392,23 @@ class ManagedChat:
                     f"{self.config.max_input_tokens} token limit",
                     attempts,
                 )
+            if (
+                parsing_error is not None
+                and regenerate_on_truncation
+                and not regenerated
+                and number < self.config.max_attempts
+                and _stream_diagnostics(message).get("incomplete_reason")
+                == "max_output_tokens"
+            ):
+                regenerated = True
+                attempts[-1] = replace(attempts[-1], status="truncated_regenerate")
+                logging.getLogger(__name__).warning(
+                    "Structured response truncated at max_output_tokens; "
+                    "regenerating once: %s",
+                    _stream_diagnostics(message),
+                )
+                self._guard.check(estimate.budget_estimate_usd)
+                continue
             if parsing_error is not None:
                 failure = ChatParseError(
                     "OpenAI structured response could not be parsed",

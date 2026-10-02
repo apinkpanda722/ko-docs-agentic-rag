@@ -158,7 +158,11 @@ def test_ledger_counts_usage_once_and_links_by_request_id():
     assert item["output_tokens"] == 4000 and item["reasoning_tokens"] == 0
     assert result["comparisons"]["m7-latency"]["count"] == 2
     assert result["comparisons"]["m7-latency"]["remaining_max_output_tokens"] == 30
-    assert result["comparisons"]["m6-dev"]["max_output_tokens"] == 80
+    # Non-streaming rows list SUCCESSFUL responses only: no "reached 4000" claim.
+    assert result["comparisons"]["m6-dev"]["max_successful_output_tokens"] == 80
+    assert result["comparisons"]["m6-dev"]["records_parse_failures"] is False
+    assert "max_output_tokens_reached_count" not in result["comparisons"]["m6-dev"]
+    assert result["comparisons"]["m7-latency"]["records_parse_failures"] is True
     assert result["cause_note"]
 
 
@@ -192,3 +196,65 @@ def test_order_link_requires_unique_complete_execution_order_and_latency():
     unlinked = parse.analyze([row], traces=[trace, trace], **kwargs)["items"][0]
     assert unlinked["link_method"] == "unlinked"
     assert unlinked["classification"] == "indeterminate"
+
+
+def _trace(question, system, *, latency_ms, attempts, total_ms=None, date="d"):
+    return {
+        "_date": date,
+        "question_id": question,
+        "system": system,
+        "timings": {"total_ms": total_ms or latency_ms + 100},
+        "steps": [
+            {
+                "name": "final_answer",
+                "error": "ChatParseError",
+                "latency_ms": latency_ms,
+                "attempts": attempts,
+            }
+        ],
+    }
+
+
+NON_STREAM = [{"error_type": "ValidationError", "status": "parse_error"}]
+STREAM = [{"error_type": None, "status": "success"}]
+
+
+def test_non_streaming_parse_failures_are_found_by_attempt_signature_and_classified():
+    traces = [
+        _trace("slow", "agentic", latency_ms=29264, attempts=NON_STREAM, date="a"),
+        _trace("fast", "agentic", latency_ms=3975, attempts=NON_STREAM, date="b"),
+        _trace("edge", "simple", latency_ms=15000, attempts=NON_STREAM, date="c"),
+        _trace("streamed", "simple", latency_ms=21000, attempts=STREAM),
+        {
+            "question_id": "ok",
+            "system": "simple",
+            "steps": [{"name": "final_answer", "error": None, "attempts": NON_STREAM}],
+        },
+    ]
+    items = parse.non_streaming_parse_failures(traces)
+    assert [(i["question_id"], i["classification"]) for i in items] == [
+        ("slow", "폭주 의심(지연 근거)"),
+        ("fast", "폭주 아님(지연 근거)"),
+        ("edge", "폭주 의심(지연 근거)"),  # threshold 15 s is inclusive
+    ]
+    assert all(i["tokens"] == "토큰 미기록(원장 누락 경로)" for i in items)
+    assert items[0]["date"] == "a"
+    assert items[0]["final_answer_latency_s"] == pytest.approx(29.264)
+
+
+def test_reproduction_path_a_failures_are_not_counted_as_evaluation_failures():
+    traces = [
+        _trace("q", "simple", latency_ms=23000, total_ms=23083, attempts=NON_STREAM),
+        _trace("q", "simple", latency_ms=19000, total_ms=19126, attempts=NON_STREAM),
+    ]
+    repro = [{"question_id": "q", "system": "simple", "latency_s": 23.08}]
+    items = parse.non_streaming_parse_failures(traces, repro)
+    assert [i["final_answer_latency_s"] for i in items] == [19.0]
+
+
+def test_analyze_reports_the_ledger_gap_of_the_frozen_non_streaming_path():
+    result = parse.analyze([], expected=0, model="m")
+    section = result["non_streaming_parse_failures"]
+    assert section["threshold_s"] == 15
+    assert "원장에 기록되지 않는다" in section["ledger_note"]
+    assert section["items"] == []

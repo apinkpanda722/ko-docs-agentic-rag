@@ -24,6 +24,7 @@ def test_only_final_call_streams():
         "response_schema": dict,
         "stream": True,
         "on_text_delta": sink,
+        "regenerate_on_truncation": True,
     }
 
 
@@ -158,6 +159,7 @@ def test_attempt_start_is_forwarded_only_on_the_final_call():
         "stream": True,
         "on_text_delta": sink,
         "on_attempt_start": on_attempt,
+        "regenerate_on_truncation": True,
     }
 
 
@@ -183,3 +185,14 @@ def test_new_attempt_clears_text_of_the_previous_attempt_on_the_consumer_thread(
     assert run_worker(work, render) == "done"
     assert shown == ["", "FIRST", "", "SEC", "SECOND"]
     assert "FIRST" not in text.answer()
+
+
+def test_tool_turns_use_the_evaluation_chat_and_final_turn_uses_the_ui_chat():
+    tool_chat, final_chat = Mock(), Mock()
+    chat = FinalStreamingChat(tool_chat, Mock(), final_inner=final_chat)
+    chat.invoke("choose", tools=["tool"])
+    chat.invoke("final", response_schema=dict)
+    assert tool_chat.invoke.call_count == 1
+    assert "stream" not in tool_chat.invoke.call_args.kwargs
+    assert final_chat.invoke.call_count == 1
+    assert final_chat.invoke.call_args.kwargs["stream"] is True

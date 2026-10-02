@@ -133,3 +133,21 @@ def test_editorial_contract():
     )
     commands = set(re.findall(r"make ([\w-]+)", text))
     assert commands <= targets
+
+
+def test_readme_reports_runaway_ui_cap_ledger_gap_and_next_improvement():
+    from pathlib import Path
+
+    text = (Path(__file__).resolve().parents[2] / "README.md").read_text(
+        encoding="utf-8"
+    )
+    assert "## 다음 개선" in text and "근거별 enum" in text
+    assert "답변 계약 변경이라 재평가가 필요" in text
+    assert "최종 답변 출력 상한은 GUI에서 1500토큰(평가 설정은 4000토큰)" in text
+    assert "1회 자동 재생성" in text
+    assert "원장에 기록되지 않았다" in text and "$0.01" in text
+    assert "비스트리밍 폭주 0건 근거 정정" in text
+    assert (
+        "스트리밍·스키마와 무관하게 발생했고 건수가 작아 경로 간 차이는 판단하지 않는다"
+        in text
+    )

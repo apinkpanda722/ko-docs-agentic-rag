@@ -7,6 +7,8 @@ import os
 import random
 import subprocess
 import time
+import unicodedata
+from collections import Counter
 from dataclasses import replace
 from pathlib import Path
 
@@ -151,6 +153,13 @@ def _active_field(text):
     return None
 
 
+def control_format_ratio(text):
+    """Share of Unicode category Cf (format/zero-width) characters."""
+    if not text:
+        return 0
+    return sum(unicodedata.category(c) == "Cf" for c in text) / len(text)
+
+
 def shape_statistics(text):
     try:
         parsed = parse_partial_json(text) or {}
@@ -169,6 +178,8 @@ def shape_statistics(text):
             if key in {"answer", "citations", "refused"}
         },
         "whitespace_ratio": sum(c.isspace() for c in text) / len(text) if text else 0,
+        # Added after the first reproduction; earlier records lack it.
+        "control_format_ratio": control_format_ratio(text),
         "newline_ratio": text.count("\n") / len(text) if text else 0,
         "repetition_length": length,
         "repetition_count": count,
@@ -177,6 +188,185 @@ def shape_statistics(text):
         if isinstance(parsed.get("citations"), list)
         else 0,
     }
+
+
+# Post-hoc shape classification: chosen AFTER seeing the first reproduction, so it
+# is descriptive only and reported as such. Order matters (first match wins).
+SHAPES = Path("data/manifest/m8_stream_repro_shapes.json")
+FLOOD_WHITESPACE_RATIO = 0.5
+FLOOD_FORMAT_RATIO = 0.5
+LOOP_REPETITION_LENGTH = 500
+CONNECTION_FAILURE_MAX_S = 0.05
+SHAPE_DEFINITION = (
+    "사후 분류(결과를 본 뒤 정한 규칙, 첫 일치 적용): 공백 홍수=whitespace_ratio≥0.5, "
+    "제어 문자 반복=유니코드 범주 Cf 문자 비율≥0.5, 반복 루프=나머지 중 repetition_length≥500, 그 밖은 기타. "
+    "공백 홍수의 시작 위치는 가장 긴 연속 공백 구간의 시작이며, 그 앞의 이스케이프되지 않은 따옴표 개수가 짝수면 문자열 밖(JSON 구조 위치). "
+    "생성 중 키는 잘린 지점에서 값이 끝나지 않은 가장 안쪽 객체의 마지막 키(문자열 값 기준)."
+)
+
+
+def classify_shape(whitespace_ratio, format_ratio, repetition_length):
+    if whitespace_ratio >= FLOOD_WHITESPACE_RATIO:
+        return "공백 홍수"
+    if format_ratio >= FLOOD_FORMAT_RATIO:
+        return "제어 문자 반복"
+    if repetition_length >= LOOP_REPETITION_LENGTH:
+        return "반복 루프"
+    return "기타(미분류)"
+
+
+def _quotes_before(text, end):
+    quotes, escaped = 0, False
+    for char in text[:end]:
+        if escaped:
+            escaped = False
+        elif char == "\\":
+            escaped = True
+        elif char == '"':
+            quotes += 1
+    return quotes
+
+
+def flood_outside_string(text):
+    """Did the longest whitespace run start outside a JSON string? None: no run."""
+    best_start, best_length, start = 0, 0, None
+    for index, char in enumerate([*text, "x"]):
+        if char.isspace():
+            start = index if start is None else start
+        elif start is not None:
+            if index - start > best_length:
+                best_start, best_length = start, index - start
+            start = None
+    if best_length == 0:
+        return None
+    return _quotes_before(text, best_start) % 2 == 0
+
+
+def open_key(text):
+    """Innermost JSON key whose value was still being written at truncation."""
+    stack, buffer, in_string, escaped = [], [], False, False
+    for char in text:
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+                frame = stack[-1] if stack else None
+                if frame and frame["type"] == "{":
+                    if frame["expect"] == "key":
+                        frame["key"], frame["expect"] = "".join(buffer), "colon"
+                    elif frame["expect"] == "value":
+                        frame["expect"] = "comma"
+            else:
+                buffer.append(char)
+            continue
+        if char == '"':
+            in_string, buffer = True, []
+        elif char in "{[":
+            stack.append(
+                {"type": char, "key": None, "expect": "key" if char == "{" else "value"}
+            )
+        elif char in "}]":
+            if stack:
+                stack.pop()
+            if stack and stack[-1]["type"] == "{":
+                stack[-1]["expect"] = "comma"
+        elif stack and stack[-1]["type"] == "{":
+            if char == ":" and stack[-1]["expect"] == "colon":
+                stack[-1]["expect"] = "value"
+            elif char == ",":
+                stack[-1]["expect"] = "key"
+    if (
+        in_string
+        and stack
+        and stack[-1]["type"] == "{"
+        and stack[-1]["expect"] == "key"
+    ):
+        return "(키 이름)"
+    for frame in reversed(stack):
+        if (
+            frame["type"] == "{"
+            and frame["key"] is not None
+            and frame["expect"] in {"colon", "value"}
+        ):
+            return frame["key"]
+    return None
+
+
+def is_connection_failure(row):
+    """Error status within 0.05 s: the request never produced a response."""
+    return (
+        row["status"] not in {"completed", "parse_error"}
+        and isinstance(row.get("latency_s"), (int, float))
+        and row["latency_s"] <= CONNECTION_FAILURE_MAX_S
+    )
+
+
+def build_shapes(root):
+    """Derived, content-free shape classification of the local raw outputs."""
+    root = Path(root)
+    result = read_result(root)  # verifies the raw fingerprints first (FP-053)
+    if result is None:
+        raise ValueError("reproduction result missing")
+    items = []
+    for entry in result["history"]:
+        for index, row in enumerate(entry["runs"]):
+            if not row["runaway"]:
+                continue
+            text = (root / row["raw"]["path"]).read_text(encoding="utf-8")
+            shape = row["shape"]
+            cf = control_format_ratio(text)
+            kind = classify_shape(
+                shape["whitespace_ratio"], cf, shape["repetition_length"]
+            )
+            items.append(
+                {
+                    "seq": entry["seq"],
+                    "index": index,
+                    "question_id": row["question_id"],
+                    "system": row["system"],
+                    "path": row.get("path"),
+                    "class": kind,
+                    "whitespace_ratio": shape["whitespace_ratio"],
+                    "control_format_ratio": cf,
+                    "repetition_length": shape["repetition_length"],
+                    "answer_chars": (shape.get("field_chars") or {}).get("answer"),
+                    "active_field": shape.get("active_field"),
+                    "open_key": open_key(text),
+                    "flood_outside_string": flood_outside_string(text)
+                    if kind == "공백 홍수"
+                    else None,
+                    "raw_sha256": row["raw"]["sha256"],
+                }
+            )
+    return {
+        "schema_version": 1,
+        "source_result_sha256": result["result_sha256"],
+        "definition": SHAPE_DEFINITION,
+        "items": items,
+    }
+
+
+def write_shapes(root):
+    root = Path(root)
+    payload = build_shapes(root)
+    path = root / SHAPES
+    path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    return payload
+
+
+def read_shapes(root, result):
+    path = Path(root) / SHAPES
+    if not path.exists():
+        return None
+    shapes = json.loads(path.read_text(encoding="utf-8"))
+    if shapes.get("source_result_sha256") != result["result_sha256"]:
+        raise ValueError("M8 reproduction shapes are stale; run make m8-repro-shapes")
+    return shapes
 
 
 def read_result(root):
@@ -581,7 +771,68 @@ def run(
     return read_result(root)
 
 
-def report(root):
+def _rate(count, total):
+    return f"{count / total:.1%}" if total else "—"
+
+
+def _row(label, group):
+    attempts = len(group)
+    connection = sum(is_connection_failure(r) for r in group)
+    runaway = sum(r["runaway"] for r in group)
+    return (
+        f"| {label} | {attempts} | {connection} | {runaway} | "
+        f"{_rate(runaway, attempts)} | {_rate(runaway, attempts - connection)} |"
+    )
+
+
+def _shape_lines(shapes):
+    """Blocks (joined by blank lines later); a table or bullet list is one block."""
+    items = shapes["items"]
+    if not items:
+        return ["폭주 건이 없어 형태 분류 대상이 없다."]
+    classes = ["공백 홍수", "제어 문자 반복", "반복 루프", "기타(미분류)"]
+    paths = sorted({i["path"] for i in items})
+    table = [
+        "| 형태 | " + " | ".join(f"경로 {p}" for p in paths) + " | 합계 |",
+        "|---|" + "---|" * (len(paths) + 1),
+    ]
+    for kind in classes:
+        counts = [
+            sum(i["class"] == kind and i["path"] == p for i in items) for p in paths
+        ]
+        table.append(
+            f"| {kind} | " + " | ".join(map(str, counts)) + f" | {sum(counts)} |"
+        )
+    answers = [i["answer_chars"] for i in items if isinstance(i["answer_chars"], int)]
+    active = Counter(i["active_field"] for i in items)
+    # A flood that started outside a JSON string has no key being written.
+    keys = Counter(
+        "(문자열 밖 구조 위치)" if i["flood_outside_string"] else i["open_key"]
+        for i in items
+    )
+    floods = [i for i in items if i["class"] == "공백 홍수"]
+    outside = sum(bool(i["flood_outside_string"]) for i in floods)
+    bullets = [
+        f"- 폭주 {len(items)}건의 answer 필드 길이: {min(answers)}~{max(answers)}자({len(answers)}건 기록)."
+        if answers
+        else "- answer 필드 길이 기록 없음.",
+        "- 폭주 시 생성 중이던 필드: "
+        + ", ".join(f"{k} {v}건" for k, v in sorted(active.items(), key=str))
+        + ".",
+        "- 폭주 시 생성 중이던 키(값이 끝나지 않은 가장 안쪽 키): "
+        + ", ".join(f"{k} {v}건" for k, v in sorted(keys.items(), key=str))
+        + ".",
+        f"- 공백 홍수 {len(floods)}건 중 문자열 밖(JSON 구조 위치)에서 시작한 건수: {outside}건.",
+    ]
+    return [
+        "### 폭주 건의 형태(사후 분류)",
+        f"{SHAPE_DEFINITION} 이 분류는 결과를 본 뒤 정한 사후 분류이며 경로 간 형태 차이를 해석하지 않는다. 원시 출력은 인용하지 않는다.",
+        "\n".join(table),
+        "\n".join(bullets),
+    ]
+
+
+def report(root, shapes=None):
     result = read_result(root)
     if result is None:
         return "재현 실행 미실행"
@@ -595,25 +846,71 @@ def report(root):
     ]
     for entry in result["history"]:
         runs = entry["runs"]
-        total = sum(r["runaway"] for r in runs)
-        label = f"{entry['stage']}단계 {len(runs)}회"
-        lines.append(
-            f"{label}: 재현 안 됨({label})"
-            if entry["status"] == "completed" and total == 0
-            else f"{label}: {entry['status']}, 폭주 {total}건"
-        )
-        # First-run rows (HTTP 400 stop) predate the path field.
-        for path in sorted({r.get("path", r["mode"]) for r in runs}):
-            group = [r for r in runs if r.get("path", r["mode"]) == path]
+        label = f"{entry['stage']}단계 seq {entry['seq']}"
+        if entry["status"] != "completed":
             lines.append(
-                f"경로 {path}: {sum(r['runaway'] for r in group)}/{len(group)} ({sum(r['runaway'] for r in group) / len(group):.2%})"
+                f"{label}: {entry['status']}({entry.get('error_type') or runs[-1]['status'] if runs else '기록 없음'}), "
+                f"기록 {len(runs)}회. 결과 집계에서 제외한다."
             )
-            for q in sorted({r["question_id"] for r in group}):
-                subset = [r for r in group if r["question_id"] == q]
-                count = sum(r["runaway"] for r in subset)
-                lines.append(
-                    f"{q} 경로 {path}: {count}/{len(subset)} ({count / len(subset):.2%})"
+            continue
+        total = sum(r["runaway"] for r in runs)
+        lines.append(
+            f"{label}: 재현 안 됨({entry['stage']}단계 {len(runs)}회)"
+            if total == 0
+            else f"{label}: 완료 {len(runs)}회, 폭주 {total}건."
+        )
+        connection = [(i, r) for i, r in enumerate(runs) if is_connection_failure(r)]
+        if connection:
+            lines.append(
+                "시작 시점 연결 실패(오류 상태이고 지연 "
+                f"{CONNECTION_FAILURE_MAX_S}초 이내): {len(connection)}건, 실행 순서 인덱스 "
+                + ", ".join(str(i) for i, _ in connection)
+                + ", 오류 유형 "
+                + ", ".join(sorted({r["status"] for _, r in connection}))
+                + ". 서버 응답 전의 연결 실패이므로 폭주가 아니다. 폭주율은 분모를 "
+                "시도 기준(전체 시도 수)과 오류 제외 기준(시작 시점 연결 실패를 뺀 수) 둘 다로 쓴다."
+            )
+        paths = sorted({r["path"] for r in runs})
+        questions = sorted({r["question_id"] for r in runs})
+        table = [
+            "",
+            "| 경로 · 질문 | 시도 | 시작 시점 연결 실패 | 폭주 | 폭주율(시도 기준) | 폭주율(오류 제외 기준) |",
+            "|---|---|---|---|---|---|",
+        ]
+        for path in paths:
+            for q in questions:
+                group = [r for r in runs if r["path"] == path and r["question_id"] == q]
+                if group:
+                    table.append(_row(f"경로 {path} · {q}", group))
+            table.append(
+                _row(f"**경로 {path} 합계**", [r for r in runs if r["path"] == path])
+            )
+        for q in questions:
+            table.append(
+                _row(
+                    f"**질문 {q} 합계(전 경로)**",
+                    [r for r in runs if r["question_id"] == q],
                 )
+            )
+        lines.append("\n".join(table))
+        counts = {p: sum(r["runaway"] for r in runs if r["path"] == p) for p in paths}
+        if all(counts.values()):
+            lines.append(
+                "폭주는 세 경로 모두에서 관측되었다(스트리밍·스키마와 무관하게 발생). "
+                "건수가 작아 경로 간 차이는 판단하지 않는다."
+            )
+        else:
+            lines.append(
+                "경로별 폭주 건수: "
+                + ", ".join(f"{p} {c}" for p, c in counts.items())
+                + ". 건수가 작아 경로 간 차이는 판단하지 않는다."
+            )
+        shapes = shapes if shapes is not None else read_shapes(root, result)
+        lines += (
+            _shape_lines(shapes)
+            if shapes is not None
+            else ["형태 분류 미생성(`make m8-repro-shapes` 필요)."]
+        )
     return "\n\n".join(lines)
 
 
@@ -621,11 +918,19 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("."))
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--shapes",
+        action="store_true",
+        help="derive the content-free shape classification from local raw files",
+    )
     parser.add_argument("--stage", type=int, choices=(1, 2), default=1)
     parser.add_argument("--rerun-reason", default=os.environ.get("RERUN_REASON"))
     args = parser.parse_args(argv)
     try:
-        if args.dry_run:
+        if args.shapes:
+            payload = write_shapes(args.root)
+            print(f"형태 분류 {len(payload['items'])}건 → {SHAPES}")
+        elif args.dry_run:
             print(
                 json.dumps(dry_run(args.root, args.stage), ensure_ascii=False, indent=2)
             )

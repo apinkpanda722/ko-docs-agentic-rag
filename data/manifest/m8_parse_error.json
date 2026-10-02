@@ -76,27 +76,59 @@
   "comparisons": {
     "m7-latency": {
       "count": 529,
+      "records_parse_failures": true,
       "max_output_tokens": 4000,
       "max_output_tokens_reached_count": 4,
       "remaining_max_output_tokens": 472
     },
     "m6-dev": {
       "count": 1507,
-      "max_output_tokens": 719,
-      "max_output_tokens_reached_count": 0
+      "records_parse_failures": false,
+      "max_successful_output_tokens": 719
     },
     "m6-test-01": {
       "count": 516,
-      "max_output_tokens": 766,
-      "max_output_tokens_reached_count": 0
+      "records_parse_failures": false,
+      "max_successful_output_tokens": 766
     },
     "m7-security": {
       "count": 999,
-      "max_output_tokens": 780,
-      "max_output_tokens_reached_count": 0
+      "records_parse_failures": false,
+      "max_successful_output_tokens": 780
     }
   },
   "m6_note": "비스트리밍 M6는 참고 정보이며 분류 입력이 아니다.",
+  "non_streaming_parse_failures": {
+    "definition": "trace의 final_answer 단계가 ChatParseError이고 그 시도 기록이 error_type=ValidationError·status=parse_error인 것(비스트리밍 SDK 파싱이 예외로 끝난 경로; 스트리밍 파싱 실패는 시도 status가 success이고 error_type이 없다). 재현 실행 경로 A의 실패는 재현 manifest와 질문·시스템·총 지연(±0.25초)이 같은 trace를 제외한다. 분류는 final_answer 지연 15초 이상이면 '폭주 의심(지연 근거)', 아니면 '폭주 아님(지연 근거)'이며 토큰·원시 출력으로 확인한 값이 아니다.",
+    "threshold_s": 15,
+    "ledger_note": "M6·M7 비스트리밍 평가 실행과 재현 경로 A에서 파싱 실패한 요청은 원장에 기록되지 않는다(고정 경로가 비용 기록 전에 예외를 던짐). 비스트리밍 행의 원장 최대 출력은 성공한 응답의 값일 뿐이다.",
+    "items": [
+      {
+        "question_id": "s-syn-024",
+        "system": "agentic",
+        "date": "2026-10-01",
+        "final_answer_latency_s": 3.9757904580001195,
+        "tokens": "토큰 미기록(원장 누락 경로)",
+        "classification": "폭주 아님(지연 근거)"
+      },
+      {
+        "question_id": "s-syn-036",
+        "system": "agentic",
+        "date": "2026-10-01",
+        "final_answer_latency_s": 29.26472145900334,
+        "tokens": "토큰 미기록(원장 누락 경로)",
+        "classification": "폭주 의심(지연 근거)"
+      },
+      {
+        "question_id": "sec-0098",
+        "system": "simple",
+        "date": "2026-10-02",
+        "final_answer_latency_s": 19.104330250000203,
+        "tokens": "토큰 미기록(원장 누락 경로)",
+        "classification": "폭주 의심(지연 근거)"
+      }
+    ]
+  },
   "raw_fingerprint": {
     "sha256": "ec579607608c9f3d2837cd16dfaf7e5c5aab4ef2452d95955a289cc63b81f004",
     "rows": 226

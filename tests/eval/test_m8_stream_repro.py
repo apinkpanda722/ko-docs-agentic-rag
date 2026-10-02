@@ -296,8 +296,8 @@ def test_report_is_descriptive_by_path_question_and_quotes_no_raw(sandbox):
     )
     text = repro.report(root)
     assert "재현 안 됨" in text and "가설 검정 없음" in text
-    assert "q 경로 A: 0/1" in text
-    assert "q 경로 B: 0/1" in text
+    assert "| 경로 A · q | 1 | 0 | 0 | 0.0% | 0.0% |" in text
+    assert "| 경로 B · q | 1 | 0 | 0 | 0.0% | 0.0% |" in text
     assert "B 대 C" in text and "A 대 C" in text
     assert "PRIVATE" not in text
 
@@ -469,3 +469,154 @@ def test_path_a_failure_recovers_raw_and_usage_from_the_recorded_body():
     assert "".join(capture.text) == '{"answer":"cut'
     assert capture.diagnostics["output_tokens"] == 4000
     assert capture.diagnostics["incomplete_reason"] == "max_output_tokens"
+
+
+def test_shape_classification_order_and_thresholds():
+    assert repro.classify_shape(0.5, 0.9, 900) == "공백 홍수"  # whitespace wins
+    assert repro.classify_shape(0.49, 0.5, 900) == "제어 문자 반복"
+    assert repro.classify_shape(0.1, 0.1, 500) == "반복 루프"
+    assert repro.classify_shape(0.1, 0.1, 499) == "기타(미분류)"
+
+
+def test_control_format_ratio_counts_only_category_cf():
+    text = "ab\u200b\u200b"  # zero-width space is Cf
+    assert repro.control_format_ratio(text) == 0.5
+    assert repro.control_format_ratio("a b\n") == 0
+    assert repro.shape_statistics(text)["control_format_ratio"] == 0.5
+    assert repro.control_format_ratio("") == 0
+
+
+def test_flood_start_is_outside_or_inside_a_string_by_quote_parity():
+    outside = '{"a":"x"' + " " * 40
+    inside = '{"a":"x' + " " * 40
+    escaped = '{"a":"x\\" ' + " " * 40  # an escaped quote does not close the string
+    assert repro.flood_outside_string(outside) is True
+    assert repro.flood_outside_string(inside) is False
+    assert repro.flood_outside_string(escaped) is False
+    assert repro.flood_outside_string("nospace") is None
+
+
+def test_open_key_is_the_innermost_unfinished_value():
+    assert (
+        repro.open_key('{"answer":"a","citations":[{"kind":"doc","section_key":"ab')
+        == "section_key"
+    )
+    assert (
+        repro.open_key('{"answer":"a","citations":[{"kind":"doc","section_key":   ')
+        == "section_key"
+    )
+    assert repro.open_key('{"answer":"cut') == "answer"
+    assert repro.open_key('{"answer":"a","ci') == "(키 이름)"
+    assert repro.open_key('{"answer":"a","citations":[{"kind":"doc"}') == "citations"
+    assert repro.open_key("") is None
+
+
+def test_connection_failure_boundary_is_error_status_within_50_ms():
+    base = {"status": "RemoteProtocolError", "latency_s": 0.05}
+    assert repro.is_connection_failure(base)
+    assert not repro.is_connection_failure({**base, "latency_s": 0.051})
+    assert not repro.is_connection_failure({**base, "status": "parse_error"})
+    assert not repro.is_connection_failure({**base, "status": "completed"})
+
+
+def test_report_tables_use_both_denominators_and_flag_connection_failures():
+    def run(path, question, *, status="completed", runaway=False, latency=1.0):
+        return {
+            "question_id": question,
+            "system": "simple",
+            "path": path,
+            "mode": "x",
+            "status": status,
+            "runaway": runaway,
+            "latency_s": latency,
+        }
+
+    runs = [run("A", "q", status="RemoteProtocolError", latency=0.01)]
+    runs += [run("A", "q") for _ in range(2)]
+    runs += [run("A", "q", status="parse_error", runaway=True)]
+    row = repro._row("x", runs)
+    assert row == "| x | 4 | 1 | 1 | 25.0% | 33.3% |"  # 1/4 and 1/(4-1)
+    assert repro._row("y", [])  # no division by zero
+
+
+def test_report_interpretation_sentence_depends_on_the_data(tmp_path):
+    def entry(counts):
+        runs = []
+        for path, n in counts.items():
+            runs += [
+                {
+                    "question_id": "q",
+                    "system": "simple",
+                    "path": path,
+                    "mode": "m",
+                    "status": "parse_error" if i < n else "completed",
+                    "runaway": i < n,
+                    "latency_s": 1.0,
+                    "raw": {"path": "x", "sha256": "h", "rows": 1},
+                    "shape": {},
+                }
+                for i in range(4)
+            ]
+        return runs
+
+    def write(counts):
+        entry_ = {
+            "stage": 1,
+            "seq": 1,
+            "status": "completed",
+            "runs": entry(counts),
+            "previous_result_sha256": None,
+        }
+        entry_["result_sha256"] = repro.canonical_hash(entry_)
+        result = {"schema_version": 1, "history": [entry_]}
+        result["result_sha256"] = repro.canonical_hash(result)
+        return result
+
+    from unittest import mock
+
+    with mock.patch.object(
+        repro, "read_result", lambda root: write({"A": 1, "B": 1, "C": 1})
+    ):
+        text = repro.report(tmp_path, shapes={"items": []})
+    assert "폭주는 세 경로 모두에서 관측되었다" in text
+    assert "건수가 작아 경로 간 차이는 판단하지 않는다" in text
+    with mock.patch.object(
+        repro, "read_result", lambda root: write({"A": 1, "B": 0, "C": 0})
+    ):
+        text = repro.report(tmp_path, shapes={"items": []})
+    assert "세 경로 모두에서 관측되었다" not in text
+    assert "경로별 폭주 건수: A 1, B 0, C 0" in text
+
+
+def test_build_shapes_is_content_free_and_goes_stale_with_the_result(sandbox):
+    from types import SimpleNamespace
+
+    root, runtime, _plan = sandbox
+
+    def fake_answer(*args, runtime, **kwargs):
+        runtime.chat.text.append(
+            '{"answer":"PRIVATE","citations":[{"kind":"doc","section_key":"ab'
+        )
+        runtime.chat.diagnostics = {"output_tokens": 4000}
+        return SimpleNamespace(refuse_reason="parse_error")
+
+    repro.run(root, runtime_factory=lambda model: runtime, answer_fn=fake_answer)
+    payload = repro.write_shapes(root)
+    assert [i["open_key"] for i in payload["items"]] == ["section_key", "section_key"]
+    assert [i["path"] for i in payload["items"]] == ["A", "B"]
+    assert all(i["class"] == "기타(미분류)" for i in payload["items"])
+    assert "PRIVATE" not in json.dumps(payload)
+    result = repro.read_result(root)
+    assert (
+        repro.read_shapes(root, result)["source_result_sha256"]
+        == result["result_sha256"]
+    )
+    assert "### 폭주 건의 형태(사후 분류)" in repro.report(root)
+    repro.run(
+        root,
+        rerun_reason="again",
+        runtime_factory=lambda model: runtime,
+        answer_fn=fake_answer,
+    )
+    with pytest.raises(ValueError, match="stale"):
+        repro.report(root)

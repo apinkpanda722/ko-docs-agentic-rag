@@ -102,6 +102,8 @@ def query_view() -> None:
                         elif kind == "attempt_start":
                             text.reset()
                             partial.empty()
+                            if value > 1:  # a retry or a regeneration after truncation
+                                status.update(label="응답을 다시 생성하는 중")
                         else:
                             events.append(value)
                             status_body.markdown("  \n".join(event_lines(events)))

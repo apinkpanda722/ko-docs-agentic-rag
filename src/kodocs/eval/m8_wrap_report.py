@@ -5,6 +5,8 @@ import re
 import tomllib
 from pathlib import Path
 
+from kodocs.ui.settings import UI_FINAL_MAX_OUTPUT_TOKENS
+
 BEGIN, END = "<!-- BEGIN generated -->", "<!-- END generated -->"
 REPORT = Path("docs/results/2026-10-03-m8-wrap-up.md")
 M7_REPORT = Path("docs/results/2026-10-02-m7-answer-eval.md")
@@ -182,12 +184,41 @@ def render(root):
         ]
         lines += [
             "",
-            "| run_id | 요청 수 | 최대 출력 | 상한 도달 | 오류 외 최대 출력 |",
-            "|---|---|---|---|---|",
+            "| run_id | 요청 수 | 원장 기록 | 최대 출력 | 상한 도달 | 오류 외 최대 출력 |",
+            "|---|---|---|---|---|---|",
+        ]
+        for run, v in errors["comparisons"].items():
+            if v["records_parse_failures"]:
+                lines.append(
+                    f"| {run} | {v['count']} | 파싱 실패 요청 포함(스트리밍) | {v['max_output_tokens']} | {v['max_output_tokens_reached_count']} | {v.get('remaining_max_output_tokens', '—')} |"
+                )
+            else:
+                lines.append(
+                    f"| {run} | {v['count']} | 성공한 응답만(비스트리밍은 파싱 실패 시 기록 없음) | {v['max_successful_output_tokens']}(성공 응답의 최대) | — | — |"
+                )
+        lines += [
+            "",
+            "비스트리밍 행의 최대 출력은 성공한 응답의 최대일 뿐이다. 고정 비스트리밍 경로(M6·M7)는 파싱 실패 시 `_record_usage` 전에 예외를 던져 실패 요청이 원장에 남지 않으므로, 이 표는 비스트리밍에서 상한 도달이 없었다는 근거가 아니다(사후 정정).",
+        ]
+        ns = errors["non_streaming_parse_failures"]
+        lines += [
+            "",
+            "## 비스트리밍 parse 실패(M6·M7 평가 실행, 원장 누락 경로)",
+            "",
+            ns["definition"],
+            "",
+            ns["ledger_note"],
+            "",
+            "| 문항 | 시스템 | 날짜 | final_answer 지연(초) | 토큰 | 분류 |",
+            "|---|---|---|---|---|---|",
         ]
         lines += [
-            f"| {run} | {v['count']} | {v['max_output_tokens']} | {v['max_output_tokens_reached_count']} | {v.get('remaining_max_output_tokens', '—')} |"
-            for run, v in errors["comparisons"].items()
+            f"| {i['question_id']} | {i['system']} | {i['date']} | {i['final_answer_latency_s']:.1f} | {i['tokens']} | {i['classification']} |"
+            for i in ns["items"]
+        ]
+        lines += [
+            "",
+            f"비스트리밍 parse 실패 {len(ns['items'])}건. 지연 기준은 {ns['threshold_s']}초 이상이며 토큰·원시 출력으로 확인한 분류가 아니다.",
         ]
     lines += [
         "",
@@ -215,6 +246,10 @@ def render(root):
     )
     from kodocs.eval.m8_stream_repro import report
 
+    eval_cap = json.loads((root / "data/manifest/m6_config.json").read_text())[
+        "answer"
+    ]["settings"]["max_output_tokens"]
+
     lines += [
         "",
         "## 스트리밍 폭주 재현",
@@ -236,6 +271,14 @@ def render(root):
         ),
         "",
         report(root),
+        "",
+        "## 원장 누락 한계",
+        "",
+        "M6·M7 비스트리밍 평가 실행과 재현 경로 A에서 파싱 실패한 요청은 원장에 기록되지 않았다(고정 경로가 비용 기록 전에 예외를 던진다). 10월 원장과 콘솔 차이 $0.01과 규모가 맞는다(정황; M7 결과 문서 비용 대조 참조). 고정 경로 코드는 고치지 않았고 M6·M7 확정 결과 문서와 manifest는 바꾸지 않았다.",
+        "",
+        "## GUI 폭주 대응",
+        "",
+        f"GUI 스트리밍의 최종 답변 호출만 출력 상한 {UI_FINAL_MAX_OUTPUT_TOKENS}토큰으로 둔다(근거: 원장의 성공 응답 최대 출력과 폭주 시 대기 시간 단축; 평가 설정 {eval_cap}과 다르며 UI 전용 설정 기록·해시로 분리, m6_config·m7_config 불변). 도구 선택 단계의 설정은 바꾸지 않는다. 상한에서 잘려 파싱에 실패하면 1회 자동 재생성하며 두 요청 모두 원장에 기록되고 trace의 시도 기록에 `truncated_regenerate`가 남는다. 두 번째도 실패하면 오류 문구와 재시도 버튼을 보인다.",
         "",
         "실행 순서: 이 step 완료 → `make up` → `make m8-stream-repro-dry` → `make m8-stream-repro` → 필요하면 `STAGE=2 make m8-stream-repro` → `make m8-wrap-report` → `make readme` → 커밋 → 리랭커(step 6~8).",
     ]

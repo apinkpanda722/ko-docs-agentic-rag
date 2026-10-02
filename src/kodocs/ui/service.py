@@ -2,6 +2,7 @@
 
 import json
 from dataclasses import dataclass, replace
+from functools import lru_cache
 from typing import Literal
 
 import httpx
@@ -12,6 +13,7 @@ from kodocs.agent.types import AgentRuntime
 from kodocs.config import MissingAPIKeyError
 from kodocs.costs import BudgetExceededError
 from kodocs.llm.openai_chat import ChatParseError
+from kodocs.ui.settings import UI_FINAL_MAX_OUTPUT_TOKENS
 from kodocs.ui.streaming import FinalStreamingChat
 from kodocs.ui.users import DemoUser
 
@@ -50,6 +52,13 @@ class UiAnswer:
     total_ms: float
 
 
+@lru_cache(maxsize=4)
+def _final_chat(chat):
+    """Streaming final-answer chat with the UI-only output cap (None-safe for fakes)."""
+    derive = getattr(chat, "with_max_output_tokens", None)
+    return derive(UI_FINAL_MAX_OUTPUT_TOKENS) if callable(derive) else chat
+
+
 def ask(
     question: str,
     user: DemoUser,
@@ -67,6 +76,7 @@ def ask(
                     runtime.chat,
                     lambda delta: messages.put(("delta", delta)),
                     lambda number: messages.put(("attempt_start", number)),
+                    final_inner=_final_chat(runtime.chat),
                 ),
                 event_sink=lambda event: messages.put(("event", event)),
             )

@@ -47,6 +47,7 @@
 ## 명령어
 make m8-stream-repro-dry  # 스트리밍 폭주 재현 예상 비용 — 네트워크 없음
 make m8-stream-repro  # 실제 API 호출·과금, 사용자 실행, 1단계 300회(4문항×3경로×25), STAGE=2로 2단계 452회(B·C 113문항×2시스템), 재실행은 RERUN_REASON="사유"
+make m8-repro-shapes  # 재현 폭주 건의 형태 사후 분류(로컬 원시 파일 필요) → data/manifest/m8_stream_repro_shapes.json — 네트워크 없음
 make readme  # README 생성 영역 갱신(manifest에서 생성, H8은 결과 없으면 '미실행', 결과 흔적이 있는데 검증 실패면 오류) — 네트워크 없음
 make ui  # Streamlit 데모 GUI 기동(OpenSearch·API 키 필요, 실제 호출 시 과금) — 사용자 실행
 make adr-index  # ADR 상태·상호 참조 색인 생성 → docs/ADR-INDEX.md — 네트워크 없음

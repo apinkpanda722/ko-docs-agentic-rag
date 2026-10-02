@@ -10,8 +10,11 @@ from langchain_core.utils.json import parse_partial_json
 class FinalStreamingChat:
     """Follow M7 StreamingChat, attaching the UI observer only to final calls."""
 
-    def __init__(self, inner, on_text_delta, on_attempt_start=None):
+    def __init__(self, inner, on_text_delta, on_attempt_start=None, final_inner=None):
         self.inner = inner
+        # The final answer call may use its own (UI-only) output cap; tool
+        # selection turns keep ``inner`` (the frozen evaluation settings).
+        self.final_inner = final_inner or inner
         self.on_text_delta = on_text_delta
         self.on_attempt_start = on_attempt_start
 
@@ -36,6 +39,9 @@ class FinalStreamingChat:
             )
             if self.on_attempt_start is not None:
                 kwargs["on_attempt_start"] = self.on_attempt_start
+            # Truncated at max_output_tokens: regenerate once, visibly.
+            kwargs["regenerate_on_truncation"] = True
+            return self.final_inner.invoke(messages, **kwargs)
         return self.inner.invoke(messages, **kwargs)
 
 
