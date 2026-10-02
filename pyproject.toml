@@ -46,3 +46,6 @@ docling = [
 embed = [
     "sentence-transformers>=6.1.0",
 ]
+ui = [
+    "streamlit>=1.64.0",
+]

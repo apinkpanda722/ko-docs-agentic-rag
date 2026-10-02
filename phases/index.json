@@ -43,6 +43,10 @@
       "status": "completed",
       "blocked_at": "2026-10-01T21:11:03+0900",
       "completed_at": "2026-10-02T16:35:54+0900"
+    },
+    {
+      "dir": "m8-wrap-up",
+      "status": "pending"
     }
   ]
 }

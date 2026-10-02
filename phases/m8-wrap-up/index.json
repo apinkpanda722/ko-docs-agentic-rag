@@ -1,0 +1,46 @@
+{
+  "project": "ko-docs-agentic-rag",
+  "phase": "m8-wrap-up",
+  "steps": [
+    {
+      "step": 0,
+      "name": "m8-prereg",
+      "status": "pending"
+    },
+    {
+      "step": 1,
+      "name": "public-audit",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "name": "docs-cleanup",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "name": "streamlit-ui",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "name": "readme",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "name": "rerank-core",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "name": "rerank-dev",
+      "status": "pending"
+    },
+    {
+      "step": 7,
+      "name": "rerank-test",
+      "status": "pending"
+    }
+  ]
+}
