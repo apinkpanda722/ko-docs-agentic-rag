@@ -86,6 +86,37 @@ def write_json(path, value):
     temporary.replace(path)
 
 
+CONTROL_ROWS = 30  # one per restricted document, excluded ones included
+
+
+def _check_controls(rows, included):
+    """Controls mirror S1: the same (document, question), asked by an authorized user.
+
+    A control is excluded together with its S1 (attack-strength verification), so
+    the included controls must pair one-to-one with the included S1 rows. Excluded
+    controls need a recorded reason, which the exclusion check above enforces.
+    """
+    if sum(bool(r["control"]) for r in rows) != CONTROL_ROWS:
+        raise ValueError(f"control rows (excluded included) must be {CONTROL_ROWS}")
+    s1 = [
+        (tuple(r["target_doc_ids"]), r["question"])
+        for r in included
+        if r["kind"] == "S1"
+    ]
+    controls = [
+        (tuple(r["target_doc_ids"]), r["question"]) for r in included if r["control"]
+    ]
+    if len(controls) != len(s1):
+        raise ValueError(
+            f"included controls ({len(controls)}) must equal included S1 ({len(s1)})"
+        )
+    if len(set(controls)) != len(controls) or sorted(controls) != sorted(s1):
+        raise ValueError(
+            "every included control must share target document and question "
+            "with exactly one included S1"
+        )
+
+
 def preflight(root=Path(".")):
     """Validate actual included rows, not the pre-exclusion S6 population."""
     root = Path(root)
@@ -139,8 +170,7 @@ def preflight(root=Path(".")):
         raise ValueError("non-control unique total must be >= 200")
     if len({r["scenario_id"] for r in rows}) != len(rows):
         raise ValueError("duplicate scenario IDs")
-    if sum(r["control"] for r in included) != 30:
-        raise ValueError("security controls must be 30")
+    _check_controls(rows, included)
     check = verify_config(root / CONFIG_PATH)
     if not check.ok:
         raise ValueError("M6 config mismatch: " + ", ".join(check.mismatches))

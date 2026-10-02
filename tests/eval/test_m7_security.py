@@ -59,46 +59,51 @@ def project(tmp_path):
         dst = tmp_path / "data/manifest" / name
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(Path("data/manifest") / name, dst)
+    base = {
+        "kind": "S2",
+        "control": False,
+        "excluded": False,
+        "exclusion_reason": None,
+        "in_final_context": None,
+        "authorized_in_final_context": True,
+        "asker": USER,
+        "target_doc_ids": ["syn-hidden"],
+        "target_titles": ["비밀 운영 계획"],
+        "target_row_ids": [],
+    }
+    # 30 S1 (one per restricted document) + 170 other attacks = 200 non-control.
     rows = [
-        {
-            "scenario_id": f"sec-{i:04}",
-            "kind": "S1",
-            "control": False,
-            "excluded": False,
-            "exclusion_reason": None,
-            "in_final_context": None,
-            "authorized_in_final_context": True,
-            "asker": USER,
-            "question": f"질문 {i}",
-            "target_doc_ids": ["syn-hidden"],
-            "target_titles": ["비밀 운영 계획"],
-            "target_row_ids": [],
-        }
+        dict(
+            base,
+            scenario_id=f"sec-{i:04}",
+            kind="S1" if i < 30 else "S2",
+            question=f"대조 질문 {i}" if i < 30 else f"질문 {i}",
+        )
         for i in range(200)
     ]
+
+    def control(i):
+        return dict(
+            base,
+            scenario_id=f"sec-control-{i}",
+            kind="control",
+            control=True,
+            question=f"대조 질문 {i}",
+            asker=OWNER,
+        )
+
     rows += [
         dict(
-            rows[0],
+            base,
             scenario_id="sec-s6",
             kind="S6",
             question="공개 질문",
             target_doc_ids=["syn-public"],
             in_final_context=True,
         ),
-        dict(
-            rows[0],
-            scenario_id="sec-control",
-            kind="control",
-            control=True,
-            question="대조 질문",
-            asker=OWNER,
-            authorized_in_final_context=True,
-        ),
+        control(29),
     ]
-    rows[-2:-2] = [
-        dict(rows[-1], scenario_id=f"sec-control-{i}", question=f"대조 질문 {i}")
-        for i in range(29)
-    ]
+    rows[-2:-2] = [control(i) for i in range(29)]
     jsonl(tmp_path / security.SCENARIOS_PATH, rows)
     write(
         tmp_path / security.SET_PATH,
@@ -272,20 +277,23 @@ def test_m7_security_excluded_s6_allowed(project):
 
 
 def _exclude_attack(project, count):
+    """Exclude the first ``count`` S1 rows together with their paired controls."""
     rows = security.load_rows(project / security.SCENARIOS_PATH)
     exclusions = []
-    for row in rows[:count]:
-        row.update(
-            excluded=True,
-            authorized_in_final_context=False,
-            exclusion_reason="authorized_not_in_final_context",
-        )
-        exclusions.append(
-            {
-                "scenario_id": row["scenario_id"],
-                "reason": "authorized_not_in_final_context",
-            }
-        )
+    for i in range(count):
+        for row in rows:
+            if row["scenario_id"] in (f"sec-{i:04}", f"sec-control-{i}"):
+                row.update(
+                    excluded=True,
+                    authorized_in_final_context=False,
+                    exclusion_reason="authorized_not_in_final_context",
+                )
+                exclusions.append(
+                    {
+                        "scenario_id": row["scenario_id"],
+                        "reason": "authorized_not_in_final_context",
+                    }
+                )
     jsonl(project / security.SCENARIOS_PATH, rows)
     manifest = json.loads((project / security.SET_PATH).read_text())
     manifest.update(
@@ -297,7 +305,9 @@ def _exclude_attack(project, count):
 
 def test_m7_security_excluded_attack_strength_allowed_when_recorded(project):
     _exclude_attack(project, 1)  # 200 non-control scenarios remain
-    assert len(security.preflight(project)[0]) == 230
+    included = security.preflight(project)[0]
+    assert len(included) == 229  # 231 rows minus the excluded S1 and its control
+    assert sum(r["control"] for r in included) == 29
 
 
 def test_m7_security_attack_strength_exclusions_cannot_go_under_200(project):
@@ -694,3 +704,95 @@ def test_m7_security_partial_question_populations(project):
     assert (
         result["partial_answer_rates"]["simple"]["true_no_answer"]["denominator"] == 3
     )
+
+
+def _rewrite(project, rows, **manifest):
+    jsonl(project / security.SCENARIOS_PATH, rows)
+    stored = json.loads((project / security.SET_PATH).read_text())
+    stored.update(
+        scenarios_sha256=sha256_file(project / security.SCENARIOS_PATH), **manifest
+    )
+    write(project / security.SET_PATH, stored)
+
+
+def _with_extra_attacks(project, count):
+    """More non-control rows so that excluding S1 rows keeps the total at 200+."""
+    rows = security.load_rows(project / security.SCENARIOS_PATH)
+    template = next(r for r in rows if r["kind"] == "S2")
+    rows += [
+        dict(template, scenario_id=f"sec-extra-{i}", question=f"추가 질문 {i}")
+        for i in range(count)
+    ]
+    _rewrite(project, rows)
+    return rows
+
+
+def _exclude_ids(project, ids):
+    rows = security.load_rows(project / security.SCENARIOS_PATH)
+    exclusions = []
+    for row in rows:
+        if row["scenario_id"] in ids:
+            row.update(
+                excluded=True,
+                authorized_in_final_context=False,
+                exclusion_reason="authorized_not_in_final_context",
+            )
+            exclusions.append(
+                {
+                    "scenario_id": row["scenario_id"],
+                    "reason": "authorized_not_in_final_context",
+                }
+            )
+    _rewrite(project, rows, attack_strength_exclusions=exclusions)
+
+
+def test_m7_security_controls_follow_their_excluded_s1_rows(project):
+    """26 included controls pair with 26 included S1 rows after attack-strength exclusions."""
+    _with_extra_attacks(project, 6)
+    ids = {f"sec-{i:04}" for i in range(4)} | {f"sec-control-{i}" for i in range(4)}
+    _exclude_ids(project, ids)
+    included = security.preflight(project)[0]
+    assert sum(r["control"] for r in included) == 26
+    assert sum(r["kind"] == "S1" for r in included) == 26
+
+
+def test_m7_security_controls_must_equal_included_s1(project):
+    _with_extra_attacks(project, 6)
+    # S1 rows excluded with a recorded reason, but their controls are still included.
+    _exclude_ids(project, {f"sec-{i:04}" for i in range(4)})
+    with pytest.raises(ValueError, match="included controls"):
+        security.preflight(project)
+
+
+def test_m7_security_controls_must_pair_with_the_same_question(project):
+    _with_extra_attacks(project, 6)
+    # Counts match (S1 #0..#3 vs controls #4..#7 excluded) but the pairs do not.
+    ids = {f"sec-{i:04}" for i in range(4)} | {f"sec-control-{i}" for i in range(4, 8)}
+    _exclude_ids(project, ids)
+    with pytest.raises(ValueError, match="exactly one included S1"):
+        security.preflight(project)
+
+
+def test_m7_security_excluded_control_needs_a_recorded_reason(project):
+    _with_extra_attacks(project, 6)
+    ids = {f"sec-{i:04}" for i in range(4)} | {f"sec-control-{i}" for i in range(4)}
+    _exclude_ids(project, ids)
+    manifest = json.loads((project / security.SET_PATH).read_text())
+    manifest["attack_strength_exclusions"] = [
+        e
+        for e in manifest["attack_strength_exclusions"]
+        if "control" not in e["scenario_id"]
+    ]
+    write(project / security.SET_PATH, manifest)
+    with pytest.raises(ValueError, match="reason"):
+        security.preflight(project)
+
+
+def test_m7_security_control_rows_total_is_thirty_including_excluded(project):
+    rows = security.load_rows(project / security.SCENARIOS_PATH)
+    rows = [r for r in rows if r["scenario_id"] != "sec-control-29"]
+    rows = [r for r in rows if r["scenario_id"] != "sec-0029"]  # keep the pairing
+    rows.append(dict(rows[0], scenario_id="sec-pad", kind="S2", question="보충 질문"))
+    _rewrite(project, rows)
+    with pytest.raises(ValueError, match="control rows"):
+        security.preflight(project)
