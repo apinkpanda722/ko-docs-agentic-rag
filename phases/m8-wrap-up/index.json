@@ -62,7 +62,16 @@
     {
       "step": 4,
       "name": "readme",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-02T18:54:09+0900",
+      "summary": "H8 3상태·해시 검증 계약(m8_contract.py), 기존 보고 함수 재사용 README 생성기(m8_readme.py), make readme·AGENTS 안내·테스트 추가; README 232줄·개발 방식 원문 보존·H8 미실행, 연속 생성 멱등 확인, make verify 2048 tests 통과, 기존 manifest·결과·golden 보존. H8 config_hash는 freeze 파일 바이트의 SHA-256.",
+      "completed_at": "2026-10-02T19:10:09+0900",
+      "usage": {
+        "input_tokens": 2321595,
+        "cached_input_tokens": 2203776,
+        "output_tokens": 20563,
+        "attempts": 1
+      }
     },
     {
       "step": 5,
