@@ -129,5 +129,6 @@ make m7-latency-dry  # 지연 113 × 2 + 예열 6 실행 수·M6 test 평균 기
 make m7-latency  # 실제 OpenAI 호출·과금, 동시성 1 단독 실행, 사용자 실행. 재실행: RERUN_REASON="사유" make m7-latency
 make m7-failures  # M6 test 틀린 문항 결정론 실패 분류(기록 부족은 indeterminate, 재검색·모델 호출 없음) → data/manifest/m7_failures.json — 네트워크 없음
 make m7-report  # M7 결과 문서 docs/results/2026-10-02-m7-answer-eval.md(고정) 생성 영역만 갱신 — 네트워크 없음
+uv run python -m kodocs.eval.m8_rules  # M8 사전 등록 규칙 ID 수·SHA-256 출력 — 네트워크 없음
 # 검색·답변 평가는 make m5-test·make m6-test, 채점은 make m7-grade로 각각 실행한다.
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)
