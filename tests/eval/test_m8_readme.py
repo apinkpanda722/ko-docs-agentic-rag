@@ -151,3 +151,21 @@ def test_readme_reports_runaway_ui_cap_ledger_gap_and_next_improvement():
         "스트리밍·스키마와 무관하게 발생했고 건수가 작아 경로 간 차이는 판단하지 않는다"
         in text
     )
+
+
+@pytest.mark.parametrize("field", ["config_hash", "config_file_sha256"])
+def test_h8_internal_and_file_hash_errors_do_not_rewrite_readme(source, field):
+    import hashlib
+
+    from kodocs.eval.m8_contract import RESULT_PATH, RUNS_PATH
+
+    payload = completed(source)
+    payload[field] = "a" * 64
+    result = put(source, RESULT_PATH, payload)
+    record = json.loads((source / RUNS_PATH).read_text())
+    record["result_sha256"] = hashlib.sha256(result.read_bytes()).hexdigest()
+    (source / RUNS_PATH).write_text(json.dumps(record) + "\n")
+    original = (source / "README.md").read_bytes()
+    with pytest.raises(H8ResultError, match=field):
+        write_readme(source)
+    assert original == (source / "README.md").read_bytes()

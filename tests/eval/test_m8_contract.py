@@ -4,6 +4,7 @@ import hashlib
 import json
 
 import pytest
+
 from kodocs.eval.m8_contract import (
     FREEZE_PATH,
     LATENCY_PATH,
@@ -26,7 +27,11 @@ def put(root, path, payload):
 
 
 def completed(root, run=1, raw_present=False):
-    freeze = put(root, FREEZE_PATH, {"selected": {"depth": 20, "fusion": "단독"}})
+    freeze = put(
+        root,
+        FREEZE_PATH,
+        {"selected": {"depth": 20, "fusion": "단독"}, "config_hash": "f" * 64},
+    )
     raw_bytes = b'{"question_id":"fixture"}\n'
     raw = {"sha256": hashlib.sha256(raw_bytes).hexdigest(), "rows": 1}
     payload = {
@@ -51,7 +56,8 @@ def completed(root, run=1, raw_present=False):
         "truncated_ratio": 0.01,
         "device": "mps",
         "raw": raw,
-        "config_hash": hashlib.sha256(freeze.read_bytes()).hexdigest(),
+        "config_hash": "f" * 64,
+        "config_file_sha256": hashlib.sha256(freeze.read_bytes()).hexdigest(),
     }
     path = RESULTS_DIR / f"run-{run:02d}.json"
     result = put(root, path, payload)
@@ -165,3 +171,15 @@ def test_latency_contract():
     with pytest.raises(ContractError, match="rerank_s.p95_s"):
         validate_latency({"rerank_s": {"p50_s": 0.1}})
     assert LATENCY_PATH.name == "m8_latency.json"
+
+
+@pytest.mark.parametrize("field", ["config_hash", "config_file_sha256"])
+def test_internal_and_file_hash_mismatch_separately(tmp_path, field):
+    payload = completed(tmp_path)
+    payload[field] = "a" * 64
+    result = put(tmp_path, RESULT_PATH, payload)
+    record = json.loads((tmp_path / RUNS_PATH).read_text())
+    record["result_sha256"] = hashlib.sha256(result.read_bytes()).hexdigest()
+    (tmp_path / RUNS_PATH).write_text(json.dumps(record) + "\n")
+    with pytest.raises(H8ResultError, match=field):
+        load_h8_state(tmp_path)

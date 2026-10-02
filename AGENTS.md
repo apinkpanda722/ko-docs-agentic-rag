@@ -46,6 +46,10 @@
 - 커밋 메시지는 conventional commits 형식을 따를 것 (feat:, fix:, docs:, refactor:)
 
 ## 명령어
+make m8-test  # test 1회 실행, 재실행은 RERUN_REASON="사유" make m8-test, make up·freeze 필요, 사용자 실행
+make m8-latency  # 113문항 검색+재정렬 지연, 동시성 1, LLM 없음, 사용자 실행
+make m8-report  # M8 결과 문서 생성, 네트워크 없음
+# 사용자 실행 순서: make m8-test → make m8-latency → make m8-report → make readme → make m8-audit
 make m8-candidates  # dev 후보 캐시 — make up 필요·OpenSearch 읽기 전용·리랭커 점수 계산 없음, 사용자 실행
 make m8-tokens  # dev max_length 측정 — 모델 가중치 없이 리랭커 토크나이저만, 사용자 실행
 make m8-dev  # dev 리랭커 6개 격자 — 리랭커 로딩·MPS, 사용자 실행

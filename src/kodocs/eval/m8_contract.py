@@ -1,6 +1,7 @@
 """Shared committed H8 contract for the README and the future test runner.
 
-Hashes are SHA-256 of file bytes, including FREEZE_PATH (no self-hash).
+config_hash is the canonical JSON hash stored inside FREEZE_PATH.
+config_file_sha256 authenticates the freeze file bytes separately.
 Completed JSONL records require seq, status, result_path, result_sha256 and
 raw={sha256, rows}. result_path is repository-relative within RESULTS_DIR.
 Metrics use gold/silver.{control,reranked}.{ndcg10,recall10}.
@@ -32,6 +33,7 @@ required_result_keys = {
     "device": (),
     "raw": ("sha256", "rows"),
     "config_hash": (),
+    "config_file_sha256": (),
 }
 required_latency_keys = {
     "rerank_s": ("p50_s", "p95_s", "max_s"),
@@ -143,6 +145,7 @@ def validate_result(payload) -> None:
         raise ContractError("device: 문자열 필요")
     _raw(payload["raw"])
     _digest(payload["config_hash"], "config_hash")
+    _digest(payload["config_file_sha256"], "config_file_sha256")
 
 
 def validate_latency(payload) -> None:
@@ -187,7 +190,9 @@ def _checked(root, record):
     validate_result(payload)
     for key in ("sha256", "rows"):
         _same(payload["raw"][key], record["raw"][key], "raw." + key)
-    _same(payload["config_hash"], _sha(root / FREEZE_PATH), "config_hash")
+    freeze = json.loads((root / FREEZE_PATH).read_bytes())
+    _same(payload["config_hash"], freeze["config_hash"], "config_hash")
+    _same(payload["config_file_sha256"], _sha(root / FREEZE_PATH), "config_file_sha256")
     local = root / f"data/interim/m8/test/run-{record['seq']:02d}/runs.jsonl"
     if local.exists():
         actual = fingerprint(local)
