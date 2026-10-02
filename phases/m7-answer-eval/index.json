@@ -173,7 +173,16 @@
     {
       "step": 12,
       "name": "threat-model",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-02T15:56:16+0900",
+      "summary": "docs/THREAT_MODEL.md에 위협·실제 완화·검증 매핑·H6 한계를 실측 수치 없이 문서화하고 ARCHITECTURE.md 링크 및 tests/test_threat_model_doc.py 추가. make verify 1900개·전용 테스트 9개 통과, 커밋 없음.",
+      "completed_at": "2026-10-02T16:04:59+0900",
+      "usage": {
+        "input_tokens": 1294868,
+        "cached_input_tokens": 1187328,
+        "output_tokens": 9991,
+        "attempts": 1
+      }
     },
     {
       "step": 13,
