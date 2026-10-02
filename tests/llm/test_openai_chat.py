@@ -486,3 +486,134 @@ def test_structured_output_returns_parsed_model_and_raises_parse_error(
         http_client.close()
 
     assert result.parsed == Answer(answer="구조화 완료")
+
+
+@pytest.mark.parametrize("with_usage", [True, False])
+def test_structured_stream_sdk_events_ttft_and_missing_usage(tmp_path, with_usage):
+    from openai.types.responses import (
+        Response,
+        ResponseCompletedEvent,
+        ResponseCreatedEvent,
+        ResponseTextDeltaEvent,
+    )
+
+    full = _response(text='{"answer":"완료"}')
+    full["text"] = {
+        "format": {
+            "type": "json_schema",
+            "name": "Answer",
+            "schema": Answer.model_json_schema(),
+            "strict": True,
+        }
+    }
+    if not with_usage:
+        full["usage"] = None
+    events = [
+        ResponseCreatedEvent(
+            type="response.created",
+            sequence_number=0,
+            response=Response.model_validate(
+                full | {"output": [], "status": "in_progress", "usage": None}
+            ),
+        ),
+        ResponseTextDeltaEvent(
+            type="response.output_text.delta",
+            sequence_number=1,
+            content_index=0,
+            output_index=0,
+            item_id="msg_test",
+            delta='{"answer":"완료"}',
+            logprobs=[],
+        ),
+        ResponseCompletedEvent(
+            type="response.completed",
+            sequence_number=2,
+            response=Response.model_validate(full),
+        ),
+    ]
+    requests = []
+    ticks = [0.0]
+
+    def handler(request):
+        requests.append(json.loads(request.content))
+
+        def body():
+            for i, event in enumerate(events):
+                ticks[0] = [1.0, 3.0, 5.0][i]
+                yield (
+                    f"event: {event.type}\ndata: {event.model_dump_json()}\n\n"
+                ).encode()
+
+        return httpx.Response(
+            200, content=body(), headers={"content-type": "text/event-stream"}
+        )
+
+    managed, client = _managed(tmp_path, handler)
+    managed._monotonic = lambda: ticks[0]
+    try:
+        if with_usage:
+            result = managed.invoke("질문", response_schema=Answer, stream=True)
+            assert result.parsed == Answer(answer="완료")
+            assert result.ttft_ms == 3000
+            assert result.usage.output_tokens == 40
+            assert result.cost_usd > 0
+        else:
+            with pytest.raises(BillingUncertainError):
+                managed.invoke("질문", response_schema=Answer, stream=True)
+        assert len(requests) == 1
+        assert requests[0]["stream"] is True
+        assert requests[0]["text"]["format"]["type"] == "json_schema"
+        assert requests[0]["text"]["format"]["strict"] is True
+    finally:
+        client.close()
+
+
+def test_stream_default_request_snapshot_preserves_m6_settings(tmp_path):
+    from kodocs.agent.finalize import finalizer_hash
+    from kodocs.agent.prompts import prompt_hashes
+    from kodocs.agent.types import ModelAnswer
+
+    requests = []
+
+    def handler(request):
+        requests.append(json.loads(request.content))
+        return httpx.Response(
+            200, json=_response(text='{"answer":"완료","citations":[],"refused":true}')
+        )
+
+    managed, client = _managed(tmp_path, handler)
+    try:
+        result = managed.invoke("질문", response_schema=ModelAnswer)
+    finally:
+        client.close()
+    import hashlib
+
+    schema = requests[0]["text"]["format"].pop("schema")
+    assert (
+        hashlib.sha256(
+            json.dumps(schema, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+        == "dfae9591f5de8bfa92be8c178f65f88e71b8d4410e99750eb8c52f9d107937fe"
+    )
+    assert requests[0] == {
+        "input": [{"content": "질문", "role": "user", "type": "message"}],
+        "max_output_tokens": 4000,
+        "model": "gpt-6-luna",
+        "reasoning": {"effort": "low"},
+        "stream": False,
+        "text": {
+            "format": {
+                "type": "json_schema",
+                "name": "ModelAnswer",
+                "strict": True,
+            }
+        },
+    }
+    assert schema["additionalProperties"] is False
+    assert schema["required"] == ["answer", "citations", "refused"]
+    frozen = json.loads(Path("data/manifest/m6_config.json").read_text())
+    assert result.settings_hash == frozen["answer"]["settings_hash"]
+    assert result.generation == frozen["answer"]["settings"]
+    assert prompt_hashes() == frozen["prompt_hashes"]
+    assert finalizer_hash() == frozen["finalizer_hash"]
+    assert result.ttft_ms is None

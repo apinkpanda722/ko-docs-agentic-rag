@@ -316,14 +316,31 @@ class ManagedChat:
             combined = None
             ttft_ms = None
             for chunk in runnable.stream(messages, **kwargs):
-                if ttft_ms is None:
+                # Responses emits created/usage/reasoning chunks before output text.
+                content = getattr(chunk, "content", "")
+                has_text = (
+                    bool(content)
+                    if isinstance(content, str)
+                    else any(
+                        isinstance(block, Mapping)
+                        and block.get("type") in {"text", "output_text"}
+                        and bool(block.get("text"))
+                        for block in content
+                    )
+                )
+                if ttft_ms is None and has_text:
                     ttft_ms = _elapsed_ms(overall_started, self._monotonic())
                 combined = chunk if combined is None else combined + chunk
-            if combined is None:
-                raise ValueError("OpenAI stream returned no chunks")
+            if combined is None or _usage_from_message(combined) is None:
+                raise BillingUncertainError("OpenAI stream ended without usage")
             parsed = getattr(combined, "additional_kwargs", {}).get("parsed")
             if response_schema is not None and parsed is None:
-                raise ChatParseError("structured stream did not contain parsed output")
+                return (
+                    combined,
+                    None,
+                    ChatParseError("structured stream did not contain parsed output"),
+                    ttft_ms,
+                )
             return combined, parsed, None, ttft_ms
 
         if response_schema is not None:
@@ -475,6 +492,8 @@ def _non_negative_int(value: object, name: str) -> int:
 
 
 def _classify_error(exc: BaseException, attempt: int, maximum: int) -> str:
+    if isinstance(exc, BillingUncertainError):
+        return "billing_uncertain"
     if isinstance(exc, ChatParseError) or _is_pydantic_validation_error(exc):
         return "parse_error"
     status = _status_code(exc)
