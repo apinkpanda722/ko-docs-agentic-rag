@@ -159,7 +159,16 @@
     {
       "step": 11,
       "name": "failure-analysis",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-02T15:26:04+0900",
+      "summary": "m7_failures.py의 classify_failure·run_failures, m7-failures 타깃과 manifest·상세 산출물 구현: 틀린 문항 75건 상호배타 분류, indeterminate 9건·거절 위반 5건 별도 집계. make verify 1891개·전용 테스트 37개·dry-run 통과; API 호출·커밋 없음.",
+      "completed_at": "2026-10-02T15:55:00+0900",
+      "usage": {
+        "input_tokens": 2169321,
+        "cached_input_tokens": 2061952,
+        "output_tokens": 17316,
+        "attempts": 1
+      }
     },
     {
       "step": 12,
