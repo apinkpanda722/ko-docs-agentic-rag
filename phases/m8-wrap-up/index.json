@@ -74,16 +74,21 @@
     },
     {
       "step": 5,
-      "name": "rerank-core",
+      "name": "ui-streaming",
       "status": "pending"
     },
     {
       "step": 6,
-      "name": "rerank-dev",
+      "name": "rerank-core",
       "status": "pending"
     },
     {
       "step": 7,
+      "name": "rerank-dev",
+      "status": "pending"
+    },
+    {
+      "step": 8,
       "name": "rerank-test",
       "status": "pending"
     }

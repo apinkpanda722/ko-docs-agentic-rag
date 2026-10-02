@@ -27,7 +27,7 @@
 
 ## 이 phase(m8-wrap-up) 개요
 
-PRD M8: 공개 가능한 마무리(공개 전환 점검, ADR 정리, Streamlit GUI, README)와 리랭커 실험(H8). 속도 우선이라 필수 항목(step 0~4)을 먼저 끝내 언제든 공개할 수 있는 상태를 만들고, 리랭커(step 5~7)는 그 뒤에 붙인다.
+PRD M8: 공개 가능한 마무리(공개 전환 점검, ADR 정리, Streamlit GUI, README)와 리랭커 실험(H8). 속도 우선이라 필수 항목(step 0~5)을 먼저 끝내 언제든 공개할 수 있는 상태를 만들고, 리랭커(step 6~8)는 그 뒤에 붙인다.
 
 | step | name | 내용 |
 |---|---|---|
@@ -36,13 +36,14 @@ PRD M8: 공개 가능한 마무리(공개 전환 점검, ADR 정리, Streamlit G
 | 2 | `docs-cleanup` | ADR 상태·색인, M7 정정(패키지명·parse_error 오프라인 분류), 별표 한계를 M8 결과 문서로 |
 | 3 | `streamlit-ui` | Streamlit 데모 GUI(질의 화면·결과표 뷰어), answer()만 호출 |
 | 4 | `readme` | README 생성기(`make readme`)와 README.md. H8은 결과가 없으면 '미실행' |
-| 5 | `rerank-core` | 리랭커 상수·CrossEncoder 래퍼·순서 재배열 순수 함수·`make rerank-models` |
-| 6 | `rerank-dev` | 후보·점수 캐시, max_length 확정, dev 격자, freeze |
-| 7 | `rerank-test` | test 1회 잠금, 대조군 일치 검사, 짝 비교 부트스트랩, 지연, 결과 문서 |
+| 5 | `ui-streaming` | parse_error 재분류(원장 근거), 최종 답변 실제 스트리밍·도구 호출 실시간 표시, 폭주 재현 실행 코드(`make m8-stream-repro`) |
+| 6 | `rerank-core` | 리랭커 상수·CrossEncoder 래퍼·순서 재배열 순수 함수·`make rerank-models` |
+| 7 | `rerank-dev` | 후보·점수 캐시, max_length 확정, dev 격자, freeze |
+| 8 | `rerank-test` | test 1회 잠금, 대조군 일치 검사, 짝 비교 부트스트랩, 지연, 결과 문서 |
 
 고정 전제(모든 step 공통):
 - M5~M7 확정 결과와 고정 설정(m5 `config_hash` `455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d`, `data/manifest/m6_config.json`, `data/manifest/m7_config.json`)은 소급 변경하지 않는다. M8 실험은 새 구성으로 따로 기록하고 기존 판정과 섞지 않는다.
-- M8 결과 문서 파일명 날짜는 고정값 `2026-10-03`이다: `docs/results/2026-10-03-m8-wrap-up.md`(step 2), `2026-10-03-m8-public-readiness.md`(step 1), `2026-10-03-m8-rerank.md`(step 7).
+- M8 결과 문서 파일명 날짜는 고정값 `2026-10-03`이다: `docs/results/2026-10-03-m8-wrap-up.md`(step 2), `2026-10-03-m8-public-readiness.md`(step 1), `2026-10-03-m8-rerank.md`(step 8).
 - 이 phase의 step에서는 실제 API 호출, 모델·데이터 다운로드, 패키지 설치, `.env` 열람을 하지 않는다. 사용자가 직접 실행하는 명령은 step 파일이 아니라 사용자가 실행한다.
 
 ## 작업
@@ -56,7 +57,7 @@ M8 문서 정리 네 가지를 한 step에서 한다: (A) ADR 상태·상호 참
 - 테스트(`tests/eval/test_m8_adr_index.py`): 모든 ADR 제목에 상태 줄이 있고 허용 값이다 / 색인에 모든 ADR 번호가 순서대로 있다 / 본문의 `ADR-NNN` 참조가 모두 존재하는 ADR을 가리킨다 / '대체됨(→ADR-N)'·'변경: ADR-N' 상태가 가리키는 ADR이 존재한다 / 커밋된 `ADR-INDEX.md`가 생성 결과와 같다(최신 여부). 테스트는 git 상태에 의존하지 않는다. '상태 줄 추가 외에 본문이 바뀌지 않았는지'는 테스트가 아니라 작업 후 `git diff --stat docs/ADR.md`가 추가 줄만 있는지(삭제 0줄) 직접 확인해 최종 보고에 적는다.
 
 ### B. M7 잔여 정정 → `docs/results/2026-10-03-m8-wrap-up.md`
-이 문서는 생성기 `src/kodocs/eval/m8_wrap_report.py`(`make m8-wrap-report`, 네트워크 없음)가 `<!-- BEGIN generated -->` 영역을 쓰고, '사용자 보존 영역'은 건드리지 않는다(`m7_report.py` 방식). 이 영역은 step 7 이후 사용자가 직접 보충할 수 있다.
+이 문서는 생성기 `src/kodocs/eval/m8_wrap_report.py`(`make m8-wrap-report`, 네트워크 없음)가 `<!-- BEGIN generated -->` 영역을 쓰고, '사용자 보존 영역'은 건드리지 않는다(`m7_report.py` 방식). 이 영역은 step 8 이후 사용자가 직접 보충할 수 있다.
 
 1. **패키지명 정정**(M7 지연 한계 3). M7 환경 기록에 `FlagEmbedding`·`opensearch-py`가 미설치로 적혀 있으나 이는 라이브러리 선택과 다른 수집 목록 오류이고 실제 사용 라이브러리는 sentence-transformers(임베딩)와 httpx(OpenSearch 직접 HTTP 호출)다. 생성기가 `data/manifest/m7_latency.json`의 기록값, `uv.lock`의 실제 버전, `src/`의 import 위치를 읽어 표(기록값 / 실제 사용 / 근거 파일·줄)로 만든다. 값을 손으로 적지 않는다. **M7 manifest(`m7_latency.json` 등 해시 대상)는 수정하지 않는다**(FP-053). 임베딩 revision은 `data/manifest/m5_config.json`에서 읽는다.
 2. **M7 결과 문서 한 줄 참조**: `docs/results/2026-10-02-m7-answer-eval.md`의 '한계(사용자 보존 영역)' 중 '지연 한계 3(환경 기록)' 항목 **끝에 한 문장만** 추가한다: ` M8 정정 상세: [2026-10-03-m8-wrap-up.md](2026-10-03-m8-wrap-up.md).` 생성 영역(`BEGIN/END generated`)과 다른 항목은 바꾸지 않는다. `make m7-report`는 실행하지 않는다(생성 영역이 다시 쓰인다). `git diff docs/results/2026-10-02-m7-answer-eval.md`가 정확히 이 한 줄 변경인지 확인해 보고한다.
@@ -127,7 +128,7 @@ git diff --stat docs/ADR.md docs/results/2026-10-02-m7-answer-eval.md   # ADR.md
 - 패키지명 정정 표를 손으로 쓰지 마라. 이유: 값은 manifest·`uv.lock`·소스에서 생성한다(손으로 옮기면 어긋난다).
 - parse_error 분석 출력에 답변 본문·원시 모델 출력을 넣지 마라. 이유: 비커밋 원문 보호(실제 규정 근거가 답변에 섞일 수 있다, ADR-002).
 - `.env` 파일을 열거나 출력하지 마라. 이유: API 키 유출 방지(AGENTS.md CRITICAL). 필요한 변수 이름은 `.env.example`에만 적는다.
-- `data/raw/`·`data/interim/`의 내용을 커밋하거나 수정하지 마라(읽기는 필드 이름 확인용으로만 허용). 이유: 원문·정제 산출물은 비커밋이다(ADR-002). 예외: step 6·7이 만드는 `data/interim/m8/` 캐시 쓰기만 허용되며 이 경로도 커밋하지 않는다.
+- `data/raw/`·`data/interim/`의 내용을 커밋하거나 수정하지 마라(읽기는 필드 이름 확인용으로만 허용). 이유: 원문·정제 산출물은 비커밋이다(ADR-002). 예외: step 5·7·8이 만드는 코드가 **사용자 실행 시** 쓰는 `data/interim/m8/`(재현 원시 출력·후보·점수 캐시)만 허용되며 이 경로도 커밋하지 않는다. 에이전트가 step 안에서 이 경로에 쓰지는 않는다(실행은 사용자).
 - 실제 API 호출, 모델·데이터 다운로드, 패키지 설치를 하지 마라. `pyproject.toml`·`uv.lock`도 수정하지 마라(step 3의 Makefile `verify` 줄 변경은 별개). 이유: 사용자가 직접 실행·승인한다(ADR-014, FP-040). 필요한 패키지가 없으면 `blocked`로 보고한다.
 - 실측 인덱스(`kodocs-m5-composite-fixed`·`-structural`, `kodocs-m5-pypdf-structural`, `kodocs-m5-upstage-structural`)에 쓰기·삭제를 하지 마라. 통합 테스트가 필요하면 uuid 붙은 임시 이름만 쓴다. 이유: FP-046(M5 실측 중 통합 테스트가 실측 인덱스를 삭제함).
 - test를 `RERUN_REASON` 없이 다시 실행하거나, 실행 잠금을 우회하는 코드를 만들지 마라. 이유: 사전 등록한 1회 실행 규칙(ADR-026, M5·M6·M7 동일 규칙).

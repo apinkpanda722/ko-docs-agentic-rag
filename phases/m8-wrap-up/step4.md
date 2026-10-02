@@ -26,7 +26,7 @@
 
 ## 이 phase(m8-wrap-up) 개요
 
-PRD M8: 공개 가능한 마무리(공개 전환 점검, ADR 정리, Streamlit GUI, README)와 리랭커 실험(H8). 속도 우선이라 필수 항목(step 0~4)을 먼저 끝내 언제든 공개할 수 있는 상태를 만들고, 리랭커(step 5~7)는 그 뒤에 붙인다.
+PRD M8: 공개 가능한 마무리(공개 전환 점검, ADR 정리, Streamlit GUI, README)와 리랭커 실험(H8). 속도 우선이라 필수 항목(step 0~5)을 먼저 끝내 언제든 공개할 수 있는 상태를 만들고, 리랭커(step 6~8)는 그 뒤에 붙인다.
 
 | step | name | 내용 |
 |---|---|---|
@@ -35,23 +35,24 @@ PRD M8: 공개 가능한 마무리(공개 전환 점검, ADR 정리, Streamlit G
 | 2 | `docs-cleanup` | ADR 상태·색인, M7 정정(패키지명·parse_error 오프라인 분류), 별표 한계를 M8 결과 문서로 |
 | 3 | `streamlit-ui` | Streamlit 데모 GUI(질의 화면·결과표 뷰어), answer()만 호출 |
 | 4 | `readme` | README 생성기(`make readme`)와 README.md. H8은 결과가 없으면 '미실행' |
-| 5 | `rerank-core` | 리랭커 상수·CrossEncoder 래퍼·순서 재배열 순수 함수·`make rerank-models` |
-| 6 | `rerank-dev` | 후보·점수 캐시, max_length 확정, dev 격자, freeze |
-| 7 | `rerank-test` | test 1회 잠금, 대조군 일치 검사, 짝 비교 부트스트랩, 지연, 결과 문서 |
+| 5 | `ui-streaming` | parse_error 재분류(원장 근거), 최종 답변 실제 스트리밍·도구 호출 실시간 표시, 폭주 재현 실행 코드(`make m8-stream-repro`) |
+| 6 | `rerank-core` | 리랭커 상수·CrossEncoder 래퍼·순서 재배열 순수 함수·`make rerank-models` |
+| 7 | `rerank-dev` | 후보·점수 캐시, max_length 확정, dev 격자, freeze |
+| 8 | `rerank-test` | test 1회 잠금, 대조군 일치 검사, 짝 비교 부트스트랩, 지연, 결과 문서 |
 
 고정 전제(모든 step 공통):
 - M5~M7 확정 결과와 고정 설정(m5 `config_hash` `455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d`, `data/manifest/m6_config.json`, `data/manifest/m7_config.json`)은 소급 변경하지 않는다. M8 실험은 새 구성으로 따로 기록하고 기존 판정과 섞지 않는다.
-- M8 결과 문서 파일명 날짜는 고정값 `2026-10-03`이다: `docs/results/2026-10-03-m8-wrap-up.md`(step 2), `2026-10-03-m8-public-readiness.md`(step 1), `2026-10-03-m8-rerank.md`(step 7).
+- M8 결과 문서 파일명 날짜는 고정값 `2026-10-03`이다: `docs/results/2026-10-03-m8-wrap-up.md`(step 2), `2026-10-03-m8-public-readiness.md`(step 1), `2026-10-03-m8-rerank.md`(step 8).
 - 이 phase의 step에서는 실제 API 호출, 모델·데이터 다운로드, 패키지 설치, `.env` 열람을 하지 않는다. 사용자가 직접 실행하는 명령은 step 파일이 아니라 사용자가 실행한다.
 
 ## 작업
 
 면접관이 5분 안에 읽는 한국어 README로 **기존 `README.md`(9줄)를 재구성한다**(새로 만들지 않는다; 아래 '기존 README 보존' 참조). 수치는 모두 manifest에서 코드가 생성하고 손으로 옮기지 않는다. 리랭커(H8) 결과는 아직 없을 수 있으므로 **세 상태**로 처리한다. README는 `README.md`(저장소 루트), 생성기는 `src/kodocs/eval/m8_readme.py`, 타깃은 `make readme`다.
 
-### 1. 계약 모듈 `src/kodocs/eval/m8_contract.py` (step 7이 이 계약대로 결과를 쓴다)
-H8 결과의 경로·필수 필드·검증을 한 곳에 정의한다. step 7의 `m8_test.py`와 이 README 생성기가 같은 상수를 import한다.
+### 1. 계약 모듈 `src/kodocs/eval/m8_contract.py` (step 8이 이 계약대로 결과를 쓴다)
+H8 결과의 경로·필수 필드·검증을 한 곳에 정의한다. step 8의 `m8_test.py`와 이 README 생성기가 같은 상수를 import한다.
 - 경로 상수: `FREEZE_PATH = data/manifest/m8_config.json`, `RESULTS_DIR = data/manifest/m8_test_results/`, `RESULT_PATH = RESULTS_DIR/run-01.json`, `RUNS_PATH = data/manifest/m8_test_runs.jsonl`, `LATENCY_PATH = data/manifest/m8_latency.json`.
-- `required_result_keys` 및 `validate_result(payload) -> None`(없는 키 → `ContractError`): 최소 키는 `h8`(verdict 문구, `diff`, `ci_low`, `ci_high`, `n`), `gold`·`silver`(대조군·재정렬 평균 NDCG@10·Recall@10), `harm`(순위가 나빠진 문항 수: gold·silver), `selected`(depth, fusion), `max_length`, `truncated_ratio`(test), `device`, `raw`(`sha256`, `rows`), `config_hash`다. 키 이름은 이 모듈이 정의하는 것이 계약이며 step 7은 이를 따른다. 지연(`m8_latency.json`)의 필수 키(`rerank_s` P50·P95·max, `conservative_sum_s`, `margin_to_5s`, `simple_p95_m7`)도 같이 정의한다.
+- `required_result_keys` 및 `validate_result(payload) -> None`(없는 키 → `ContractError`): 최소 키는 `h8`(verdict 문구, `diff`, `ci_low`, `ci_high`, `n`), `gold`·`silver`(대조군·재정렬 평균 NDCG@10·Recall@10), `harm`(순위가 나빠진 문항 수: gold·silver), `selected`(depth, fusion), `max_length`, `truncated_ratio`(test), `device`, `raw`(`sha256`, `rows`), `config_hash`다. 키 이름은 이 모듈이 정의하는 것이 계약이며 step 8은 이를 따른다. 지연(`m8_latency.json`)의 필수 키(`rerank_s` P50·P95·max, `conservative_sum_s`, `margin_to_5s`, `simple_p95_m7`)도 같이 정의한다.
 - **H8 상태 판정** `load_h8_state(root=Path(".")) -> H8State`:
   1. **미실행**: (a) `RESULTS_DIR`이 없고 `RUNS_PATH`도 없다(freeze 파일 `m8_config.json`만 있어도 '미실행'이다). 이 상태는 오류가 아니다.
   2. **결과**: `RESULT_PATH`(재실행이 있으면 `RUNS_PATH`의 최신 completed 기록이 가리키는 `run-NN.json`; 첫 실행 값도 병기)가 있고 검증을 통과한다. 검증은 두 층이다. (가) **커밋 쪽 검증(필수)**: `validate_result` 통과 / `RUNS_PATH`의 최신 completed 기록의 `result_sha256`이 `RESULT_PATH`의 SHA-256과 같다 / 결과의 `raw.sha256`·`raw.rows`가 그 기록의 값과 같고 형식이 올바르다 / `config_hash`가 `m8_config.json`의 해시와 같다. (나) **로컬 원본 검증(원본이 있을 때만)**: 비커밋 원본 `data/interim/m8/test/run-01/runs.jsonl`이 존재하면 SHA-256·행 수가 기록과 같아야 한다(`m7_rawhash.verify_fingerprint` 방식). 원본이 로컬에 없으면(다른 clone) 이 층은 `local_raw_checked=false`로 표시하고 실패로 세지 않는다 — 단 README에 "원본 해시 대조 생략(로컬 원본 없음)"을 표시한다.
@@ -82,7 +83,7 @@ H8 결과의 경로·필수 필드·검증을 한 곳에 정의한다. step 7의
 
 ### 5. 테스트 (`tests/eval/test_m8_readme.py`)
 - fixture manifest로 생성한 README 생성 영역의 핵심 수치(H5 차이·CI, κ, 단순 RAG P95, H6 누설 건수, 사다리 행 하나)가 manifest 값과 문자열로 일치한다.
-- 실제 저장소의 `README.md` 생성 영역이 `make readme` 결과와 같다(최신 여부) — 이후 step 7에서 H8 결과가 생기면 사용자가 `make readme`를 실행하지 않았을 때 이 테스트가 실패해야 한다.
+- 실제 저장소의 `README.md` 생성 영역이 `make readme` 결과와 같다(최신 여부) — 이후 step 8에서 H8 결과가 생기면 사용자가 `make readme`를 실행하지 않았을 때 이 테스트가 실패해야 한다.
 - H8 세 상태가 README에 올바르게 반영된다(미실행 문구 / 결과 표 / 오류로 멈춤).
 - 이미지 파일 유무에 따른 "촬영 예정" 표시.
 - **`## 개발 방식` 절과 하네스 프레임워크 링크·`scripts/README.md` 링크가 존재하고 '문서 링크' 앞에 있음, 안내 인용문("이 README는 구현이 진행되면서")이 없음**, 한계 절에 n-gram 제외 항목과 ADR-028·M5 결과 문서 링크가 있음, 손으로 쓴 영역에 결과 수치가 없음, 400줄 이하, Mermaid 블록 존재, `Makefile` 타깃 참조 존재.
@@ -120,7 +121,7 @@ make verify   # ruff + pytest 통과
 - 비커밋 원문(`data/interim`, 실제 규정 조문)을 README에 인용하지 마라. 이유: ADR-002. 실제 규정은 규정명·조 번호까지만 언급한다.
 - 로컬 원본이 없는 clone에서 실패하도록 H8 검증을 만들지 마라. 이유: 원본 jsonl은 비커밋이다. 커밋된 manifest 쪽 검증은 필수로, 로컬 원본 검증은 원본이 있을 때만 수행한다(FP-053의 취지: 원본 해시는 실행 시점에 기록하고, 있을 때 대조).
 - `.env` 파일을 열거나 출력하지 마라. 이유: API 키 유출 방지(AGENTS.md CRITICAL). 필요한 변수 이름은 `.env.example`에만 적는다.
-- `data/raw/`·`data/interim/`의 내용을 커밋하거나 수정하지 마라(읽기는 필드 이름 확인용으로만 허용). 이유: 원문·정제 산출물은 비커밋이다(ADR-002). 예외: step 6·7이 만드는 `data/interim/m8/` 캐시 쓰기만 허용되며 이 경로도 커밋하지 않는다.
+- `data/raw/`·`data/interim/`의 내용을 커밋하거나 수정하지 마라(읽기는 필드 이름 확인용으로만 허용). 이유: 원문·정제 산출물은 비커밋이다(ADR-002). 예외: step 5·7·8이 만드는 코드가 **사용자 실행 시** 쓰는 `data/interim/m8/`(재현 원시 출력·후보·점수 캐시)만 허용되며 이 경로도 커밋하지 않는다. 에이전트가 step 안에서 이 경로에 쓰지는 않는다(실행은 사용자).
 - 실제 API 호출, 모델·데이터 다운로드, 패키지 설치를 하지 마라. `pyproject.toml`·`uv.lock`도 수정하지 마라(step 3의 Makefile `verify` 줄 변경은 별개). 이유: 사용자가 직접 실행·승인한다(ADR-014, FP-040). 필요한 패키지가 없으면 `blocked`로 보고한다.
 - 실측 인덱스(`kodocs-m5-composite-fixed`·`-structural`, `kodocs-m5-pypdf-structural`, `kodocs-m5-upstage-structural`)에 쓰기·삭제를 하지 마라. 통합 테스트가 필요하면 uuid 붙은 임시 이름만 쓴다. 이유: FP-046(M5 실측 중 통합 테스트가 실측 인덱스를 삭제함).
 - test를 `RERUN_REASON` 없이 다시 실행하거나, 실행 잠금을 우회하는 코드를 만들지 마라. 이유: 사전 등록한 1회 실행 규칙(ADR-026, M5·M6·M7 동일 규칙).
