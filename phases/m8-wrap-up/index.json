@@ -89,7 +89,16 @@
     {
       "step": 6,
       "name": "rerank-core",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-02T21:24:02+0900",
+      "summary": "rerank.py에 고정 모델 상수·오프라인 검증·CrossEncoder 래퍼(Identity 활성화, 명시 장치)·P99 길이 선택·alone/RRF 재정렬 구현; 테스트·rerank-models·AGENTS 안내 추가, make verify 2164 tests 및 dry-run 통과, 다운로드 없이 M5~M7 보존.",
+      "completed_at": "2026-10-02T21:34:50+0900",
+      "usage": {
+        "input_tokens": 2124657,
+        "cached_input_tokens": 2003456,
+        "output_tokens": 13085,
+        "attempts": 1
+      }
     },
     {
       "step": 7,
