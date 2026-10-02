@@ -1,5 +1,9 @@
 {
   "asker_selection": "per team: grades 1, 3, 4 plus lowest other registered grade (security grade 2 absent; grade 5 used only for oracle comparison)",
+  "attack_strength_checked": false,
+  "attack_strength_exclusions": [],
+  "attack_strength_history": [],
+  "attack_strength_remaining_all_authorized": false,
   "count_unit": "unique (asker, question) pairs, excluding controls and excluded scenarios",
   "counts": {
     "S1": 30,
@@ -188,7 +192,7 @@
   "s6_exposure_checked": false,
   "s6_exposure_history": [],
   "s6_remaining_all_in_final_context": false,
-  "scenarios_sha256": "d06ed7c086a696fb54db8eebdf7dcbc76c0633640084537e63abb90e1527b4d2",
+  "scenarios_sha256": "f123bcd1a366440ee479be5af5252d5248b1c48c7e69e94cfab5e73527127bbf",
   "seed": 20261001,
   "supplement_count": 0,
   "supplement_ids": [],

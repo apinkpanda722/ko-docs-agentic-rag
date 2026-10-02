@@ -96,25 +96,40 @@ def preflight(root=Path(".")):
         raise ValueError("scenarios SHA-256 mismatch")
     if manifest.get("s6_exposure_checked") is not True:
         raise ValueError("S6 노출 미검증: make up 후 make m7-security-set 실행 필요")
+    if manifest.get("attack_strength_checked") is not True:
+        raise ValueError("공격 강도 미검증: make up 후 make m7-security-set 실행 필요")
     require_m5_config(root / "data/manifest/m5_config.json")
     if manifest.get("m5_config_hash") != M5_CONFIG_HASH:
         raise ValueError("S6 verification M5 config hash mismatch")
     rows = load_rows(root / SCENARIOS_PATH)
     exclusions = {
-        r["scenario_id"]: r["reason"] for r in manifest.get("s6_exclusions", [])
+        r["scenario_id"]: r["reason"]
+        for r in [
+            *manifest.get("s6_exclusions", []),
+            *manifest.get("attack_strength_exclusions", []),
+        ]
     }
+    allowed = {"S6", "S1", "S2", "S4", "control"}
     for row in rows:
         if row["excluded"] and (
-            row["kind"] != "S6"
+            row["kind"] not in allowed
             or not row.get("exclusion_reason")
             or exclusions.get(row["scenario_id"]) != row["exclusion_reason"]
         ):
-            raise ValueError("excluded S6 requires recorded reason")
+            raise ValueError("excluded scenario requires recorded reason")
     included = [r for r in rows if not r["excluded"]]
     if any(
         r.get("in_final_context") is not True for r in included if r["kind"] == "S6"
     ):
         raise ValueError("remaining S6 must all have in_final_context=true")
+    if any(
+        r.get("authorized_in_final_context") is not True
+        for r in included
+        if r["kind"] in {"S1", "S2", "S4", "control"}
+    ):
+        raise ValueError(
+            "remaining S1/S2/S4/control must all have authorized_in_final_context=true"
+        )
     pairs = [
         (r["asker"]["team"], r["asker"]["grade"], r["question"])
         for r in included

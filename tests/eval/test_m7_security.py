@@ -67,6 +67,7 @@ def project(tmp_path):
             "excluded": False,
             "exclusion_reason": None,
             "in_final_context": None,
+            "authorized_in_final_context": True,
             "asker": USER,
             "question": f"질문 {i}",
             "target_doc_ids": ["syn-hidden"],
@@ -91,6 +92,7 @@ def project(tmp_path):
             control=True,
             question="대조 질문",
             asker=OWNER,
+            authorized_in_final_context=True,
         ),
     ]
     rows[-2:-2] = [
@@ -103,8 +105,10 @@ def project(tmp_path):
         {
             "scenarios_sha256": sha256_file(tmp_path / security.SCENARIOS_PATH),
             "s6_exposure_checked": True,
+            "attack_strength_checked": True,
             "m5_config_hash": M5_CONFIG_HASH,
             "s6_exclusions": [],
+            "attack_strength_exclusions": [],
             "s6_exposure_history": [],
         },
     )
@@ -213,6 +217,7 @@ def test_m7_security_all_refusal_not_vacuous(project):
     "change, message",
     [
         ({"s6_exposure_checked": False}, "S6"),
+        ({"attack_strength_checked": False}, "공격 강도"),
         ({"scenarios_sha256": "wrong"}, "scenarios"),
         ({"m5_config_hash": "wrong"}, "M5"),
     ],
@@ -225,12 +230,20 @@ def test_m7_security_set_preflight(project, change, message):
 
 
 @pytest.mark.parametrize(
-    "mode", ["remaining_false", "under_200", "excluded_without_reason"]
+    "mode",
+    [
+        "remaining_false",
+        "under_200",
+        "excluded_without_reason",
+        "attack_not_authorized",
+    ],
 )
 def test_m7_security_remaining_s6_and_denominator(project, mode):
     rows = security.load_rows(project / security.SCENARIOS_PATH)
     if mode == "remaining_false":
         rows[-2]["in_final_context"] = False
+    elif mode == "attack_not_authorized":
+        rows[0]["authorized_in_final_context"] = False
     elif mode == "under_200":
         rows = rows[3:]
     else:
@@ -256,6 +269,50 @@ def test_m7_security_excluded_s6_allowed(project):
     )
     write(project / security.SET_PATH, manifest)
     assert len(security.preflight(project)[0]) == 230
+
+
+def _exclude_attack(project, count):
+    rows = security.load_rows(project / security.SCENARIOS_PATH)
+    exclusions = []
+    for row in rows[:count]:
+        row.update(
+            excluded=True,
+            authorized_in_final_context=False,
+            exclusion_reason="authorized_not_in_final_context",
+        )
+        exclusions.append(
+            {
+                "scenario_id": row["scenario_id"],
+                "reason": "authorized_not_in_final_context",
+            }
+        )
+    jsonl(project / security.SCENARIOS_PATH, rows)
+    manifest = json.loads((project / security.SET_PATH).read_text())
+    manifest.update(
+        scenarios_sha256=sha256_file(project / security.SCENARIOS_PATH),
+        attack_strength_exclusions=exclusions,
+    )
+    write(project / security.SET_PATH, manifest)
+
+
+def test_m7_security_excluded_attack_strength_allowed_when_recorded(project):
+    _exclude_attack(project, 1)  # 200 non-control scenarios remain
+    assert len(security.preflight(project)[0]) == 230
+
+
+def test_m7_security_attack_strength_exclusions_cannot_go_under_200(project):
+    _exclude_attack(project, 2)
+    with pytest.raises(ValueError, match="200"):
+        security.preflight(project)
+
+
+def test_m7_security_unrecorded_attack_exclusion_rejected(project):
+    _exclude_attack(project, 1)
+    manifest = json.loads((project / security.SET_PATH).read_text())
+    manifest["attack_strength_exclusions"] = []
+    write(project / security.SET_PATH, manifest)
+    with pytest.raises(ValueError, match="reason"):
+        security.preflight(project)
 
 
 def test_m7_security_m6_and_monthly_budget(project):
