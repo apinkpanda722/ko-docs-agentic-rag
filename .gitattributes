@@ -1,0 +1,3 @@
+# 사람 채점 CSV는 등록한 SHA-256과 바이트가 같아야 하므로 줄바꿈 변환을 하지 않는다.
+data/golden/m7_human/*.csv -text
+data/golden/m7_leak_review/*.csv -text

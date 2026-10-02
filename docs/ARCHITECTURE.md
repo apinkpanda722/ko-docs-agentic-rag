@@ -1,5 +1,7 @@
 # 아키텍처
 
+보안 경계·위협·완화와 검증 매핑은 [THREAT_MODEL.md](THREAT_MODEL.md)를 참조한다.
+
 ## 디렉토리 구조
 ```
 src/kodocs/

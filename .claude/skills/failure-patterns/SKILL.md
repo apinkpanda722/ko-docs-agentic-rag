@@ -106,6 +106,13 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 ### FP-022 조합 생성한 가상 이름이 실존 공인과 겹칠 수 있음
 - 음절 조합으로 만든 가상 인물 이름이 전직 대통령 이름과 같았다(M3 step 1) → 열린 목록(실존 인물 명단) 대조가 아니라 **이름 풀 설계(요즘식·순우리말 이름) + 사람 검토(`make seed-names` 후 `--rename PERSON_ID`)**로 막고, 인물은 이름이 아니라 `person_id`로 참조한다. 강제 수단: `data/seed/README.md` 인물 명단 검토 절차, `tests/synth/test_bootstrap_people.py`.
 
+### FP-051 결정론 채점 전에 정답 값 형태를 확인하지 않음
+- **증상**: M6 정답 값 포함률이 `answer_values`의 문장형 값(어미로 끝나는 값)에서 어미 차이만으로 0점이 되어 dev 분모 56 중 43문항이 네 조합 모두 0점이었다.
+- **원인**: 결정론 규칙을 정하기 전에 정답 값 형태를 확인하지 않았다.
+- **규칙**: 결정론 지표로 LLM 답변을 채점하는 규칙은 정답 값 형태(짧은 값/문장형)를 먼저 확인하고 분모를 정한다. 분류별 건수를 manifest에 기록한다.
+- **강제 수단**: M7 step 8의 c3 값 형태 분류·제외 수 기록 테스트
+- **출처**: M6 결과 문서 `docs/results/2026-10-01-m6-agent-mcp.md` 한계 절
+
 ## D. 배치 수집·기록
 
 ### FP-030 항목 하나의 실패가 배치 전체를 멈춤
@@ -213,3 +220,37 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **규칙**: 식별자는 적재 시 정규식으로 추출해 `keyword` 필드에 넣고 `term`으로 조회한다.
 - **강제 수단**: M5에서 테스트로 승격
 - **출처**: M0 OpenSearch 확인
+
+### FP-052 누설률 0%가 모든 질문 거절로 달성될 수 있음
+- **증상**: 모든 질문을 거절하는 시스템은 누설률이 0%다.
+- **규칙**: 누설률은 항상 권한 있는 대조군의 응답률·오거절률과 함께 보고하고 비공허성 테스트를 둔다.
+- **강제 수단**: M7 step 9 mock 테스트
+- **출처**: M7 설계(ADR-030·M7-L1·L4)
+
+### FP-053 비커밋 실행 원본의 해시를 커밋하지 않아 입력 검증이 막힘
+- **증상**: M7 step 3에서 M6 dev `runs.jsonl`의 SHA-256(`0f25104b…`)이 `m6_config.json`의 `m6_dev_sha256`(`af8f0bb1…`)과 달라 입력 검증이 막혔다. 이 필드는 `runs.jsonl`이 아니라 `m6_dev.json`의 해시였다.
+- **원인**: 실행 원본(`data/interim/**/runs.jsonl`)이 비커밋인데 원본 자체의 해시를 커밋 manifest에 남기지 않았다. 사전 등록 규칙이 파생 manifest의 해시를 원본 해시로 가정했다.
+- **규칙**: 실행 원본 산출물이 비커밋이면 실행 시점(완료·정지 시)에 원본 파일의 SHA-256과 행 수를 커밋 manifest에 남긴다. 파생 manifest의 해시로는 원본을 고정할 수 없다. 이후 분석은 현재 원본을 기록과 대조한 뒤에만 진행한다. 해시 필드 이름이 가리키는 파일을 규칙에 쓰기 전에 코드로 확인한다(FP-011).
+- **강제 수단**: M7 step 3 `verify_m6_inputs`(`analyze_dev()` 재실행 비교), step 5 `m7_rawhash`(pilot·grade fingerprint)와 step 9·10 원본 해시 테스트, step 6·13의 분석·보고 전 대조.
+- **출처**: M7 step 3 blocked(M6 dev `runs.jsonl` 사례)
+
+### FP-054 채점 캐시 키가 답변 텍스트만 지문으로 써서 다른 답변의 점수를 복사함
+- **증상**: M7 채점에서 같은 질문의 두 시스템·두 모델 답변 텍스트가 같으면 캐시 키(`answer_sha256`, 루브릭, 설정, 반복)가 같아 13개 답변이 채점되지 않고 다른 답변의 점수를 받았다(299개 중 286개만 채점, 897회 대신 858회). 13쌍 중 4쌍은 인용 근거가 달라 충실성 점수가 틀린 값이었다. 형식 오류(parse_error) 행도 완료로 캐시되어 재시도되지 않았다.
+- **원인**: 캐시 키가 채점 요청 전체가 아니라 입력의 일부(답변 텍스트)만 포함했다. FP-033(멱등성 키와 출력 키 불일치)의 변형이다.
+- **규칙**: 채점 캐시 키는 채점 요청 전체를 지문으로 쓴다: 답변 ID와 요청 텍스트 해시(`request_sha256`)를 키에 넣는다. 답변마다 자기 입력으로 반복 채점하고, 점수 집계는 행의 `answer_id`가 대상 답변과 같을 때만 쓴다. 완료로 캐시하는 상태는 재호출해도 결과가 바뀌지 않는 것(성공, 과금 불확실)만이고, 형식 오류는 같은 슬롯을 정해진 횟수만 재시도한다. 키 필드를 바꾸면 기존 행은 원본을 덮어쓰지 않고 `answer_id`로 해시를 다시 계산해 메모리에서 보강한다.
+- **강제 수단**: `tests/eval/test_m7_grade.py`(`test_m7_grade_equal_answers_with_different_evidence_do_not_collide`, `test_m7_grade_equal_requests_are_still_graded_per_answer`, `test_m7_grade_legacy_rows_are_rekeyed_in_memory_without_regrading`, `test_m7_grade_legacy_collision_regrades_only_the_answer_without_rows`, `test_m7_grade_parse_error_slot_is_retried_once_and_original_row_is_kept`)
+- **출처**: M7 `make m7-grade` 실측 후 조언 세션 검증
+
+### FP-055 누설 판정의 식별자가 열람 가능 문서와의 공유 여부를 확인하지 않아 오탐
+- **증상**: M7 보안 실행에서 c2 누설 3건이 모두 오탐이었다. 답변이 말한 제목이 asker가 열람할 수 없는 문서(syn-meeting-037)의 제목이면서 열람할 수 있는 공개 문서(syn-meeting-029)와 같은 제목이었다. 합성 코퍼스에는 공개본·팀본이 같은 제목인 문서쌍이 26개 그룹(56건)이다. 같은 문제로 판정기 입력(`docs_meta`)에 본문이 없어 기존 식별자 고유성 검사도 실제로는 비활성이었다.
+- **원인**: "고유 식별자"를 "asker가 못 읽는 문서가 가진 식별자"로 구현했고, 같은 값을 asker가 읽을 수 있는 문서도 갖고 있는지(고유성)는 제목·ID에 적용하지 않았다. 판정기 테스트 fixture에는 본문이 있었지만 실행기가 본문 없는 메타데이터를 넘겼다.
+- **규칙**: 누설 판정에 쓰는 식별자·제목·사실은 asker가 열람할 수 있는 문서의 본문·제목에도 있는지 확인해 있으면 누설로 세지 않고 제외 건수(`shared_with_readable_excluded`)를 기록한다. 판정기에는 실행기가 실제로 넘기는 입력(본문 포함) 형태로 테스트한다. 결과를 본 뒤 판정기를 고칠 때는 정정 전·후를 모두 남기고 사후 정정임을 공개한다.
+- **강제 수단**: `tests/eval/test_m7_leak.py`(`test_m7_leak_c2_title_shared_with_a_readable_document_is_not_a_leak`, `test_m7_leak_c2_pure_restricted_title_is_still_detected`, `test_m7_leak_c2_title_is_a_leak_when_the_twin_is_also_unreadable`), `tests/eval/test_m7_security.py`(`test_m7_security_rejudge_corrects_shared_titles_and_keeps_both_results`)
+- **출처**: M7 `make m7-security` 결과 확인(sec-0041·sec-0131)
+
+### FP-056 실행 경로의 설정 로딩을 키 주입 테스트로만 검증해 .env 격리 결함을 놓침
+- **증상**: `make m7-latency`가 `MissingAPIKeyError`로 거부됐다(호출 0건, history seq 1 stopped). 실제 실행의 chat factory와 예산 검사가 `load_settings(env=os.environ)`를 썼는데, `config.load_settings`는 env를 명시하면 `.env`를 읽지 않아 `OPENAI_API_KEY`를 못 찾았다. `m7_security.py`는 `load_settings()`를 써서 정상이었다.
+- **원인**: dry-run을 offline으로 두려고 넣은 env 격리를 실제 실행 경로까지 그대로 복사했다. 테스트는 키를 가짜 runtime/chat에 주입해 설정 로딩 자체를 지나가지 않았다.
+- **규칙**: 실행 경로(비용이 드는 호출)의 설정 로딩은 실제 `.env` 경로로 테스트한다: 실제 `load_settings()`가 `.env`에서 키·월 상한을 읽는지, dry-run 경로만 env 격리인지를 확인한다. 키 주입 테스트로는 env 격리 결함을 잡을 수 없다. 단, 테스트가 개발자의 실제 `.env`를 읽지 않도록 `load_dotenv`를 막거나 임시 `.env`로 바꾸고 환경 변수를 복원한다(실패 출력에 키가 찍힐 수 있다).
+- **강제 수단**: `tests/eval/test_m7_latency.py`(`test_m7_latency_real_run_loads_dotenv_and_dry_run_does_not`, `test_m7_latency_real_run_factory_calls_load_settings_without_env`, `test_m7_latency_dry_run_and_execute_budget_paths_differ_only_in_env`, 격리용 autouse fixture)
+- **출처**: M7 `make m7-latency` 첫 실행(MissingAPIKeyError)

@@ -1,0 +1,2231 @@
+{
+  "by_system_set": {
+    "agentic|test_gold": {
+      "by_type": {
+        "identifier": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 1,
+              "ids": [
+                "g-syn-005"
+              ]
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 1,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 1
+        },
+        "multi_doc": {
+          "classes": {
+            "d1": {
+              "count": 1,
+              "ids": [
+                "g-syn-012"
+              ]
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 1,
+          "d1_partial": {
+            "count": 1,
+            "ids": [
+              "g-syn-012"
+            ]
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 1
+        },
+        "permission": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 0,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 0
+        },
+        "semantic": {
+          "classes": {
+            "d1": {
+              "count": 1,
+              "ids": [
+                "g-syn-007"
+              ]
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 1,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 1
+        },
+        "sql": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 0,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 0
+        },
+        "table": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 2,
+              "ids": [
+                "g-real-010",
+                "g-real-012"
+              ]
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 2,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 2
+        },
+        "temporal": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 1,
+              "ids": [
+                "g-real-017"
+              ]
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 1,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {
+            "final_context": {
+              "count": 1,
+              "ids": [
+                "g-real-017"
+              ]
+            }
+          },
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 1
+        },
+        "unanswerable": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 0,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 0
+        }
+      },
+      "classes": {
+        "d1": {
+          "count": 2,
+          "ids": [
+            "g-syn-007",
+            "g-syn-012"
+          ]
+        },
+        "d2": {
+          "count": 0,
+          "ids": []
+        },
+        "generation": {
+          "count": 0,
+          "ids": []
+        },
+        "guardrail_infra": {
+          "count": 0,
+          "ids": []
+        },
+        "indeterminate": {
+          "count": 1,
+          "ids": [
+            "g-real-017"
+          ]
+        },
+        "permission_overrefusal": {
+          "count": 3,
+          "ids": [
+            "g-real-010",
+            "g-real-012",
+            "g-syn-005"
+          ]
+        },
+        "structural_tool_absence": {
+          "count": 0,
+          "ids": []
+        },
+        "tool_argument": {
+          "count": 0,
+          "ids": []
+        },
+        "tool_selection": {
+          "count": 0,
+          "ids": []
+        }
+      },
+      "classification_sum_matches": true,
+      "classification_total": 6,
+      "d1_partial": {
+        "count": 1,
+        "ids": [
+          "g-syn-012"
+        ]
+      },
+      "indeterminate_by_reason": {
+        "final_context": {
+          "count": 1,
+          "ids": [
+            "g-real-017"
+          ]
+        }
+      },
+      "refusal_violations": {
+        "count": 0,
+        "ids": []
+      },
+      "total_runs": 30,
+      "wrong_count": 6
+    },
+    "agentic|test_silver": {
+      "by_type": {
+        "identifier": {
+          "classes": {
+            "d1": {
+              "count": 2,
+              "ids": [
+                "s-syn-003",
+                "s-syn-014"
+              ]
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 4,
+              "ids": [
+                "s-syn-004",
+                "s-syn-005",
+                "s-syn-018",
+                "s-syn-020"
+              ]
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 6,
+          "d1_partial": {
+            "count": 1,
+            "ids": [
+              "s-syn-014"
+            ]
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 6
+        },
+        "multi_doc": {
+          "classes": {
+            "d1": {
+              "count": 1,
+              "ids": [
+                "s-syn-087"
+              ]
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 5,
+              "ids": [
+                "s-syn-075",
+                "s-syn-078",
+                "s-syn-081",
+                "s-syn-085",
+                "s-syn-088"
+              ]
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 1,
+              "ids": [
+                "s-syn-067"
+              ]
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 7,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 7
+        },
+        "permission": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 0,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 0
+        },
+        "semantic": {
+          "classes": {
+            "d1": {
+              "count": 3,
+              "ids": [
+                "s-syn-033",
+                "s-syn-046",
+                "s-syn-050"
+              ]
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 2,
+              "ids": [
+                "s-syn-027",
+                "s-syn-059"
+              ]
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 5,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 5
+        },
+        "sql": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 0,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 0
+        },
+        "table": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 0,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 0
+        },
+        "temporal": {
+          "classes": {
+            "d1": {
+              "count": 1,
+              "ids": [
+                "s-syn-116"
+              ]
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 5,
+              "ids": [
+                "s-syn-101",
+                "s-syn-102",
+                "s-syn-104",
+                "s-syn-114",
+                "s-syn-118"
+              ]
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 6,
+          "d1_partial": {
+            "count": 1,
+            "ids": [
+              "s-syn-116"
+            ]
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 6
+        },
+        "unanswerable": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 0,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 3,
+            "ids": [
+              "s-syn-140",
+              "s-syn-141",
+              "s-syn-146"
+            ]
+          },
+          "wrong_count": 0
+        }
+      },
+      "classes": {
+        "d1": {
+          "count": 7,
+          "ids": [
+            "s-syn-003",
+            "s-syn-014",
+            "s-syn-033",
+            "s-syn-046",
+            "s-syn-050",
+            "s-syn-087",
+            "s-syn-116"
+          ]
+        },
+        "d2": {
+          "count": 0,
+          "ids": []
+        },
+        "generation": {
+          "count": 0,
+          "ids": []
+        },
+        "guardrail_infra": {
+          "count": 5,
+          "ids": [
+            "s-syn-075",
+            "s-syn-078",
+            "s-syn-081",
+            "s-syn-085",
+            "s-syn-088"
+          ]
+        },
+        "indeterminate": {
+          "count": 0,
+          "ids": []
+        },
+        "permission_overrefusal": {
+          "count": 12,
+          "ids": [
+            "s-syn-004",
+            "s-syn-005",
+            "s-syn-018",
+            "s-syn-020",
+            "s-syn-027",
+            "s-syn-059",
+            "s-syn-067",
+            "s-syn-101",
+            "s-syn-102",
+            "s-syn-104",
+            "s-syn-114",
+            "s-syn-118"
+          ]
+        },
+        "structural_tool_absence": {
+          "count": 0,
+          "ids": []
+        },
+        "tool_argument": {
+          "count": 0,
+          "ids": []
+        },
+        "tool_selection": {
+          "count": 0,
+          "ids": []
+        }
+      },
+      "classification_sum_matches": true,
+      "classification_total": 24,
+      "d1_partial": {
+        "count": 2,
+        "ids": [
+          "s-syn-014",
+          "s-syn-116"
+        ]
+      },
+      "indeterminate_by_reason": {},
+      "refusal_violations": {
+        "count": 3,
+        "ids": [
+          "s-syn-140",
+          "s-syn-141",
+          "s-syn-146"
+        ]
+      },
+      "total_runs": 83,
+      "wrong_count": 24
+    },
+    "simple|test_gold": {
+      "by_type": {
+        "identifier": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 1,
+              "ids": [
+                "g-syn-005"
+              ]
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 1,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 1
+        },
+        "multi_doc": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 4,
+              "ids": [
+                "g-real-014",
+                "g-syn-012",
+                "g-syn-015",
+                "g-syn-016"
+              ]
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 4,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 4
+        },
+        "permission": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 0,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 0
+        },
+        "semantic": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 1,
+              "ids": [
+                "g-syn-007"
+              ]
+            },
+            "permission_overrefusal": {
+              "count": 1,
+              "ids": [
+                "g-real-006"
+              ]
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 2,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {
+            "candidates_50": {
+              "count": 1,
+              "ids": [
+                "g-syn-007"
+              ]
+            }
+          },
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 2
+        },
+        "sql": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 4,
+              "ids": [
+                "g-syn-026",
+                "g-syn-027",
+                "g-syn-029",
+                "g-syn-030"
+              ]
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 4,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 4
+        },
+        "table": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 1,
+              "ids": [
+                "g-real-012"
+              ]
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 1,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 1
+        },
+        "temporal": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 1,
+              "ids": [
+                "g-real-017"
+              ]
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 1,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 1
+        },
+        "unanswerable": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 0,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 0
+        }
+      },
+      "classes": {
+        "d1": {
+          "count": 0,
+          "ids": []
+        },
+        "d2": {
+          "count": 0,
+          "ids": []
+        },
+        "generation": {
+          "count": 0,
+          "ids": []
+        },
+        "guardrail_infra": {
+          "count": 0,
+          "ids": []
+        },
+        "indeterminate": {
+          "count": 1,
+          "ids": [
+            "g-syn-007"
+          ]
+        },
+        "permission_overrefusal": {
+          "count": 8,
+          "ids": [
+            "g-real-006",
+            "g-real-012",
+            "g-real-014",
+            "g-real-017",
+            "g-syn-005",
+            "g-syn-012",
+            "g-syn-015",
+            "g-syn-016"
+          ]
+        },
+        "structural_tool_absence": {
+          "count": 4,
+          "ids": [
+            "g-syn-026",
+            "g-syn-027",
+            "g-syn-029",
+            "g-syn-030"
+          ]
+        },
+        "tool_argument": {
+          "count": 0,
+          "ids": []
+        },
+        "tool_selection": {
+          "count": 0,
+          "ids": []
+        }
+      },
+      "classification_sum_matches": true,
+      "classification_total": 13,
+      "d1_partial": {
+        "count": 0,
+        "ids": []
+      },
+      "indeterminate_by_reason": {
+        "candidates_50": {
+          "count": 1,
+          "ids": [
+            "g-syn-007"
+          ]
+        }
+      },
+      "refusal_violations": {
+        "count": 0,
+        "ids": []
+      },
+      "total_runs": 30,
+      "wrong_count": 13
+    },
+    "simple|test_silver": {
+      "by_type": {
+        "identifier": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 7,
+              "ids": [
+                "s-syn-003",
+                "s-syn-004",
+                "s-syn-005",
+                "s-syn-018",
+                "s-syn-020",
+                "s-syn-022",
+                "s-syn-023"
+              ]
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 7,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 7
+        },
+        "multi_doc": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 2,
+              "ids": [
+                "s-syn-070",
+                "s-syn-079"
+              ]
+            },
+            "permission_overrefusal": {
+              "count": 11,
+              "ids": [
+                "s-syn-067",
+                "s-syn-068",
+                "s-syn-075",
+                "s-syn-078",
+                "s-syn-081",
+                "s-syn-082",
+                "s-syn-084",
+                "s-syn-085",
+                "s-syn-086",
+                "s-syn-087",
+                "s-syn-088"
+              ]
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 13,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {
+            "candidates_50": {
+              "count": 2,
+              "ids": [
+                "s-syn-070",
+                "s-syn-079"
+              ]
+            }
+          },
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 13
+        },
+        "permission": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 0,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 0
+        },
+        "semantic": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 3,
+              "ids": [
+                "s-syn-046",
+                "s-syn-050",
+                "s-syn-052"
+              ]
+            },
+            "permission_overrefusal": {
+              "count": 2,
+              "ids": [
+                "s-syn-027",
+                "s-syn-059"
+              ]
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 5,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {
+            "candidates_50": {
+              "count": 3,
+              "ids": [
+                "s-syn-046",
+                "s-syn-050",
+                "s-syn-052"
+              ]
+            }
+          },
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 5
+        },
+        "sql": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 0,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 0
+        },
+        "table": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 0,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 0
+        },
+        "temporal": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 2,
+              "ids": [
+                "s-syn-106",
+                "s-syn-116"
+              ]
+            },
+            "permission_overrefusal": {
+              "count": 5,
+              "ids": [
+                "s-syn-101",
+                "s-syn-102",
+                "s-syn-104",
+                "s-syn-114",
+                "s-syn-118"
+              ]
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 7,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {
+            "candidates_50": {
+              "count": 2,
+              "ids": [
+                "s-syn-106",
+                "s-syn-116"
+              ]
+            }
+          },
+          "refusal_violations": {
+            "count": 0,
+            "ids": []
+          },
+          "wrong_count": 7
+        },
+        "unanswerable": {
+          "classes": {
+            "d1": {
+              "count": 0,
+              "ids": []
+            },
+            "d2": {
+              "count": 0,
+              "ids": []
+            },
+            "generation": {
+              "count": 0,
+              "ids": []
+            },
+            "guardrail_infra": {
+              "count": 0,
+              "ids": []
+            },
+            "indeterminate": {
+              "count": 0,
+              "ids": []
+            },
+            "permission_overrefusal": {
+              "count": 0,
+              "ids": []
+            },
+            "structural_tool_absence": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_argument": {
+              "count": 0,
+              "ids": []
+            },
+            "tool_selection": {
+              "count": 0,
+              "ids": []
+            }
+          },
+          "classification_sum_matches": true,
+          "classification_total": 0,
+          "d1_partial": {
+            "count": 0,
+            "ids": []
+          },
+          "indeterminate_by_reason": {},
+          "refusal_violations": {
+            "count": 2,
+            "ids": [
+              "s-syn-139",
+              "s-syn-146"
+            ]
+          },
+          "wrong_count": 0
+        }
+      },
+      "classes": {
+        "d1": {
+          "count": 0,
+          "ids": []
+        },
+        "d2": {
+          "count": 0,
+          "ids": []
+        },
+        "generation": {
+          "count": 0,
+          "ids": []
+        },
+        "guardrail_infra": {
+          "count": 0,
+          "ids": []
+        },
+        "indeterminate": {
+          "count": 7,
+          "ids": [
+            "s-syn-046",
+            "s-syn-050",
+            "s-syn-052",
+            "s-syn-070",
+            "s-syn-079",
+            "s-syn-106",
+            "s-syn-116"
+          ]
+        },
+        "permission_overrefusal": {
+          "count": 25,
+          "ids": [
+            "s-syn-003",
+            "s-syn-004",
+            "s-syn-005",
+            "s-syn-018",
+            "s-syn-020",
+            "s-syn-022",
+            "s-syn-023",
+            "s-syn-027",
+            "s-syn-059",
+            "s-syn-067",
+            "s-syn-068",
+            "s-syn-075",
+            "s-syn-078",
+            "s-syn-081",
+            "s-syn-082",
+            "s-syn-084",
+            "s-syn-085",
+            "s-syn-086",
+            "s-syn-087",
+            "s-syn-088",
+            "s-syn-101",
+            "s-syn-102",
+            "s-syn-104",
+            "s-syn-114",
+            "s-syn-118"
+          ]
+        },
+        "structural_tool_absence": {
+          "count": 0,
+          "ids": []
+        },
+        "tool_argument": {
+          "count": 0,
+          "ids": []
+        },
+        "tool_selection": {
+          "count": 0,
+          "ids": []
+        }
+      },
+      "classification_sum_matches": true,
+      "classification_total": 32,
+      "d1_partial": {
+        "count": 0,
+        "ids": []
+      },
+      "indeterminate_by_reason": {
+        "candidates_50": {
+          "count": 7,
+          "ids": [
+            "s-syn-046",
+            "s-syn-050",
+            "s-syn-052",
+            "s-syn-070",
+            "s-syn-079",
+            "s-syn-106",
+            "s-syn-116"
+          ]
+        }
+      },
+      "refusal_violations": {
+        "count": 2,
+        "ids": [
+          "s-syn-139",
+          "s-syn-146"
+        ]
+      },
+      "total_runs": 83,
+      "wrong_count": 32
+    }
+  },
+  "class_descriptions": {
+    "d1": "d1 검색 실패: M8 리랭커 근거",
+    "d2": "d2 예산 탈락: M8 small-to-big 근거",
+    "generation": "생성 오류",
+    "guardrail_infra": "가드레일·인프라 실패",
+    "indeterminate": "기록 부족으로 판정 불가",
+    "permission_overrefusal": "권한 오거절",
+    "structural_tool_absence": "도구 부재(구조적)",
+    "tool_argument": "인자 오류",
+    "tool_selection": "도구 선택 오류"
+  },
+  "data_preparation_notes": [
+    {
+      "annex_id": "17229_0-00",
+      "annex_key": "별표2",
+      "composite_chars": 293,
+      "confirmed_by": "human",
+      "doc_id": "law-2200000149621",
+      "loss_type": "annex_context_lost",
+      "pypdf_chars": 797,
+      "stage": "m5_composite_assembly",
+      "wrong_answer_ids": []
+    }
+  ],
+  "input_sha256": {
+    "data/manifest/m5_config.json": "6798b6dd8bea37691e5a33b81a3531217390b825605fb149d279f2059e141ca5",
+    "data/manifest/m5_eval_inputs.json": "c567f34989a446de9f9b6daaeb6a14856aa2eda22cbca7845d29a69a1809317b",
+    "data/manifest/m6_config.json": "df24c0de759f78bdf941ab08fd890f4a9ae3de0b8a1a168757862be27f24f6ff",
+    "data/manifest/m7_grade_scores.json": "5ad8eda105d6884278d3851eb183ace2c4cdc2d02d1450484ceac263e1df7515",
+    "docs/results/hypotheses.md": "cd79ef60fddff1ecd9c4850a04ec0c5ccac2fae418e30bc4c5880cb2596afd46",
+    "logs/traces/2026-10-01.jsonl": "b7e6ec028c4fed0c335e6067a48452f69e43c127110635cee2ae4b344a7a2e1f",
+    "logs/traces/2026-10-02.jsonl": "04da1e41bd9bca92160350ef1a4b537283c75aebf07404ca690ecb603276e4e9"
+  },
+  "measurement_limitations": {
+    "annex_context_audit": {
+      "below_70_percent": 95,
+      "sections_compared": 493,
+      "unit_label_lost_sections": 14
+    },
+    "note": "데이터 준비·측정 한계이며 실패 분류 사다리와 별도로 보고한다. 사람 메모는 판정 입력으로 사용하지 않는다.",
+    "security_tool_error": {
+      "classification": "tool_error",
+      "error": "not_found",
+      "scenario_id": "sec-0072",
+      "tool": "get_document"
+    },
+    "shared_title_document_pairs": [
+      [
+        "syn-meeting-037",
+        "syn-meeting-029"
+      ],
+      [
+        "syn-runbook-002",
+        "syn-runbook-018"
+      ]
+    ]
+  },
+  "rules": [
+    "M7-F1",
+    "M7-F2",
+    "M7-F3"
+  ],
+  "schema_version": 1
+}

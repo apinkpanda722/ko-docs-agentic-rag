@@ -1,0 +1,15 @@
+{
+  "csv_sha256": "3cc11780a778283c4858b348521b96bf186e6f077b050fcd9d475ad062a7334c",
+  "rows": 50,
+  "score_distribution": {
+    "0": 8,
+    "1": 4,
+    "2": 2,
+    "3": 36
+  },
+  "rubric_sha256": "f2c78750a160a4437512a6e2c58836fb5c3231629c49b7664a38eaedf12b83e7",
+  "sample_sha256": "9798f013c138053221c7d5a1ff6822980bfa36bb474bf0435423ee8efd54c20e",
+  "key_sha256": "699e558e8c62d3f53e90a22fb9dd2582d56cbf17e9f3e9f2ffeb73afccaf2618",
+  "registered_at": "2026-10-01T14:31:25.656268+00:00",
+  "history": []
+}

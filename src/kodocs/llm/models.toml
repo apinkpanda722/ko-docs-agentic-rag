@@ -36,3 +36,21 @@ max_output_tokens = 4000
 request_timeout_s = 30
 max_attempts = 3
 max_input_tokens = 272000
+
+[grade.gemini]
+model = "gemini-3.8-flash"
+tier = "paid"
+# Q2 확정(2026-10-01, 공식 문서 확인) — 세 값 모두 freeze 대상
+# thinking: 모델 페이지 https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash 는 low/medium/high만 나열(minimal 없음) → 문서상 최저 low
+# temperature: Gemini 3 가이드 https://ai.google.dev/gemini-api/docs/gemini-3 "we strongly recommend keeping the temperature parameter at its default value of 1.0" → 보내지 않음(null)
+# seed: 같은 seed로 3회 반복하면 반복 간 독립성이 사라져 M7-G3(3회 평균·편차)가 무의미 → 보내지 않음(null)
+thinking_level = "low"
+temperature = ""              # null: 전송하지 않음(모델 기본값 1.0)
+seed = ""                     # null: 전송하지 않음
+max_output_tokens = 4000      # includes thinking
+request_timeout_s = 60
+max_attempts = 3
+rpm_pacing = 10               # 자체 보수값(공식 한도 아님)
+rpm = ""                     # paid official quota: user confirmation pending
+tpm = ""
+rpd = ""

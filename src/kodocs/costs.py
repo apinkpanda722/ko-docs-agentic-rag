@@ -5,10 +5,11 @@ import math
 import uuid
 from collections.abc import Callable, Mapping
 from dataclasses import asdict, dataclass
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from types import MappingProxyType
 from typing import Final
+from zoneinfo import ZoneInfo
 
 from kodocs.ingest.manifest import append_record
 
@@ -28,6 +29,7 @@ class Price:
     # Budget-check multiplier for provider billing above recorded usage. It is
     # applied only to pre-call estimates (BudgetGuard, dry-run), never to the ledger.
     billing_margin: float = 1.0
+    valid_until: str | None = None
 
 
 _UPSTAGE_DOCUMENT_PARSE_STANDARD = Price(
@@ -111,11 +113,40 @@ _OPENAI_PRICES = tuple(
     for suffix, price in values
 )
 
+# From 2027-01-01 the published input/output prices are $1.50/$7.50.
+# They are deliberately not active: re-confirm pricing before a future run.
+_GEMINI_PRICES = tuple(
+    Price(
+        service=f"google.gemini-3.8-flash.{suffix}",
+        unit="token",
+        unit_price_usd=price / 1_000_000,
+        source_url="https://ai.google.dev/gemini-api/docs/pricing",
+        checked_on="2026-10-01",
+        valid_until="2026-12-31",
+        billing_margin=1.0,
+    )
+    for suffix, price in (("input", 0.75), ("output", 3.75))
+)
+
+
+class PriceExpiredError(RuntimeError):
+    """The registered temporary price has expired."""
+
+
+def ensure_price_valid(service: str, *, on: date | None = None) -> None:
+    """Reject expired pricing using the Korean calendar date by default."""
+    price = PRICES[service]
+    today = on if on is not None else datetime.now(ZoneInfo("Asia/Seoul")).date()
+    if price.valid_until and today > date.fromisoformat(price.valid_until):
+        raise PriceExpiredError(f"Price expired for {service}: {price.valid_until}")
+
+
 PRICES: Mapping[str, Price] = MappingProxyType(
     {
         _UPSTAGE_DOCUMENT_PARSE_STANDARD.service: (_UPSTAGE_DOCUMENT_PARSE_STANDARD),
         **{price.service: price for price in _ANTHROPIC_PRICES},
         **{price.service: price for price in _OPENAI_PRICES},
+        **{price.service: price for price in _GEMINI_PRICES},
     }
 )
 
@@ -157,6 +188,7 @@ class LedgerEntry:
     amount_usd: float
     ref: str
     run_id: str
+    tier: str | None = None
 
 
 def _utc_now() -> datetime:
@@ -184,6 +216,7 @@ class CostLedger:
         ref: str,
         run_id: str,
         metadata: Mapping[str, object] | None = None,
+        tier: str | None = None,
     ) -> LedgerEntry:
         """Append one tax-inclusive list-price billing event."""
         try:
@@ -204,8 +237,11 @@ class CostLedger:
             amount_usd=amount_usd,
             ref=ref,
             run_id=run_id,
+            tier=tier,
         )
         record = asdict(entry)
+        if tier is None:
+            record.pop("tier")
         if metadata:
             collisions = sorted(set(record).intersection(metadata))
             if collisions:
@@ -214,7 +250,11 @@ class CostLedger:
                     + ", ".join(collisions)
                 )
             record.update(metadata)
-        append_record(self.path, record, required=LedgerEntry.__dataclass_fields__)
+        append_record(
+            self.path,
+            record,
+            required=set(LedgerEntry.__dataclass_fields__) - {"tier"},
+        )
         return entry
 
     def month_total_usd(self, when: datetime | None = None) -> float:
@@ -273,8 +313,9 @@ class CostLedger:
                     base_entry = {
                         name: raw_entry[name]
                         for name in LedgerEntry.__dataclass_fields__
+                        if name != "tier"
                     }
-                    entry = LedgerEntry(**base_entry)
+                    entry = LedgerEntry(**base_entry, tier=raw_entry.get("tier"))
                 except (KeyError, TypeError, ValueError) as exc:
                     raise ValueError(
                         f"Invalid cost ledger entry in {self.path} "

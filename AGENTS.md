@@ -111,5 +111,23 @@ make m6-test      # 골드 test 30문항 + 실버 test 83문항(H5 방향 확인
 make m6-tokens    # MCP 데모 사용자 토큰 생성(평문은 data/interim/mcp/tokens.json 비커밋, 해시만 data/manifest/mcp_token_hashes.json) — 사용자 실행
 make m6-report    # M6 결과 문서 docs/results/2026-10-01-m6-agent-mcp.md(고정) 갱신 — 네트워크 없음
 make m6-serve     # MCP 서버 기동(streamable HTTP, 127.0.0.1) — make up 필요, 사용자 실행
-make eval        # 검색·답변 평가 — 실제 API 호출, 사용자 실행
+make m7-probe  # Gemini 채점 설정 확인(baseline·minimal_check·repeat 3회 실제 호출·과금, 확정값 thinking low·temperature/seed 미전송) → data/manifest/m7_probe.json — 사용자 실행
+make m7-cards  # κ 표본 50개 + 오프라인 카드 HTML 생성(로컬 전용, 네트워크 없음) — 사용자 실행
+make m7-human-register  # 사람 채점 CSV 검증·해시를 data/manifest/m7_human_grades.json에 기록 — 사용자 실행
+make m7-pilot  # 초안 루브릭 파일럿 10건 × 3회 채점 — 실제 Gemini 호출·과금, 사용자 실행
+make m7-freeze  # 사람 CSV·파일럿·probe 증빙 확인 후 M7 채점 설정 고정(덮어쓰기 거부) — 사용자 실행
+make m7-grade-dry  # M7 채점 호출 수·토큰·비용·페이싱 예상, M7_CREDIT_USD로 크레딧 비교 — 네트워크 없음
+make m7-grade  # 고정 설정 Gemini 채점(캐시 재개·원본 해시 기록), M7_CREDIT_USD로 크레딧 상한 — 실제 Gemini 호출·과금, 사용자 실행
+make m7-analyze  # κ·H5·Sol 사후·라우터 dev 판정 → data/manifest/m7_analysis.json — 네트워크 없음, 사용자 실행
+make m7-evidence-check  # 채점 대상 근거 구성(출처별)·근거 0자 건수(사유별)·SQL 재현 대조 → data/manifest/m7_evidence.json — 로컬 오프라인, 네트워크 없음
+make m7-security-set  # 보안 테스트셋 생성 + S6 인젝션 노출 검증 — make up 필요, 인덱스 읽기 전용, LLM 호출 없음, 사용자 실행
+make m7-security-dry  # 보안 실행 수·M6 test 평균 기반 예상 비용·상한·월 상한 비교 — 네트워크 없음, 사용자 실행
+make m7-security  # 실제 OpenAI 호출·과금 + MCP 서버 필요, 인덱스 읽기 전용, 사용자 실행. make up과 함께 make m6-serve를 별도 터미널에서 실행해 둔다(MCP 재생이 실행 중인 서버에 연결). 순서: make m7-security-set → make m7-security-dry → make m7-security → make m7-leak-review-register. 재실행: RERUN_REASON="사유" make m7-security
+make m7-leak-review-register  # 사람 c1 확인 CSV 검증·해시 등록 → data/manifest/m7_leak_review.json — 네트워크 없음, 사용자 실행
+make m7-security-rejudge  # 기록된 보안 실행을 결정론으로 재판정(c2 식별자 고유성·도구 호출 오류 분류·S6 노출 확정), 정정 전·후를 data/manifest/m7_security_results.json history에 보존 — 모델 호출·새 검색 없음, 사용자 실행
+make m7-latency-dry  # 지연 113 × 2 + 예열 6 실행 수·M6 test 평균 기반 예상 비용·월 상한 — 네트워크 없음
+make m7-latency  # 실제 OpenAI 호출·과금, 동시성 1 단독 실행, 사용자 실행. 재실행: RERUN_REASON="사유" make m7-latency
+make m7-failures  # M6 test 틀린 문항 결정론 실패 분류(기록 부족은 indeterminate, 재검색·모델 호출 없음) → data/manifest/m7_failures.json — 네트워크 없음
+make m7-report  # M7 결과 문서 docs/results/2026-10-02-m7-answer-eval.md(고정) 생성 영역만 갱신 — 네트워크 없음
+# 검색·답변 평가는 make m5-test·make m6-test, 채점은 make m7-grade로 각각 실행한다.
 (명령은 해당 마일스톤에서 추가된다. docs/PRD.md 마일스톤 참고)

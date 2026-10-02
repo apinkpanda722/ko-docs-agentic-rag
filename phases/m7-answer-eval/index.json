@@ -1,0 +1,204 @@
+{
+  "project": "ko-docs-agentic-rag",
+  "phase": "m7-answer-eval",
+  "steps": [
+    {
+      "step": 0,
+      "name": "m6-report-fix",
+      "status": "completed",
+      "started_at": "2026-10-01T20:23:41+0900",
+      "summary": "m6_report.py의 _inputs()에 ID 접두 집계 fallback과 회귀 테스트 추가, M6 결과 문서 지정 칸 갱신. make verify 통과(1477개), m6_report 테스트 19개 통과. 문서 diff: 9줄 추가·8줄 삭제(골드·실버 8칸, 환경 4칸, 변경 기록 1행); 재생성의 커밋 해시 변경은 복원했으며 확정 manifest·H5 판정은 불변.",
+      "completed_at": "2026-10-01T20:27:32+0900",
+      "usage": {
+        "input_tokens": 646972,
+        "cached_input_tokens": 571904,
+        "output_tokens": 3811,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 1,
+      "name": "design-docs",
+      "status": "completed",
+      "started_at": "2026-10-01T20:27:33+0900",
+      "summary": "M7 판정 규칙 원문·ADR-030·EVAL·FP-051/052 고정, m7_rules.py의 REQUIRED_RULE_IDS·extract_rules_section()·rules_sha256() 및 일관성 테스트 추가. M5·M6 규칙 불변 확인, make verify 1485개·전용 테스트 8개 통과.",
+      "completed_at": "2026-10-01T20:34:32+0900",
+      "usage": {
+        "input_tokens": 992550,
+        "cached_input_tokens": 896256,
+        "output_tokens": 10091,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 2,
+      "name": "gemini-client",
+      "status": "completed",
+      "started_at": "2026-10-01T20:34:32+0900",
+      "summary": "GradeModelConfig/load_grade_config, GeminiGrader, ensure_price_valid, gemini_probe·make m7-probe 구현. make verify 1529개, 전용 테스트 178개 및 probe --dry-run 통과. SDK 2.26.0 소스 확인: .venv/lib/python3.12/site-packages/google/genai/{types.py,errors.py,_api_client.py,models.py}. 모델별 최저 thinking 지원·실제 429 quota 상세 계약·HTTP 요청 ID는 확인 불가로 기록. 실제 API 호출·커밋 없음.",
+      "completed_at": "2026-10-01T20:46:03+0900",
+      "usage": {
+        "input_tokens": 1867543,
+        "cached_input_tokens": 1739008,
+        "output_tokens": 17398,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 3,
+      "name": "grading-inputs",
+      "status": "completed",
+      "started_at": "2026-10-01T21:15:15+0900",
+      "summary": "m7_grading.py의 verify_m6_inputs에 git 이력 기반 manifest 검증과 회귀 테스트를 추가하고 기존 분류·블라인드 빌더·파일럿 함수 및 m7_rubric.md 초안을 유지했다. make verify 1565개·m7_grading 테스트 36개 통과, 실제 M6 dev 300·골드 test 60·실버 test 166행 검증 OK. API 호출·커밋 없음.",
+      "completed_at": "2026-10-01T21:20:32+0900",
+      "usage": {
+        "input_tokens": 810581,
+        "cached_input_tokens": 725120,
+        "output_tokens": 5083,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 4,
+      "name": "human-cards",
+      "status": "completed",
+      "started_at": "2026-10-01T21:20:32+0900",
+      "summary": "m7_human.py의 select_kappa_sample·write_cards·register_human_grades·load_human_grades와 Make 타깃 구현, 표본 50개(파일럿 10개 제외·H5 16개 강제 포함) manifest 및 로컬 카드 생성; make verify 1583개·전용 테스트 18개 통과. API 호출·golden 수정·커밋 없음.",
+      "completed_at": "2026-10-01T21:29:59+0900",
+      "usage": {
+        "input_tokens": 783472,
+        "cached_input_tokens": 700544,
+        "output_tokens": 12317,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 5,
+      "name": "grade-runner",
+      "status": "completed",
+      "started_at": "2026-10-01T21:29:59+0900",
+      "summary": "m7_config.freeze_config·verify_config, m7_grade.run_pilot·run_grade, m7_rawhash 원본 검증과 Make 타깃 구현. make verify 1628개·전용 테스트 45개 통과, dry-run 299개 답변·897호출 확인. 실제 API 호출·freeze·커밋 없음.",
+      "completed_at": "2026-10-01T21:43:58+0900",
+      "usage": {
+        "input_tokens": 1286350,
+        "cached_input_tokens": 1185664,
+        "output_tokens": 19376,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 6,
+      "name": "analysis-stats",
+      "status": "completed",
+      "started_at": "2026-10-01T21:43:58+0900",
+      "summary": "m7_stats.py의 κ·H5·Sol·라우터·충실성 통계와 m7_analyze.py의 원본 해시 검증·분석 CLI, make m7-analyze 구현. 전용 테스트 37개·make verify 1665개 통과. 실제 분석·API 호출·커밋 없음.",
+      "completed_at": "2026-10-01T21:58:55+0900",
+      "usage": {
+        "input_tokens": 1567420,
+        "cached_input_tokens": 1454080,
+        "output_tokens": 20826,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 7,
+      "name": "security-set",
+      "status": "completed",
+      "started_at": "2026-10-02T01:26:39+0900",
+      "summary": "m7_security_set.py의 결정론 생성·check_s6_exposure 구현, scenarios.jsonl(비대조 218·대조 30)과 m7_security_set.json 생성(s6_exposure_checked=false), Makefile·AGENTS.md 갱신. make verify 1719개·전용 테스트 28개·오프라인 dry-run 통과; 실제 검색·API 호출·커밋 없음.",
+      "completed_at": "2026-10-02T01:41:34+0900",
+      "usage": {
+        "input_tokens": 2496535,
+        "cached_input_tokens": 2281344,
+        "output_tokens": 18383,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 8,
+      "name": "leak-judge",
+      "status": "completed",
+      "started_at": "2026-10-02T01:41:34+0900",
+      "summary": "m7_leak.py의 judge_a/b/c2/c3·detect_c1·judge_response·c1 검수 export/register/load·c1_baseline·h6_verdict 구현, leak_lexicon.json·32명 기준 m7_leak_facts.json 생성. make verify 1756개·전용 테스트 37개 통과. API 호출·golden 수정·커밋 없음.",
+      "completed_at": "2026-10-02T01:56:50+0900",
+      "usage": {
+        "input_tokens": 1897100,
+        "cached_input_tokens": 1797888,
+        "output_tokens": 21478,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 9,
+      "name": "security-runner",
+      "status": "completed",
+      "started_at": "2026-10-02T01:56:50+0900",
+      "summary": "m7_security.py의 run_security·analyze_h6, MCP 보안 검사·c1 확인·원본 해시 검증과 Make 타깃 구현; make verify 1781개·전용 테스트 53개 통과, dry-run S6 미검증 정상 거부. 실제 API 호출·커밋 없음.",
+      "completed_at": "2026-10-02T02:25:40+0900",
+      "usage": {
+        "input_tokens": 5399923,
+        "cached_input_tokens": 5222016,
+        "output_tokens": 39053,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 10,
+      "name": "latency-run",
+      "status": "completed",
+      "started_at": "2026-10-02T12:16:17+0900",
+      "summary": "m7_latency.py의 StreamingChat·run_latency·recalculate와 Make 타깃 구현; 스트리밍 TTFT·usage 누락 처리 보완, 원본 해시·재실행 이력·환경 기록 추가. make verify 1850개·전용 테스트 26개·dry-run·finalizer_hash 검사 통과. 실제 API 호출·커밋 없음.",
+      "completed_at": "2026-10-02T12:31:08+0900",
+      "usage": {
+        "input_tokens": 2142072,
+        "cached_input_tokens": 2024448,
+        "output_tokens": 20603,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 11,
+      "name": "failure-analysis",
+      "status": "completed",
+      "started_at": "2026-10-02T15:26:04+0900",
+      "summary": "m7_failures.py의 classify_failure·run_failures, m7-failures 타깃과 manifest·상세 산출물 구현: 틀린 문항 75건 상호배타 분류, indeterminate 9건·거절 위반 5건 별도 집계. make verify 1891개·전용 테스트 37개·dry-run 통과; API 호출·커밋 없음.",
+      "completed_at": "2026-10-02T15:55:00+0900",
+      "usage": {
+        "input_tokens": 2169321,
+        "cached_input_tokens": 2061952,
+        "output_tokens": 17316,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 12,
+      "name": "threat-model",
+      "status": "completed",
+      "started_at": "2026-10-02T15:56:16+0900",
+      "summary": "docs/THREAT_MODEL.md에 위협·실제 완화·검증 매핑·H6 한계를 실측 수치 없이 문서화하고 ARCHITECTURE.md 링크 및 tests/test_threat_model_doc.py 추가. make verify 1900개·전용 테스트 9개 통과, 커밋 없음.",
+      "completed_at": "2026-10-02T16:04:59+0900",
+      "usage": {
+        "input_tokens": 1294868,
+        "cached_input_tokens": 1187328,
+        "output_tokens": 9991,
+        "attempts": 1
+      }
+    },
+    {
+      "step": 13,
+      "name": "m7-report",
+      "status": "completed",
+      "started_at": "2026-10-02T16:04:59+0900",
+      "summary": "m7_report.py의 render_tables·aggregate_operations·write_report와 make m7-report, 2026-10-02-m7-answer-eval.md 구현; 원본 해시·비용 대조·보존 영역 검증, 전용 테스트 33개·make verify 1933개 통과. API 호출·커밋 없음.",
+      "completed_at": "2026-10-02T16:35:54+0900",
+      "usage": {
+        "input_tokens": 3403936,
+        "cached_input_tokens": 3261440,
+        "output_tokens": 28324,
+        "attempts": 1
+      }
+    }
+  ],
+  "created_at": "2026-10-01T20:23:41+0900",
+  "completed_at": "2026-10-02T16:35:54+0900"
+}
