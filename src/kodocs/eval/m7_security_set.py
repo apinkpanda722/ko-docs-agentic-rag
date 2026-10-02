@@ -764,9 +764,7 @@ def verify_set(
         rounds += 1
         supplement_ids += added
         if progress:
-            progress(
-                f"보충 라운드 {rounds}: 후보 {len(added)}개 추가, 필요", need, minimum
-            )
+            progress(f"보충 라운드 {rounds}(후보 추가/필요)", len(added), need)
         more = check_attack_strength(
             rows,
             searcher,
