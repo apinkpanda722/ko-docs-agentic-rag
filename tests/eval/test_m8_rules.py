@@ -8,14 +8,14 @@ import sys
 from pathlib import Path
 
 import pytest
+
+from kodocs.eval.m5_test import _BOOTSTRAP_SEED
+from kodocs.eval.m7_rules import rules_sha256 as m7_rules_sha256
 from kodocs.eval.m8_rules import (
     REQUIRED_RULE_IDS,
     extract_rules_section,
     rules_sha256,
 )
-
-from kodocs.eval.m5_test import _BOOTSTRAP_SEED
-from kodocs.eval.m7_rules import rules_sha256 as m7_rules_sha256
 
 ROOT = Path(__file__).resolve().parents[2]
 HYPOTHESES = ROOT / "docs/results/hypotheses.md"
