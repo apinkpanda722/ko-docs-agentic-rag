@@ -595,6 +595,14 @@ def _ui_violations(path: Path, package_root: Path) -> list[str]:
         for line, module in _import_references(path, package_root)
         if any(_matches_forbidden_pattern(module, p) for p in UI_FORBIDDEN_IMPORTS)
         and not (
+            path.name == "streaming.py"
+            and module
+            in {
+                "langchain_core.utils.json",
+                "langchain_core.utils.json.parse_partial_json",
+            }
+        )
+        and not (
             line in allowed_lines
             and module in {"kodocs.tools", "kodocs.tools.UserContext"}
         )
@@ -641,13 +649,12 @@ def test_ui_guard_allows_only_context_reexport(tmp_path, source):
     assert not _ui_violations(path, tmp_path)
 
 
-def test_ui_does_not_read_environment_or_use_streaming():
+def test_ui_streaming_is_confined_to_final_wrapper():
     for path in (SOURCE_ROOT / "kodocs/ui").rglob("*.py"):
         source = path.read_text()
         assert not any(
             marker in source
             for marker in (
-                "stream=True",
                 ".stream(",
                 "astream",
                 "os.environ",
@@ -656,5 +663,7 @@ def test_ui_does_not_read_environment_or_use_streaming():
             )
         ), path
         for node in ast.walk(ast.parse(source)):
-            if isinstance(node, ast.Call):
+            if isinstance(node, ast.Call) and path.name != "streaming.py":
                 assert not any(kw.arg == "stream" for kw in node.keywords), path
+        if path.name != "streaming.py":
+            assert "stream=True" not in source

@@ -59,6 +59,7 @@ def answer(
         evidence=EvidenceLog(),
         guard=Guard(runtime.guardrails, timeout_s=timeout_s, clock=runtime.clock),
         trace=trace,
+        event_sink=runtime.event_sink,
     )
     graph = _compiled_graph(runtime, system)
     inputs = {"question": question}

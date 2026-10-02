@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import math
 import time
 import uuid
@@ -89,6 +90,26 @@ class ManagedChatError(RuntimeError):
 
 class ChatParseError(ManagedChatError):
     """Raised when a billed structured response does not match its schema."""
+
+    def __init__(self, message, attempts=(), *, diagnostics=None):
+        super().__init__(message, attempts)
+        source = diagnostics or {}
+        self.diagnostics = {}
+        for name in ("output_tokens", "reasoning_tokens", "output_chars"):
+            value = source.get(name)
+            if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+                self.diagnostics[name] = value
+            elif name in source:
+                self.diagnostics[name] = None
+        for name, allowed in {
+            "status": {"completed", "incomplete", "failed", "in_progress"},
+            "incomplete_reason": {"max_output_tokens", "content_filter"},
+        }.items():
+            if name in source:
+                value = source[name]
+                self.diagnostics[name] = (
+                    value if isinstance(value, str) and value in allowed else None
+                )
 
 
 class BillingUncertainError(ManagedChatError):
@@ -189,6 +210,7 @@ class ManagedChat:
         tools: Sequence[object] | None = None,
         response_schema: type[object] | None = None,
         stream: bool = False,
+        on_text_delta: Callable[[str], None] | None = None,
     ) -> ChatResult:
         """Invoke the Responses API under the registered retry and billing rules."""
         estimate = self.estimate(
@@ -209,6 +231,7 @@ class ManagedChat:
                     response_schema=response_schema,
                     stream=stream,
                     overall_started=overall_started,
+                    on_text_delta=on_text_delta,
                 )
             except Exception as exc:
                 elapsed_ms = _elapsed_ms(attempt_started, self._monotonic())
@@ -229,9 +252,18 @@ class ManagedChat:
                         attempts,
                     ) from exc
                 if action == "parse_error":
+                    diagnostics = getattr(exc, "diagnostics", {})
+                    if stream:
+                        safe = ChatParseError(
+                            "stream parse failure", diagnostics=diagnostics
+                        ).diagnostics
+                        logging.getLogger(__name__).warning(
+                            "Structured stream parse failure: %s", safe
+                        )
                     raise ChatParseError(
                         "OpenAI structured response could not be parsed",
                         attempts,
+                        diagnostics=getattr(exc, "diagnostics", {}),
                     ) from exc
                 if action == "infra_error":
                     raise InfrastructureLLMError(
@@ -275,10 +307,21 @@ class ManagedChat:
                     attempts,
                 )
             if parsing_error is not None:
-                raise ChatParseError(
+                failure = ChatParseError(
                     "OpenAI structured response could not be parsed",
                     attempts,
-                ) from parsing_error
+                    diagnostics=_stream_diagnostics(message)
+                    if stream or on_text_delta is not None
+                    else {},
+                )
+                if stream:
+                    logging.getLogger(__name__).warning(
+                        "Structured stream parse failure: %s", failure.diagnostics
+                    )
+                failure.response_message = (
+                    message  # in-memory only; repro writes ignored raw
+                )
+                raise failure from parsing_error
             return ChatResult(
                 message=message,
                 parsed=parsed,
@@ -303,6 +346,7 @@ class ManagedChat:
         response_schema: type[object] | None,
         stream: bool,
         overall_started: float,
+        on_text_delta: Callable[[str], None] | None = None,
     ) -> tuple[object, object | None, BaseException | None, float | None]:
         if stream:
             runnable: Any = self._model
@@ -313,27 +357,77 @@ class ManagedChat:
                 if response_schema is not None
                 else {}
             )
+            # With a callback, defer Pydantic validation until usage/metadata are
+            # received. base.py:5464 validates inside the last chunk converter;
+            # a truncated Pydantic response would otherwise discard that chunk.
+            if response_schema is not None and on_text_delta is not None:
+                kwargs["response_format"] = {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": response_schema.__name__,
+                        "strict": True,
+                        "schema": response_schema.model_json_schema(),
+                    },
+                }
             combined = None
             ttft_ms = None
-            for chunk in runnable.stream(messages, **kwargs):
-                # Responses emits created/usage/reasoning chunks before output text.
-                content = getattr(chunk, "content", "")
-                has_text = (
-                    bool(content)
-                    if isinstance(content, str)
-                    else any(
-                        isinstance(block, Mapping)
-                        and block.get("type") in {"text", "output_text"}
-                        and bool(block.get("text"))
-                        for block in content
+            try:
+                for chunk in runnable.stream(messages, **kwargs):
+                    # Responses emits created/usage/reasoning chunks before output text.
+                    content = getattr(chunk, "content", "")
+                    has_text = (
+                        bool(content)
+                        if isinstance(content, str)
+                        else any(
+                            isinstance(block, Mapping)
+                            and block.get("type") in {"text", "output_text"}
+                            and bool(block.get("text"))
+                            for block in content
+                        )
                     )
-                )
-                if ttft_ms is None and has_text:
-                    ttft_ms = _elapsed_ms(overall_started, self._monotonic())
-                combined = chunk if combined is None else combined + chunk
+                    if on_text_delta is not None:
+                        for delta in _text_deltas(chunk):
+                            try:
+                                on_text_delta(delta)
+                            except Exception:  # noqa: BLE001, S110 - observer only
+                                pass
+                    if ttft_ms is None and has_text:
+                        ttft_ms = _elapsed_ms(overall_started, self._monotonic())
+                    combined = chunk if combined is None else combined + chunk
+            except Exception as exc:
+                diagnostics = _stream_diagnostics(combined)
+                try:
+                    exc.diagnostics = diagnostics
+                except AttributeError:
+                    pass  # extension exceptions may prohibit attributes
+                if (
+                    on_text_delta is not None
+                    and diagnostics["output_chars"]
+                    and not (
+                        isinstance(exc, ChatParseError)
+                        or _is_pydantic_validation_error(exc)
+                    )
+                ):
+                    # A text delta proves transmission; no retries after output.
+                    raise BillingUncertainError(
+                        "stream interrupted after text"
+                    ) from exc
+                raise
             if combined is None or _usage_from_message(combined) is None:
                 raise BillingUncertainError("OpenAI stream ended without usage")
             parsed = getattr(combined, "additional_kwargs", {}).get("parsed")
+            if response_schema is not None and on_text_delta is not None:
+                try:
+                    parsed = response_schema.model_validate_json(
+                        "".join(_text_deltas(combined))
+                    )
+                except Exception:  # noqa: BLE001 - safe parse error, no raw text in logs
+                    return (
+                        combined,
+                        None,
+                        ChatParseError("invalid structured stream"),
+                        ttft_ms,
+                    )
             if response_schema is not None and parsed is None:
                 return (
                     combined,
@@ -342,6 +436,38 @@ class ManagedChat:
                     ttft_ms,
                 )
             return combined, parsed, None, ttft_ms
+
+        if response_schema is not None and on_text_delta is not None:
+            # Explicit raw observer for the reproduction's non-streaming arm.
+            # None retains the frozen SDK/Pydantic path below. The same strict
+            # json_schema is sent; validate only after retaining usage and raw.
+            runnable = self._model.bind_tools(tools) if tools else self._model
+            message = runnable.invoke(
+                messages,
+                response_format={
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": response_schema.__name__,
+                        "strict": True,
+                        "schema": response_schema.model_json_schema(),
+                    },
+                },
+            )
+            text = "".join(_text_deltas(message))
+            try:
+                on_text_delta(text)
+            except Exception:  # noqa: BLE001, S110 - observer only
+                pass
+            try:
+                parsed = response_schema.model_validate_json(text)
+            except Exception:  # noqa: BLE001 - do not expose raw validation details
+                return (
+                    message,
+                    None,
+                    ChatParseError("invalid structured response"),
+                    None,
+                )
+            return message, parsed, None, None
 
         if response_schema is not None:
             structured = self._model.with_structured_output(
@@ -600,3 +726,40 @@ def _response_model(message: object) -> str | None:
 
 def _elapsed_ms(started: float, ended: float) -> float:
     return max(0.0, (ended - started) * 1000)
+
+
+def _text_deltas(message):
+    content = getattr(message, "content", "")
+    if isinstance(content, str):
+        if content:
+            yield content
+    elif isinstance(content, (list, tuple)):
+        for block in content:
+            if isinstance(block, Mapping) and block.get("type") in {
+                "text",
+                "output_text",
+            }:
+                text = block.get("text")
+                if isinstance(text, str) and text:
+                    yield text
+
+
+def _stream_diagnostics(message):
+    # langchain_openai/chat_models/base.py:5160-5180,5464-5482 copies
+    # status/incomplete_details and usage into the terminal response chunk.
+    metadata = getattr(message, "response_metadata", {})
+    details = metadata.get("incomplete_details") or {}
+    usage = _usage_from_message(message)
+    reason = details.get("reason") if isinstance(details, Mapping) else None
+    return {
+        "status": metadata.get("status")
+        if metadata.get("status")
+        in {"completed", "incomplete", "failed", "in_progress"}
+        else None,
+        "incomplete_reason": reason
+        if reason in {"max_output_tokens", "content_filter"}
+        else None,
+        "output_tokens": usage.output_tokens if usage else None,
+        "reasoning_tokens": usage.reasoning_tokens if usage else None,
+        "output_chars": sum(len(t) for t in _text_deltas(message)),
+    }

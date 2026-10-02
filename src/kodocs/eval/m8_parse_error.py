@@ -11,6 +11,10 @@ from kodocs.eval.m7_rawhash import verify_fingerprint
 RAW = Path("data/interim/m7/latency/runs.jsonl")
 LATENCY = Path("data/manifest/m7_latency.json")
 OUTPUT = Path("data/manifest/m8_parse_error.json")
+LEDGER = Path("data/manifest/costs.jsonl")
+LATENCY_TOLERANCE_S = 0.25
+CAUSE_NOTE = "왜 길어졌는지는 원시 출력 미보존으로 미확정. 스트리밍 여부 자체는 원인이 아님(스트리밍에서도 strict 구조화 스키마를 전송함 — 설치된 langchain-openai 소스 확인)."
+DEFINITION = "run_id·request_id로 묶는다. input/cached_input/cache_write/output 네 비용 줄의 usage는 동일한 요청의 반복 기록이므로 output_tokens·reasoning_tokens는 일치 검사 후 한 번만 센다(합산하지 않음). reasoning은 output의 부분량이다. amount_usd만 네 줄 합산. 요청 순서는 원장의 첫 등장 순서. trace의 질문·시스템·검색/임베딩 지연을 일치시킨 전체 실행 순서의 모델 단계 지연 벡터를 원장과 대조하며 유일한 연속 정렬만 연결한다. warmup 접두 요청은 벡터 정렬로 제외한다."
 M7_REPORT = Path("docs/results/2026-10-02-m7-answer-eval.md")
 
 
@@ -26,6 +30,25 @@ def correlated(row, trace):
     ):
         return False
     timings = trace.get("timings", {})
+    if any(
+        row.get(k + "_s") is None or timings.get(k + "_ms") is None
+        for k in ("embed", "search")
+    ):
+        # SQL-only turns have no retrieval timings. Require an independently
+        # observed TTFT and total latency, never join absent segments alone.
+        return (
+            all(
+                row.get(k + "_s") is None and timings.get(k + "_ms") is None
+                for k in ("embed", "search")
+            )
+            and isinstance(row.get("ttft_s"), (int, float))
+            and isinstance(timings.get("ttft_ms"), (int, float))
+            and math.isclose(row["ttft_s"] * 1000, timings["ttft_ms"], abs_tol=1e-6)
+            and isinstance(row.get("total_s"), (int, float))
+            and isinstance(timings.get("total_ms"), (int, float))
+            and abs(row["total_s"] * 1000 - timings["total_ms"])
+            <= LATENCY_TOLERANCE_S * 1000
+        )
     return all(
         isinstance(row.get(k + "_s"), (int, float))
         and isinstance(timings.get(k + "_ms"), (int, float))
@@ -34,8 +57,99 @@ def correlated(row, trace):
     )
 
 
-def analyze(rows, *, expected, model, traces=(), m6_rows=()):
+def ledger_requests(rows):
+    grouped = {}
+    for row in rows:
+        request_id = row.get("request_id")
+        if not request_id:
+            continue
+        key = (row["run_id"], request_id)
+        usage = row.get("usage", {})
+        record = {
+            "run_id": row["run_id"],
+            "request_id": request_id,
+            "output_tokens": usage.get("output_tokens"),
+            "reasoning_tokens": usage.get("reasoning_tokens"),
+            "latency_ms": row.get("latency_ms"),
+        }
+        if key not in grouped:
+            grouped[key] = {**record, "amount_usd": 0.0}
+        elif any(grouped[key][k] != v for k, v in record.items()):
+            raise ValueError("원장 요청 메타데이터 불일치")
+        grouped[key]["amount_usd"] += float(row.get("amount_usd", 0))
+    return list(grouped.values())
+
+
+def order_links(rows, traces, requests):
+    matched = [[t for t in traces if correlated(row, t)] for row in rows]
+    if any(len(m) != 1 for m in matched):
+        return {}
+    selected = [m[0] for m in matched]
+    positions = [next(i for i, t in enumerate(traces) if t is m) for m in selected]
+    if positions != sorted(set(positions)):
+        return {}
+    steps = [
+        (row, step)
+        for row, trace in zip(rows, selected, strict=True)
+        for step in trace.get("steps", [])
+        if step.get("kind") == "model"
+    ]
+    if not steps or len(steps) > len(requests):
+        return {}
+
+    def agrees(step, request):
+        latency = step.get("latency_ms")
+        return (
+            isinstance(latency, (int, float))
+            and isinstance(request.get("latency_ms"), (int, float))
+            and abs(latency - request["latency_ms"]) <= LATENCY_TOLERANCE_S * 1000
+        )
+
+    offsets = [
+        start
+        for start in range(len(requests) - len(steps) + 1)
+        if all(agrees(step, requests[start + i]) for i, (_, step) in enumerate(steps))
+    ]
+    if len(offsets) != 1:
+        return {}
+    return {
+        id(row): requests[offsets[0] + i]
+        for i, (row, step) in enumerate(steps)
+        if step.get("name") == "final_answer"
+    }
+
+
+def comparison_stats(requests, maximum, excluded=()):
+    result = {}
+    for run in ("m7-latency", "m6-dev", "m6-test-01", "m7-security"):
+        group = [r for r in requests if r["run_id"] == run]
+        outputs = [
+            r["output_tokens"] for r in group if isinstance(r["output_tokens"], int)
+        ]
+        result[run] = {
+            "count": len(group),
+            "max_output_tokens": max(outputs, default=None),
+            "max_output_tokens_reached_count": sum(v >= maximum for v in outputs),
+        }
+        if run == "m7-latency":
+            remaining = [
+                r["output_tokens"]
+                for r in group
+                if r["request_id"] not in excluded
+                and isinstance(r["output_tokens"], int)
+            ]
+            result[run]["remaining_max_output_tokens"] = max(remaining, default=None)
+    return result
+
+
+def analyze(
+    rows, *, expected, model, traces=(), m6_rows=(), ledger=(), max_output_tokens=4000
+):
+    requests = ledger_requests(ledger)
+    latency_requests = [r for r in requests if r["run_id"] == "m7-latency"]
+    order = order_links(rows, traces, latency_requests)
     items = []
+    excluded = set()
     for row in rows:
         if row.get("refuse_reason") != "parse_error":
             continue
@@ -45,6 +159,25 @@ def analyze(rows, *, expected, model, traces=(), m6_rows=()):
             for t in matched
             for s in t.get("steps", [])
         )
+        request_ids = {
+            s.get("request_id")
+            for t in matched
+            for s in t.get("steps", [])
+            if s.get("name") == "final_answer" and s.get("request_id")
+        }
+        linked = [r for r in latency_requests if r["request_id"] in request_ids]
+        request = linked[0] if len(request_ids) == len(linked) == 1 else None
+        link_method = "request_id" if request else "unlinked"
+        if not request_ids and request is None and id(row) in order:
+            request = order[id(row)]
+            link_method = "order_and_latency"
+        reached = (
+            request is not None
+            and isinstance(request["output_tokens"], int)
+            and request["output_tokens"] >= max_output_tokens
+        )
+        if request:
+            excluded.add(request["request_id"])
         # ChatParseError and zero token counters do not establish empty output,
         # truncation, schema violation or a stream interruption. No raw output or
         # diagnostic message/length was retained in the observed record schema.
@@ -63,8 +196,18 @@ def analyze(rows, *, expected, model, traces=(), m6_rows=()):
                 "question_id": row["question_id"],
                 "system": row["system"],
                 "model": model,
-                "classification": "indeterminate",
-                "reason": reason,
+                "classification": "max_output_tokens_reached"
+                if reached
+                else "indeterminate",
+                "reason": "max_output_tokens 도달(JSON 잘림)" if reached else reason,
+                "link_method": link_method,
+                "output_tokens": request["output_tokens"] if request else None,
+                "max_output_tokens": max_output_tokens,
+                "reasoning_tokens": request["reasoning_tokens"] if request else None,
+                "latency_s": request["latency_ms"] / 1000
+                if request and request["latency_ms"] is not None
+                else None,
+                "answer_latency_s": row.get("total_s"),
                 "matched_traces": len(matched),
                 "m6_parse_error": any(
                     r.get("refuse_reason") == "parse_error" for r in reference
@@ -81,6 +224,11 @@ def analyze(rows, *, expected, model, traces=(), m6_rows=()):
         "count_matches": len(items) == expected,
         "class_counts": dict(Counter(i["classification"] for i in items)),
         "items": items,
+        "definition": DEFINITION,
+        "strict_schema_source": "langchain_openai/chat_models/base.py:4685-4720 (_construct_responses_api_payload; pydantic stream uses strict=True)",
+        "latency_tolerance_s": LATENCY_TOLERANCE_S,
+        "cause_note": CAUSE_NOTE,
+        "comparisons": comparison_stats(requests, max_output_tokens, excluded),
         "m6_note": "비스트리밍 M6는 참고 정보이며 분류 입력이 아니다.",
     }
 
@@ -119,6 +267,8 @@ def build(root=Path(".")):
         model=config["model"],
         traces=traces,
         m6_rows=m6,
+        ledger=load_rows(root / LEDGER) if (root / LEDGER).exists() else (),
+        max_output_tokens=config.get("settings", {}).get("max_output_tokens", 4000),
     )
     result["raw_fingerprint"] = raw_hash
     return result

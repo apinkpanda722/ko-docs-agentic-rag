@@ -111,3 +111,84 @@ def test_missing_traces_still_classifies_with_frozen_model(tmp_path):
     assert result["items"][0]["classification"] == "indeterminate"
     assert result["items"][0]["model"] == "fixture"
     assert result["items"][0]["m6_parse_error"] is None
+
+
+def ledger_request(request_id, output, *, run="m7-latency", latency=1000):
+    return [
+        {
+            "request_id": request_id,
+            "run_id": run,
+            "service": "openai.fixture." + kind,
+            "usage": {"output_tokens": output, "reasoning_tokens": 0},
+            "latency_ms": latency,
+            "amount_usd": 0.01,
+        }
+        for kind in ("input", "cached_input", "cache_write", "output")
+    ]
+
+
+def test_ledger_counts_usage_once_and_links_by_request_id():
+    row = {
+        "question_id": "q",
+        "system": "simple",
+        "refuse_reason": "parse_error",
+        "embed_s": 0.1,
+        "search_s": 0.2,
+    }
+    trace = {
+        **{k: row[k] for k in ("question_id", "system", "refuse_reason")},
+        "timings": {"embed_ms": 100, "search_ms": 200},
+        "steps": [
+            {"name": "final_answer", "error": "ChatParseError", "request_id": "r"}
+        ],
+    }
+    result = parse.analyze(
+        [row],
+        expected=1,
+        model="m",
+        traces=[trace],
+        ledger=ledger_request("r", 4000)
+        + ledger_request("other", 30)
+        + ledger_request("ref", 80, run="m6-dev"),
+        max_output_tokens=4000,
+    )
+    item = result["items"][0]
+    assert item["classification"] == "max_output_tokens_reached"
+    assert item["link_method"] == "request_id"
+    assert item["output_tokens"] == 4000 and item["reasoning_tokens"] == 0
+    assert result["comparisons"]["m7-latency"]["count"] == 2
+    assert result["comparisons"]["m7-latency"]["remaining_max_output_tokens"] == 30
+    assert result["comparisons"]["m6-dev"]["max_output_tokens"] == 80
+    assert result["cause_note"]
+
+
+def test_order_link_requires_unique_complete_execution_order_and_latency():
+    row = {
+        "question_id": "q",
+        "system": "simple",
+        "refuse_reason": "parse_error",
+        "embed_s": 0.1,
+        "search_s": 0.2,
+        "total_s": 1.4,
+    }
+    trace = {
+        **{k: row[k] for k in ("question_id", "system", "refuse_reason")},
+        "timings": {"embed_ms": 100, "search_ms": 200, "total_ms": 1400},
+        "steps": [
+            {
+                "kind": "model",
+                "name": "final_answer",
+                "latency_ms": 1000,
+                "error": "ChatParseError",
+            }
+        ],
+    }
+    kwargs = dict(  # noqa: C408
+        expected=1, model="m", ledger=ledger_request("r", 3999), max_output_tokens=4000
+    )
+    linked = parse.analyze([row], traces=[trace], **kwargs)["items"][0]
+    assert linked["link_method"] == "order_and_latency"
+    assert linked["classification"] == "indeterminate"
+    unlinked = parse.analyze([row], traces=[trace, trace], **kwargs)["items"][0]
+    assert unlinked["link_method"] == "unlinked"
+    assert unlinked["classification"] == "indeterminate"

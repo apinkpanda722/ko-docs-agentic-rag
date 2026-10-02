@@ -1,16 +1,21 @@
-"""Thin, non-streaming in-process answer adapter for the demo."""
+"""Thin in-process answer adapter for the demo."""
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Literal
 
 import httpx
 
 from kodocs.agent.answer import answer as _answer_fn
 from kodocs.agent.runtime import build_default_runtime
+from kodocs.agent.types import AgentRuntime
 from kodocs.config import MissingAPIKeyError
 from kodocs.costs import BudgetExceededError
+from kodocs.llm.openai_chat import ChatParseError
+from kodocs.ui.streaming import FinalStreamingChat
 from kodocs.ui.users import DemoUser
+
+STREAM_ERROR = "응답이 비정상적으로 길어져 중단됐습니다. 다시 시도해 주세요"
 
 
 class UiError(RuntimeError):
@@ -46,16 +51,31 @@ class UiAnswer:
 
 
 def ask(
-    question: str, user: DemoUser, system: Literal["simple", "agentic"]
+    question: str,
+    user: DemoUser,
+    system: Literal["simple", "agentic"],
+    *,
+    messages=None,
 ) -> UiAnswer:
     """Call the shared answer entry point; user attributes stay outside the prompt."""
     try:
+        runtime = build_default_runtime()
+        if messages is not None and isinstance(runtime, AgentRuntime):
+            runtime = replace(
+                runtime,
+                chat=FinalStreamingChat(
+                    runtime.chat, lambda delta: messages.put(("delta", delta))
+                ),
+                event_sink=lambda event: messages.put(("event", event)),
+            )
         result = _answer_fn(
             question,
             user.to_user_context(),
             system=system,
-            runtime=build_default_runtime(),
+            runtime=runtime,
         )
+        if messages is not None and result.refuse_reason == "parse_error":
+            raise ChatParseError("stream parse failure")
         trace = result.trace
         steps = trace.get("steps", [])
         tool_steps = [step for step in steps if step.get("kind") == "tool"]
@@ -93,6 +113,8 @@ def ask(
             cost_usd=sum(float(step.get("cost_usd", 0)) for step in steps),
             total_ms=float(trace.get("timings", {}).get("total_ms") or 0),
         )
+    except ChatParseError:
+        raise UiError(STREAM_ERROR) from None
     except MissingAPIKeyError:
         raise UiError(
             "API 키가 설정되지 않았습니다. 키 설정 후 다시 실행해 주세요."

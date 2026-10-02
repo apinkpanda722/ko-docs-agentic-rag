@@ -489,7 +489,10 @@ def test_structured_output_returns_parsed_model_and_raises_parse_error(
 
 
 @pytest.mark.parametrize("with_usage", [True, False])
-def test_structured_stream_sdk_events_ttft_and_missing_usage(tmp_path, with_usage):
+@pytest.mark.parametrize("observe", [False, True])
+def test_structured_stream_sdk_events_ttft_and_missing_usage(
+    tmp_path, with_usage, observe
+):
     from openai.types.responses import (
         Response,
         ResponseCompletedEvent,
@@ -548,18 +551,26 @@ def test_structured_stream_sdk_events_ttft_and_missing_usage(tmp_path, with_usag
             200, content=body(), headers={"content-type": "text/event-stream"}
         )
 
+    seen = []
+    callback = seen.append if observe else None
     managed, client = _managed(tmp_path, handler)
     managed._monotonic = lambda: ticks[0]
     try:
         if with_usage:
-            result = managed.invoke("질문", response_schema=Answer, stream=True)
+            result = managed.invoke(
+                "질문", response_schema=Answer, stream=True, on_text_delta=callback
+            )
             assert result.parsed == Answer(answer="완료")
             assert result.ttft_ms == 3000
             assert result.usage.output_tokens == 40
             assert result.cost_usd > 0
         else:
             with pytest.raises(BillingUncertainError):
-                managed.invoke("질문", response_schema=Answer, stream=True)
+                managed.invoke(
+                    "질문", response_schema=Answer, stream=True, on_text_delta=callback
+                )
+        if observe:
+            assert seen == ['{"answer":"완료"}']
         assert len(requests) == 1
         assert requests[0]["stream"] is True
         assert requests[0]["text"]["format"]["type"] == "json_schema"
@@ -617,3 +628,153 @@ def test_stream_default_request_snapshot_preserves_m6_settings(tmp_path):
     assert prompt_hashes() == frozen["prompt_hashes"]
     assert finalizer_hash() == frozen["finalizer_hash"]
     assert result.ttft_ms is None
+
+
+def test_text_callback_only_text_and_failure_is_isolated(tmp_path):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessageChunk
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    chunks = [
+        AIMessageChunk(content=[{"type": "reasoning", "reasoning": "hidden"}]),
+        AIMessageChunk(content=[{"type": "text", "text": "shown"}]),
+        AIMessageChunk(
+            content="",
+            usage_metadata={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+        ),
+    ]
+    managed._model = Mock(stream=Mock(return_value=iter(chunks)))
+    seen = []
+
+    def callback(delta):
+        seen.append(delta)
+        raise ValueError("private")
+
+    try:
+        actual = managed.invoke("q", stream=True, on_text_delta=callback)
+    finally:
+        client.close()
+    assert seen == ["shown"]
+    assert actual.usage.output_tokens == 2
+
+
+def test_parse_diagnostics_are_content_free_and_billed(tmp_path, caplog):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessageChunk
+
+    class Schema(BaseModel):
+        answer: str
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    chunk = AIMessageChunk(
+        content='{"answer":"PRIVATE',
+        usage_metadata={"input_tokens": 1, "output_tokens": 4000, "total_tokens": 4001},
+        response_metadata={
+            "status": "incomplete",
+            "incomplete_details": {"reason": "max_output_tokens"},
+        },
+    )
+    managed._model = Mock(stream=Mock(return_value=iter([chunk])))
+    try:
+        with pytest.raises(ChatParseError) as caught:
+            managed.invoke(
+                "q", stream=True, response_schema=Schema, on_text_delta=lambda _: None
+            )
+    finally:
+        client.close()
+    assert caught.value.diagnostics["output_tokens"] == 4000
+    assert caught.value.diagnostics["output_chars"] == len(chunk.content)
+    assert caught.value.diagnostics["incomplete_reason"] == "max_output_tokens"
+    assert "PRIVATE" not in json.dumps(caught.value.diagnostics)
+    assert managed._model.stream.call_count == 1
+    assert "PRIVATE" not in caplog.text
+    assert "4000" in caplog.text
+
+
+def test_callback_retry_before_text_never_duplicates_and_post_send_never_retries(
+    tmp_path,
+):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessageChunk
+
+    seen = []
+    count = [0]
+
+    def chunks(messages, **kwargs):
+        count[0] += 1
+        if count[0] == 1:
+            raise httpx.ConnectTimeout("private")
+        yield AIMessageChunk(content="delta")
+        raise httpx.ReadTimeout("private")
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    managed._model = Mock(stream=chunks)
+    try:
+        with pytest.raises(BillingUncertainError):
+            managed.invoke("q", stream=True, on_text_delta=seen.append)
+    finally:
+        client.close()
+    assert count[0] == 2
+    assert seen == ["delta"]
+
+
+def test_explicit_none_observer_preserves_existing_stream_result(tmp_path):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessageChunk
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+
+    def chunks(*args, **kwargs):
+        yield AIMessageChunk(
+            content="same",
+            usage_metadata={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+        )
+
+    managed._model = Mock(stream=chunks)
+    try:
+        default = managed.invoke("q", stream=True)
+        explicit = managed.invoke("q", stream=True, on_text_delta=None)
+    finally:
+        client.close()
+    assert default.message == explicit.message
+    assert default.parsed == explicit.parsed
+    assert default.usage == explicit.usage
+    assert default.cost_usd == explicit.cost_usd
+    assert default.generation == explicit.generation
+
+
+def test_nonstream_reproduction_observer_keeps_raw_before_validation(tmp_path):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessage
+
+    class Schema(BaseModel):
+        answer: str
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    raw = '{"answer":"PRIVATE'
+    message = AIMessage(
+        content=raw,
+        usage_metadata={"input_tokens": 1, "output_tokens": 4000, "total_tokens": 4001},
+    )
+    managed._model = Mock(invoke=Mock(return_value=message))
+    seen = []
+    try:
+        with pytest.raises(ChatParseError) as caught:
+            managed.invoke("q", response_schema=Schema, on_text_delta=seen.append)
+    finally:
+        client.close()
+    assert seen == [raw]
+    assert caught.value.diagnostics["output_tokens"] == 4000
+    assert "PRIVATE" not in json.dumps(caught.value.diagnostics)
+    assert (
+        managed._model.invoke.call_args.kwargs["response_format"]["json_schema"][
+            "strict"
+        ]
+        is True
+    )
+    managed._model.stream.assert_not_called()

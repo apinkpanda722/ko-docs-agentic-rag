@@ -66,7 +66,7 @@ def test_comparison_and_session_cost(app, monkeypatch):
     assert "인용" not in markdown_text(columns[1])
     assert "권한" not in markdown_text(columns[1])
     assert "model_refused" not in "\n".join(x.value for x in columns[1].markdown)
-    assert "search_docs" in markdown_text(columns[1].expander[0])
+    assert any("search_docs" in markdown_text(e) for e in columns[1].expander)
     assert any("0.015000" in x.value and "USD" in x.value for x in app.caption)
     assert app.session_state["session_cost_usd"] == pytest.approx(0.03)
     assert app.metric[0].value == "0.030000 USD"
@@ -119,3 +119,73 @@ def test_viewer_handles_empty_directory(app, tmp_path, monkeypatch):
     app.run()
     assert not app.exception
     assert app.info
+
+
+def test_live_events_final_replacement_and_refusal_clear(app, monkeypatch):
+    import threading
+
+    from kodocs.agent.types import AgentRuntime
+
+    worker_ids = []
+
+    def fake_answer(question, user, *, runtime, **kwargs):
+        worker_ids.append(threading.get_ident())
+        runtime.event_sink(
+            {
+                "kind": "tool_start",
+                "name": "get_document",
+                "index": 1,
+                "args": {},
+                "latency_ms": 0,
+                "refs_count": 0,
+                "error": None,
+            }
+        )
+        runtime.event_sink(
+            {
+                "kind": "tool_end",
+                "name": "get_document",
+                "index": 1,
+                "args": {},
+                "latency_ms": 12,
+                "refs_count": 0,
+                "error": "not_found",
+            }
+        )
+        runtime.chat.on_text_delta('{"answer":"PROVISIONAL')
+        return result(refused=user.team == "지원")
+
+    runtime = AgentRuntime(object(), object(), {}, "fake")
+    monkeypatch.setattr(service, "build_default_runtime", lambda: runtime)
+    monkeypatch.setattr(service, "_answer_fn", fake_answer)
+    app.run()
+    app.text_area(key="question").set_value("question")
+    app.button(key="compare").click().run()
+    assert not app.exception
+    assert len(worker_ids) == 2
+    assert "PROVISIONAL" not in markdown_text(app)
+    assert "답변입니다." in markdown_text(app)
+    assert "확인 가능한 근거가 없습니다." in markdown_text(app)
+    assert "get_document · 오류(not_found)" in markdown_text(app)
+
+
+def test_stream_error_retry_same_request_no_fallback(app, monkeypatch):
+    from kodocs.llm.openai_chat import ChatParseError
+
+    calls = []
+
+    def failing(question, user, **kwargs):
+        calls.append((question, user, kwargs["system"]))
+        raise ChatParseError("PRIVATE")
+
+    monkeypatch.setattr(service, "_answer_fn", failing)
+    app.run()
+    app.text_area(key="question").set_value("original")
+    app.button(key="single").click().run()
+    assert service.STREAM_ERROR in app.error[0].value
+    app.run()
+    app.text_area(key="question").set_value("changed")
+    app.selectbox(key="system").select("simple")
+    app.button(key="retry").click().run()
+    assert len(calls) == 2 and calls[0] == calls[1]
+    assert "PRIVATE" not in str(app)

@@ -4,7 +4,8 @@ from pathlib import Path
 
 import streamlit as st
 
-from kodocs.ui.service import UiAnswer, UiError, ask
+from kodocs.ui.service import STREAM_ERROR, UiAnswer, UiError, ask
+from kodocs.ui.streaming import event_lines, partial_answer, run_worker
 from kodocs.ui.users import load_demo_users
 
 RESULTS_DIR = Path("docs/results")
@@ -58,29 +59,100 @@ def query_view() -> None:
     b = st.selectbox("사용자 B", labels, index=min(1, len(labels) - 1), key="user_b")
     single = st.button("사용자 A로 실행", key="single")
     compare = st.button("같은 질문을 두 사용자로 실행", key="compare")
-    if single or compare:
-        if not question.strip():
-            st.warning("질문을 입력해 주세요.")
+    retry_request = st.session_state.get("retry_request")
+    retry = st.button("다시 시도", key="retry") if retry_request else False
+    fresh = single or compare or retry
+    if fresh:
+        if retry:
+            question, selected, system = retry_request
         else:
             selected = [a, b] if compare else [a]
+        if not question.strip():
+            st.warning("질문을 입력해 주세요.")
+            fresh = False
+        else:
             by_label = {user.label: user for user in users}
             answers = []
-            for label in selected:
-                try:
-                    with st.spinner(f"{label} 답변 생성 중"):
-                        result = ask(question, by_label[label], system)
-                    st.session_state.session_cost_usd += result.cost_usd
-                except UiError as exc:
-                    result = str(exc)
-                answers.append((label, result))
+            st.session_state.retry_request = None
+            columns = st.columns(len(selected))
+            # Each worker completes and joins before the next user starts.
+            for column, label in zip(columns, selected, strict=True):
+                events = []
+                text = []
+                with column:
+                    # mutable_status_container.py:125 supports state/expanded updates;
+                    # elements/empty.py:28-42 supports replace/clear on the same slot.
+                    status = st.status(f"{label} · 다음 행동 결정 중", expanded=True)
+                    status_body = status.empty()
+                    partial = st.empty()
+
+                    def render(
+                        kind,
+                        value,
+                        *,
+                        text=text,
+                        events=events,
+                        partial=partial,
+                        status=status,
+                        status_body=status_body,
+                    ):
+                        if kind == "delta":
+                            text.append(value)
+                            partial.markdown(partial_answer("".join(text)))
+                        else:
+                            events.append(value)
+                            status_body.markdown("  \n".join(event_lines(events)))
+                            if (
+                                value["kind"] == "model_start"
+                                and value["name"] != "final_answer"
+                            ):
+                                status.update(label="다음 행동 결정 중")
+                            elif value["kind"] == "final_start":
+                                status.update(label="최종 답변 생성 중")
+
+                    try:
+                        result = run_worker(
+                            lambda messages, label=label: ask(
+                                question, by_label[label], system, messages=messages
+                            ),
+                            render,
+                        )
+                        st.session_state.session_cost_usd += result.cost_usd
+                    except UiError as exc:
+                        result = str(exc)
+                        if result == STREAM_ERROR:
+                            st.session_state.retry_request = (question, [label], system)
+                    finally:
+                        # Remove provisional answer even for refusals/errors.
+                        partial.empty()
+                    status.update(
+                        label="실행 완료"
+                        if not isinstance(result, str)
+                        else "실행 오류",
+                        state="complete" if not isinstance(result, str) else "error",
+                        expanded=False,
+                    )
+                    render_answer(label, result)
+                answers.append((label, result, events))
             st.session_state.answers = answers
-    answers = st.session_state.get("answers", [])
-    if answers:
-        for column, (label, result) in zip(
-            st.columns(len(answers)), answers, strict=True
-        ):
-            with column:
-                render_answer(label, result)
+            # Make retry available on the failure render, without rerunning.
+            if (
+                st.session_state.retry_request
+                and not retry_request
+                and st.button("다시 시도", key="retry")
+            ):
+                st.rerun()
+    if not fresh:
+        answers = st.session_state.get("answers", [])
+        if answers:
+            for column, (label, result, events) in zip(
+                st.columns(len(answers)), answers, strict=True
+            ):
+                with column:
+                    render_answer(label, result)
+                    if events:
+                        with st.expander("실시간 실행 상태"):
+                            st.markdown("  \n".join(event_lines(events)))
 
 
 def results_view() -> None:

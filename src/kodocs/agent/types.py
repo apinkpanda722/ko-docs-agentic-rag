@@ -84,6 +84,7 @@ class ChatLike(Protocol):
         tools: Sequence[object] | None = None,
         response_schema: type[object] | None = None,
         stream: bool = False,
+        on_text_delta: Callable[[str], None] | None = None,
     ) -> ChatResult: ...
 
 
@@ -98,6 +99,7 @@ class AgentRuntime:
     guardrails: GuardrailConfig = field(default_factory=lambda: _guardrail_config())
     trace_dir: Path = Path("logs/traces")
     clock: Callable[[], float] = time.monotonic
+    event_sink: Callable[[Mapping[str, object]], None] | None = None
 
 
 def _guardrail_config() -> GuardrailConfig:

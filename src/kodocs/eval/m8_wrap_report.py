@@ -165,6 +165,30 @@ def render(root):
         f"| {i['question_id']} | {i['system']} | {i['model']} | {i['classification']} | {i['reason']} | {i['m6_parse_error']} |"
         for i in errors["items"]
     ]
+    if errors.get("cause_note"):
+        lines += [
+            "",
+            errors["cause_note"],
+            "",
+            errors["definition"],
+            f"지연 허용 오차: {errors['latency_tolerance_s']}초.",
+            "",
+            "| 문항 | 연결 | 출력 토큰 | 상한 | reasoning | 모델 지연(초) |",
+            "|---|---|---|---|---|---|",
+        ]
+        lines += [
+            f"| {i['question_id']} | {i['link_method']} | {i['output_tokens']} | {i['max_output_tokens']} | {i['reasoning_tokens']} | {i['latency_s']} |"
+            for i in errors["items"]
+        ]
+        lines += [
+            "",
+            "| run_id | 요청 수 | 최대 출력 | 상한 도달 | 오류 외 최대 출력 |",
+            "|---|---|---|---|---|",
+        ]
+        lines += [
+            f"| {run} | {v['count']} | {v['max_output_tokens']} | {v['max_output_tokens_reached_count']} | {v.get('remaining_max_output_tokens', '—')} |"
+            for run, v in errors["comparisons"].items()
+        ]
     lines += [
         "",
         "분류별 건수: "
@@ -189,6 +213,18 @@ def render(root):
     lines.append(
         annex_section(audit, questions, regulations((root / M7_REPORT).read_text()))
     )
+    from kodocs.eval.m8_stream_repro import report
+
+    lines += [
+        "",
+        "## 스트리밍 폭주 재현",
+        "",
+        "보고 규칙(실행 전 고정): 모드별·질문별 폭주 건수와 비율을 기술 통계로만 보고한다(가설 검정 없음). 폭주 0건이면 “재현 안 됨(1단계 200회[, 2단계 226회])”. 원시 출력은 인용하지 않는다. 결과 manifest가 없으면 “재현 실행 미실행”, 결과·원본 해시 검증 실패는 오류로 중단한다.",
+        "",
+        report(root),
+        "",
+        "실행 순서: 이 step 완료 → `make up` → `make m8-stream-repro-dry` → `make m8-stream-repro` → 필요하면 `STAGE=2 make m8-stream-repro` → `make m8-wrap-report` → `make readme` → 커밋 → 리랭커(step 6~8).",
+    ]
     return "\n".join(lines)
 
 

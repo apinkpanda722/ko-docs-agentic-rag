@@ -195,6 +195,11 @@ class TraceSession:
                     "cost_usd": float(cost_usd),
                     "error": _error_name(error),
                     "attempts": _attempt_records(attempts),
+                    **(
+                        {"diagnostics": _sanitize(error.diagnostics)}
+                        if getattr(error, "diagnostics", None)
+                        else {}
+                    ),
                 }
             )
             if ttft_ms is not None and self._timings["ttft_ms"] is None:

@@ -531,3 +531,89 @@ def test_run_sql_description_names_allowed_tables_and_columns() -> None:
     assert "ticket_id" in description
     assert "approval_id" in description
     assert "amount_krw" in description
+
+
+def test_agent_events_and_trace_for_restricted_and_missing_are_identical(
+    tmp_path, monkeypatch
+):
+    from kodocs.agent.evidence import EvidenceLog
+    from kodocs.agent.guardrails import Guard, GuardrailConfig
+    from kodocs.agent.tools import AgentContext, execute_tool_call
+    from kodocs.agent.trace import TraceRecorder
+
+    monkeypatch.setattr("kodocs.agent.tools.time.perf_counter", lambda: 0)
+    # The fake search applies the pre-filter: an actual private source is kept by
+    # the fake backend, but never returned to the unauthorized context.
+    private = _raw_chunk(1, "PRIVATE")
+    private["_source"].update(
+        doc_id="same-id",
+        access_level="restricted",
+        access_teams=["legal"],
+        access_min_grade=4,
+    )
+
+    def matches(query, source):
+        if "term" in query:
+            return all(
+                value in source.get(key, [])
+                if isinstance(source.get(key), list)
+                else source.get(key) == value
+                for key, value in query["term"].items()
+            )
+        if "range" in query:
+            return all(
+                source[key] <= value["lte"] for key, value in query["range"].items()
+            )
+        body = query["bool"]
+        return all(matches(q, source) for q in body.get("filter", [])) and (
+            sum(matches(q, source) for q in body.get("should", []))
+            >= body.get("minimum_should_match", 0)
+        )
+
+    class Backend(_Client):
+        def __init__(self, documents=()):
+            super().__init__()
+            self.documents = documents
+
+        def request(self, method, path, json=None):
+            self.calls.append((method, path, json))
+            assert json["query"]["bool"]["filter"][0]
+            return {
+                "hits": {
+                    "hits": [
+                        doc
+                        for doc in self.documents
+                        if matches(json["query"], doc["_source"])
+                    ]
+                }
+            }
+
+    def attempt(client):
+        events = []
+        trace = TraceRecorder(tmp_path, clock=lambda: 0).start(
+            question_id="q",
+            system="simple",
+            user=UserContext("platform", 1),
+            model_record={},
+            hashes={},
+        )
+        ctx = AgentContext(
+            UserContext("platform", 1),
+            EvidenceLog(),
+            Guard(GuardrailConfig(), timeout_s=45),
+            trace,
+            event_sink=events.append,
+        )
+        execute_tool_call(
+            ctx, _deps(client, tmp_path), "get_document", {"doc_id": "same-id"}
+        )
+        return events, trace._steps
+
+    restricted = Backend([private])
+    absent = Backend()
+    assert matches({"term": {"doc_id": "same-id"}}, private["_source"])
+    from kodocs.retrieval.access import access_filter
+
+    assert matches(access_filter(UserContext("legal", 4)), private["_source"])
+    assert not matches(access_filter(UserContext("platform", 1)), private["_source"])
+    assert attempt(restricted) == attempt(absent)

@@ -342,7 +342,9 @@ def render(root=Path(".")):
     lines += [
         f"- 스트리밍 parse_error: {errors['count']}건, "
         + ", ".join(f"{key} {n}건" for key, n in errors["class_counts"].items())
-        + f". 오류 메시지·원시 출력이 없어 원인을 확정하지 못했고 API를 재호출하지 않았다([M8 오프라인 분류]({WRAP}#스트리밍-parse_error-오프라인-분류)).",
+        + ". "
+        + errors.get("cause_note", "원인 판정 기록 부족; 원시 출력 미보존으로 미확정.")
+        + f" API를 재호출하지 않았다([M8 오프라인 분류]({WRAP}#스트리밍-parse_error-오프라인-분류)).",
         "",
         "## 데모",
         "",
@@ -361,7 +363,7 @@ def render(root=Path(".")):
             "",
         ]
     lines += [
-        "보조 GUI는 `make ui`로 실행한다(OpenSearch·API 키 필요, 실제 답변은 과금·사용자 실행). 같은 질문을 사용자 전환으로 비교하고 답변·인용·거절·도구 트레이스·비용을 표시한다. 결과표 화면은 저장된 문서를 읽으며, 질의 화면은 비스트리밍 `answer()`를 호출한다."
+        "보조 GUI는 `make ui`로 실행한다(OpenSearch·API 키 필요, 실제 답변은 과금·사용자 실행). 같은 질문을 사용자 전환으로 비교하고 답변·인용·거절·도구 트레이스·비용을 표시한다. 결과표 화면은 저장된 문서를 읽으며, 질의 화면은 `answer()`의 실제 모델 스트리밍(최종 답변), 도구 호출 실시간 표시, 폭주 시 진단 기록·재시도를 제공한다."
     ]
     return "\n".join(lines)
 

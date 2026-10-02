@@ -202,7 +202,7 @@ n-gram 분석기는 M5에서 제외했다. 사전 등록 가설에 걸려 있지
 - M7 채점 캐시: 답변 식별자와 run_set을 포함하지 않은 키 충돌을 수정했다. 잘못 재사용한 채점은 무효화하고 이력을 보존했다([변경 기록](docs/results/hypotheses.md#변경-기록), [M7](docs/results/2026-10-02-m7-answer-eval.md)).
 - c2 식별자 고유성: 사후 정정 전 누설 판정 3건(c2 식별자 고유성 결함 — 공개본·팀본 같은 제목)은 정정 후 0건이다. 정정 전·후를 모두 부록에 보존한다. 도구 경로 대조군 오거절은 정정 전 in-process|tool 1/26, mcp|tool 1/26에서 정정 후 도구 호출 오류 in-process|tool 1/26, mcp|tool 1/26로 재분류돼 오거절 0건이다. ([변경 기록](docs/results/hypotheses.md#변경-기록), [M7](docs/results/2026-10-02-m7-answer-eval.md)).
 - 지연 환경 패키지명: 수집 목록 오류를 정정했다. 실제 사용은 sentence-transformers와 httpx이며 설치 실패가 아니다. 측정 당시 manifest는 보존했다([M8 환경 기록 정정](docs/results/2026-10-03-m8-wrap-up.md#m7-환경-기록-정정)).
-- 스트리밍 parse_error: 4건, indeterminate 4건. 오류 메시지·원시 출력이 없어 원인을 확정하지 못했고 API를 재호출하지 않았다([M8 오프라인 분류](docs/results/2026-10-03-m8-wrap-up.md#스트리밍-parse_error-오프라인-분류)).
+- 스트리밍 parse_error: 4건, max_output_tokens_reached 4건. 왜 길어졌는지는 원시 출력 미보존으로 미확정. 스트리밍 여부 자체는 원인이 아님(스트리밍에서도 strict 구조화 스키마를 전송함 — 설치된 langchain-openai 소스 확인). API를 재호출하지 않았다([M8 오프라인 분류](docs/results/2026-10-03-m8-wrap-up.md#스트리밍-parse_error-오프라인-분류)).
 
 ## 데모
 
@@ -212,7 +212,7 @@ Claude Code + MCP: 촬영 예정.
 
 Streamlit GUI: 촬영 예정.
 
-보조 GUI는 `make ui`로 실행한다(OpenSearch·API 키 필요, 실제 답변은 과금·사용자 실행). 같은 질문을 사용자 전환으로 비교하고 답변·인용·거절·도구 트레이스·비용을 표시한다. 결과표 화면은 저장된 문서를 읽으며, 질의 화면은 비스트리밍 `answer()`를 호출한다.
+보조 GUI는 `make ui`로 실행한다(OpenSearch·API 키 필요, 실제 답변은 과금·사용자 실행). 같은 질문을 사용자 전환으로 비교하고 답변·인용·거절·도구 트레이스·비용을 표시한다. 결과표 화면은 저장된 문서를 읽으며, 질의 화면은 `answer()`의 실제 모델 스트리밍(최종 답변), 도구 호출 실시간 표시, 폭주 시 진단 기록·재시도를 제공한다.
 
 <!-- END generated -->
 
