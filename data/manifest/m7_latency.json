@@ -1,21 +1,21 @@
 {
   "schema_version": 1,
-  "status": "stopped",
+  "status": "completed",
   "concurrency": 1,
   "streaming": true,
   "measurement_mode": "스트리밍 모드에서 측정",
   "config_hash": "ba5ee42864360f3af13a26b4581b0ce6044c395c0aef524af6195c5a98d199ef",
   "model_settings_hash": "055ad89e97b568870482146379370a599f5f1a27d1c4ce99baf8b26acf4beac5",
   "m5_config_hash": "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d",
-  "code_commit": "921d671be008361f87e6bbe0517cf0166ea0e180",
-  "ran_at": "2026-10-02T12:35:22+09:00",
+  "code_commit": "6f9cd12f78b73de7df06c7c5226fcb50546a740b",
+  "ran_at": "2026-10-02T12:42:43+09:00",
   "warmup_excluded_count": 6,
   "warmup_ids": [
     "g-real-002",
     "g-real-004",
     "g-real-008"
   ],
-  "init_s": 0.0003184160004821024,
+  "init_s": 5.574186916999679,
   "environment": {
     "python": "3.12.10",
     "packages": {
@@ -32,7 +32,7 @@
     },
     "machine": "arm64",
     "os": "macOS-27.0.1-arm64-arm-64bit",
-    "embedding_device": null,
+    "embedding_device": "mps",
     "opensearch_version": "3.8.0",
     "opensearch_heap": {
       "wYSpoBioQFCn9ZuGnx_K0A": {
@@ -48,8 +48,7 @@
     },
     "reasons": {
       "packages.FlagEmbedding": "PackageNotFoundError",
-      "packages.opensearch-py": "PackageNotFoundError",
-      "embedding_device": "AttributeError"
+      "packages.opensearch-py": "PackageNotFoundError"
     }
   },
   "dry_run": {
@@ -91,6 +90,14 @@
       "rows": 0,
       "event": "stopped",
       "at": "2026-10-02T03:35:22.928090+00:00"
+    },
+    {
+      "key": "latency",
+      "path": "data/interim/m7/latency/runs.jsonl",
+      "sha256": "ec579607608c9f3d2837cd16dfaf7e5c5aab4ef2452d95955a289cc63b81f004",
+      "rows": 226,
+      "event": "completed",
+      "at": "2026-10-02T04:02:21.767769+00:00"
     }
   ],
   "history": [
@@ -193,8 +200,287 @@
         "error_type": "MissingAPIKeyError"
       },
       "result_sha256": "1a23dcc3c8df856fbf326832f2acb459d1d249b2c53cc8ec2475ca54515d077d"
+    },
+    {
+      "seq": 2,
+      "ran_at": "2026-10-02T12:42:43+09:00",
+      "status": "completed",
+      "rerun_reason": "1회차는 .env 키 로딩 결함(MissingAPIKeyError)으로 API 호출 0건에서 정지",
+      "previous_result_sha256": "1a23dcc3c8df856fbf326832f2acb459d1d249b2c53cc8ec2475ca54515d077d",
+      "raw": {
+        "sha256": "ec579607608c9f3d2837cd16dfaf7e5c5aab4ef2452d95955a289cc63b81f004",
+        "rows": 226
+      },
+      "result": {
+        "schema_version": 1,
+        "status": "completed",
+        "concurrency": 1,
+        "streaming": true,
+        "measurement_mode": "스트리밍 모드에서 측정",
+        "config_hash": "ba5ee42864360f3af13a26b4581b0ce6044c395c0aef524af6195c5a98d199ef",
+        "model_settings_hash": "055ad89e97b568870482146379370a599f5f1a27d1c4ce99baf8b26acf4beac5",
+        "m5_config_hash": "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a7d",
+        "code_commit": "6f9cd12f78b73de7df06c7c5226fcb50546a740b",
+        "ran_at": "2026-10-02T12:42:43+09:00",
+        "warmup_excluded_count": 6,
+        "warmup_ids": [
+          "g-real-002",
+          "g-real-004",
+          "g-real-008"
+        ],
+        "init_s": 5.574186916999679,
+        "environment": {
+          "python": "3.12.10",
+          "packages": {
+            "langgraph": "1.2.12",
+            "langchain-openai": "1.6.6",
+            "openai": "3.22.1",
+            "mcp": "2.2.0",
+            "google-genai": "2.26.0",
+            "langchain-core": "1.6.6",
+            "httpx": "0.28.1",
+            "torch": "2.14.0",
+            "FlagEmbedding": null,
+            "opensearch-py": null
+          },
+          "machine": "arm64",
+          "os": "macOS-27.0.1-arm64-arm-64bit",
+          "embedding_device": "mps",
+          "opensearch_version": "3.8.0",
+          "opensearch_heap": {
+            "wYSpoBioQFCn9ZuGnx_K0A": {
+              "heap_init_in_bytes": 2147483648,
+              "heap_max_in_bytes": 2147483648,
+              "heap_arguments": [
+                "-Xms1g",
+                "-Xmx1g",
+                "-Xms2g",
+                "-Xmx2g"
+              ]
+            }
+          },
+          "reasons": {
+            "packages.FlagEmbedding": "PackageNotFoundError",
+            "packages.opensearch-py": "PackageNotFoundError"
+          }
+        },
+        "dry_run": {
+          "basis": "M6 first gold+silver test average; M6 guarded token ceiling",
+          "by_system": {
+            "agentic": {
+              "estimated_cost_usd": 0.15072534886725666,
+              "m6_test_mean_usd": 0.0012993564557522127,
+              "n": 116,
+              "upper_cost_usd": 11.381920000000001
+            },
+            "simple": {
+              "estimated_cost_usd": 0.056979508991150445,
+              "m6_test_mean_usd": 0.0004912026637168142,
+              "n": 116,
+              "upper_cost_usd": 11.381920000000001
+            }
+          },
+          "concurrency": 1,
+          "config_hash": "ba5ee42864360f3af13a26b4581b0ce6044c395c0aef524af6195c5a98d199ef",
+          "estimated_cost_usd": 0.20770485785840712,
+          "execution_count": 232,
+          "input_hash": "7ce57b7178c8a30bb1ef1cc0c847b5f65088ce5b4a6fe55d787eda6e11dc2519",
+          "kind": "latency",
+          "measured_execution_count": 226,
+          "ran_at": "2026-10-02T12:35:12+09:00",
+          "remaining_monthly_budget_usd": 37.576550021,
+          "run_id": "m7-latency",
+          "streaming": true,
+          "upper_cost_usd": 22.763840000000002,
+          "upper_exceeds_remaining_budget": false,
+          "warmup_execution_count": 6
+        },
+        "limitation": "외부 API 지연 변동; 단일 실행 점추정, CI는 병기만",
+        "error_type": null,
+        "systems": {
+          "simple": {
+            "execution_count": 113,
+            "failure_count": 2,
+            "segments": {
+              "embed_s": {
+                "n": 113,
+                "missing_count": 0,
+                "p50_s": 0.0010431249993416714,
+                "p95_s": 0.0015103749992704252,
+                "max_s": 0.0018624170006660279
+              },
+              "search_s": {
+                "n": 113,
+                "missing_count": 0,
+                "p50_s": 0.025852083001154824,
+                "p95_s": 0.03549908300010429,
+                "max_s": 0.04011558299862372
+              },
+              "ttft_s": {
+                "n": 111,
+                "missing_count": 2,
+                "p50_s": 0.7265766249984154,
+                "p95_s": 1.3812510410007235,
+                "max_s": 4.7123267500010115
+              }
+            },
+            "total": {
+              "n": 113,
+              "missing_count": 0,
+              "p50_s": 1.8873867500005872,
+              "p95_s": 3.731509291999828,
+              "max_s": 23.693645082999865
+            },
+            "p95_s": 3.731509291999828,
+            "p95_ci95_s": [
+              3.089644916999532,
+              6.598093708000306
+            ],
+            "bootstrap_repetitions": 10000,
+            "bootstrap_seed": 20261001,
+            "p95_method": "nearest-rank",
+            "p95_rank": 108,
+            "verdict": "P95 목표 달성",
+            "target_s": 5.0
+          },
+          "agentic": {
+            "execution_count": 113,
+            "failure_count": 5,
+            "segments": {
+              "embed_s": {
+                "n": 88,
+                "missing_count": 25,
+                "p50_s": 0.1011495830007334,
+                "p95_s": 0.2632334580011957,
+                "max_s": 0.37774508299844456
+              },
+              "search_s": {
+                "n": 88,
+                "missing_count": 25,
+                "p50_s": 0.0269787079996604,
+                "p95_s": 0.06775062499946216,
+                "max_s": 0.09070141699885426
+              },
+              "ttft_s": {
+                "n": 108,
+                "missing_count": 5,
+                "p50_s": 0.7352018329984276,
+                "p95_s": 1.2117059160009376,
+                "max_s": 2.0498058749999473
+              }
+            },
+            "total": {
+              "n": 113,
+              "missing_count": 0,
+              "p50_s": 6.716103042001123,
+              "p95_s": 13.460814207999647,
+              "max_s": 27.133040167000217
+            },
+            "p95_s": 13.460814207999647,
+            "p95_ci95_s": [
+              10.875159749999511,
+              15.503845417000775
+            ],
+            "bootstrap_repetitions": 10000,
+            "bootstrap_seed": 20261001,
+            "p95_method": "nearest-rank",
+            "p95_rank": 108
+          }
+        }
+      },
+      "result_sha256": "df75ec2fcd022b92168e384b8da3c7b04225437de72469ca02614793fa016122"
     }
   ],
   "limitation": "외부 API 지연 변동; 단일 실행 점추정, CI는 병기만",
-  "error_type": "MissingAPIKeyError"
+  "error_type": null,
+  "systems": {
+    "simple": {
+      "execution_count": 113,
+      "failure_count": 2,
+      "segments": {
+        "embed_s": {
+          "n": 113,
+          "missing_count": 0,
+          "p50_s": 0.0010431249993416714,
+          "p95_s": 0.0015103749992704252,
+          "max_s": 0.0018624170006660279
+        },
+        "search_s": {
+          "n": 113,
+          "missing_count": 0,
+          "p50_s": 0.025852083001154824,
+          "p95_s": 0.03549908300010429,
+          "max_s": 0.04011558299862372
+        },
+        "ttft_s": {
+          "n": 111,
+          "missing_count": 2,
+          "p50_s": 0.7265766249984154,
+          "p95_s": 1.3812510410007235,
+          "max_s": 4.7123267500010115
+        }
+      },
+      "total": {
+        "n": 113,
+        "missing_count": 0,
+        "p50_s": 1.8873867500005872,
+        "p95_s": 3.731509291999828,
+        "max_s": 23.693645082999865
+      },
+      "p95_s": 3.731509291999828,
+      "p95_ci95_s": [
+        3.089644916999532,
+        6.598093708000306
+      ],
+      "bootstrap_repetitions": 10000,
+      "bootstrap_seed": 20261001,
+      "p95_method": "nearest-rank",
+      "p95_rank": 108,
+      "verdict": "P95 목표 달성",
+      "target_s": 5.0
+    },
+    "agentic": {
+      "execution_count": 113,
+      "failure_count": 5,
+      "segments": {
+        "embed_s": {
+          "n": 88,
+          "missing_count": 25,
+          "p50_s": 0.1011495830007334,
+          "p95_s": 0.2632334580011957,
+          "max_s": 0.37774508299844456
+        },
+        "search_s": {
+          "n": 88,
+          "missing_count": 25,
+          "p50_s": 0.0269787079996604,
+          "p95_s": 0.06775062499946216,
+          "max_s": 0.09070141699885426
+        },
+        "ttft_s": {
+          "n": 108,
+          "missing_count": 5,
+          "p50_s": 0.7352018329984276,
+          "p95_s": 1.2117059160009376,
+          "max_s": 2.0498058749999473
+        }
+      },
+      "total": {
+        "n": 113,
+        "missing_count": 0,
+        "p50_s": 6.716103042001123,
+        "p95_s": 13.460814207999647,
+        "max_s": 27.133040167000217
+      },
+      "p95_s": 13.460814207999647,
+      "p95_ci95_s": [
+        10.875159749999511,
+        15.503845417000775
+      ],
+      "bootstrap_repetitions": 10000,
+      "bootstrap_seed": 20261001,
+      "p95_method": "nearest-rank",
+      "p95_rank": 108
+    }
+  }
 }
