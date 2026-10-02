@@ -44,6 +44,7 @@
 - 커밋 메시지는 conventional commits 형식을 따를 것 (feat:, fix:, docs:, refactor:)
 
 ## 명령어
+make ui  # Streamlit 데모 GUI 기동(OpenSearch·API 키 필요, 실제 호출 시 과금) — 사용자 실행
 make adr-index  # ADR 상태·상호 참조 색인 생성 → docs/ADR-INDEX.md — 네트워크 없음
 make m8-parse-error  # M7 지연 원본 해시 대조·parse_error 오프라인 분류 → data/manifest/m8_parse_error.json — 네트워크 없음
 make m8-wrap-report  # M7 환경 정정·parse_error·별표 규정 단위 상한 보고 → docs/results/2026-10-03-m8-wrap-up.md — 네트워크 없음
