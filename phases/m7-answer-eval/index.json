@@ -145,7 +145,16 @@
     {
       "step": 10,
       "name": "latency-run",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-02T12:16:17+0900",
+      "summary": "m7_latency.py의 StreamingChat·run_latency·recalculate와 Make 타깃 구현; 스트리밍 TTFT·usage 누락 처리 보완, 원본 해시·재실행 이력·환경 기록 추가. make verify 1850개·전용 테스트 26개·dry-run·finalizer_hash 검사 통과. 실제 API 호출·커밋 없음.",
+      "completed_at": "2026-10-02T12:31:08+0900",
+      "usage": {
+        "input_tokens": 2142072,
+        "cached_input_tokens": 2024448,
+        "output_tokens": 20603,
+        "attempts": 1
+      }
     },
     {
       "step": 11,
