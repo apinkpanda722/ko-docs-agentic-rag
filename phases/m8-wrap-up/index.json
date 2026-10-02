@@ -75,7 +75,16 @@
     {
       "step": 5,
       "name": "ui-streaming",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-10-02T19:21:39+0900",
+      "summary": "최종 답변 스트리밍·실시간 도구 이벤트·진단/재시도·폭주 재현 코드 구현, 원장 529요청 중 parse_error 4건을 출력 상한 도달로 재분류(길어진 원인은 미확정); make verify 2081 tests 및 오프라인 AC 통과, README 멱등 확인, M5~M7 보존. 사용자 실행 순서: make up → make m8-stream-repro-dry → make m8-stream-repro → 필요하면 STAGE=2 make m8-stream-repro → make m8-wrap-report → make readme → 커밋 → step 6~8.",
+      "completed_at": "2026-10-02T19:56:33+0900",
+      "usage": {
+        "input_tokens": 861012,
+        "cached_input_tokens": 756992,
+        "output_tokens": 3488,
+        "attempts": 2
+      }
     },
     {
       "step": 6,
