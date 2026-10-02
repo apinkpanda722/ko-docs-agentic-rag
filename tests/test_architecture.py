@@ -667,3 +667,10 @@ def test_ui_streaming_is_confined_to_final_wrapper():
                 assert not any(kw.arg == "stream" for kw in node.keywords), path
         if path.name != "streaming.py":
             assert "stream=True" not in source
+
+
+def test_rerank_file_is_in_existing_architecture_guard():
+    path = RETRIEVAL_PACKAGE / "rerank.py"
+    assert path.is_file()
+    assert path in list(RETRIEVAL_PACKAGE.rglob("*.py"))
+    assert find_forbidden_imports(path, SOURCE_ROOT) == []

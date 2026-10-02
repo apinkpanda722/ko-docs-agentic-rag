@@ -17,6 +17,7 @@
 - 테스트·린트: pytest, ruff
 
 ## 아키텍처 규칙
+- `retrieval/rerank.py`는 `authorized_*`가 돌려준 후보만 입력으로 받고 새 검색·권한 로직을 만들지 않는다(M8-R1).
 - CRITICAL: `event_sink` 이벤트에는 결과 본문·문서 제목·근거 텍스트·가드레일 거절 사유를 넣지 않는다(trace expander에만).
 - CRITICAL: `src/kodocs/retrieval/`은 `langchain`·`langgraph`를 import하지 않는다. 검색은 측정 대상이므로 추상화 없이 OpenSearch·SQLite를 직접 호출한다. 이 경계는 테스트로 강제한다.
 - CRITICAL: `agent`·`mcp_server`는 `retrieval`을 `tools`를 통해서만 호출한다. 이 경계는 계층 가드 테스트로 강제한다.
@@ -45,6 +46,7 @@
 - 커밋 메시지는 conventional commits 형식을 따를 것 (feat:, fix:, docs:, refactor:)
 
 ## 명령어
+make rerank-models  # bge-reranker-v2-m3 다운로드(revision 고정, 약 2.3GB급) — 네트워크, 사용자 실행, embed 그룹 설치 후
 make m8-stream-repro-dry  # 스트리밍 폭주 재현 예상 비용 — 네트워크 없음
 make m8-stream-repro  # 실제 API 호출·과금, 사용자 실행, 1단계 300회(4문항×3경로×25), STAGE=2로 2단계 452회(B·C 113문항×2시스템), 재실행은 RERUN_REASON="사유"
 make m8-repro-shapes  # 재현 폭주 건의 형태 사후 분류(로컬 원시 파일 필요) → data/manifest/m8_stream_repro_shapes.json — 네트워크 없음
