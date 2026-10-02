@@ -46,6 +46,10 @@
 - 커밋 메시지는 conventional commits 형식을 따를 것 (feat:, fix:, docs:, refactor:)
 
 ## 명령어
+make m8-candidates  # dev 후보 캐시 — make up 필요·OpenSearch 읽기 전용·리랭커 점수 계산 없음, 사용자 실행
+make m8-tokens  # dev max_length 측정 — 모델 가중치 없이 리랭커 토크나이저만, 사용자 실행
+make m8-dev  # dev 리랭커 6개 격자 — 리랭커 로딩·MPS, 사용자 실행
+make m8-freeze  # M8 선택 설정 고정 — 덮어쓰기 거부, 사용자 실행
 make rerank-models  # bge-reranker-v2-m3 다운로드(revision 고정, 약 2.3GB급) — 네트워크, 사용자 실행, embed 그룹 설치 후
 make m8-stream-repro-dry  # 스트리밍 폭주 재현 예상 비용 — 네트워크 없음
 make m8-stream-repro  # 실제 API 호출·과금, 사용자 실행, 1단계 300회(4문항×3경로×25), STAGE=2로 2단계 452회(B·C 113문항×2시스템), 재실행은 RERUN_REASON="사유"
