@@ -276,9 +276,11 @@ def preflight(root):
     return config, questions, dev[:3]
 
 
-def _budget(root):
-    # Explicit env mapping keeps offline commands from opening .env.
-    settings = load_settings(env=os.environ)
+def _budget(root, *, execute=False):
+    # The offline dry-run passes an explicit env mapping so it never opens .env.
+    # A real run must read .env like every other billed command (FP-056): with an
+    # explicit mapping python-dotenv is skipped and the API keys are not found.
+    settings = load_settings() if execute else load_settings(env=os.environ)
     return BudgetGuard(
         CostLedger(root / DEFAULT_LEDGER_PATH), settings.monthly_budget_usd
     )
@@ -453,7 +455,7 @@ def run_latency(
     ]
     if not matching:
         raise ValueError("matching make m7-latency-dry required before execution")
-    _budget(root).check(dry["estimated_cost_usd"])
+    _budget(root, execute=True).check(dry["estimated_cost_usd"])
     lock = root / LOCK_PATH
     lock.parent.mkdir(parents=True, exist_ok=True)
     try:
@@ -618,7 +620,7 @@ def main(argv=None):
                 from kodocs.agent.types import AgentRuntime
                 from kodocs.llm.openai_chat import ManagedChat
 
-                settings = load_settings(env=os.environ)
+                settings = load_settings()  # real run: reads .env (FP-056)
                 chat = ManagedChat(
                     config,
                     settings,

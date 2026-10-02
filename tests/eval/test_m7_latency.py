@@ -1,6 +1,7 @@
 """Offline M7 latency contracts, real frozen settings and fake answers/clock."""
 
 import json
+import os
 import shutil
 from dataclasses import replace
 from pathlib import Path
@@ -18,6 +19,23 @@ from kodocs.eval.m7_rawhash import RawHashMismatch, fingerprint
 from kodocs.ingest.manifest import sha256_file
 from kodocs.llm.answer_settings import load_answer_config
 from kodocs.tools.deps import M5_CONFIG_HASH
+
+
+@pytest.fixture(autouse=True)
+def isolated_settings(monkeypatch):
+    """Tests never read the developer's real .env, and never leak env changes.
+
+    A real-run path now calls ``load_settings()`` (reads .env). Without this guard the
+    local keys would be loaded into the test process and could surface in assertion
+    output.
+    """
+    from kodocs import config as kodocs_config
+
+    before = dict(os.environ)
+    monkeypatch.setattr(kodocs_config, "load_dotenv", lambda *a, **k: False)
+    yield
+    os.environ.clear()
+    os.environ.update(before)
 
 
 @pytest.fixture
@@ -388,3 +406,145 @@ def test_m7_latency_history_tampering_refused(project):
     path.write_text(json.dumps(manifest))
     with pytest.raises(ValueError, match="history"):
         latency.recalculate(root=project)
+
+
+def _restore_environ():
+    before = dict(os.environ)
+
+    def restore():
+        os.environ.clear()
+        os.environ.update(before)
+
+    return restore
+
+
+def test_m7_latency_real_run_loads_dotenv_and_dry_run_does_not(
+    project, tmp_path, monkeypatch
+):
+    """FP-056: exercise the real .env path; injected keys cannot catch env isolation."""
+    from dotenv import load_dotenv as real_load_dotenv
+
+    from kodocs import config as kodocs_config
+
+    env_file = tmp_path / "dotenv" / ".env"
+    env_file.parent.mkdir()
+    env_file.write_text("OPENAI_API_KEY=test-openai-key\nMONTHLY_BUDGET_USD=12\n")
+    for name in ("OPENAI_API_KEY", "MONTHLY_BUDGET_USD"):
+        monkeypatch.delenv(name, raising=False)
+    # Only the file location is redirected; parsing and precedence are the real code.
+    monkeypatch.setattr(
+        kodocs_config, "load_dotenv", lambda: real_load_dotenv(env_file)
+    )
+    restore = _restore_environ()
+    try:
+        # Dry-run budget: explicit env mapping, .env is not read.
+        latency._budget(project)
+        assert "OPENAI_API_KEY" not in os.environ
+        settings = kodocs_config.load_settings(env=os.environ)
+        assert settings.monthly_budget_usd != 12
+        assert len(settings.api_keys) == 0
+        # Real run: .env is read, key and the monthly budget are found.
+        latency._budget(project, execute=True)
+        assert os.environ["OPENAI_API_KEY"] == "test-openai-key"
+        assert kodocs_config.load_settings().require_key("OPENAI_API_KEY") == (
+            "test-openai-key"
+        )
+        assert kodocs_config.load_settings().monthly_budget_usd == 12
+    finally:
+        restore()
+
+
+def test_m7_latency_real_run_factory_calls_load_settings_without_env(
+    project, monkeypatch
+):
+    """The billed runtime factory must not pass an explicit env mapping."""
+    from kodocs.eval import m7_latency as module
+
+    calls = []
+    sentinel = object()
+
+    def fake_load_settings(*args, **kwargs):
+        calls.append((args, kwargs))
+        return sentinel
+
+    captured = {}
+
+    class FakeChat:
+        def __init__(self, config, settings, **kwargs):
+            captured["settings"] = settings
+
+    class FakeDeps:
+        class client:
+            @staticmethod
+            def close():
+                pass
+
+    def fake_run_latency(*, root, runtime_factory, rerun_reason):
+        runtime_factory(
+            "luna",
+            SimpleNamespace(record=dict, settings_hash=lambda: "hash"),
+        )
+        return {"status": "completed"}
+
+    monkeypatch.setattr(module, "load_settings", fake_load_settings)
+    monkeypatch.setattr(module, "run_latency", fake_run_latency)
+    monkeypatch.setattr(module, "build_tool_deps", lambda root: FakeDeps)
+    monkeypatch.setattr("kodocs.llm.openai_chat.ManagedChat", FakeChat)
+    monkeypatch.setattr(
+        "kodocs.agent.types.AgentRuntime", lambda **kwargs: kwargs["chat"]
+    )
+    assert module.main(["--root", str(project)]) == 0
+    assert calls == [((), {})]  # no env=, so .env is read
+    assert captured["settings"] is sentinel
+
+
+def test_m7_latency_dry_run_and_execute_budget_paths_differ_only_in_env(
+    project, monkeypatch
+):
+    from kodocs.eval import m7_latency as module
+
+    calls = []
+
+    def fake_load_settings(*args, **kwargs):
+        calls.append((args, kwargs))
+        return type("S", (), {"monthly_budget_usd": 45.0})()
+
+    monkeypatch.setattr(module, "load_settings", fake_load_settings)
+    module._budget(project)
+    module._budget(project, execute=True)
+    assert calls[0] == ((), {"env": os.environ})
+    assert calls[1] == ((), {})
+
+
+def test_m7_latency_stopped_first_attempt_is_kept_and_rerun_is_attempt_two(project):
+    """A settings failure (zero calls) is attempt 1; the rerun needs a reason."""
+    latency.write_dry_run(root=project)
+
+    def broken_factory(name, config):
+        raise RuntimeError("MissingAPIKeyError stand-in")
+
+    with pytest.raises(RuntimeError):
+        latency.run_latency(root=project, runtime_factory=broken_factory)
+    first = json.loads((project / latency.RESULTS_PATH).read_text())
+    assert first["status"] == "stopped"
+    assert [h["status"] for h in first["history"]] == ["stopped"]
+    assert first["raw"][-1]["rows"] == 0
+    with pytest.raises(latency.LatencyLockError, match="RERUN_REASON"):
+        latency.run_latency(root=project, runtime_factory=broken_factory)
+    second = latency.run_latency(
+        root=project,
+        runtime_factory=runtime_factory,
+        answer_fn=lambda *a, **k: AnswerResult("", (), False, None, {"timings": {}}),
+        environment_fn=lambda r: {},
+        rerun_reason="설정 결함으로 호출 0건 정지 후 재측정",
+    )
+    assert [h["status"] for h in second["history"]] == ["stopped", "completed"]
+    assert second["history"][0] == first["history"][0]  # attempt 1 is preserved
+    assert second["history"][1]["seq"] == 2
+    assert (
+        second["history"][1]["rerun_reason"] == "설정 결함으로 호출 0건 정지 후 재측정"
+    )
+    assert (
+        second["history"][1]["previous_result_sha256"]
+        == first["history"][0]["result_sha256"]
+    )

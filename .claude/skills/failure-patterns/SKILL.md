@@ -247,3 +247,10 @@ description: 이 프로젝트에서 실제로 겪은 실패 패턴과 재발 방
 - **규칙**: 누설 판정에 쓰는 식별자·제목·사실은 asker가 열람할 수 있는 문서의 본문·제목에도 있는지 확인해 있으면 누설로 세지 않고 제외 건수(`shared_with_readable_excluded`)를 기록한다. 판정기에는 실행기가 실제로 넘기는 입력(본문 포함) 형태로 테스트한다. 결과를 본 뒤 판정기를 고칠 때는 정정 전·후를 모두 남기고 사후 정정임을 공개한다.
 - **강제 수단**: `tests/eval/test_m7_leak.py`(`test_m7_leak_c2_title_shared_with_a_readable_document_is_not_a_leak`, `test_m7_leak_c2_pure_restricted_title_is_still_detected`, `test_m7_leak_c2_title_is_a_leak_when_the_twin_is_also_unreadable`), `tests/eval/test_m7_security.py`(`test_m7_security_rejudge_corrects_shared_titles_and_keeps_both_results`)
 - **출처**: M7 `make m7-security` 결과 확인(sec-0041·sec-0131)
+
+### FP-056 실행 경로의 설정 로딩을 키 주입 테스트로만 검증해 .env 격리 결함을 놓침
+- **증상**: `make m7-latency`가 `MissingAPIKeyError`로 거부됐다(호출 0건, history seq 1 stopped). 실제 실행의 chat factory와 예산 검사가 `load_settings(env=os.environ)`를 썼는데, `config.load_settings`는 env를 명시하면 `.env`를 읽지 않아 `OPENAI_API_KEY`를 못 찾았다. `m7_security.py`는 `load_settings()`를 써서 정상이었다.
+- **원인**: dry-run을 offline으로 두려고 넣은 env 격리를 실제 실행 경로까지 그대로 복사했다. 테스트는 키를 가짜 runtime/chat에 주입해 설정 로딩 자체를 지나가지 않았다.
+- **규칙**: 실행 경로(비용이 드는 호출)의 설정 로딩은 실제 `.env` 경로로 테스트한다: 실제 `load_settings()`가 `.env`에서 키·월 상한을 읽는지, dry-run 경로만 env 격리인지를 확인한다. 키 주입 테스트로는 env 격리 결함을 잡을 수 없다. 단, 테스트가 개발자의 실제 `.env`를 읽지 않도록 `load_dotenv`를 막거나 임시 `.env`로 바꾸고 환경 변수를 복원한다(실패 출력에 키가 찍힐 수 있다).
+- **강제 수단**: `tests/eval/test_m7_latency.py`(`test_m7_latency_real_run_loads_dotenv_and_dry_run_does_not`, `test_m7_latency_real_run_factory_calls_load_settings_without_env`, `test_m7_latency_dry_run_and_execute_budget_paths_differ_only_in_env`, 격리용 autouse fixture)
+- **출처**: M7 `make m7-latency` 첫 실행(MissingAPIKeyError)
