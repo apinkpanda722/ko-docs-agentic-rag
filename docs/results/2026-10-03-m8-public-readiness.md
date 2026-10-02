@@ -9,8 +9,8 @@
 
 | 항목 | 값 |
 | --- | --- |
-| executed_at | 2026-10-02T14:53:05.665034+00:00 |
-| head_commit | e9545e55e494599d9120b47c00fb8cb8de1cc9a7 |
+| executed_at | 2026-10-02T15:06:55.470305+00:00 |
+| head_commit | 447d6398ab5cfe9eee4c8d21268d73be87960bdc |
 
 ### 패턴별 합계
 
@@ -132,6 +132,7 @@
 | docs/results/2026-10-02-m7-answer-eval-appendix.md | 30 | 39 | 0 | 0 |
 | docs/results/2026-10-02-m7-answer-eval.md | 30 | 39 | 0 | 0 |
 | tests/eval/test_text_normalize.py | 9 | 38 | 0 | 0 |
+| docs/results/2026-10-03-m8-rerank.md | 8 | 37 | 0 | 0 |
 | tests/eval/test_parsing_score.py | 4 | 33 | 0 | 0 |
 | src/kodocs/eval/templates/m3_synthetic.md | 4 | 32 | 0 | 0 |
 | tests/parsing/test_articles.py | 3 | 32 | 3 | 32 |
@@ -150,20 +151,20 @@ NFC·공백 제거 후 원문 30자 창으로 해시 대조. 한글 슁글은 �
 
 | 도메인 | 건수 | 구분 | 역할 |
 | --- | --- | --- | --- |
-| gmail.com | 355 | personal_service | author |
+| gmail.com | 356 | personal_service | author |
 | liveuou.kr | 21 | other | author |
 | mediazen.co.kr | 5 | other | author |
 | github.com | 21 | other | committer |
-| gmail.com | 355 | personal_service | committer |
+| gmail.com | 356 | personal_service | committer |
 | mediazen.co.kr | 5 | other | committer |
 
 ### 커밋 해시 인벤토리
 
 | 항목 | 건수 |
 | --- | --- |
-| pairs | 31 |
+| pairs | 33 |
 | distinct_hashes | 17 |
-| files | 24 |
+| files | 25 |
 | existing | 17 |
 | missing | 0 |
 | rev_parse_files | 10 |
@@ -209,13 +210,13 @@ NFC·공백 제거 후 원문 30자 창으로 해시 대조. 한글 슁글은 �
 
 | 구분 | 항목 | 건수 |
 | --- | --- | --- |
-| worktree | scanned_files | 1326 |
+| worktree | scanned_files | 1329 |
 | worktree | scanned_blobs | 0 |
 | worktree | oversized | 1 |
 | worktree | undecodable | 0 |
 | worktree | excluded_sensitive_worktree | 0 |
 | history | scanned_files | 0 |
-| history | scanned_blobs | 2393 |
+| history | scanned_blobs | 2400 |
 | history | oversized | 8 |
 | history | undecodable | 0 |
 | history | excluded_sensitive_worktree | 0 |

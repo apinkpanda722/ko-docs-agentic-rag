@@ -75,7 +75,8 @@ def test_h8_states_and_error_does_not_write(source):
     body = render(source)
     assert "H8 채택" in body
     assert "+0.123 [0.020, 0.200]" in body
-    assert "원본 해시 대조 생략(로컬 원본 없음)" in body
+    assert "해시는 커밋된 manifest로 검증했다" in body
+    assert "원본 해시 대조 통과" not in body  # never depends on local raw
     put(
         source,
         LATENCY_PATH,

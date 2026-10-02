@@ -130,21 +130,29 @@ def test_parallel_tool_events_and_sink_failure_do_not_change_results(
     assert failing._event_state["errors"] == 1
 
 
-def test_frozen_hashes_use_existing_functions():
+def test_frozen_m6_hash_and_m8_rules_hash_use_existing_functions():
     from pathlib import Path
 
     from kodocs.eval.m6_config import verify_config
-    from kodocs.eval.m7_config import verify_config as verify_m7
     from kodocs.eval.m8_rules import rules_sha256
 
     root = Path(__file__).resolve().parents[2]
     assert verify_config(root / "data/manifest/m6_config.json").ok
-    frozen = verify_m7(root=root)
-    assert frozen["config_hash"]
     assert (
         rules_sha256()
         == "f59ded7f91461eb8d37a43b7429d32bd6c497cf0a3be29ad7c278a159d3d44da"
     )
+
+
+def test_frozen_m7_config_hash_still_verifies_against_the_local_m6_runs():
+    from pathlib import Path
+
+    from kodocs.eval.m7_config import verify_config as verify_m7
+
+    root = Path(__file__).resolve().parents[2]
+    if not (root / "data/interim/m6/dev/runs.jsonl").exists():
+        pytest.skip("비커밋 M6 실행 원본(data/interim/m6)이 없는 clone에서는 건너뜀")
+    assert verify_m7(root=root)["config_hash"]
 
 
 def test_attempt_start_is_forwarded_only_on_the_final_call():

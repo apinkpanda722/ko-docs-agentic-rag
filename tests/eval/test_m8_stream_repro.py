@@ -620,3 +620,26 @@ def test_build_shapes_is_content_free_and_goes_stale_with_the_result(sandbox):
     )
     with pytest.raises(ValueError, match="stale"):
         repro.report(root)
+
+
+def test_missing_raw_file_does_not_block_reading_but_a_changed_one_does(sandbox):
+    """A clone without the non-committed raw files still authenticates the manifest."""
+    from types import SimpleNamespace
+
+    root, runtime, _plan = sandbox
+
+    def fake_answer(*args, runtime, **kwargs):
+        runtime.chat.text.append('{"answer":"cut')
+        runtime.chat.diagnostics = {"output_tokens": 4000}
+        return SimpleNamespace(refuse_reason="parse_error")
+
+    result = repro.run(
+        root, runtime_factory=lambda model: runtime, answer_fn=fake_answer
+    )
+    raw_paths = [root / r["raw"]["path"] for r in result["history"][0]["runs"]]
+    raw_paths[0].write_text("modified")
+    with pytest.raises(ValueError, match="raw hash"):
+        repro.read_result(root)
+    for path in raw_paths:
+        path.unlink()
+    assert repro.read_result(root)["history"]  # hash chain still verified

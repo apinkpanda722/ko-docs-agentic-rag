@@ -8,6 +8,7 @@ from pathlib import Path
 
 from kodocs.eval import m5_report, m7_report
 from kodocs.eval.m8_contract import H8ResultError, load_h8_state
+from kodocs.eval.m8_summary import improvement_bullet, summary_lines
 from kodocs.ui.settings import UI_FINAL_MAX_OUTPUT_TOKENS
 
 BEGIN, END = "<!-- BEGIN generated -->", "<!-- END generated -->"
@@ -69,6 +70,15 @@ REPRODUCTION = (
         "오프라인; parse_error는 로컬 원본이 필요",
     ),
 )
+
+
+def serving_improvement(root):
+    """Reranker serving follow-up (README only, generated from the dev manifest)."""
+    state = load_h8_state(root)
+    if state.status != "result":
+        return []
+    bullet = improvement_bullet(root, state.result, state.result["selected"])
+    return [bullet] if bullet else []
 
 
 def runaway_limits(root):
@@ -191,17 +201,21 @@ def _h8(state):
             [
                 [
                     scope,
-                    result[scope]["control"]["ndcg10"],
-                    result[scope]["reranked"]["ndcg10"],
-                    result[scope]["control"]["recall10"],
-                    result[scope]["reranked"]["recall10"],
+                    m7_report.f3(result[scope]["control"]["ndcg10"]),
+                    m7_report.f3(result[scope]["reranked"]["ndcg10"]),
+                    m7_report.f3(result[scope]["control"]["recall10"]),
+                    m7_report.f3(result[scope]["reranked"]["recall10"]),
                     result["harm"][scope],
                 ]
                 for scope in ("gold", "silver")
             ],
         ),
         "",
-        f"선택 depth {result['selected']['depth']}·fusion {result['selected']['fusion']}, max_length {result['max_length']}, test 잘림 비율 {result['truncated_ratio']}, 장치 {result['device']}.",
+        f"선택 depth {result['selected']['depth']}·fusion {result['selected']['fusion']}, max_length {result['max_length']}, test 잘림 비율 {m7_report.f3(result['truncated_ratio'])}, 장치 {result['device']}.",
+        "",
+        "채택 문구만 단독으로 읽지 않는다:",
+        "",
+        *summary_lines(result, state.latency),
         "",
         "첫 실행: "
         + first["h8"]["verdict"]
@@ -210,12 +224,11 @@ def _h8(state):
         + " "
         + m7_report.ci3(first["h8"]["ci_low"], first["h8"]["ci_high"]),
         "",
-        "원본 해시 대조 통과"
-        if state.local_raw_checked
-        else "원본 해시 대조 생략(로컬 원본 없음)",
+        # Stable text: the README must be identical on a clone without the
+        # non-committed raw files (data/interim), so it never states whether
+        # the local raw comparison happened.
+        "실행 기록·결과의 해시는 커밋된 manifest로 검증했다. 비커밋 원본이 로컬에 있으면 원본 해시도 대조하고 없으면 대조하지 않는다.",
     ]
-    if not state.first_local_raw_checked and state.result_path.name != "run-01.json":
-        lines += ["첫 실행 원본 해시 대조 생략(로컬 원본 없음)"]
     if state.latency:
         latency = state.latency
         lines += [
@@ -423,6 +436,7 @@ def render(root=Path(".")):
         "",
         "## 다음 개선",
         "",
+        *serving_improvement(root),
         "- 인용을 자유 문자열 대신 근거 목록 중 선택(근거별 enum)으로 바꿔 인용 생성 루프를 원천 차단한다. 답변 계약 변경이라 재평가가 필요하며 이번에는 구현하지 않았다.",
         "",
         "## 데모",

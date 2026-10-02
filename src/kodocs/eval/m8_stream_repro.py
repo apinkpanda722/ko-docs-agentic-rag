@@ -387,9 +387,14 @@ def read_result(root):
         previous = entry["result_sha256"]
         for row in entry["runs"]:
             raw = row.get("raw")
-            if raw and fingerprint(root / raw["path"]) != {
-                k: raw[k] for k in ("sha256", "rows")
-            }:
+            # Verified when the (non-committed) raw file is present; a clone
+            # without it still authenticates the committed hash chain.
+            if (
+                raw
+                and (root / raw["path"]).exists()
+                and fingerprint(root / raw["path"])
+                != {k: raw[k] for k in ("sha256", "rows")}
+            ):
                 raise ValueError("M8 reproduction raw hash mismatch")
     return result
 

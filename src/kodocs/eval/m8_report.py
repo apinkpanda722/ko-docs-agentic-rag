@@ -15,6 +15,7 @@ from kodocs.eval.m7_rawhash import RawHashMismatch, fingerprint
 from kodocs.eval.m7_report import details, f3, stat3, table
 from kodocs.eval.m8_contract import RUNS_PATH, _checked, load_h8_state
 from kodocs.eval.m8_latency import NOTE, RAW_PATH
+from kodocs.eval.m8_summary import summary_lines
 from kodocs.eval.m8_test import M5_RESULT_PATH, read_json, read_rows
 
 REPORT_PATH = Path("docs/results/2026-10-03-m8-rerank.md")
@@ -61,6 +62,8 @@ def render(root=Path(".")):
         "## 핵심 요약",
         "",
         f"{h8['verdict']}: 차이 {f3(h8['diff'], signed=True)}, 95% CI [{f3(h8['ci_low'])}, {f3(h8['ci_high'])}], n={h8['n']}.",
+        "",
+        *summary_lines(result, state.latency),
         "",
     ]
     if h8["verdict"] == "H8 판정 보류(차이 입증 못 함)":
