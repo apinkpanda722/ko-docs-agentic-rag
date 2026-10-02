@@ -44,6 +44,8 @@
 - 커밋 메시지는 conventional commits 형식을 따를 것 (feat:, fix:, docs:, refactor:)
 
 ## 명령어
+make m8-audit  # 공개 전환 점검(작업 트리·git 이력·슁글 겹침·이메일 도메인·해시 인벤토리) → data/manifest/m8_audit.json·docs/results/2026-10-03-m8-public-readiness.md — 네트워크 없음
+make m8-audit-gh  # GitHub 이슈·PR·댓글 점검(gh 읽기 전용, 건수·위치만) — 네트워크, 사용자 실행
 make verify      # ruff + pytest (Stop hook, execute.py, CI가 모두 이 명령을 부른다)
 make up          # OpenSearch 기동 (docker compose, 이미지 빌드 포함)
 make down        # OpenSearch 중지
