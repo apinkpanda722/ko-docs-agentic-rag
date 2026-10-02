@@ -46,7 +46,8 @@
     },
     {
       "dir": "m8-wrap-up",
-      "status": "pending"
+      "status": "blocked",
+      "blocked_at": "2026-10-02T18:21:29+0900"
     }
   ]
 }

@@ -33,7 +33,16 @@
     {
       "step": 2,
       "name": "docs-cleanup",
-      "status": "pending"
+      "status": "blocked",
+      "started_at": "2026-10-02T18:19:23+0900",
+      "blocked_reason": "C의 필수 입력을 얻을 수 없습니다. src/kodocs/eval/m7_failures.py의 annex_context_audit는 비교 493개·70% 미만 95개·단위 유실 14개를 상수로 기록하며, 별표 비교 감사 함수나 두 집합의 (doc_id, annex_id) 목록이 없습니다. DATA_PREPARATION_NOTES에는 확인된 별표 1개만 있습니다. 기존 함수를 재사용하는 어댑터로 식별자를 얻을 수 없어, 식별자 확보 불가 시 즉시 blocked로 중단하라는 지시에 따랐습니다. 원래 감사 코드와 두 식별자 집합을 제공하거나 별표 비교 감사를 새로 구현하도록 작업 범위를 승인해야 합니다. 구현·AC 검증은 실행하지 않았습니다.",
+      "blocked_at": "2026-10-02T18:21:29+0900",
+      "usage": {
+        "input_tokens": 233244,
+        "cached_input_tokens": 169088,
+        "output_tokens": 1436,
+        "attempts": 1
+      }
     },
     {
       "step": 3,
