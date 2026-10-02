@@ -85,6 +85,7 @@ class ChatLike(Protocol):
         response_schema: type[object] | None = None,
         stream: bool = False,
         on_text_delta: Callable[[str], None] | None = None,
+        on_attempt_start: Callable[[int], None] | None = None,
     ) -> ChatResult: ...
 
 

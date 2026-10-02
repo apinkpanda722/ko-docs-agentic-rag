@@ -5,7 +5,12 @@ from unittest.mock import Mock
 
 import pytest
 
-from kodocs.ui.streaming import FinalStreamingChat, partial_answer, run_worker
+from kodocs.ui.streaming import (
+    FinalStreamingChat,
+    PartialText,
+    partial_answer,
+    run_worker,
+)
 
 
 def test_only_final_call_streams():
@@ -139,3 +144,42 @@ def test_frozen_hashes_use_existing_functions():
         rules_sha256()
         == "f59ded7f91461eb8d37a43b7429d32bd6c497cf0a3be29ad7c278a159d3d44da"
     )
+
+
+def test_attempt_start_is_forwarded_only_on_the_final_call():
+    inner = Mock()
+    sink, on_attempt = Mock(), Mock()
+    chat = FinalStreamingChat(inner, sink, on_attempt)
+    chat.invoke("choose", tools=["tool"])
+    assert inner.invoke.call_args.kwargs == {"tools": ["tool"]}
+    chat.invoke("final", response_schema=dict)
+    assert inner.invoke.call_args.kwargs == {
+        "response_schema": dict,
+        "stream": True,
+        "on_text_delta": sink,
+        "on_attempt_start": on_attempt,
+    }
+
+
+def test_new_attempt_clears_text_of_the_previous_attempt_on_the_consumer_thread():
+    shown = []
+    text = PartialText()
+
+    def render(kind, value):
+        if kind == "delta":
+            text.add(value)
+        elif kind == "attempt_start":
+            text.reset()
+        shown.append(text.answer())
+
+    def work(messages):
+        messages.put(("attempt_start", 1))
+        messages.put(("delta", '{"answer":"FIRST'))
+        messages.put(("attempt_start", 2))
+        messages.put(("delta", '{"answer":"SEC'))
+        messages.put(("delta", 'OND"}'))
+        return "done"
+
+    assert run_worker(work, render) == "done"
+    assert shown == ["", "FIRST", "", "SEC", "SECOND"]
+    assert "FIRST" not in text.answer()

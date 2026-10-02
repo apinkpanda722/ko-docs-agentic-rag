@@ -64,7 +64,9 @@ def ask(
             runtime = replace(
                 runtime,
                 chat=FinalStreamingChat(
-                    runtime.chat, lambda delta: messages.put(("delta", delta))
+                    runtime.chat,
+                    lambda delta: messages.put(("delta", delta)),
+                    lambda number: messages.put(("attempt_start", number)),
                 ),
                 event_sink=lambda event: messages.put(("event", event)),
             )

@@ -5,7 +5,7 @@ from pathlib import Path
 import streamlit as st
 
 from kodocs.ui.service import STREAM_ERROR, UiAnswer, UiError, ask
-from kodocs.ui.streaming import event_lines, partial_answer, run_worker
+from kodocs.ui.streaming import PartialText, event_lines, run_worker
 from kodocs.ui.users import load_demo_users
 
 RESULTS_DIR = Path("docs/results")
@@ -78,7 +78,7 @@ def query_view() -> None:
             # Each worker completes and joins before the next user starts.
             for column, label in zip(columns, selected, strict=True):
                 events = []
-                text = []
+                text = PartialText()
                 with column:
                     # mutable_status_container.py:125 supports state/expanded updates;
                     # elements/empty.py:28-42 supports replace/clear on the same slot.
@@ -97,8 +97,11 @@ def query_view() -> None:
                         status_body=status_body,
                     ):
                         if kind == "delta":
-                            text.append(value)
-                            partial.markdown(partial_answer("".join(text)))
+                            text.add(value)
+                            partial.markdown(text.answer())
+                        elif kind == "attempt_start":
+                            text.reset()
+                            partial.empty()
                         else:
                             events.append(value)
                             status_body.markdown("  \n".join(event_lines(events)))

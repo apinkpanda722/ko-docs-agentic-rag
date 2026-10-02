@@ -189,3 +189,29 @@ def test_stream_error_retry_same_request_no_fallback(app, monkeypatch):
     app.button(key="retry").click().run()
     assert len(calls) == 2 and calls[0] == calls[1]
     assert "PRIVATE" not in str(app)
+
+
+def test_service_forwards_attempt_start_to_the_queue(monkeypatch):
+    import queue
+
+    from kodocs.agent.types import AgentRuntime
+
+    runtime = AgentRuntime(object(), object(), {}, "fake")
+    monkeypatch.setattr(service, "build_default_runtime", lambda: runtime)
+
+    def fake_answer(question, user, *, runtime, **kwargs):
+        runtime.chat.on_text_delta('{"answer":"FIRST')
+        runtime.chat.on_attempt_start(2)
+        runtime.chat.on_text_delta('{"answer":"SECOND')
+        return result()
+
+    monkeypatch.setattr(service, "_answer_fn", fake_answer)
+    messages = queue.Queue()
+    service.ask("q", DemoUser("demo", "플랫폼", 4), "agentic", messages=messages)
+    items = []
+    while not messages.empty():
+        items.append(messages.get())
+    assert ("attempt_start", 2) in items
+    deltas = [value for kind, value in items if kind == "delta"]
+    assert deltas == ['{"answer":"FIRST', '{"answer":"SECOND']
+    assert items.index(("attempt_start", 2)) == 1

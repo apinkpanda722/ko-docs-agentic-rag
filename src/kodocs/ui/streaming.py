@@ -10,9 +10,10 @@ from langchain_core.utils.json import parse_partial_json
 class FinalStreamingChat:
     """Follow M7 StreamingChat, attaching the UI observer only to final calls."""
 
-    def __init__(self, inner, on_text_delta):
+    def __init__(self, inner, on_text_delta, on_attempt_start=None):
         self.inner = inner
         self.on_text_delta = on_text_delta
+        self.on_attempt_start = on_attempt_start
 
     def invoke(
         self,
@@ -22,6 +23,7 @@ class FinalStreamingChat:
         response_schema=None,
         stream=False,
         on_text_delta=None,
+        on_attempt_start=None,
     ):
         kwargs = {}
         if tools is not None:
@@ -32,7 +34,26 @@ class FinalStreamingChat:
                 stream=True,
                 on_text_delta=self.on_text_delta,
             )
+            if self.on_attempt_start is not None:
+                kwargs["on_attempt_start"] = self.on_attempt_start
         return self.inner.invoke(messages, **kwargs)
+
+
+class PartialText:
+    """Accumulated streamed JSON of the current attempt only."""
+
+    def __init__(self):
+        self._parts = []
+
+    def add(self, delta):
+        self._parts.append(delta)
+
+    def reset(self):
+        """A new attempt started: drop text from earlier attempts."""
+        self._parts.clear()
+
+    def answer(self):
+        return partial_answer("".join(self._parts))
 
 
 def partial_answer(text):

@@ -211,8 +211,14 @@ class ManagedChat:
         response_schema: type[object] | None = None,
         stream: bool = False,
         on_text_delta: Callable[[str], None] | None = None,
+        on_attempt_start: Callable[[int], None] | None = None,
     ) -> ChatResult:
-        """Invoke the Responses API under the registered retry and billing rules."""
+        """Invoke the Responses API under the registered retry and billing rules.
+
+        ``on_attempt_start`` receives the 1-based attempt number just before each
+        attempt so a display fed by ``on_text_delta`` can discard text of a
+        previous attempt. ``None`` leaves behavior unchanged.
+        """
         estimate = self.estimate(
             messages,
             tools=tools,
@@ -224,6 +230,11 @@ class ManagedChat:
         overall_started = self._monotonic()
         for number in range(1, self.config.max_attempts + 1):
             attempt_started = self._monotonic()
+            if on_attempt_start is not None:
+                try:
+                    on_attempt_start(number)
+                except Exception:  # noqa: BLE001, S110 - observer only
+                    pass
             try:
                 message, parsed, parsing_error, ttft_ms = self._invoke_once(
                     messages,

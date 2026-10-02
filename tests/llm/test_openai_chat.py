@@ -778,3 +778,112 @@ def test_nonstream_reproduction_observer_keeps_raw_before_validation(tmp_path):
         is True
     )
     managed._model.stream.assert_not_called()
+
+
+def _status_error(status_code: int):
+    import openai
+
+    return openai.InternalServerError(
+        "private",
+        response=httpx.Response(
+            status_code, request=httpx.Request("POST", "https://example.invalid")
+        ),
+        body=None,
+    )
+
+
+def test_attempt_start_signals_each_attempt_and_retry_before_text_shows_only_last(
+    tmp_path,
+):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessageChunk
+
+    log: list[tuple[str, object]] = []
+    count = [0]
+
+    def chunks(messages, **kwargs):
+        count[0] += 1
+        if count[0] == 1:
+            raise _status_error(503)  # 5xx before any text: retried
+        yield AIMessageChunk(content="second")
+        yield AIMessageChunk(
+            content="",
+            usage_metadata={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+        )
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    managed._model = Mock(stream=chunks)
+    try:
+        managed.invoke(
+            "q",
+            stream=True,
+            on_text_delta=lambda delta: log.append(("delta", delta)),
+            on_attempt_start=lambda number: log.append(("attempt", number)),
+        )
+    finally:
+        client.close()
+    assert log == [("attempt", 1), ("attempt", 2), ("delta", "second")]
+
+
+def test_5xx_after_text_is_not_retried_and_attempt_signal_is_not_repeated(tmp_path):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessageChunk
+
+    log: list[tuple[str, object]] = []
+    count = [0]
+
+    def chunks(messages, **kwargs):
+        count[0] += 1
+        yield AIMessageChunk(content="first")
+        raise _status_error(502)  # status error after text was already shown
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    managed._model = Mock(stream=chunks)
+    try:
+        with pytest.raises(BillingUncertainError):
+            managed.invoke(
+                "q",
+                stream=True,
+                on_text_delta=lambda delta: log.append(("delta", delta)),
+                on_attempt_start=lambda number: log.append(("attempt", number)),
+            )
+    finally:
+        client.close()
+    assert count[0] == 1
+    assert log == [("attempt", 1), ("delta", "first")]
+
+
+def test_attempt_start_none_and_failing_observer_keep_result_and_settings_hash(
+    tmp_path,
+):
+    from unittest.mock import Mock
+
+    from langchain_core.messages import AIMessageChunk
+
+    def chunks(*args, **kwargs):
+        yield AIMessageChunk(
+            content="same",
+            usage_metadata={"input_tokens": 1, "output_tokens": 2, "total_tokens": 3},
+        )
+
+    def failing(number):
+        raise ValueError("private")
+
+    managed, client = _managed(tmp_path, lambda r: _error(500, "unused"))
+    managed._model = Mock(stream=chunks)
+    try:
+        default = managed.invoke("q", stream=True)
+        none = managed.invoke("q", stream=True, on_attempt_start=None)
+        isolated = managed.invoke(
+            "q", stream=True, on_text_delta=lambda _: None, on_attempt_start=failing
+        )
+    finally:
+        client.close()
+    for other in (none, isolated):
+        assert default.message == other.message
+        assert default.usage == other.usage
+        assert default.settings_hash == other.settings_hash
+    frozen = json.loads(Path("data/manifest/m6_config.json").read_text())
+    assert default.settings_hash == frozen["answer"]["settings_hash"]
