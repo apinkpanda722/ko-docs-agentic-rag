@@ -294,3 +294,58 @@ def test_lookup_rejects_unknown_identifier_kinds(kind: str) -> None:
             kind,  # type: ignore[arg-type]
             "PAY-1234",
         )
+
+
+def _chunk_hit(doc_id: str, number: int, date: str | None) -> dict:
+    return {
+        "_score": None,
+        "_source": {
+            "chunk_id": f"{doc_id}-{number}",
+            "doc_id": doc_id,
+            "date": date,
+            "title": doc_id,
+            "is_current": True,
+            "rule_id": None,
+        },
+    }
+
+
+class _ChunkClient:
+    def __init__(self, hits: list[dict]) -> None:
+        self.hits = hits
+
+    def request(self, method: str, path: str, json: object = None) -> dict:
+        return {"hits": {"hits": self.hits}}
+
+
+def test_lookup_documents_carry_their_newest_chunk_date_and_stay_a_tuple() -> None:
+    from kodocs.retrieval.lookup import authorized_lookup_id
+
+    client = _ChunkClient(
+        [
+            _chunk_hit("doc-a", 0, "2026-06-01"),
+            _chunk_hit("doc-a", 1, "2026-05-01"),
+            _chunk_hit("doc-b", 0, "2026-01-01"),
+            _chunk_hit("doc-undated", 0, None),
+        ]
+    )
+    hits = authorized_lookup_id(
+        client, "index", UserContext("platform", 3), "incident", "INC-2026-001", size=50
+    )
+    assert isinstance(hits, tuple)
+    assert [(h.doc_id, h.date) for h in hits] == [
+        ("doc-a", "2026-06-01"),
+        ("doc-b", "2026-01-01"),
+        ("doc-undated", None),
+    ]
+    assert hits.chunks_returned == 4 and hits.chunk_limit_reached is False
+
+
+def test_lookup_reports_when_the_chunk_window_was_full() -> None:
+    from kodocs.retrieval.lookup import authorized_lookup_id
+
+    client = _ChunkClient([_chunk_hit("doc-a", n, "2026-06-01") for n in range(3)])
+    hits = authorized_lookup_id(
+        client, "index", UserContext("platform", 3), "incident", "INC-2026-001", size=3
+    )
+    assert hits.chunk_limit_reached is True and len(hits) == 1

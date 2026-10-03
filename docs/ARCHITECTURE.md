@@ -16,7 +16,7 @@ src/kodocs/
 ├── agent/        # LangGraph 그래프(단순 RAG, Agentic RAG)·도구 래퍼·answer(), llm/ ManagedChat 사용
 ├── mcp_server/   # MCP 서버 (streamable HTTP, bearer 토큰 → 사용자 컨텍스트)
 ├── llm/          # Anthropic·OpenAI·Gemini 호출 래퍼 (모델명·온도·비용 기록, 월 상한)
-└── ui/           # Streamlit 데모 (answer()만 호출)
+└── ui/           # Streamlit 데모 질의 화면 (answer()만 호출, 결과표 뷰어 제외)
 data/
 ├── manifest/     # 원문 출처·해시·수집일·버전 매칭·변환·파싱 대상·비용 원장·파싱 실행·채점 결과 (커밋)
 ├── raw/          # 다운로드 원문·변환 PDF·업스테이지 응답 캐시 (커밋 안 함)

@@ -21,6 +21,10 @@ M5_CONFIG_HASH = "455f063edd2654326d62607d78bc6f0079a25f30d77b29c274ca345ba9ed4a
 SEARCH_CHUNK_LIMIT = 8
 SEARCH_TEXT_LIMIT = 6_000
 LOOKUP_DOCUMENT_LIMIT = 5
+# `authorized_lookup_id(size=...)` counts OpenSearch CHUNKS. Ask for plenty and
+# group/cut to LOOKUP_DOCUMENT_LIMIT documents afterwards; asking for
+# LOOKUP_DOCUMENT_LIMIT + 1 let a few multi-chunk newest documents fill the window.
+LOOKUP_CHUNK_REQUEST_LIMIT = 50
 LOOKUP_DOCUMENT_TEXT_LIMIT = 1_200
 TOOL_SERIALIZED_LIMIT = 6_000
 DOCUMENT_TEXT_LIMIT = 6_000

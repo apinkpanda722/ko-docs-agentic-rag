@@ -1,14 +1,10 @@
 """Korean demonstration views; rendering alone never calls the answer service."""
 
-from pathlib import Path
-
 import streamlit as st
 
 from kodocs.ui.service import STREAM_ERROR, UiAnswer, UiError, ask
 from kodocs.ui.streaming import PartialText, event_lines, run_worker
 from kodocs.ui.users import load_demo_users
-
-RESULTS_DIR = Path("docs/results")
 
 
 def render_answer(label: str, result: UiAnswer | str) -> None:
@@ -160,33 +156,11 @@ def query_view() -> None:
                             st.markdown("  \n".join(event_lines(events)))
 
 
-def results_view() -> None:
-    include_appendix = st.checkbox("부록 포함", key="include_appendix")
-    paths = {
-        path.name: path
-        for path in sorted(RESULTS_DIR.glob("*.md"))
-        if (include_appendix or not path.name.endswith("-appendix.md"))
-        and path.resolve().parent == RESULTS_DIR.resolve()
-    }
-    if not paths:
-        st.info("표시할 결과 문서가 없습니다.")
-        return
-    selection = st.selectbox("결과 문서", list(paths), key="report")
-    try:
-        st.markdown(paths[selection].read_text(encoding="utf-8"))
-    except OSError:
-        st.error("결과 문서를 읽을 수 없습니다.")
-
-
 def main() -> None:
     st.set_page_config(page_title="한국어 문서 RAG 데모", layout="wide")
     st.title("한국어 사내 문서 RAG 데모")
     if "session_cost_usd" not in st.session_state:
         st.session_state.session_cost_usd = 0.0
     cost = st.empty()
-    query_tab, results_tab = st.tabs(["질의", "결과표"])
-    with query_tab:
-        query_view()
-    with results_tab:
-        results_view()
+    query_view()
     cost.metric("세션 누적 비용", f"{st.session_state.session_cost_usd:.6f} USD")

@@ -8,7 +8,7 @@ from dataclasses import replace
 from typing import Literal
 
 from kodocs.agent.agentic_rag import build_agentic_graph
-from kodocs.agent.evidence import EvidenceLog
+from kodocs.agent.evidence import EVIDENCE_FORMAT_VERSION, EvidenceLog
 from kodocs.agent.guardrails import Guard
 from kodocs.agent.prompts import prompt_hashes
 from kodocs.agent.simple_rag import build_simple_graph
@@ -47,6 +47,7 @@ def answer(
             "agentic_prompt": prompts["agentic"],
             "guardrail_settings": runtime.guardrails.settings_hash(),
             "m5_config_hash": runtime.m5_config_hash,
+            "evidence_format_version": EVIDENCE_FORMAT_VERSION,
         },
     )
     timeout_s = (

@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def test_document_contract_and_freshness():
     entries = adr.parse((ROOT / "docs/ADR.md").read_text())
-    assert [e["id"] for e in entries] == [f"ADR-{n:03}" for n in range(1, 32)]
+    assert [e["id"] for e in entries] == [f"ADR-{n:03}" for n in range(1, 33)]
     assert (ROOT / "docs/ADR-INDEX.md").read_text() == adr.render(entries)
     assert entries[19]["status"] == "폐기"
     assert entries[3]["status"] == "유효(일부 변경: ADR-030)"

@@ -1,0 +1,74 @@
+{
+  "executed_at": "2026-10-02T15:39:31.829281+00:00",
+  "counts": {
+    "issues": 22,
+    "prs": 22,
+    "issue_comments": 0,
+    "review_comments": 0,
+    "reviews": 0,
+    "issues_and_prs": 44
+  },
+  "item_failures": 0,
+  "page_failures": 0,
+  "findings": [
+    {
+      "kind": "issues",
+      "number": 7,
+      "patterns": {
+        "personal_field": 2
+      },
+      "overlap_shingles": 0,
+      "max_overlap_chars": 0,
+      "hangul_overlap_shingles": 0,
+      "hangul_max_overlap_chars": 0
+    },
+    {
+      "kind": "prs",
+      "number": 12,
+      "patterns": {
+        "personal_field": 2
+      },
+      "overlap_shingles": 0,
+      "max_overlap_chars": 0,
+      "hangul_overlap_shingles": 0,
+      "hangul_max_overlap_chars": 0
+    },
+    {
+      "kind": "prs",
+      "number": 8,
+      "patterns": {
+        "personal_field": 2
+      },
+      "overlap_shingles": 0,
+      "max_overlap_chars": 0,
+      "hangul_overlap_shingles": 0,
+      "hangul_max_overlap_chars": 0
+    },
+    {
+      "kind": "prs",
+      "number": 6,
+      "patterns": {
+        "assignment": 1
+      },
+      "overlap_shingles": 0,
+      "max_overlap_chars": 0,
+      "hangul_overlap_shingles": 0,
+      "hangul_max_overlap_chars": 0
+    }
+  ],
+  "shingles": {
+    "status": "available",
+    "sources": [
+      {
+        "path": "data/interim/law",
+        "files": 267
+      },
+      {
+        "path": "data/interim/parsed",
+        "files": 359
+      }
+    ],
+    "definition": "NFC·공백 제거 후 원문 30자 창으로 해시 대조. 한글 슁글은 해시 전 이 창의 U+AC00–U+D7A3 음절이 20자 이상. 원/한글 건수는 중복 창 포함 위치 수; 최대 길이는 연속 일치 창 수+29(없으면 0). 한글 최대 길이는 필터도 연속 통과한 창 기준."
+  },
+  "pull_refs_basis": "PR 개수는 공개 시 refs/pull/* 노출 근거이며 실제 ref 수와 동일하다는 판정은 하지 않음"
+}

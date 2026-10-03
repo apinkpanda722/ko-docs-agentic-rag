@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, Self
 
 from kodocs.chunking.corpus import normalize_regulation_ref
 from kodocs.retrieval.access import UserContext, access_filter
@@ -25,6 +25,29 @@ _SOURCE_FIELDS = (
     "is_current",
     "rule_id",
 )
+
+
+class LookupDocuments(tuple):  # type: ignore[type-arg]
+    """Grouped documents (a plain tuple of ``DocHit``) plus how the chunk window ended.
+
+    ``chunk_limit_reached`` means OpenSearch returned exactly the requested chunk
+    count, so documents further down the order may be missing.
+    """
+
+    chunks_returned: int
+    chunk_limit_reached: bool
+
+    def __new__(
+        cls,
+        documents: Sequence[DocHit],
+        *,
+        chunks_returned: int,
+        chunk_limit_reached: bool,
+    ) -> Self:
+        self = super().__new__(cls, documents)
+        self.chunks_returned = chunks_returned
+        self.chunk_limit_reached = chunk_limit_reached
+        return self
 
 
 @dataclass(frozen=True)
@@ -115,10 +138,13 @@ def authorized_lookup_id(
         },
     )
     chunks = _lookup_chunks(response, ranked=rank_query is not None)
-    return _group_documents(
+    documents = _group_documents(
         chunks,
         ranked=rank_query is not None,
         prefer_current=prefer_current,
+    )
+    return LookupDocuments(
+        documents, chunks_returned=len(chunks), chunk_limit_reached=len(chunks) >= size
     )
 
 
@@ -223,6 +249,7 @@ def _group_documents(
             title=chunk.title,
             is_current=chunk.is_current,
             rule_id=chunk.rule_id,
+            date=date_by_doc.get(doc_id),
         )
         for doc_id, chunk in best_by_doc.items()
     ]

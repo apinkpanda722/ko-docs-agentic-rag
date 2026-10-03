@@ -9,6 +9,12 @@ from threading import Lock
 
 from kodocs.tools import ToolResult
 
+# 1: run_sql evidence = {columns, rows} (M6/M7 evaluation runs).
+# 2: run_sql evidence = {sql, columns, rows} (serving change after the demo
+#    rehearsal; the M6/M7 numbers were measured with version 1). Not covered by
+#    finalizer_hash, so it is recorded in every trace's ``hashes``.
+EVIDENCE_FORMAT_VERSION = 2
+
 
 @dataclass(frozen=True)
 class EvidenceItem:
@@ -61,7 +67,7 @@ class EvidenceLog:
             items = (
                 ()
                 if result.is_error
-                else _evidence_items(name, result.payload, call_id)
+                else _evidence_items(name, result.payload, call_id, args)
             )
             self._calls.append(
                 EvidenceCall(
@@ -108,6 +114,7 @@ def _evidence_items(
     name: str,
     payload: Mapping[str, object],
     call_id: str,
+    args: Mapping[str, object] | None = None,
 ) -> tuple[EvidenceItem, ...]:
     if name == "search_docs":
         return tuple(
@@ -126,13 +133,18 @@ def _evidence_items(
             section = sections[0]
         return (_document_item(payload, section=section),)
     if name == "run_sql":
+        # The final answer call only sees evidence text. Without the executed
+        # statement it cannot tell that a number was filtered by owner_team, and
+        # the "refuse when not verifiable" rule made runs flip between answer and
+        # refusal. The SQL was written by the model, so it hides nothing.
+        statement = (args or {}).get("sql")
         sql_text = json.dumps(
             {
+                "sql": statement if isinstance(statement, str) else None,
                 "columns": payload.get("columns", []),
                 "rows": payload.get("rows", []),
             },
             ensure_ascii=False,
-            sort_keys=True,
             separators=(",", ":"),
         )
         return (EvidenceItem(label=f"[SQL {call_id}]", text=sql_text),)
