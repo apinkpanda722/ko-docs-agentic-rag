@@ -4,16 +4,31 @@
 
 실제 호출은 과금되는 OpenAI 호출을 포함한다. 촬영 전에 `make m8-stream-repro-dry`처럼 예상 비용을 확인하는 명령은 없으므로 장면당 질문 수를 대본대로만 쓴다.
 
-## (가) 준비
+## (가) 촬영 전 준비 (화면 밖)
 
-### 1. 서버 (터미널 1, 저장소 루트)
+- 터미널 글꼴 18pt 이상, 프롬프트는 짧게, 방해 금지 모드 켜기.
+- 처음부터 연결하는 모습을 찍으려면 기존 설정을 지운다(리허설 때 만든 파일): `rm ~/kodocs-demo/.mcp.json`
+- MCP 서버(`make m6-serve`)는 **끈 상태**에서 시작한다. OpenSearch는 켜져 있어도 무방하다.
+- 아래 컷의 명령은 메모장에 미리 적어 두고 붙여 넣는다.
+- `~/kodocs-demo` 폴더는 저장소 밖의 빈 폴더다(없으면 `mkdir -p ~/kodocs-demo`).
+
+## (가-2) 장면 2a — 연결 (촬영, 편집 후 약 40초)
+
+컷 단위로 끊어 찍는다. 컷 3을 다시 찍을 때는 `rm ~/kodocs-demo/.mcp.json`부터 다시 한다.
+
+### 컷 1. 서버 기동 (터미널 1, 저장소 폴더, 전체 화면)
 
 ```bash
-make up          # OpenSearch 기동
-make m6-serve    # MCP 서버 127.0.0.1:8765/mcp (BGE-M3 적재가 끝날 때까지 기다린다)
+cd ~/PycharmProjects/ko-docs-agentic-rag
+make up
+make m6-serve    # MCP 서버 127.0.0.1:8765/mcp
 ```
 
-### 2. 토큰 없이는 401임을 확인
+"BGE-M3 임베더 준비 시간"과 "MCP 서버를 127.0.0.1:8765에서 기동합니다" 로그가 나올 때까지 기다린다. 대기 구간은 편집에서 빨리 감기·컷한다.
+
+말: "먼저 사내 문서 도구 네 개를 내놓는 MCP 서버를 띄웁니다. 로컬에서만 접속할 수 있고, 요청마다 Bearer 토큰으로 사용자를 확인합니다."
+
+### 컷 2. 토큰 없이 거절 (터미널 2)
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' -X POST http://127.0.0.1:8765/mcp \
@@ -22,32 +37,39 @@ curl -s -o /dev/null -w '%{http_code}\n' -X POST http://127.0.0.1:8765/mcp \
 # 기대 출력: 401
 ```
 
-### 3. 클라이언트 폴더 준비 (저장소 밖, 1회만)
+말: "토큰 없이 도구 목록을 요청하면 401로 거절됩니다."
 
-```bash
-mkdir -p ~/kodocs-demo && cd ~/kodocs-demo
-claude mcp add -s project --transport http kodocs http://127.0.0.1:8765/mcp \
-  --header 'Authorization: Bearer ${KODOCS_MCP_TOKEN}'
-```
-
-- 작은따옴표 때문에 설정 파일(`.mcp.json`)에는 토큰 값이 아니라 **변수 이름만** 저장된다.
-- 이미 있으면 "already exists"가 나오며 정상이다.
-
-### 4. 사용자별 토큰 주입 (값 비출력)
-
-```bash
-export KODOCS_MCP_TOKEN="$(python3 -c 'import json,sys; users=json.load(open(sys.argv[1]))["users"]; print(next(u["token"] for u in users if u["label"]==sys.argv[2]))' \
-  /절대경로/ko-docs-agentic-rag/data/interim/mcp/tokens.json demo-platform-g3)"
-echo ${#KODOCS_MCP_TOKEN}     # 43이면 정상(길이만 출력)
-```
-
-- 마지막 인자가 라벨이다(`demo-<팀>-g<직급>`). 터미널마다 라벨을 바꿔 실행한다.
-- 토큰 파일(`data/interim/mcp/tokens.json`)은 gitignore된 로컬 파일이다. 열거나 화면에 띄우지 않는다.
-
-### 5. Claude Code 실행
+### 컷 3. MCP 등록 (터미널 2)
 
 ```bash
 cd ~/kodocs-demo
+claude mcp add -s project --transport http kodocs http://127.0.0.1:8765/mcp \
+  --header 'Authorization: Bearer ${KODOCS_MCP_TOKEN}'
+cat .mcp.json
+```
+
+작은따옴표 때문에 `.mcp.json`에는 토큰 값이 아니라 **변수 이름(`${KODOCS_MCP_TOKEN}`)만** 저장된다. `cat .mcp.json`으로 이를 보여 준다.
+
+말: "Claude Code에 서버를 등록합니다. 설정 파일에는 토큰 값이 아니라 변수 이름만 들어갑니다."
+
+### 컷 4. 사용자별 토큰 주입 (터미널 좌우 분할)
+
+양쪽 모두 `cd ~/kodocs-demo` 후 실행한다. 왼쪽은 `demo-platform-g3`, 오른쪽은 `demo-finance-g3`이다(마지막 인자가 라벨, `demo-<팀>-g<직급>`).
+
+```bash
+export KODOCS_MCP_TOKEN="$(python3 -c 'import json,sys; users=json.load(open(sys.argv[1]))["users"]; print(next(u["token"] for u in users if u["label"]==sys.argv[2]))' \
+  ~/PycharmProjects/ko-docs-agentic-rag/data/interim/mcp/tokens.json demo-platform-g3)"
+echo ${#KODOCS_MCP_TOKEN}     # 43이면 정상(길이만 출력)
+```
+
+- export 줄이 길어 줄바꿈되므로 **왼쪽만 천천히** 보여 주고 오른쪽은 편집에서 빨리 감는다.
+- 토큰 파일(`data/interim/mcp/tokens.json`)은 gitignore된 로컬 파일이다. 열거나 화면에 띄우지 않고, 토큰 값을 출력하지 않는다.
+
+말: "왼쪽은 플랫폼팀, 오른쪽은 재무팀 사용자의 토큰을 환경 변수에 넣습니다. 값은 화면에 출력하지 않습니다."
+
+### 컷 5. Claude Code 실행 (양쪽)
+
+```bash
 claude --model sonnet --no-chrome --strict-mcp-config --mcp-config .mcp.json \
   --tools "" --allowedTools mcp__kodocs
 ```
@@ -59,11 +81,13 @@ claude --model sonnet --no-chrome --strict-mcp-config --mcp-config .mcp.json \
 | `--tools ""` | 내장 도구(파일 읽기·Bash)를 막아 저장소 파일을 직접 읽는 우회를 방지한다 |
 | `--allowedTools mcp__kodocs` | kodocs 도구 승인 프롬프트를 생략한다 |
 
-- `/mcp`에 **kodocs 1개, 도구 4개**(`search_docs`, `lookup_id`, `run_sql`, `get_document`)만 보이면 정상이다. 촬영 화면에서는 `/mcp` 상세 화면을 열지 않는다.
-- **사용자 전환은 Claude Code를 종료한 뒤 `export`를 바꿔 다시 실행**한다(`/clear`로는 바뀌지 않는다).
-- 촬영은 터미널을 좌우로 분할해 두 사용자가 동시에 접속한 상태로 한다(왼쪽 `demo-platform-g3`, 오른쪽 `demo-finance-g3`).
+- `/mcp`로 "kodocs 4 tools" 목록 화면만 보여 준다(`search_docs`, `lookup_id`, `run_sql`, `get_document`). **상세 화면은 열지 않는다.**
+- 첫 실행 시 `.mcp.json` 서버 승인 창이 뜨면 승인한다(찍혀도 무방).
+- 사용자 전환은 Claude Code를 종료한 뒤 `export`를 바꿔 다시 실행한다(`/clear`로는 바뀌지 않는다).
 
-## (나) 장면 2 — Claude Code 질문과 기대값
+말: "Claude Code를 실행합니다. 이 MCP 서버 하나만 붙이고, 파일 읽기 같은 내장 도구는 껐습니다. 문서에는 MCP 도구로만 접근할 수 있습니다."
+
+## (나) 장면 2b — Claude Code 질문과 기대값
 
 기대값은 조언 세션이 사전에 조회한 값이다. 촬영 전 같은 질문으로 한 번 확인한다.
 
@@ -88,11 +112,14 @@ claude --model sonnet --no-chrome --strict-mcp-config --mcp-config .mcp.json \
 |---|---|---|---|
 | 0 제목 | 5초(편집 슬라이드) | "ko-docs-agentic-rag" / "권한을 지키면서 질문 유형마다 맞는 도구를 고르는 한국어 사내 문서 Agentic RAG" / 하단 "OpenSearch · BGE-M3 · LangGraph · MCP · 사전 등록 평가" | "한국어 사내 문서에서, 권한을 지키면서 질문마다 맞는 도구를 고르는 Agentic RAG입니다." |
 | 1 문제 | 15초(편집 슬라이드) | 왼쪽 "질문마다 필요한 도구가 다르다"(원인 질문→`search_docs`, INC-2026-012→`lookup_id`, 팀 티켓 몇 건→`run_sql`, 문서 전체→`get_document`) / 오른쪽 "같은 문서, 볼 수 있는 사람이 다르다"(INC-2026-012 장애보고서[플랫폼팀 전용]: 플랫폼팀 열람, 재무팀 "없는 문서와 같은 응답") | "사내 문서 질문은 종류가 섞여 있습니다. 본문을 찾는 질문, 장애 번호 같은 식별자를 짚는 질문, 티켓 수를 세는 집계 질문은 각각 다른 도구가 필요합니다. 그리고 같은 문서라도 팀과 직급에 따라 볼 수 있는 사람이 다릅니다." |
-| 2 Claude Code + MCP | 70~80초 | 장면 2의 질문 1~4(좌우 분할) | ① "Claude Code를 MCP 클라이언트로 붙입니다. 왼쪽은 플랫폼팀, 오른쪽은 재무팀 토큰입니다. 팀과 직급은 서버가 토큰으로 정하고, 도구 인자로는 넘길 수 없습니다. 파일을 직접 읽지 못하도록 Claude Code의 내장 도구는 껐습니다." ② "같은 장애 번호를 물으면 플랫폼팀은 장애보고서를 근거로 답하고, 재무팀은 공개 티켓 제목까지만 보일 뿐 보고서는 찾지 못합니다." ③ "없는 번호를 묻거나 권한 없는 문서를 ID로 직접 열어도 응답이 똑같습니다. 권한 없는 문서가 존재한다는 사실조차 드러나지 않습니다." ④ "집계 질문에는 SQL 도구를 씁니다. 같은 SQL이지만 행 단위 권한이 적용돼 플랫폼팀은 94건, 재무팀은 공개된 56건만 셉니다." |
-| 3 Streamlit | 45초 | 장면 3의 질의 화면 | "GUI는 우리가 만든 에이전트를 같은 도구와 같은 권한 함수로 돌립니다. 데모에서는 사용자를 고르지만 권한 판정은 서버 함수가 합니다. 같은 인사팀 안에서 직급만 다르면 4급은 제한 문서를 근거로 답하고, 2급에게는 그 문서가 나오지 않습니다. 도구 호출과 답변은 생성되는 대로 실시간으로 표시됩니다." |
+| 2a 연결 | 약 40초(실화면, 대기 구간 편집) | 서버 기동 → 401 → mcp add·cat .mcp.json → 좌우 export·길이 43 → claude 실행·/mcp 목록 | 위 컷 1~5의 말 |
+| 2b 질의 | 70~80초 | 장면 2b의 질문 1~4(좌우 분할) | "이제 같은 질문을 두 사람이 던집니다." ② "같은 장애 번호를 물으면 플랫폼팀은 장애보고서를 근거로 답하고, 재무팀은 공개 티켓 제목까지만 보일 뿐 보고서는 찾지 못합니다." ③ "없는 번호를 묻거나 권한 없는 문서를 ID로 직접 열어도 응답이 똑같습니다. 권한 없는 문서가 존재한다는 사실조차 드러나지 않습니다." ④ "집계 질문에는 SQL 도구를 씁니다. 같은 SQL이지만 행 단위 권한이 적용돼 플랫폼팀은 94건, 재무팀은 공개된 56건만 셉니다." |
+| 3 Streamlit | 45초 | 장면 3의 질의 화면 | "GUI는 우리가 만든 에이전트를 같은 도구와 같은 권한 함수로 돌립니다. 데모에서는 사용자를 고르지만 권한 판정은 서버 함수가 합니다. 같은 인사팀 안에서 직급만 다르면 4급은 제한 문서를 근거로 답하고, 2급에게는 그 문서가 나오지 않습니다. 2급은 검색어를 바꿔 가며 찾아보다가, 문서가 없을 때와 똑같은 응답으로 끝납니다. 도구 호출과 답변은 생성되는 대로 실시간으로 표시됩니다." |
 | 4 결과 | 30초(편집 슬라이드) | nori Recall@10 0.689→0.794 / 리랭커 NDCG@10 0.718→0.782(+0.064 [0.022, 0.116]) / Agentic 대 단순 정답성 +1.615 [0.923, 2.308], SQL 3.0 대 0.0 / 권한 누설 0/200, MCP 포함 4경로 / 한계: 리랭커 P95 3.26초로 서빙 미통합, 판정 보류 3건 공개 | "검색은 한 번에 한 변수씩 바꾸며 측정했습니다. 한국어 형태소 분석기로 Recall이 0.689에서 0.794로, 리랭커로 NDCG가 0.718에서 0.782로 올랐습니다. Agentic RAG는 단순 RAG보다 정답성이 평균 1.6점 높았고, SQL 질문은 0점 대 3점이었습니다. 권한 누설은 MCP를 포함한 네 경로에서 200건씩 시도해 0건이었습니다. 리랭커는 지연이 P95 3.3초라 아직 서빙에는 넣지 않았습니다." |
 | 5 작업 방식 | 15초(실화면) | `hypotheses.md` 판정 규칙 절과 SHA-256 → GitHub PR 목록 또는 `phases/` step 파일 → `make verify` 통과 줄 | "가설과 판정 규칙은 결과를 보기 전에 등록하고 해시로 고정했습니다. 구현은 단계별로 나눠 코딩 에이전트에 맡기고, 매 단계 2천여 개 테스트로 검증한 뒤 커밋했습니다. 판정 보류와 기각도 그대로 공개했습니다." |
 | 6 끝 | 5초(편집) | 저장소 URL, 2쪽 요약 PDF, 연락처 | — |
+
+전체 길이는 약 3분 30초다.
 
 장면 4의 수치는 README 핵심 결과(manifest에서 생성)와 같은 값이다. 촬영 전에 README와 어긋나지 않았는지 확인한다.
 
@@ -103,9 +130,30 @@ claude --model sonnet --no-chrome --strict-mcp-config --mcp-config .mcp.json \
 - [ ] 브라우저는 새 프로필, 125% 확대
 - [ ] `.env` 등 민감 파일이 열린 창이 없는지, 토큰 값이 화면에 나오지 않는지
 - [ ] `/mcp` 상세 화면은 열지 않기
-- [ ] macOS Cmd+Shift+5로 전체 화면 무음 녹화
 - [ ] 장면당 2~3 테이크, 파일명 `a-s<장면>-take<n>.mov`
 - [ ] 메모리가 부족하면 장면 2 촬영 후 MCP 서버(`make m6-serve`)를 종료하고 `make ui`를 실행
-- [ ] 장면 3 직급 차이: B 답변 본문에 실제 규정 내용이 인용되지 않는지 확인
+- [x] 장면 3 직급 차이: 확인 완료(2026-10-03): 2급은 검색 3회 후 거절, 답변 본문에 규정 내용 없음. 트레이스의 검색어에 규정 이름만 보임
+
+### 녹화 방법 (macOS)
+
+- Cmd+Shift+5로 도구 막대를 연다. 작은 원(●)이 붙은 아이콘이 녹화이며, 4번째가 전체 화면 기록, 5번째가 선택 영역 기록이다.
+- 옵션에서 마이크는 "없음", "마우스 클릭 표시"는 켜고, 저장 위치를 지정한다.
+- 정지는 메뉴 막대의 ■ 또는 Cmd+Ctrl+Esc.
+- 녹화 버튼이 보이지 않으면 QuickTime Player → 파일 → 새로운 화면 기록을 쓴다.
+- 첫 녹화 때의 화면 기록 권한 허용은 사용자가 시스템 설정에서 직접 한다.
+- 본 촬영 전에 10초 시험 녹화로 글자 크기와 클릭 표시를 확인한다.
 
 영상 링크는 촬영 후 README 데모 절에 추가한다.
+
+## (바) 후반 작업 (촬영 완료 후 진행, 메모)
+
+- 장면 0·1·4·6 슬라이드는 Keynote로 만들어 이미지로 내보낸다.
+- 편집·내레이션·자막은 Vrew 또는 CapCut으로 한다.
+  1. 녹화본과 슬라이드를 잇고 대기 구간을 빨리 감는다.
+  2. 대본 문장을 읽어 본인 목소리로 내레이션을 녹음한다.
+  3. 자동 자막을 생성한 뒤 기술 용어를 대본과 대조해 고친다.
+  4. 자막을 입힌 영상과 `.srt`를 내보낸다.
+  - 무료 플랜 범위(해상도·워터마크)는 설치 후 확인한다.
+- YouTube에 "일부 공개"로 올린다. 제목은 이름 + 한 줄 요약(예: "ko-docs-agentic-rag: 권한을 지키는 한국어 사내 문서 Agentic RAG 데모"), 설명란에 저장소 링크와 장면 타임스탬프를 넣는다.
+- 영상 링크는 README 데모 절, 이력서, 2쪽 요약 PDF(QR 포함)에 넣는다.
+- 저장소는 공개 전환(지원 직전, `make m8-audit` 재실행 후) 전에는 링크가 열리지 않는다.
