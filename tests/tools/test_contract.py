@@ -27,7 +27,12 @@ from kodocs.tools.contract import (
     TOOL_INPUT_MODELS,
     TOOL_OUTPUT_MODELS,
 )
-from kodocs.tools.deps import TOOL_INDEX, load_tool_config
+from kodocs.tools.deps import (
+    LOOKUP_CHUNK_REQUEST_LIMIT,
+    LOOKUP_DOCUMENT_LIMIT,
+    TOOL_INDEX,
+    load_tool_config,
+)
 from kodocs.tools.snapshot import (
     ContractSnapshotError,
     build_contract_snapshot,
@@ -400,7 +405,10 @@ def test_lookup_limits_documents_text_and_serialized_payload(
     assert _serialized_length(result.payload) <= 6000
     assert result.payload["truncated"] is True
     assert captured["prefer_current"] is True
-    assert captured["size"] > 5
+    # `size` of authorized_lookup_id counts OpenSearch CHUNKS, not documents: ask
+    # for the chunk ceiling and cut documents afterwards (it once asked for 6).
+    assert captured["size"] == LOOKUP_CHUNK_REQUEST_LIMIT
+    assert LOOKUP_CHUNK_REQUEST_LIMIT > LOOKUP_DOCUMENT_LIMIT
 
 
 def test_lookup_empty_result_is_success(tmp_path: Path) -> None:
@@ -617,3 +625,123 @@ def test_agent_events_and_trace_for_restricted_and_missing_are_identical(
     assert matches(access_filter(UserContext("legal", 4)), private["_source"])
     assert not matches(access_filter(UserContext("platform", 1)), private["_source"])
     assert attempt(restricted) == attempt(absent)
+
+
+class _LookupClient:
+    """Fake OpenSearch behind BOTH retrieval functions run_tool("lookup_id") calls.
+
+    The identifier query returns CHUNKS newest-first and honors ``size`` like the
+    real engine; the per-document query returns that document's chunks.
+    """
+
+    def __init__(self, documents: dict[str, tuple[str, int]]) -> None:
+        # doc_id -> (date, chunk count)
+        self.documents = documents
+        self.lookup_sizes: list[int] = []
+
+    def _chunk(self, doc_id: str, number: int) -> dict:
+        date, _ = self.documents[doc_id]
+        return {
+            "_score": None,
+            "_source": {
+                "chunk_id": f"{doc_id}-c{number:02d}",
+                "doc_id": doc_id,
+                "date": date,
+                "title": f"title of {doc_id}",
+                "is_current": True,
+                "rule_id": None,
+                "section_key": f"s{number}",
+                "section_kind": "section",
+                "start": number * 10,
+                "end": number * 10 + 9,
+                "text_nori": f"{doc_id} chunk {number}",
+            },
+        }
+
+    def request(self, method: str, path: str, json: object = None) -> dict:
+        assert method == "POST" and isinstance(json, dict)
+        filters = json["query"]["bool"]["filter"]
+        doc_filter = [f for f in filters if "doc_id" in f.get("term", {})]
+        if doc_filter:  # authorized_get_document
+            doc_id = doc_filter[0]["term"]["doc_id"]
+            hits = [self._chunk(doc_id, n) for n in range(self.documents[doc_id][1])]
+            return {"hits": {"hits": hits[: json["size"]]}}
+        self.lookup_sizes.append(json["size"])  # authorized_lookup_id
+        chunks = [
+            self._chunk(doc_id, n)
+            for doc_id, (_, count) in self.documents.items()
+            for n in range(count)
+        ]
+        chunks.sort(key=lambda hit: hit["_source"]["chunk_id"])
+        chunks.sort(key=lambda hit: hit["_source"]["date"], reverse=True)
+        return {"hits": {"hits": chunks[: json["size"]]}}
+
+
+def test_lookup_keeps_an_old_single_chunk_document_behind_newer_multi_chunk_ones(
+    tmp_path: Path,
+) -> None:
+    """Both retrieval layers run for real; only OpenSearch is faked.
+
+    Three newest documents have several chunks each and the oldest only one.
+    Counting chunk slots as documents (size=6) filled the window with the three
+    newest documents and dropped the incident report in INC-2026-010's case.
+    """
+    client = _LookupClient(
+        {
+            "syn-guide-016": ("2026-06-20", 4),
+            "syn-weekly-018": ("2026-06-10", 4),
+            "syn-weekly-026": ("2026-05-30", 4),
+            "syn-incident-020": ("2025-11-03", 1),
+        }
+    )
+    result = run_tool(
+        "lookup_id",
+        {"kind": "incident", "value": "INC-2026-010"},
+        UserContext("hr", 3),
+        _deps(client, tmp_path, prefer_current=False),
+    )
+    assert result.is_error is False
+    documents = result.payload["documents"]
+    assert [d["doc_id"] for d in documents] == [
+        "syn-guide-016",
+        "syn-weekly-018",
+        "syn-weekly-026",
+        "syn-incident-020",
+    ]
+    assert all(d["date"] is not None for d in documents)  # DocHit now carries it
+    assert documents[-1]["date"] == "2025-11-03"
+    assert result.payload["truncated"] is False
+    assert client.lookup_sizes == [LOOKUP_CHUNK_REQUEST_LIMIT]
+
+
+def test_lookup_truncated_when_more_than_five_documents(tmp_path: Path) -> None:
+    client = _LookupClient({f"doc-{n}": (f"2026-06-{20 - n:02d}", 1) for n in range(7)})
+    result = run_tool(
+        "lookup_id",
+        {"kind": "incident", "value": "INC-2026-001"},
+        UserContext("platform", 6),
+        _deps(client, tmp_path, prefer_current=False),
+    )
+    assert len(result.payload["documents"]) == LOOKUP_DOCUMENT_LIMIT
+    assert result.payload["documents"][0]["doc_id"] == "doc-0"  # newest first
+    assert result.payload["truncated"] is True
+
+
+def test_lookup_truncated_when_the_chunk_request_ceiling_is_reached(
+    tmp_path: Path,
+) -> None:
+    """The engine returned exactly `size` chunks: documents may be missing."""
+    client = _LookupClient(
+        {
+            "doc-a": ("2026-06-20", LOOKUP_CHUNK_REQUEST_LIMIT),
+            "doc-b": ("2026-01-01", 3),
+        }
+    )
+    result = run_tool(
+        "lookup_id",
+        {"kind": "incident", "value": "INC-2026-001"},
+        UserContext("platform", 6),
+        _deps(client, tmp_path, prefer_current=False),
+    )
+    assert [d["doc_id"] for d in result.payload["documents"]] == ["doc-a"]
+    assert result.payload["truncated"] is True

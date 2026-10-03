@@ -29,6 +29,7 @@ from kodocs.tools.contract import (
 )
 from kodocs.tools.deps import (
     DOCUMENT_CHUNK_LIMIT,
+    LOOKUP_CHUNK_REQUEST_LIMIT,
     LOOKUP_DOCUMENT_LIMIT,
     ToolDeps,
 )
@@ -115,7 +116,7 @@ def _run_lookup(
         ctx,
         args.kind,
         args.value,
-        size=LOOKUP_DOCUMENT_LIMIT + 1,
+        size=LOOKUP_CHUNK_REQUEST_LIMIT,
         prefer_current=deps.prefer_current,
     )
     documents: list[dict[str, object]] = []
@@ -138,7 +139,8 @@ def _run_lookup(
         )
     payload, refs = shape_lookup_documents(
         documents,
-        source_truncated=len(hits) > LOOKUP_DOCUMENT_LIMIT,
+        source_truncated=len(hits) > LOOKUP_DOCUMENT_LIMIT
+        or bool(getattr(hits, "chunk_limit_reached", False)),
     )
     return ToolResult(
         payload=_validated_output("lookup_id", payload),

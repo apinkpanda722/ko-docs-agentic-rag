@@ -134,3 +134,77 @@ def test_single_call_keeps_original_item_order() -> None:
     assert log.calls[0].items[0].label == "[SQL c1]"
     assert '"columns":["value"]' in log.calls[0].items[0].text
     assert round_robin_context(EvidenceLog.from_calls((log.calls[1],))).endswith("본문")
+
+
+def test_sql_evidence_carries_the_executed_statement_with_columns_and_rows() -> None:
+    """The final answer call sees only evidence text, so the SQL that produced the
+    numbers (and thus the owner_team condition) must be part of it."""
+    import json
+
+    statement = "SELECT status, COUNT(*) FROM tickets WHERE owner_team = 'platform' GROUP BY status"
+    log = EvidenceLog()
+    log.record(
+        "run_sql",
+        {"sql": statement},
+        _result(
+            {
+                "columns": ["status", "n"],
+                "rows": [["open", 3], ["done", 91]],
+                "truncated": False,
+            },
+            ({"kind": "sql"},),
+        ),
+    )
+    item = log.calls[0].items[0]
+    assert item.label == "[SQL c1]"
+    body = json.loads(item.text)
+    assert list(body) == ["sql", "columns", "rows"]  # the statement comes first
+    assert body == {
+        "sql": statement,
+        "columns": ["status", "n"],
+        "rows": [["open", 3], ["done", 91]],
+    }
+    assert "owner_team = 'platform'" in round_robin_context(log)
+    assert "'" in item.text and "\\u" not in item.text  # readable, not escaped
+
+
+def test_sql_evidence_without_a_string_statement_keeps_a_null_not_a_crash() -> None:
+    import json
+
+    log = EvidenceLog()
+    log.record(
+        "run_sql",
+        {},
+        _result({"columns": [], "rows": []}, ({"kind": "sql"},)),
+    )
+    assert json.loads(log.calls[0].items[0].text)["sql"] is None
+
+
+def test_document_evidence_format_is_unchanged_by_the_sql_change() -> None:
+    log = EvidenceLog()
+    log.record(
+        "lookup_id",
+        {"kind": "incident", "value": "INC-2026-010"},
+        _result(
+            {
+                "documents": [
+                    {
+                        "doc_id": "d1",
+                        "title": "문서",
+                        "text": "본문",
+                        "date": "2026-01-01",
+                    }
+                ],
+                "truncated": False,
+            },
+            ({"kind": "doc", "doc_id": "d1", "section_key": None},),
+        ),
+    )
+    item = log.calls[0].items[0]
+    assert item.label == "[d1 | - | 문서]" and item.text == "본문"
+
+
+def test_evidence_format_version_marks_the_sql_statement_change() -> None:
+    from kodocs.agent.evidence import EVIDENCE_FORMAT_VERSION
+
+    assert EVIDENCE_FORMAT_VERSION == 2  # version 1 had no statement (M6/M7 runs)

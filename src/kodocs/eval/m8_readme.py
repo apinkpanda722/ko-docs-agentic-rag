@@ -16,6 +16,7 @@ M5 = "docs/results/2026-09-30-m5-retrieval.md"
 M6 = "docs/results/2026-10-01-m6-agent-mcp.md"
 M7 = "docs/results/2026-10-02-m7-answer-eval.md"
 WRAP = "docs/results/2026-10-03-m8-wrap-up.md"
+DEMO_FIXES = "docs/results/2026-10-03-m8-demo-fixes.md"
 HYPOTHESES = "docs/results/hypotheses.md#변경-기록"
 # The order is the user-run reproduction sequence, not an executable workflow.
 REPRODUCTION = (
@@ -79,6 +80,20 @@ def serving_improvement(root):
         return []
     bullet = improvement_bullet(root, state.result, state.result["selected"])
     return [bullet] if bullet else []
+
+
+def demo_fix_corrections(root):
+    """Post-hoc corrections found in the demo rehearsal (numbers from the manifest)."""
+    path = root / "data/manifest/m8_lookup_impact.json"
+    if not path.exists():
+        return []
+    kinds = json.loads(path.read_text(encoding="utf-8"))["corpus"]["by_kind"]
+    inc, tk = kinds["incident"], kinds["ticket"]
+    link = f"[M8 데모 리허설 수정]({DEMO_FIXES})"
+    return [
+        f"- `lookup_id` 청크·문서 혼동: 도구가 문서 한도를 OpenSearch 청크 수로 넘겨 오래된 문서가 빠졌다. 코퍼스 전수 측정에서 영향은 장애 {inc['identifiers']}건 중 {inc['changed_by_fix']}건, 티켓 {tk['identifiers']}건 중 {tk['changed_by_fix']}건이며 실버 3문항 기록은 영향이 없었다(질문자의 열람 권한). 실버는 재실행하지 않았고 M6·M7 수치는 수정 전 구성 기준이다({link}).",
+        f"- `run_sql` 근거에 실행 SQL이 없어 같은 질문이 거절과 답변으로 갈리던 문제를 근거 형식 변경(SQL 포함)으로 고쳤다. 서빙 반영이며 평가 수치는 수정 전 구성 기준이다({link}).",
+    ]
 
 
 def runaway_limits(root):
@@ -433,6 +448,7 @@ def render(root=Path(".")):
         + ". "
         + errors.get("cause_note", "원인 판정 기록 부족; 원시 출력 미보존으로 미확정.")
         + f" API를 재호출하지 않았다([M8 오프라인 분류]({WRAP}#스트리밍-parse_error-오프라인-분류)).",
+        *demo_fix_corrections(root),
         "",
         "## 다음 개선",
         "",
@@ -441,7 +457,7 @@ def render(root=Path(".")):
         "",
         "## 데모",
         "",
-        "주 데모는 Claude Code를 MCP 클라이언트로 연결해 서버가 결정한 사용자 권한으로 도구를 호출하는 장면이다. `make up` → `make m6-tokens` → `make m6-serve` 후 사용자 토큰으로 연결한다. 촬영은 사용자가 진행한다.",
+        "주 데모는 Claude Code를 MCP 클라이언트로 연결해 서버가 결정한 사용자 권한으로 도구를 호출하는 장면이다. 연결 절차와 장면별 질문·기대값은 [데모 대본](docs/demo/scenario.md)을 따른다. 촬영은 사용자가 진행한다.",
         "",
     ]
     for label, name in (
@@ -460,7 +476,7 @@ def render(root=Path(".")):
     ]["settings"]["max_output_tokens"]
     ui_cap = UI_FINAL_MAX_OUTPUT_TOKENS
     lines += [
-        f"보조 GUI는 `make ui`로 실행한다(OpenSearch·API 키 필요, 실제 답변은 과금·사용자 실행). 같은 질문을 사용자 전환으로 비교하고 답변·인용·거절·도구 트레이스·비용을 표시한다. 결과표 화면은 저장된 문서를 읽으며, 질의 화면은 `answer()`의 실제 모델 스트리밍(최종 답변), 도구 호출 실시간 표시, 폭주 시 진단 기록·재시도를 제공한다. 최종 답변 출력 상한은 GUI에서 {ui_cap}토큰(평가 설정은 {eval_cap}토큰)이며 상한에서 잘리면 1회 자동 재생성한다."
+        f"보조 GUI는 `make ui`로 실행한다(OpenSearch·API 키 필요, 실제 답변은 과금·사용자 실행). 같은 질문을 사용자 전환으로 비교하고 답변·인용·거절·도구 트레이스·비용을 표시한다. 화면은 질의 화면 하나이며(결과는 README와 `docs/results/`에서 본다), 질의 화면은 `answer()`의 실제 모델 스트리밍(최종 답변), 도구 호출 실시간 표시, 폭주 시 진단 기록·재시도를 제공한다. 최종 답변 출력 상한은 GUI에서 {ui_cap}토큰(평가 설정은 {eval_cap}토큰)이며 상한에서 잘리면 1회 자동 재생성한다."
     ]
     return "\n".join(lines)
 

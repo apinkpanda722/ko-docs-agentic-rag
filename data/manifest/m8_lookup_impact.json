@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "target": {
+    "identifier": "INC-2026-010",
+    "missed_document": "syn-incident-020"
+  },
+  "context": "owner team, grade 6 (corpus measurement); read-only OpenSearch/SQLite",
+  "corpus": {
+    "by_kind": {
+      "incident": {
+        "identifiers": 25,
+        "changed_by_fix": 1,
+        "equal_top5": 23,
+        "budget_prefix": 2
+      },
+      "ticket": {
+        "identifiers": 22,
+        "changed_by_fix": 0,
+        "equal_top5": 21,
+        "budget_prefix": 1
+      }
+    },
+    "changed": [
+      {
+        "kind": "incident",
+        "value": "INC-2026-010",
+        "added": [
+          "syn-incident-020"
+        ]
+      }
+    ]
+  },
+  "runs": [
+    {
+      "question_id": "s-syn-009",
+      "run_set": "dev",
+      "system": "agentic",
+      "model": "gpt-6-luna",
+      "asker_can_read_missed_doc": false,
+      "trace_found": true,
+      "lookup_id_calls_for_target": 1,
+      "calls_missing_report": 0,
+      "refused": false,
+      "class": "gemini_acc",
+      "correctness_mean": 0.0
+    },
+    {
+      "question_id": "s-syn-009",
+      "run_set": "dev",
+      "system": "agentic",
+      "model": "gpt-6.1-sol",
+      "asker_can_read_missed_doc": false,
+      "trace_found": true,
+      "lookup_id_calls_for_target": 1,
+      "calls_missing_report": 0,
+      "refused": true,
+      "class": "det_zero",
+      "correctness_mean": 0.0
+    },
+    {
+      "question_id": "s-syn-009",
+      "run_set": "dev",
+      "system": "simple",
+      "model": "gpt-6-luna",
+      "asker_can_read_missed_doc": false,
+      "trace_found": true,
+      "lookup_id_calls_for_target": null,
+      "calls_missing_report": null,
+      "refused": true,
+      "class": "det_zero",
+      "correctness_mean": 0.0
+    },
+    {
+      "question_id": "s-syn-009",
+      "run_set": "dev",
+      "system": "simple",
+      "model": "gpt-6.1-sol",
+      "asker_can_read_missed_doc": false,
+      "trace_found": true,
+      "lookup_id_calls_for_target": null,
+      "calls_missing_report": null,
+      "refused": true,
+      "class": "det_zero",
+      "correctness_mean": 0.0
+    },
+    {
+      "question_id": "s-syn-078",
+      "run_set": "test_silver",
+      "system": "agentic",
+      "model": "gpt-6-luna",
+      "asker_can_read_missed_doc": false,
+      "trace_found": true,
+      "lookup_id_calls_for_target": 1,
+      "calls_missing_report": 0,
+      "refused": true,
+      "class": "det_zero",
+      "correctness_mean": 0.0
+    },
+    {
+      "question_id": "s-syn-078",
+      "run_set": "test_silver",
+      "system": "simple",
+      "model": "gpt-6-luna",
+      "asker_can_read_missed_doc": false,
+      "trace_found": true,
+      "lookup_id_calls_for_target": null,
+      "calls_missing_report": null,
+      "refused": true,
+      "class": "det_zero",
+      "correctness_mean": 0.0
+    },
+    {
+      "question_id": "s-syn-085",
+      "run_set": "test_silver",
+      "system": "agentic",
+      "model": "gpt-6-luna",
+      "asker_can_read_missed_doc": false,
+      "trace_found": true,
+      "lookup_id_calls_for_target": 1,
+      "calls_missing_report": 0,
+      "refused": true,
+      "class": "det_zero",
+      "correctness_mean": 0.0
+    },
+    {
+      "question_id": "s-syn-085",
+      "run_set": "test_silver",
+      "system": "simple",
+      "model": "gpt-6-luna",
+      "asker_can_read_missed_doc": false,
+      "trace_found": true,
+      "lookup_id_calls_for_target": null,
+      "calls_missing_report": null,
+      "refused": true,
+      "class": "det_zero",
+      "correctness_mean": 0.0
+    }
+  ],
+  "no_rerun_reason": "방향 확인용 실버 문항이고, 결과를 본 뒤 일부만 다시 돌리면 선택적 재실행이 된다."
+}

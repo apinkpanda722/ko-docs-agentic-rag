@@ -100,6 +100,7 @@ class DocHit:
     title: str | None = None
     is_current: bool | None = None
     rule_id: str | None = None
+    date: str | None = None  # newest chunk date; filled by identifier lookup only
 
 
 @dataclass(frozen=True)

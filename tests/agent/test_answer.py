@@ -209,6 +209,7 @@ def test_answer_trace_contains_steps_tokens_cost_and_latency_fields(
     assert trace["timings"]["search_ms"] == 2.5
     assert trace["timings"]["ttft_ms"] is None
     assert trace["timings"]["total_ms"] >= 0
+    assert trace["hashes"]["evidence_format_version"] == 2  # run_sql evidence has SQL
     line = json.loads(next(tmp_path.glob("*.jsonl")).read_text(encoding="utf-8"))
     assert line == trace
 

@@ -1,0 +1,5 @@
+# The file watcher walks transformers' lazy-import module paths and, because
+# torchvision is not installed, logs "Examining the path of ... raised" for each
+# one (harmless but very noisy). The demo does not need hot reload.
+[server]
+fileWatcherType = "none"

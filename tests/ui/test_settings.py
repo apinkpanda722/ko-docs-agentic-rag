@@ -50,3 +50,16 @@ def test_service_derives_the_ui_chat_only_when_the_chat_supports_it():
     chat.with_max_output_tokens.return_value = derived
     assert service._final_chat(chat) is derived
     chat.with_max_output_tokens.assert_called_once_with(UI_FINAL_MAX_OUTPUT_TOKENS)
+
+
+def test_streamlit_file_watcher_is_off_to_silence_lazy_import_path_logs():
+    """Verified with a probe loading transformers: 102 'Examining the path of ...
+    raised' lines without this setting, 0 with it (torchvision is not installed
+    and is intentionally not added)."""
+    import tomllib
+
+    config = tomllib.loads(
+        (ROOT / ".streamlit/config.toml").read_text(encoding="utf-8")
+    )
+    assert config["server"]["fileWatcherType"] == "none"
+    assert "torchvision" not in (ROOT / "pyproject.toml").read_text(encoding="utf-8")
