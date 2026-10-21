@@ -276,3 +276,7 @@ Streamlit GUI: 촬영 예정.
 - [답변·채점·보안·지연](docs/results/2026-10-02-m7-answer-eval.md) · [원본 집계 부록](docs/results/2026-10-02-m7-answer-eval-appendix.md)
 - [마무리·정정](docs/results/2026-10-03-m8-wrap-up.md) · [공개 전환 점검](docs/results/2026-10-03-m8-public-readiness.md)
 - [데모 리허설 수정](docs/results/2026-10-03-m8-demo-fixes.md) · [데모 대본](docs/demo/scenario.md)
+
+## 라이선스
+
+[MIT License](LICENSE)
