@@ -97,13 +97,16 @@ def test_h8_states_and_error_does_not_write(source):
 
 
 def test_images(source):
-    assert render(source).count("촬영 예정") == 2
+    body = render(source)
+    assert "촬영 예정" not in body
+    assert body.count("https://youtu.be/F-HQYN8eit8") == 3
     images = source / "docs/images"
     images.mkdir(parents=True, exist_ok=True)
     for name in ("demo-claude-code-mcp.gif", "demo-streamlit.png"):
         (images / name).touch()
     body = render(source)
     assert "촬영 예정" not in body
+    assert body.count("https://youtu.be/F-HQYN8eit8") == 1
     assert "![" in body and "docs/images/demo-streamlit.png" in body
 
 
