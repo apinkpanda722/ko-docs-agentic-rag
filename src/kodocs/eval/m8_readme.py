@@ -18,6 +18,7 @@ M7 = "docs/results/2026-10-02-m7-answer-eval.md"
 WRAP = "docs/results/2026-10-03-m8-wrap-up.md"
 DEMO_FIXES = "docs/results/2026-10-03-m8-demo-fixes.md"
 HYPOTHESES = "docs/results/hypotheses.md#변경-기록"
+DEMO_VIDEO_URL = "https://youtu.be/F-HQYN8eit8"
 # The order is the user-run reproduction sequence, not an executable workflow.
 REPRODUCTION = (
     (
@@ -457,18 +458,20 @@ def render(root=Path(".")):
         "",
         "## 데모",
         "",
-        "주 데모는 Claude Code를 MCP 클라이언트로 연결해 서버가 결정한 사용자 권한으로 도구를 호출하는 장면이다. 연결 절차와 장면별 질문·기대값은 [데모 대본](docs/demo/scenario.md)을 따른다. 촬영은 사용자가 진행한다.",
+        "주 데모는 Claude Code를 MCP 클라이언트로 연결해 서버가 결정한 사용자 권한으로 도구를 호출하는 장면이다. 연결 절차와 장면별 질문·기대값은 [데모 대본](docs/demo/scenario.md)을 따른다.",
+        "",
+        f"시연 영상: {DEMO_VIDEO_URL} (2분 41초, 유튜브 일부 공개). 0:00 MCP 서버 기동·토큰 없는 요청 401·사용자별 토큰 주입·Claude Code 도구 연결 확인, 0:56 같은 질문을 플랫폼팀 3급과 재무팀 3급이 던졌을 때의 범위 차이·없는 번호 조회·권한 없는 문서 직접 열기·SQL 집계, 1:53 Streamlit GUI의 직급 차이(인사팀 4급·2급)와 Agentic RAG·단순 RAG 비교.",
         "",
     ]
-    for label, name in (
-        ("Claude Code + MCP", "demo-claude-code-mcp.gif"),
-        ("Streamlit GUI", "demo-streamlit.png"),
+    for label, name, chapter in (
+        ("Claude Code + MCP", "demo-claude-code-mcp.gif", "0:00~1:53"),
+        ("Streamlit GUI", "demo-streamlit.png", "1:53~"),
     ):
         path = Path("docs/images") / name
         lines += [
             f"![{label}]({path.as_posix()})"
             if (root / path).is_file()
-            else f"{label}: 촬영 예정.",
+            else f"{label}: [시연 영상]({DEMO_VIDEO_URL}) {chapter} 구간.",
             "",
         ]
     eval_cap = json.loads((root / "data/manifest/m6_config.json").read_text())[
